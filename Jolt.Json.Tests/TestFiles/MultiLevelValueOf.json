@@ -1,0 +1,5 @@
+﻿{
+  "Object": {
+    "String": "#valueOf($.object.stringLiteral)"
+  }
+}

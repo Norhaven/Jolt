@@ -1,0 +1,6 @@
+﻿{
+  "Integer": "#valueOf($.integerLiteral)",
+  "String": "#valueOf($.stringLiteral)",
+  "BooleanTrue": "#valueOf($.booleanTrueLiteral)",
+  "BooleanFalse": "#valueOf($.booleanFalseLiteral)"
+}

@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="TestFiles\MultiLevelDocument.json" />
+    <None Remove="TestFiles\MultiLevelValueOf.json" />
+    <None Remove="TestFiles\SingleLevelDocument.json" />
+    <None Remove="TestFiles\SingleLevelLoop.json" />
+    <None Remove="TestFiles\SingleLevelLoopDocument.json" />
+    <None Remove="TestFiles\SingleLevelValueOf.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\Documents\MultiLevelDocument.json" />
+    <EmbeddedResource Include="TestFiles\MultiLevelValueOf.json" />
+    <EmbeddedResource Include="TestFiles\Documents\SingleLevelDocument.json" />
+    <EmbeddedResource Include="TestFiles\Documents\SingleLevelLoopDocument.json" />
+    <EmbeddedResource Include="TestFiles\SingleLevelLoop.json" />
+    <EmbeddedResource Include="TestFiles\SingleLevelValueOf.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="FluentAssertions" Version="6.12.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="xunit" Version="2.5.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="DotNet\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Jolt.Json\Jolt.Json.csproj" />
+  </ItemGroup>
+
+</Project>
