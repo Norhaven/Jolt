@@ -79,19 +79,74 @@ namespace Jolt.Parsing
                 }
                 else if (stream.CurrentToken == ExpressionToken.DollarSign)
                 {
-                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.PathLiteral, ExpressionToken.Comma, ExpressionToken.CloseParentheses);
+                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.PathLiteral, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace);
                 }
                 else if (char.IsNumber(stream.CurrentToken))
                 {
-                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.NumericLiteral, ExpressionToken.Comma, ExpressionToken.CloseParentheses);
+                    yield return TokenUntilNotMatchedWith(stream, ExpressionTokenCategory.NumericLiteral, x => char.IsNumber(x) || x == ExpressionToken.DecimalPoint);
                 }
                 else if (char.IsLetter(stream.CurrentToken))
                 {
-                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.BooleanLiteral, ExpressionToken.Comma, ExpressionToken.CloseParentheses);
+                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.BooleanLiteral, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace);
                 }
                 else if (stream.CurrentToken == ExpressionToken.Whitespace)
                 {
                     stream.ConsumeCurrent();
+                }
+                else if (stream.CurrentToken == ExpressionToken.Equal)
+                {
+                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.EqualComparison);
+                }
+                else if (stream.CurrentToken == ExpressionToken.LessThan)
+                {
+                    stream.ConsumeCurrent();
+
+                    if (stream.CurrentToken == ExpressionToken.Equal)
+                    {
+                        yield return TokenFromCurrent(stream, ExpressionTokenCategory.LessThanOrEqualComparison);
+                    }
+                    else
+                    {
+                        yield return TokenFromCurrent(stream, ExpressionTokenCategory.LessThanComparison);
+                    }
+                }
+                else if (stream.CurrentToken == ExpressionToken.GreaterThan)
+                {
+                    stream.ConsumeCurrent();
+
+                    if (stream.CurrentToken == ExpressionToken.Equal)
+                    {
+                        yield return TokenFromCurrent(stream, ExpressionTokenCategory.GreaterThanOrEqualComparison);
+                    }
+                    else
+                    {
+                        yield return TokenFromCurrent(stream, ExpressionTokenCategory.GreaterThanComparison);
+                    }
+                }
+                else if (stream.CurrentToken == ExpressionToken.Plus)
+                {
+                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.Addition);
+                }
+                else if (stream.CurrentToken == ExpressionToken.Minus)
+                {
+                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.Subtraction);
+                }
+                else if (stream.CurrentToken == ExpressionToken.Star)
+                {
+                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.Multiplication);
+                }
+                else if (stream.CurrentToken == ExpressionToken.ForwardSlash)
+                {
+                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.Division);
+                }
+                else if (stream.CurrentToken == ExpressionToken.Not)
+                {
+                    stream.ConsumeCurrent();
+
+                    if (stream.CurrentToken == ExpressionToken.Equal)
+                    {
+                        yield return TokenFromCurrent(stream, ExpressionTokenCategory.NotEqualComparison);
+                    }
                 }
                 else
                 {
@@ -110,6 +165,16 @@ namespace Jolt.Parsing
         private ExpressionToken TokenFromCurrent(TokenStream<char> stream, ExpressionTokenCategory category)
         {
             return new ExpressionToken(stream.ConsumeCurrent().ToString(), category);
+        }
+
+        private ExpressionToken TokenUntilNotMatchedWith(TokenStream<char> stream, ExpressionTokenCategory category, Func<char, bool> isMatch)
+        {
+            if (!stream.TryConsumeUntil(x => !isMatch(x), out var consumedTokens))
+            {
+                throw new JoltParsingException($"Unable to locate expected character(s) in expression");
+            }
+
+            return new ExpressionToken(new string(consumedTokens), category);
         }
 
         private ExpressionToken TokenUntilMatchedWith(TokenStream<char> stream, ExpressionTokenCategory category, params char[] tokens)

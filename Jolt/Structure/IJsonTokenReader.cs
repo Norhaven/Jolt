@@ -8,5 +8,6 @@ namespace Jolt.Structure
     {
         IJsonToken? Read(string json);
         IJsonToken? CreateArrayFrom(IEnumerable<IJsonToken> tokens);
+        IJsonToken? CreateTokenFrom(object? value);
     }
 }

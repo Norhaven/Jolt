@@ -17,16 +17,10 @@ namespace Jolt
     {
         private readonly ConcurrentDictionary<string, Expression> _cachedExpressions = new ConcurrentDictionary<string, Expression>();
         private readonly TContext _context;
-        private readonly IReferenceResolver _referenceResolver;
 
         public JoltTransformer(TContext context)
         {
             _context = context;
-            
-            var standardMethods = Registrar.RegisterStandardLibrary().ToArray();
-            var thirdPartyMethods = _context.MethodRegistrations.Select(x => Registrar.Register(x, _context)).ToArray();
-
-            _referenceResolver = new ReferenceResolver(standardMethods, thirdPartyMethods);
         }
 
         public string? Transform(string json)
@@ -70,6 +64,16 @@ namespace Jolt
                 }
                 else if (current.CurrentTransformerToken is IJsonValue value && value.ValueType == JsonValueType.String)
                 {
+                    var transformerPropertyValue = value.AsObject<string>();
+
+                    if (!_context.TokenReader.StartsWithMethodCall(transformerPropertyValue))
+                    {
+                        // All transformable expressions need to be rooted in a method call otherwise
+                        // we may transform things that the user intended to be literal values.
+
+                        continue;
+                    }
+
                     var result = TransformExpression(current, value.AsObject<string>(), EvaluationMode.PropertyValue, closureSources);
 
                     ApplyChangesToParent(current.ParentToken, result);
@@ -83,7 +87,7 @@ namespace Jolt
         {
             var actualTokens = _context.TokenReader.ReadToEnd(expressionText);
 
-            if (!_context.ExpressionParser.TryParseExpression(actualTokens, _referenceResolver, out var expression))
+            if (!_context.ExpressionParser.TryParseExpression(actualTokens, _context.ReferenceResolver, out var expression))
             {
                 return new EvaluationResult(token.PropertyName, null, token.CurrentTransformerToken);
             }

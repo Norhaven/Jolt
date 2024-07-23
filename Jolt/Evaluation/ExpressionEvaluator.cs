@@ -35,8 +35,95 @@ namespace Jolt.Evaluation
                 LiteralExpression literal => UnwrapLiteralValue(literal, context),
                 PathExpression path => ExtractPath(path, context),
                 MethodCallExpression call => ExecuteMethodCall(call, context),
+                BinaryExpression binary => EvaluateBinaryExpression(binary, context),
                 _ => default
             };
+        }
+
+        private object? EvaluateBinaryExpression(BinaryExpression binary, EvaluationContext context)
+        {
+            if (binary.IsComparison)
+            {
+                var left = EvaluateExpression(binary.Left, context) as IComparable;
+                var right = EvaluateExpression(binary.Right, context) as IComparable;
+
+                return binary.Operator switch
+                {
+                    Operator.Equal => (left is null && right is null) || left?.CompareTo(right) == 0,
+                    Operator.NotEqual => !(left is null && right is null) && left?.CompareTo(right) != 0,
+                    Operator.GreaterThan => left?.CompareTo(right) > 0,
+                    Operator.LessThan => left?.CompareTo(right) < 0,
+                    Operator.GreaterThanOrEquals => left?.CompareTo(right) >= 0,
+                    Operator.LessThanOrEquals => left?.CompareTo(right) <= 0,
+                    _ => default
+                };
+            }
+            else
+            {
+                var left = EvaluateExpression(binary.Left, context);
+                var right = EvaluateExpression(binary.Right, context);
+
+                if (left is null || right is null)
+                {
+                    throw new JoltExecutionException($"Unable to perform math using operator '{binary.Operator}' on a null value");
+                }
+
+                if (left is bool || right is bool)
+                {
+                    throw new JoltExecutionException($"Unable to perform math using operator '{binary.Operator}' on a boolean value");
+                }
+
+                if (left is string leftString && right is string rightString)
+                {
+                    if (binary.Operator == Operator.Addition)
+                    {
+                        return leftString + rightString;
+                    }
+
+                    throw new JoltExecutionException($"Unable to perform math on strings, found unexpected operator '{binary.Operator}' in an expression containing only strings");
+                }
+
+                if (left is int leftInt && right is int rightInt)
+                {
+                    return binary.Operator switch
+                    {
+                        Operator.Addition => leftInt + rightInt,
+                        Operator.Subtraction => leftInt - rightInt,
+                        Operator.Multiplication => leftInt * rightInt,
+                        Operator.Division => leftInt / rightInt,
+                        _ => default
+                    };
+                }
+
+                if (left is double leftDouble && right is double rightDouble)
+                {
+                    return binary.Operator switch
+                    {
+                        Operator.Addition => leftDouble + rightDouble,
+                        Operator.Subtraction => leftDouble - rightDouble,
+                        Operator.Multiplication => leftDouble * rightDouble,
+                        Operator.Division => leftDouble / rightDouble,
+                        _ => default
+                    };
+                }
+
+                if ((left is int || left is double) && (right is int || right is double))
+                {
+                    var convertedLeftDouble = (double)left;
+                    var convertedRightDouble = (double)right;
+
+                    return binary.Operator switch
+                    {
+                        Operator.Addition => convertedLeftDouble + convertedRightDouble,
+                        Operator.Subtraction => convertedLeftDouble - convertedRightDouble,
+                        Operator.Multiplication => convertedLeftDouble * convertedRightDouble,
+                        Operator.Division => convertedLeftDouble / convertedRightDouble,
+                        _ => default
+                    };
+                }
+
+                throw new JoltExecutionException($"Unable to perform math with mismatched types in expression '{left?.GetType()} {binary.Operator} {right?.GetType()}");
+            }
         }
 
         private object ExtractPath(PathExpression path, EvaluationContext context)

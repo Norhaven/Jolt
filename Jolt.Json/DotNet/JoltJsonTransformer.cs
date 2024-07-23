@@ -3,6 +3,7 @@ using Jolt.Library;
 using Jolt.Parsing;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Jolt.Json.DotNet
@@ -11,6 +12,9 @@ namespace Jolt.Json.DotNet
     {
         public static JoltJsonTransformer DefaultWith(string jsonTransformer, IEnumerable<MethodRegistration>? methodRegistrations = null)
         {
+            var thirdPartyMethods = methodRegistrations?.Select(x => Registrar.Register(x));
+            var referenceResolver = new ReferenceResolver(thirdPartyMethods);
+
             var context = new JoltContext(
                 jsonTransformer,
                 new ExpressionParser(),
@@ -18,7 +22,7 @@ namespace Jolt.Json.DotNet
                 new TokenReader(),
                 new JsonTokenReader(),
                 new IndexedPathQueryPathProvider(),
-                methodRegistrations);
+                referenceResolver);
 
             return new JoltJsonTransformer(context);
         }

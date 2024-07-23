@@ -44,7 +44,7 @@ public class JoltJsonTransformerTests : Test
     [Fact]
     public void ValueOf_IsSuccessful_AtMultiLevelForStringLiteral()
     {
-        var json = ExecuteTestFor(_multiLevelValueOf, _multiLevelDocument, JObject.Parse);
+        var json = ExecuteTestFor(_multiLevelValueOf, _multiLevelDocument);
 
         var nestedJson = (JObject)json[TargetProperty.Object];
 
@@ -54,7 +54,7 @@ public class JoltJsonTransformerTests : Test
     [Fact]
     public void Loop_IsSuccessful_AtSingleLevelForMultiElements()
     {
-        var json = ExecuteTestFor(_singleLevelLoop, _singleLevelLoopDocument, JObject.Parse);
+        var json = ExecuteTestFor(_singleLevelLoop, _singleLevelLoopDocument);
 
         var nestedJson = (JArray)json[TargetProperty.Array];
 
@@ -73,14 +73,30 @@ public class JoltJsonTransformerTests : Test
     [Fact]
     public void ValueOf_WorksSuccessfullyAtMultipleLevels()
     {
-        //var json = ExecuteTestFor("", _multiLevelDocument);
-        var transformerJson = ReadTestFile("ValueOf");
-        var transformer = JoltJsonTransformer.DefaultWith(transformerJson);
+        var json = ExecuteTestFor(_multiLevelValueOf, _multiLevelDocument);
+        
+        json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
 
-        var transformedDocument = transformer.Transform(_multiLevelDocument);
+        var objectProperty = (JObject)json[TargetProperty.Object];
 
-        transformedDocument.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
+        objectProperty.PropertyValueFor<string>(TargetProperty.StringLiteral).Should().Be(Value.StringLiteral, "because that was the value in the source document");
     }
+
+    [Fact]
+    public void Math_IsSuccessful_WithOperatorPrecedence()
+    {
+        var equation = "2 + 3 * 4 + 5 = 19";
+
+        var json = ExecuteTestFor(_math, _mathDocument);
+
+        json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
+
+        json.PropertyValueFor<string>(TargetProperty.Equation).Should().Be(equation, "because this is the value of an equation stored in another document");
+        json.PropertyValueFor<string>(TargetProperty.LiteralEquation).Should().Be(equation, "because this is the value of an equation without the context of evaluation");
+        json.PropertyValueFor<bool>(TargetProperty.Eval).Should().BeTrue("because this is the result of evaluating an equation");
+    }
+
+    private JObject ExecuteTestFor(string transformerJson, string documentJson) => ExecuteTestFor(transformerJson, documentJson, JObject.Parse);
 
     private void ValidateLiteralIsTransformed<T>(string transformerJson, string documentJson, string targetProperty, T targetValue)
     {

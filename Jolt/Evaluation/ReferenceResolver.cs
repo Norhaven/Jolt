@@ -1,4 +1,5 @@
 ﻿using Jolt.Exceptions;
+using Jolt.Library;
 using Jolt.Parsing;
 using System;
 using System.Collections.Generic;
@@ -7,11 +8,18 @@ using System.Text;
 
 namespace Jolt.Evaluation
 {
-    internal sealed class ReferenceResolver : IReferenceResolver
+    public sealed class ReferenceResolver : IReferenceResolver
     {
         private readonly MethodSignature[] _standardMethods;
         private readonly MethodSignature[] _thirdPartyMethods;
         private readonly ILookup<string, MethodSignature> _availableMethods;
+
+        public ReferenceResolver(IEnumerable<MethodSignature>? thirdPartyMethods = null)
+        {
+            _standardMethods = Registrar.RegisterStandardLibrary().ToArray();
+            _thirdPartyMethods = thirdPartyMethods?.ToArray() ?? Array.Empty<MethodSignature>();
+            _availableMethods = _standardMethods.Concat(_thirdPartyMethods).ToLookup(x => x.Alias);
+        }
 
         public ReferenceResolver(MethodSignature[] standardMethods, MethodSignature[] thirdPartyMethods)
         {

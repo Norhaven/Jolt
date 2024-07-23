@@ -16,6 +16,16 @@ namespace Jolt.Parsing
         NumericLiteral = 7,
         BooleanLiteral = 8,
         PathLiteral = 9,
-        GeneratedNameIdentifier = 10
+        GeneratedNameIdentifier = 10,
+        EqualComparison = 11,
+        LessThanComparison = 12,
+        GreaterThanComparison = 13,
+        GreaterThanOrEqualComparison = 14,
+        LessThanOrEqualComparison = 15,
+        Addition = 16,
+        Subtraction = 17,
+        Multiplication = 18,
+        Division = 19,
+        NotEqualComparison = 20
     }
 }

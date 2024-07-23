@@ -17,6 +17,7 @@ namespace Jolt
         IExpressionEvaluator ExpressionEvaluator { get; }
         IQueryPathProvider QueryPathProvider { get; }
         MethodRegistration[] MethodRegistrations { get; }
+        IReferenceResolver ReferenceResolver { get; }
 
         IJsonContext RegisterMethod(MethodRegistration method);
         IJsonContext RegisterAllMethods(IEnumerable<MethodRegistration> methods);

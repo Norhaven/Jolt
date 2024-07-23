@@ -1,5 +1,7 @@
 ﻿using Jolt.Evaluation;
+using Jolt.Exceptions;
 using Jolt.Expressions;
+using Jolt.Extensions;
 using Jolt.Structure;
 using System;
 using System.Collections.Generic;
@@ -30,27 +32,142 @@ namespace Jolt.Parsing
 
         private bool TryParseExpression(ExpressionReader reader, IReferenceResolver referenceResolver, out Expression? expression)
         {
+            expression = default;
+
+            var isParsed = false;
+            
+            // Parse the unary expressions first and then, if successful,
+            // see if it's part of a larger binary expression.
+
             if (TryParseMethod(reader, referenceResolver, out var method))
             {
                 expression = method;
-                return true;
+                isParsed = true;
             }
-
-            if (TryParsePath(reader, out var path))
+            else if (TryParsePath(reader, out var path))
             {
+                // Paths are only valid within a unary context and can't be
+                // used as a part of a binary expression by themselves.
+
                 expression = path;
                 return true;
             }
-
-            if (TryParseLiteral(reader, out var literal))
+            else if (TryParseLiteral(reader, out var literal))
             {
                 expression = literal;
+                isParsed = true;
+            }
+            
+            if (!isParsed)
+            {
+                return false;
+            }
+
+            if (TryParseComparisonOrMath(reader, expression, referenceResolver, out var comparison))
+            {
+                expression = comparison;
                 return true;
             }
 
-            expression = default;
+            return isParsed;
+        }
 
-            return false;
+        private bool TryParseComparisonOrMath(ExpressionReader reader, Expression leftSide, IReferenceResolver referenceResolver, out Expression rightSide)
+        {
+            int GetOperatorPrecedence(Operator @operator)
+            {
+                return @operator switch
+                {
+                    Operator.Equal => 0,
+                    Operator.NotEqual => 0,
+                    Operator.LessThan => 0,
+                    Operator.GreaterThan => 0,
+                    Operator.LessThanOrEquals => 0,
+                    Operator.GreaterThanOrEquals => 0,
+                    Operator.Addition => 1,
+                    Operator.Subtraction => 1,
+                    Operator.Multiplication => 2,
+                    Operator.Division => 2,
+                    _ => -1
+                };
+            }
+
+            Expression ParsePrecedenceExpression(ExpressionReader reader, Expression leftExpression, int minimumPrecedence)
+            {
+                var lookahead = ToOperator(reader.CurrentToken);
+                var lookaheadPrecedence = GetOperatorPrecedence(lookahead);
+
+                while(lookaheadPrecedence >= minimumPrecedence)
+                {
+                    var @operator = lookahead;
+                    var operatorPrecedence = GetOperatorPrecedence(@operator);
+
+                    reader.ConsumeCurrent();
+
+                    Expression rightExpression = default;
+
+                    if (TryParseMethod(reader, referenceResolver, out var methodCall))
+                    {
+                        rightExpression = methodCall;
+                    }
+                    else if (TryParseLiteral(reader, out var literal))
+                    {
+                        rightExpression = literal;
+                    }
+                    else
+                    {
+                        throw new JoltParsingException($"Unable to parse the right hand side of an expression with operator '{@operator}'");
+                    }
+
+                    lookahead = ToOperator(reader.CurrentToken);
+                    lookaheadPrecedence = GetOperatorPrecedence(lookahead);
+
+                    while(lookaheadPrecedence > operatorPrecedence)
+                    {
+                        var adjustedMinimumPrecedence = operatorPrecedence + (lookaheadPrecedence > operatorPrecedence ? 1 : 0);
+
+                        rightExpression = ParsePrecedenceExpression(reader, rightExpression, adjustedMinimumPrecedence);
+
+                        lookahead = ToOperator(reader.CurrentToken);
+                        lookaheadPrecedence = GetOperatorPrecedence(lookahead);
+                    }
+
+                    leftExpression = new BinaryExpression(leftExpression, @operator, rightExpression);
+                }
+
+                return leftExpression;
+            }
+
+            Operator ToOperator(ExpressionToken token)
+            {
+                return token?.Category switch
+                {
+                    ExpressionTokenCategory.EqualComparison => Operator.Equal,
+                    ExpressionTokenCategory.GreaterThanComparison => Operator.GreaterThan,
+                    ExpressionTokenCategory.LessThanComparison => Operator.LessThan,
+                    ExpressionTokenCategory.GreaterThanOrEqualComparison => Operator.GreaterThanOrEquals,
+                    ExpressionTokenCategory.LessThanOrEqualComparison => Operator.LessThanOrEquals,
+                    ExpressionTokenCategory.Addition => Operator.Addition,
+                    ExpressionTokenCategory.Subtraction => Operator.Subtraction,
+                    ExpressionTokenCategory.Multiplication => Operator.Multiplication,
+                    ExpressionTokenCategory.Division => Operator.Division,
+                    ExpressionTokenCategory.NotEqualComparison => Operator.NotEqual,
+                    _ => Operator.Unknown
+                };
+            }
+
+            rightSide = default;
+
+            var @operator = ToOperator(reader.CurrentToken);
+
+            if (@operator == Operator.Unknown)
+            {
+                return false;
+            }
+
+            rightSide = ParsePrecedenceExpression(reader, leftSide, 0);
+
+            return true;
         }
 
         private bool TryParseLiteral(ExpressionReader reader, out LiteralExpression? literal)
@@ -63,7 +180,14 @@ namespace Jolt.Parsing
                 _ => default
             };
 
-            return literal != null;
+            var isParseSuccessful = literal != null;
+
+            if (isParseSuccessful)
+            {
+                reader.ConsumeCurrent();
+            }
+
+            return isParseSuccessful;
         }
 
         private bool TryParseMethod(ExpressionReader reader, IReferenceResolver referenceResolver, out MethodCallExpression? methodCall)

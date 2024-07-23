@@ -20,6 +20,16 @@ namespace Jolt.Json.Newtonsoft
             return JsonToken.FromObject(array);
         }
 
+        public IJsonToken? CreateTokenFrom(object? value)
+        {
+            if (value is null)
+            {
+                return JsonToken.FromObject(JValue.CreateNull());
+            }
+
+            return JsonToken.FromObject(JToken.FromObject(value));
+        }
+
         public IJsonToken? Read(string json)
         {
             return JsonToken.Parse(json);

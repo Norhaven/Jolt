@@ -6,9 +6,9 @@ using System.Text;
 
 namespace Jolt.Extensions
 {
-    public static class EnumExtensions
+    public static class SequenceExtensions
     {
-        public static bool IsAnyOf<T>(this T currentValue, params T[] values) where T : Enum 
+        public static bool IsAnyOf<T>(this T currentValue, params T[] values)
         {
             foreach(var value in values ?? Enumerable.Empty<T>())
             {

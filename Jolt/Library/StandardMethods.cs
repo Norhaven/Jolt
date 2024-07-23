@@ -18,6 +18,12 @@ namespace Jolt.Library
             return context.Context.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, path, JsonQueryMode.StartFromRoot);
         }
 
+        [JoltLibraryMethod("eval")]
+        public static IJsonToken? Evaluate(object? result, EvaluationContext context)
+        {
+            return context.Context.JsonTokenReader.CreateTokenFrom(result);
+        }
+
         [JoltLibraryMethod("loop")]
         public static IEnumerable<IJsonToken> LoopOnArrayAtPath(string path, EvaluationContext context)
         {

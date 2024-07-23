@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Jolt.Evaluation;
+using Jolt.Library;
 using Jolt.Parsing;
 using Jolt.Structure;
 using System;
@@ -33,6 +34,7 @@ public abstract class Test
         public const string BooleanTrue = "booleanTrueLiteral";
         public const string BooleanFalse = "booleanFalseLiteral";
         public const string Object = "object";
+        public const string MathExpression = "mathExpression";
 
         public const string ArrayElementId = "arrayElementId";
     }
@@ -49,24 +51,32 @@ public abstract class Test
         public const string Array = "Array";
 
         public const string GlobalId = "GlobalId";
+
+        public const string Equation = "Equation";
+        public const string LiteralEquation = "LiteralEquation";
+        public const string Eval = "Eval";
     }
 
     protected readonly string _singleLevelDocument;
     protected readonly string _multiLevelDocument;
     protected readonly string _singleLevelLoopDocument;
+    protected readonly string _mathDocument;
     protected readonly string _singleLevelValueOf;
     protected readonly string _multiLevelValueOf;
     protected readonly string _singleLevelLoop;
+    protected readonly string _math;
 
     public Test()
     {
         _singleLevelDocument = ReadTestDocument("SingleLevelDocument");
         _multiLevelDocument = ReadTestDocument("MultiLevelDocument");
         _singleLevelLoopDocument = ReadTestDocument("SingleLevelLoopDocument");
+        _mathDocument = ReadTestDocument("MathDocument");
 
         _singleLevelValueOf = ReadTestFile("SingleLevelValueOf");
         _multiLevelValueOf = ReadTestFile("MultiLevelValueOf");
         _singleLevelLoop = ReadTestFile("SingleLevelLoop");
+        _math = ReadTestFile("Math");
     }
 
     protected abstract IJsonTokenReader CreateTokenReader();
@@ -94,7 +104,8 @@ public abstract class Test
             new ExpressionEvaluator(),
             new TokenReader(),
             tokenReader,
-            pathQueryProvider
+            pathQueryProvider,
+            new ReferenceResolver()
         );
 
         return CreateTransformer(context);

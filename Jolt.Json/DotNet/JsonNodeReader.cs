@@ -15,6 +15,11 @@ namespace Jolt.Json.DotNet
             throw new NotImplementedException();
         }
 
+        public IJsonToken? CreateTokenFrom(object? value)
+        {
+            throw new NotImplementedException();
+        }
+
         public IJsonToken Read(string json)
         {
             var rootToken = Node.Parse(json);

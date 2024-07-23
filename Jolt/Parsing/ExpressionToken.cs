@@ -15,6 +15,15 @@ namespace Jolt.Parsing
         public const char Whitespace = ' ';
         public const char ArrowBody = '-';
         public const char ArrowHead = '>';
+        public const char Equal = '=';
+        public const char Plus = '+';
+        public const char Minus = '-';
+        public const char GreaterThan = '>';
+        public const char LessThan = '<';
+        public const char Star = '*';
+        public const char ForwardSlash = '/';
+        public const char Not = '!';
+        public const char DecimalPoint = '.';
 
         public string Value { get; }
         public ExpressionTokenCategory Category { get; }

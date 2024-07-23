@@ -22,7 +22,7 @@ namespace Jolt.Library
                    select new MethodSignature(Assembly.GetExecutingAssembly().FullName, type.FullName, method.Name, attribute.Name, method.ReturnType, CallType.Static, true, parameters.ToArray());
         }
 
-        public static MethodSignature Register(MethodRegistration registration, IJsonContext context)
+        public static MethodSignature Register(MethodRegistration registration)
         {
             var hasAssemblyName = registration.FullyQualifiedTypeName.Contains(',');
 

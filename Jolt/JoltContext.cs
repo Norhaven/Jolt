@@ -25,13 +25,15 @@ namespace Jolt
 
         public MethodRegistration[] MethodRegistrations { get; }
 
+        public IReferenceResolver ReferenceResolver { get; }
+
         public JoltContext(string jsonTransformer, 
                            IExpressionParser expressionParser, 
                            IExpressionEvaluator expressionEvaluator, 
                            ITokenReader tokenReader, 
                            IJsonTokenReader jsonTokenReader,
                            IQueryPathProvider queryPathProvider,
-                           IEnumerable<MethodRegistration>? methodRegistrations = null)
+                           IReferenceResolver referenceResolver)
         {
             JsonTransformer = jsonTransformer;
             ExpressionParser = expressionParser;
@@ -39,7 +41,7 @@ namespace Jolt
             TokenReader = tokenReader;
             JsonTokenReader = jsonTokenReader;
             QueryPathProvider = queryPathProvider;
-            MethodRegistrations = methodRegistrations?.ToArray() ?? Array.Empty<MethodRegistration>();
+            ReferenceResolver = referenceResolver;
         }
 
         public IJsonContext RegisterMethod(MethodRegistration method)
