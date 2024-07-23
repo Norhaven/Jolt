@@ -12,7 +12,7 @@ namespace Jolt.Json.DotNet
     {
         public static JoltJsonTransformer DefaultWith(string jsonTransformer, IEnumerable<MethodRegistration>? methodRegistrations = null)
         {
-            var thirdPartyMethods = methodRegistrations?.Select(x => Registrar.Register(x));
+            var thirdPartyMethods = methodRegistrations?.Select(x => Registrar.GetCustomMethodRegistration(x));
             var referenceResolver = new ReferenceResolver(thirdPartyMethods);
 
             var context = new JoltContext(

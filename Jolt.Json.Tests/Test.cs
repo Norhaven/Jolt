@@ -25,6 +25,12 @@ public abstract class Test
         public const int FirstArrayElementId = 1;
         public const int SecondArrayElementId = 2;
         public const int GlobalId = 3;
+
+        public const double DoubleLiteral = 1.123d;
+
+        public const string Contents = "contents";
+        public const string HasContents = "Has Contents";
+        public const string NoContents = "No Contents";
     }
 
     protected static class SourceProperty
@@ -43,6 +49,7 @@ public abstract class Test
     {
         public const string IntegerLiteral = "Integer";
         public const string StringLiteral = "String";
+        public const string DoubleLiteral = "Double";
         public const string BooleanTrueLiteral = "BooleanTrue";
         public const string BooleanFalseLiteral = "BooleanFalse";
         public const string Object = "Object";
@@ -55,16 +62,26 @@ public abstract class Test
         public const string Equation = "Equation";
         public const string LiteralEquation = "LiteralEquation";
         public const string Eval = "Eval";
+        public const string Empty = "Empty";
+        public const string TrueResult = "TrueResult";
+        public const string FalseResult = "FalseResult";
     }
 
     protected readonly string _singleLevelDocument;
     protected readonly string _multiLevelDocument;
     protected readonly string _singleLevelLoopDocument;
     protected readonly string _mathDocument;
+    protected readonly string _existenceDocument;
+    protected readonly string _conditionsDocument;
+    protected readonly string _pipedMethodsDocument;
+
     protected readonly string _singleLevelValueOf;
     protected readonly string _multiLevelValueOf;
     protected readonly string _singleLevelLoop;
     protected readonly string _math;
+    protected readonly string _existence;
+    protected readonly string _conditions;
+    protected readonly string _pipedMethods;
 
     public Test()
     {
@@ -72,11 +89,17 @@ public abstract class Test
         _multiLevelDocument = ReadTestDocument("MultiLevelDocument");
         _singleLevelLoopDocument = ReadTestDocument("SingleLevelLoopDocument");
         _mathDocument = ReadTestDocument("MathDocument");
+        _existenceDocument = ReadTestDocument("ExistenceDocument");
+        _conditionsDocument = ReadTestDocument("ConditionsDocument");
+        _pipedMethodsDocument = ReadTestDocument("PipedMethodsDocument");
 
         _singleLevelValueOf = ReadTestFile("SingleLevelValueOf");
         _multiLevelValueOf = ReadTestFile("MultiLevelValueOf");
         _singleLevelLoop = ReadTestFile("SingleLevelLoop");
         _math = ReadTestFile("Math");
+        _existence = ReadTestFile("Existence");
+        _conditions = ReadTestFile("Conditions");
+        _pipedMethods = ReadTestFile("PipedMethods");
     }
 
     protected abstract IJsonTokenReader CreateTokenReader();

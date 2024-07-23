@@ -10,19 +10,19 @@ namespace Jolt.Library
 {
     public static class Registrar
     {
-        public static IEnumerable<MethodSignature> RegisterStandardLibrary()
+        public static IEnumerable<MethodSignature> GetStandardLibraryRegistrations()
         {
-            var type = typeof(StandardMethods);
+            var type = typeof(StandardLibraryMethods);
             var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
 
             return from method in methods
                    let attribute = method.GetCustomAttribute<JoltLibraryMethodAttribute>()
                    where attribute != null
-                   let parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, x.GetCustomAttribute<JoltLibrarySystemParameterAttribute>()?.ParameterType ?? SystemParameterType.Unknown))
+                   let parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, x.GetCustomAttribute<LazyEvaluationAttribute>() != null))
                    select new MethodSignature(Assembly.GetExecutingAssembly().FullName, type.FullName, method.Name, attribute.Name, method.ReturnType, CallType.Static, true, parameters.ToArray());
         }
 
-        public static MethodSignature Register(MethodRegistration registration)
+        public static MethodSignature GetCustomMethodRegistration(MethodRegistration registration)
         {
             var hasAssemblyName = registration.FullyQualifiedTypeName.Contains(',');
 
@@ -36,7 +36,7 @@ namespace Jolt.Library
             var type = Type.GetType(hasAssemblyName ? $"{assemblyName},{typeName}" : typeName);
             var method = type.GetMethod(methodName);
             var callType = method.IsStatic ? CallType.Static : CallType.Instance;
-            var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name)).ToArray();
+            var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false)).ToArray();
 
             return new MethodSignature(assemblyName, typeName, methodName, methodName, method.ReturnType, callType, false, parameters);
         }

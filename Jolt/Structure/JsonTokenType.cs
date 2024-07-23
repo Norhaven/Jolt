@@ -9,6 +9,7 @@ namespace Jolt.Structure
         Unknown = 0,
         Object = 1,
         Array = 2,
-        Value = 3
+        Value = 3,
+        Null = 4
     }
 }

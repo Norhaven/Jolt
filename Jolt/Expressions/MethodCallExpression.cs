@@ -1,6 +1,7 @@
 ﻿using Jolt.Parsing;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Jolt.Expressions
@@ -16,6 +17,13 @@ namespace Jolt.Expressions
             Signature = signature;
             ParameterValues = parameterValues;
             GeneratedName = generatedName;
+        }
+
+        public MethodCallExpression AddParameter(Expression parameter)
+        {
+            var updatedParameters = ParameterValues.Concat(new[] { parameter }).ToArray();
+
+            return new MethodCallExpression(Signature, updatedParameters, GeneratedName);
         }
     }
 }

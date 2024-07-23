@@ -10,10 +10,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="TestFiles\Conditions.json" />
+    <None Remove="TestFiles\Documents\ConditionsDocument.json" />
+    <None Remove="TestFiles\Documents\ExistenceDocument.json" />
     <None Remove="TestFiles\Documents\MathDocument.json" />
+    <None Remove="TestFiles\Documents\PipedMethodsDocument.json" />
+    <None Remove="TestFiles\Existence.json" />
     <None Remove="TestFiles\Math.json" />
     <None Remove="TestFiles\MultiLevelDocument.json" />
     <None Remove="TestFiles\MultiLevelValueOf.json" />
+    <None Remove="TestFiles\PipedMethods.json" />
     <None Remove="TestFiles\SingleLevelDocument.json" />
     <None Remove="TestFiles\SingleLevelLoop.json" />
     <None Remove="TestFiles\SingleLevelLoopDocument.json" />
@@ -21,8 +27,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="TestFiles\Documents\PipedMethodsDocument.json" />
+    <EmbeddedResource Include="TestFiles\PipedMethods.json" />
+    <EmbeddedResource Include="TestFiles\Documents\ConditionsDocument.json" />
+    <EmbeddedResource Include="TestFiles\Documents\ExistenceDocument.json" />
     <EmbeddedResource Include="TestFiles\Documents\MathDocument.json" />
     <EmbeddedResource Include="TestFiles\Documents\MultiLevelDocument.json" />
+    <EmbeddedResource Include="TestFiles\Conditions.json" />
+    <EmbeddedResource Include="TestFiles\Existence.json" />
     <EmbeddedResource Include="TestFiles\Math.json" />
     <EmbeddedResource Include="TestFiles\MultiLevelValueOf.json" />
     <EmbeddedResource Include="TestFiles\Documents\SingleLevelDocument.json" />

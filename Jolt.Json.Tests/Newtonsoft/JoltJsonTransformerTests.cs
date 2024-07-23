@@ -96,6 +96,42 @@ public class JoltJsonTransformerTests : Test
         json.PropertyValueFor<bool>(TargetProperty.Eval).Should().BeTrue("because this is the result of evaluating an equation");
     }
 
+    [Fact]
+    public void Existence_IsSuccessful_WithLiteralStringAndNull()
+    {
+        var json = ExecuteTestFor(_existence, _existenceDocument);
+
+        json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
+
+        json.PropertyValueFor<bool>(TargetProperty.StringLiteral).Should().BeTrue("because the document had content in this property");
+        json.PropertyValueFor<bool>(TargetProperty.Empty).Should().BeFalse("because the document had a null value in this property");
+    }
+
+    [Fact]
+    public void IfCondition_IsSuccessful_WithStringComparisonAsConditionAndStringResult()
+    {
+        var json = ExecuteTestFor(_conditions, _conditionsDocument);
+
+        json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
+
+        json.PropertyValueFor<string>(TargetProperty.TrueResult).Should().Be(Value.HasContents, "because the condition evaluated to be true");
+        json.PropertyValueFor<string>(TargetProperty.FalseResult).Should().Be(Value.NoContents, "because the condition evaluated to be false");
+    }
+
+    [Fact]
+    public void PipedMethod_IsSuccessful_WithCallToSingleParameterMethod()
+    {
+        var json = ExecuteTestFor(_pipedMethods, _pipedMethodsDocument);
+
+        json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
+
+        json.PropertyValueFor<bool>(TargetProperty.TrueResult).Should().BeTrue("because the property exists");
+        json.PropertyValueFor<bool>(TargetProperty.FalseResult).Should().BeFalse("because the condition evaluated to be false");
+        json.PropertyValueFor<int>(TargetProperty.IntegerLiteral).Should().Be(1, "because the decimal value should truncate during conversion");
+        json.PropertyValueFor<string>(TargetProperty.StringLiteral).Should().Be("1.123", "because the decimal value should convert to string");
+        json.PropertyValueFor<double>(TargetProperty.DoubleLiteral).Should().Be(1.123d, "because the decimal value should be preserved");
+    }
+
     private JObject ExecuteTestFor(string transformerJson, string documentJson) => ExecuteTestFor(transformerJson, documentJson, JObject.Parse);
 
     private void ValidateLiteralIsTransformed<T>(string transformerJson, string documentJson, string targetProperty, T targetValue)

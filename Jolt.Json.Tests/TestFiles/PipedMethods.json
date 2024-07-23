@@ -1,0 +1,7 @@
+﻿{ 
+  "TrueResult": "#valueOf($.stringLiteral)->#exists()",
+  "FalseResult": "#valueOf($.empty)->#exists()",
+  "Integer": "#valueOf($.integerText)->toInt()",
+  "String": "#valueOf($.doubleLiteral)->toString()",
+  "Double": "#valueOf($.stringLiteral)->toDouble()"
+}

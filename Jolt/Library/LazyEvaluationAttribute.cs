@@ -4,9 +4,7 @@ using System.Text;
 
 namespace Jolt.Library
 {
-    internal enum SystemParameterType
+    public class LazyEvaluationAttribute : Attribute
     {
-        Unknown = 0,
-        ClosureVariables = 1
     }
 }

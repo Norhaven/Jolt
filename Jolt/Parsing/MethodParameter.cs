@@ -10,18 +10,13 @@ namespace Jolt.Parsing
     {
         public Type Type { get; }
         public string Name { get; }
-        internal SystemParameterType ParameterType { get; }
+        public bool IsLazyEvaluated { get; }
 
-        internal MethodParameter(Type type, string name, SystemParameterType parameterType)
-            :this(type, name)
-        {
-            ParameterType = parameterType;  
-        }
-
-        public MethodParameter(Type type, string name)
+        public MethodParameter(Type type, string name, bool isLazyEvaluated)
         {
             Type = type;
             Name = name;
+            IsLazyEvaluated = isLazyEvaluated;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Jolt.Exceptions;
 using Jolt.Expressions;
+using Jolt.Extensions;
 using Jolt.Parsing;
 using Jolt.Structure;
 using System;
@@ -25,7 +26,7 @@ namespace Jolt.Evaluation
                 return new EvaluationResult(context.Token.PropertyName, default, token);
             }
 
-            throw new JoltExecutionException($"Expression evaluation did not generate a JSON token, unable to continue with type '{result?.GetType()}'");
+            return new EvaluationResult(context.Token.PropertyName, default, context.JsonContext.JsonTokenReader.CreateTokenFrom(result));
         }
 
         private object? EvaluateExpression(Expression expression, EvaluationContext context) 
@@ -42,10 +43,13 @@ namespace Jolt.Evaluation
 
         private object? EvaluateBinaryExpression(BinaryExpression binary, EvaluationContext context)
         {
+            var leftResult = EvaluateExpression(binary.Left, context).UnwrapWith(context.JsonContext.JsonTokenReader);
+            var rightResult = EvaluateExpression(binary.Right, context).UnwrapWith(context.JsonContext.JsonTokenReader);
+
             if (binary.IsComparison)
             {
-                var left = EvaluateExpression(binary.Left, context) as IComparable;
-                var right = EvaluateExpression(binary.Right, context) as IComparable;
+                var left = (IComparable)leftResult;
+                var right = (IComparable)rightResult;
 
                 return binary.Operator switch
                 {
@@ -60,8 +64,8 @@ namespace Jolt.Evaluation
             }
             else
             {
-                var left = EvaluateExpression(binary.Left, context);
-                var right = EvaluateExpression(binary.Right, context);
+                var left = leftResult;
+                var right = rightResult;
 
                 if (left is null || right is null)
                 {
@@ -164,10 +168,13 @@ namespace Jolt.Evaluation
         private object? ExecuteMethodCall(MethodCallExpression call, EvaluationContext context)
         {
             var actualParameterValues = new List<object>();
-
-            foreach(var parameter in call.ParameterValues)
+            
+            for(var i = 0; i < call.ParameterValues.Length; i++)
             {
-                var value = EvaluateExpression(parameter, context);
+                var parameter = call.ParameterValues[i];
+                var currentFormalParameter = call.Signature.Parameters[i];
+
+                var value = currentFormalParameter.IsLazyEvaluated ? parameter : EvaluateExpression(parameter, context);
 
                 actualParameterValues.Add(value);
             }
@@ -190,7 +197,7 @@ namespace Jolt.Evaluation
 
             if (typeof(IEnumerable<IJsonToken>).IsAssignableFrom(resultValue?.GetType()))
             {
-                resultValue = context.Context.JsonTokenReader.CreateArrayFrom((IEnumerable<IJsonToken>)resultValue);
+                resultValue = context.JsonContext.JsonTokenReader.CreateArrayFrom((IEnumerable<IJsonToken>)resultValue);
             }
 
             if (context.Mode == EvaluationMode.PropertyName)
@@ -216,9 +223,9 @@ namespace Jolt.Evaluation
             }
             else if (method.CallType == CallType.Instance)
             {
-                var methodInfo = context.Context.GetType().GetMethod(method.Name);
+                var methodInfo = context.JsonContext.GetType().GetMethod(method.Name);
 
-                return methodInfo.Invoke(context.Context, actualParameterValues.ToArray());
+                return methodInfo.Invoke(context.JsonContext, actualParameterValues.ToArray());
             }
 
             throw new JoltExecutionException($"Unable to invoke method with unknown call type '{method.CallType}'");

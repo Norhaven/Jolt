@@ -194,7 +194,8 @@ namespace Jolt.Parsing
         {
             methodCall = default;
 
-            if (!reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.StartOfMethodCall))
+            if (!reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.StartOfMethodCall || 
+                                               x.Category == ExpressionTokenCategory.StartOfPipedMethodCall))
             {
                 return false;
             }
@@ -211,32 +212,46 @@ namespace Jolt.Parsing
 
             var actualParameters = new List<Expression>();
 
-            do
+            if (reader.CurrentToken.Category != ExpressionTokenCategory.EndOfMethodCallAndParameters)
             {
-                if (!TryParseExpression(reader, referenceResolver, out var actualValue))
+                do
                 {
-                    return false;
-                }
+                    if (!TryParseExpression(reader, referenceResolver, out var actualValue))
+                    {
+                        return false;
+                    }
 
-                actualParameters.Add(actualValue);
+                    actualParameters.Add(actualValue);
 
-                if (reader.CurrentToken.Category == ExpressionTokenCategory.EndOfMethodCallAndParameters)
-                {
-                    break;
+                    if (reader.CurrentToken.Category == ExpressionTokenCategory.EndOfMethodCallAndParameters)
+                    {
+                        break;
+                    }
                 }
+                while (reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.ParameterSeparator));
             }
-            while (!reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.ParameterSeparator));
 
             if (!reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.EndOfMethodCallAndParameters))
             {
                 return false;
-            }
+            }            
 
             var methodSignature = referenceResolver.GetMethod(potentiallyQualifiedMethodName.Value);
 
             if (reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.GeneratedNameIdentifier, out var generatedName))
             {
                 methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), generatedName.Value);
+            }
+            else if (reader.CurrentToken?.Category == ExpressionTokenCategory.StartOfPipedMethodCall)
+            {
+                if (!TryParseMethod(reader, referenceResolver, out var pipedMethodCall))
+                {
+                    throw new JoltParsingException("Expected piped method call but could not complete parsing it");
+                }
+
+                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), default);
+
+                methodCall = pipedMethodCall.AddParameter(methodCall);
             }
             else
             {

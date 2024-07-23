@@ -16,7 +16,7 @@ namespace Jolt.Evaluation
 
         public ReferenceResolver(IEnumerable<MethodSignature>? thirdPartyMethods = null)
         {
-            _standardMethods = Registrar.RegisterStandardLibrary().ToArray();
+            _standardMethods = Registrar.GetStandardLibraryRegistrations().ToArray();
             _thirdPartyMethods = thirdPartyMethods?.ToArray() ?? Array.Empty<MethodSignature>();
             _availableMethods = _standardMethods.Concat(_thirdPartyMethods).ToLookup(x => x.Alias);
         }

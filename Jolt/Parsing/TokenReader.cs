@@ -67,7 +67,20 @@ namespace Jolt.Parsing
 
                     stream.ConsumeCurrent();
 
-                    yield return TokenUntilEnd(stream, ExpressionTokenCategory.GeneratedNameIdentifier);
+                    // This could be a piped method call (if on the value side) or a
+                    // generated property name (if on the key side), so let's figure it out here.
+
+                    if (stream.CurrentToken == ExpressionToken.Hash)
+                    {   
+                        yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfPipedMethodCall);
+                        yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.Identifier, ExpressionToken.OpenParentheses);
+                        yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfMethodParameters);
+                        yield return TokenFromCurrent(stream, ExpressionTokenCategory.EndOfMethodCallAndParameters);
+                    }
+                    else
+                    {
+                        yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.GeneratedNameIdentifier, ExpressionToken.Comma, ExpressionToken.CloseParentheses);
+                    }
                 }
                 else if (stream.CurrentToken == ExpressionToken.SingleQuote)
                 {
@@ -181,9 +194,12 @@ namespace Jolt.Parsing
         {
             if (!stream.TryConsumeUntil(x => tokens.Contains(x), out var consumedTokens))
             {
-                var expectedCharacters = string.Join(", ", tokens);
+                if (!stream.IsCompleted)
+                {
+                    var expectedCharacters = string.Join(", ", tokens);
 
-                throw new JoltParsingException($"Unable to locate expected character(s) '{expectedCharacters}' in expression");
+                    throw new JoltParsingException($"Unable to locate expected character(s) '{expectedCharacters}' in expression");
+                }
             }
 
             return new ExpressionToken(new string(consumedTokens), category);
