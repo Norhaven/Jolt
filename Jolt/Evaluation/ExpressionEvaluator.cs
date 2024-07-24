@@ -6,6 +6,7 @@ using Jolt.Structure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace Jolt.Evaluation
@@ -217,13 +218,13 @@ namespace Jolt.Evaluation
             if (method.CallType == CallType.Static)
             {
                 var type = Type.GetType($"{method.TypeName}, {method.Assembly}");
-                var methodInfo = type.GetMethod(method.Name);
+                var methodInfo = type.GetMethod(method.Name, BindingFlags.Public | BindingFlags.Static);
 
                 return methodInfo.Invoke(null, actualParameterValues.ToArray());
             }
             else if (method.CallType == CallType.Instance)
             {
-                var methodInfo = context.JsonContext.GetType().GetMethod(method.Name);
+                var methodInfo = context.JsonContext.GetType().GetMethod(method.Name, BindingFlags.Public | BindingFlags.Instance);
 
                 return methodInfo.Invoke(context.JsonContext, actualParameterValues.ToArray());
             }

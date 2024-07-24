@@ -22,5 +22,10 @@ namespace Jolt.Extensions
 
             return value;
         }
+
+        public static IJsonToken? CreateTokenFrom(this EvaluationContext context, object? value)
+        {
+            return context.JsonContext.JsonTokenReader.CreateTokenFrom(value);
+        }
     }
 }

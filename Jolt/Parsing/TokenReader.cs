@@ -1,4 +1,5 @@
-﻿using Jolt.Exceptions;
+﻿using Jolt.Evaluation;
+using Jolt.Exceptions;
 using Jolt.Extensions;
 using System;
 using System.Collections.Generic;
@@ -31,7 +32,7 @@ namespace Jolt.Parsing
             return stream.CurrentToken == ExpressionToken.Hash;
         }
 
-        public IEnumerable<ExpressionToken> ReadToEnd(string expression)
+        public IEnumerable<ExpressionToken> ReadToEnd(string expression, EvaluationMode mode)
         {
             if (string.IsNullOrWhiteSpace(expression))
             {
@@ -75,11 +76,24 @@ namespace Jolt.Parsing
                         yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfPipedMethodCall);
                         yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.Identifier, ExpressionToken.OpenParentheses);
                         yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfMethodParameters);
-                        yield return TokenFromCurrent(stream, ExpressionTokenCategory.EndOfMethodCallAndParameters);
                     }
                     else
                     {
-                        yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.GeneratedNameIdentifier, ExpressionToken.Comma, ExpressionToken.CloseParentheses);
+                        if (mode == EvaluationMode.PropertyValue)
+                        {
+                            throw new JoltParsingException($"Expected a '#' character to begin a piped method but found character '{stream.CurrentToken}' at position '{stream.Position}'");
+                        }
+
+                        if (stream.CurrentToken == ExpressionToken.SingleQuote)
+                        {
+                            stream.ConsumeCurrent();
+
+                            yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.GeneratedNameIdentifier, ExpressionToken.SingleQuote);
+                        }
+                        else
+                        {
+                            throw new JoltParsingException($"The property key must resolve to a string literal surrounded with single quote marks, but found token '{stream.CurrentToken}' instead");
+                        }
                     }
                 }
                 else if (stream.CurrentToken == ExpressionToken.SingleQuote)

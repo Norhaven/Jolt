@@ -5,6 +5,7 @@ using Jolt.Extensions;
 using Jolt.Structure;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -195,7 +196,7 @@ namespace Jolt.Parsing
             methodCall = default;
 
             if (!reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.StartOfMethodCall || 
-                                               x.Category == ExpressionTokenCategory.StartOfPipedMethodCall))
+                                                    x.Category == ExpressionTokenCategory.StartOfPipedMethodCall))
             {
                 return false;
             }
@@ -249,9 +250,14 @@ namespace Jolt.Parsing
                     throw new JoltParsingException("Expected piped method call but could not complete parsing it");
                 }
 
+                // We're piping the initial method call results into the first argument of the target method,
+                // so we need to switch the evaluation order around a little bit.
+
                 methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), default);
 
-                methodCall = pipedMethodCall.AddParameter(methodCall);
+                var updatedParameters = new[] { methodCall }.Concat(pipedMethodCall.ParameterValues);
+
+                methodCall = pipedMethodCall.WithParameters(updatedParameters);
             }
             else
             {

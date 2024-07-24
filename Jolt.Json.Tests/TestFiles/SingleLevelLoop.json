@@ -1,5 +1,5 @@
 ﻿{
-  "#loop($.array)->Array": [
+  "#loop($.array)->'Array'": [
     {
       "ArrayElementId": "#loopValueOf($.arrayElementId)",
       "GlobalId": "#valueOf($.integerLiteral)"

@@ -85,7 +85,7 @@ namespace Jolt
 
         private EvaluationResult? TransformExpression(EvaluationToken token, string expressionText, EvaluationMode evaluationMode, Stack<IJsonToken> closureSources)
         {
-            var actualTokens = _context.TokenReader.ReadToEnd(expressionText);
+            var actualTokens = _context.TokenReader.ReadToEnd(expressionText, evaluationMode);
 
             if (!_context.ExpressionParser.TryParseExpression(actualTokens, _context.ReferenceResolver, out var expression))
             {

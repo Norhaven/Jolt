@@ -8,6 +8,8 @@ namespace Jolt.Structure
     {
         IJsonToken? this[int index] { get; set; }
 
+        int Length { get; }
+
         IJsonToken? RemoveAt(int index);
         void Add(IJsonToken? token);
     }

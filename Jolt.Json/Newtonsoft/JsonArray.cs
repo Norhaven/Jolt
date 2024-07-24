@@ -18,6 +18,8 @@ namespace Jolt.Json.Newtonsoft
             set => _arrayElements[index] = value;
         }
 
+        public int Length => _arrayElements.Count;
+
         public JsonArray(JToken? token) 
             : base(token)
         {

@@ -19,11 +19,9 @@ namespace Jolt.Expressions
             GeneratedName = generatedName;
         }
 
-        public MethodCallExpression AddParameter(Expression parameter)
+        public MethodCallExpression WithParameters(IEnumerable<Expression> parameters)
         {
-            var updatedParameters = ParameterValues.Concat(new[] { parameter }).ToArray();
-
-            return new MethodCallExpression(Signature, updatedParameters, GeneratedName);
+            return new MethodCallExpression(Signature, parameters.ToArray(), GeneratedName);
         }
     }
 }

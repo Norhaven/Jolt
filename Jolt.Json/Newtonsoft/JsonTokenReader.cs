@@ -14,7 +14,14 @@ namespace Jolt.Json.Newtonsoft
 
             foreach (var token in tokens)
             {
-                array.Add(JToken.Parse(token.ToString()));
+                if (token is IJsonValue value)
+                {
+                    array.Add(value.AsObject<object>());
+                }
+                else
+                {
+                    array.Add(JToken.Parse(token.ToString()));
+                }
             }
 
             return JsonToken.FromObject(array);

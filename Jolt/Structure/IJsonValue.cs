@@ -8,6 +8,8 @@ namespace Jolt.Structure
     {
         JsonValueType ValueType { get; }
 
+        bool IsObject<T>();
+
         T AsObject<T>();
     }
 }

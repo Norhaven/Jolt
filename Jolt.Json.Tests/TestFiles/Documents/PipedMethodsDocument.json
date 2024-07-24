@@ -3,5 +3,7 @@
   "integerText": "1",
   "integerLiteral": 1,
   "doubleLiteral": 1.123,
-  "empty": null
+  "empty": null,
+  "array": [ 1, 2, 3 ],
+  "stringArray": [ "one", "two", "three" ]
 }

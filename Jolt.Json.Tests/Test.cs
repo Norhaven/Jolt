@@ -65,6 +65,12 @@ public abstract class Test
         public const string Empty = "Empty";
         public const string TrueResult = "TrueResult";
         public const string FalseResult = "FalseResult";
+        public const string Length = "Length";
+        public const string StringContains = "StringContains";
+        public const string RoundedValue = "RoundedValue";
+        public const string Sum = "Sum";
+        public const string StringJoin = "StringJoin";
+        public const string IntegerJoin = "IntegerJoin";
     }
 
     protected readonly string _singleLevelDocument;

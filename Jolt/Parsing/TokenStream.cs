@@ -72,6 +72,8 @@ namespace Jolt.Parsing
                 collectedTokens.Add(_enumerator.Current);
             }
 
+            tokens = collectedTokens.ToArray();
+
             _isCompleted = true;
             return false;
         }
