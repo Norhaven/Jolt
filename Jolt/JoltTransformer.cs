@@ -52,14 +52,14 @@ namespace Jolt
                 {
                     foreach(var property in obj)
                     {
-                        pendingNodes.Enqueue(new EvaluationToken(property.Key, default, current.CurrentTransformerToken, property.Value));
+                        pendingNodes.Enqueue(new EvaluationToken(property.Key, default, current.CurrentTransformerToken, property.Value, token.Index));
                     }
                 }
                 else if (current.CurrentTransformerToken is IJsonArray array)
                 {
                     foreach(var element in array)
                     {
-                        pendingNodes.Enqueue(new EvaluationToken(current.PropertyName, default, current.CurrentTransformerToken, element));
+                        pendingNodes.Enqueue(new EvaluationToken(current.PropertyName, default, current.CurrentTransformerToken, element, token.Index));
                     }
                 }
                 else if (current.CurrentTransformerToken is IJsonValue value && value.ValueType == JsonValueType.String)

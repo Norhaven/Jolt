@@ -81,6 +81,7 @@ public abstract class Test
         public const string IsDouble = "IsDouble";
         public const string IsBoolean = "IsBoolean";
         public const string IsArray = "IsArray";
+        public const string Index = "Index";
     }
 
     protected readonly string _singleLevelDocument;

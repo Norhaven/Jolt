@@ -11,13 +11,15 @@ namespace Jolt.Evaluation
         public string ResolvedPropertyName { get; set; }
         public IJsonToken? ParentToken { get; }
         public IJsonToken CurrentTransformerToken { get; }
+        public int Index { get; }
 
-        public EvaluationToken(string propertyName, string resolvedPropertyName, IJsonToken? parentToken, IJsonToken currentTransformerToken)
+        public EvaluationToken(string propertyName, string resolvedPropertyName, IJsonToken? parentToken, IJsonToken currentTransformerToken, int index = 0)
         {
             PropertyName = propertyName;
             ResolvedPropertyName = resolvedPropertyName;
             ParentToken = parentToken;
             CurrentTransformerToken = currentTransformerToken;
+            Index = index;
         }
     }
 }

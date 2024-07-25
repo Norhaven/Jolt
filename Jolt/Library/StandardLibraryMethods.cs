@@ -108,18 +108,22 @@ namespace Jolt.Library
 
             var contentTemplate = transformerArray.RemoveAt(0);
 
+            var index = 0;
+
             foreach (var propertyOrElement in closestViableNode.AsArray() ?? Enumerable.Empty<IJsonToken>())
             {
                 var templateCopy = contentTemplate.Copy();
                 var propertyName = context.Token.ResolvedPropertyName ?? context.Token.PropertyName;
 
-                var templateEvaluationToken = new EvaluationToken(propertyName, default, transformerArray, templateCopy);
+                var templateEvaluationToken = new EvaluationToken(propertyName, default, transformerArray, templateCopy, index);
 
                 context.ClosureSources.Push(propertyOrElement);
 
                 yield return context.Transform(templateEvaluationToken, context.ClosureSources);
                 
                 context.ClosureSources.Pop();
+
+                index++;
             }
         }
 
@@ -135,6 +139,12 @@ namespace Jolt.Library
         public static IJsonToken? LoopValue(EvaluationContext context)
         {
             return context.ClosureSources.Peek();
+        }
+
+        [JoltLibraryMethod("loopIndex")]
+        public static IJsonToken? LoopIndex(EvaluationContext context)
+        {
+            return context.CreateTokenFrom(context.Token.Index);
         }
 
         [JoltLibraryMethod("length")]

@@ -2,7 +2,8 @@
   "#loop($.array)->'Array'": [
     {
       "ArrayElementId": "#loopValueOf($.arrayElementId)",
-      "GlobalId": "#valueOf($.integerLiteral)"
+      "GlobalId": "#valueOf($.integerLiteral)",
+      "Index": "#loopIndex()"
     }
   ]
 }
