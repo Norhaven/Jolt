@@ -15,6 +15,11 @@ namespace Jolt.Extensions
                 return result.TransformedToken.UnwrapWith(reader);
             }
 
+            if (value is IJsonArray array)
+            {
+                return array;
+            }
+
             if (value is IJsonToken token)
             {
                 return token.AsValue().AsObject<object>();

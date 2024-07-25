@@ -92,5 +92,10 @@ namespace Jolt.Json.DotNet
 
             return builder.ToString();
         }
+
+        public override bool IsQueryPath(string path)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -24,6 +24,8 @@ namespace Jolt.Structure
             return parent ?? sourceNode;
         }
 
+        public abstract bool IsQueryPath(string path);
+
         public abstract IJsonToken? SelectNodeAtPath(Stack<IJsonToken> closureSources, string path, JsonQueryMode queryMode);
     }
 }

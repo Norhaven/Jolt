@@ -24,57 +24,44 @@ namespace Jolt.Parsing
         }
 
         public bool TryParseExpression(IEnumerable<ExpressionToken> tokens, IReferenceResolver referenceResolver, out Expression? expression) => TryParseExpression(new ExpressionReader(tokens), referenceResolver, out expression);
-
         public bool TryParseLiteral(IEnumerable<ExpressionToken> tokens, out LiteralExpression? literal) => TryParseLiteral(new ExpressionReader(tokens), out literal);
-        
         public bool TryParseMethod(IEnumerable<ExpressionToken> tokens, IReferenceResolver referenceResolver, out MethodCallExpression? methodCall) => TryParseMethod(new ExpressionReader(tokens), referenceResolver, out methodCall);
-
         public bool TryParsePath(IEnumerable<ExpressionToken> tokens, out PathExpression? path) => TryParsePath(new ExpressionReader(tokens), out path);
-
-        private bool TryParseExpression(ExpressionReader reader, IReferenceResolver referenceResolver, out Expression? expression)
+                
+        private bool TryParseExpression(ExpressionReader reader, IReferenceResolver referenceResolver, out Expression expression)
         {
-            expression = default;
+            Expression ReadNextAtom(ExpressionReader reader)
+            {
+                if (reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.OpenParenthesesGroup))
+                {
+                    if (!TryParseExpression(reader, referenceResolver, out var parenthesizedExpression))
+                    {
+                        throw new JoltParsingException($"Unable to parse");
+                    }
 
-            var isParsed = false;
-            
-            // Parse the unary expressions first and then, if successful,
-            // see if it's part of a larger binary expression.
+                    if (!reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.CloseParenthesesGroup))
+                    {
+                        throw new JoltParsingException($"Unable to close parens");
+                    }
 
-            if (TryParseMethod(reader, referenceResolver, out var method))
-            {
-                expression = method;
-                isParsed = true;
-            }
-            else if (TryParsePath(reader, out var path))
-            {
-                // Paths are only valid within a unary context and can't be
-                // used as a part of a binary expression by themselves.
+                    return parenthesizedExpression;
+                }
+                else if (TryParseMethod(reader, referenceResolver, out var method))
+                {
+                    return method;
+                }
+                else if (TryParsePath(reader, out var path))
+                {
+                    return path;
+                }
+                else if (TryParseLiteral(reader, out var literal))
+                {
+                    return literal;
+                }
 
-                expression = path;
-                return true;
-            }
-            else if (TryParseLiteral(reader, out var literal))
-            {
-                expression = literal;
-                isParsed = true;
-            }
-            
-            if (!isParsed)
-            {
-                return false;
-            }
-
-            if (TryParseComparisonOrMath(reader, expression, referenceResolver, out var comparison))
-            {
-                expression = comparison;
-                return true;
+                throw new JoltParsingException($"Unable to get next atom starting with token '{reader.CurrentToken}'");
             }
 
-            return isParsed;
-        }
-
-        private bool TryParseComparisonOrMath(ExpressionReader reader, Expression leftSide, IReferenceResolver referenceResolver, out Expression rightSide)
-        {
             int GetOperatorPrecedence(Operator @operator)
             {
                 return @operator switch
@@ -105,20 +92,7 @@ namespace Jolt.Parsing
 
                     reader.ConsumeCurrent();
 
-                    Expression rightExpression = default;
-
-                    if (TryParseMethod(reader, referenceResolver, out var methodCall))
-                    {
-                        rightExpression = methodCall;
-                    }
-                    else if (TryParseLiteral(reader, out var literal))
-                    {
-                        rightExpression = literal;
-                    }
-                    else
-                    {
-                        throw new JoltParsingException($"Unable to parse the right hand side of an expression with operator '{@operator}'");
-                    }
+                    var rightExpression = ReadNextAtom(reader);
 
                     lookahead = ToOperator(reader.CurrentToken);
                     lookaheadPrecedence = GetOperatorPrecedence(lookahead);
@@ -157,16 +131,9 @@ namespace Jolt.Parsing
                 };
             }
 
-            rightSide = default;
+            var leftExpression = ReadNextAtom(reader);
 
-            var @operator = ToOperator(reader.CurrentToken);
-
-            if (@operator == Operator.Unknown)
-            {
-                return false;
-            }
-
-            rightSide = ParsePrecedenceExpression(reader, leftSide, 0);
+            expression = ParsePrecedenceExpression(reader, leftExpression, 0);
 
             return true;
         }
@@ -213,7 +180,7 @@ namespace Jolt.Parsing
 
             var actualParameters = new List<Expression>();
 
-            if (reader.CurrentToken.Category != ExpressionTokenCategory.EndOfMethodCallAndParameters)
+            if (reader.CurrentToken.Category != ExpressionTokenCategory.CloseParenthesesGroup)
             {
                 do
                 {
@@ -224,7 +191,7 @@ namespace Jolt.Parsing
 
                     actualParameters.Add(actualValue);
 
-                    if (reader.CurrentToken.Category == ExpressionTokenCategory.EndOfMethodCallAndParameters)
+                    if (reader.CurrentToken.Category == ExpressionTokenCategory.CloseParenthesesGroup)
                     {
                         break;
                     }
@@ -232,7 +199,7 @@ namespace Jolt.Parsing
                 while (reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.ParameterSeparator));
             }
 
-            if (!reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.EndOfMethodCallAndParameters))
+            if (!reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.CloseParenthesesGroup))
             {
                 return false;
             }            

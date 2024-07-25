@@ -1,5 +1,6 @@
 ﻿{
   "Equation": "#valueOf($.mathExpression)",
   "LiteralEquation": "2 + 3 * 4 + 5 = 19",
-  "Eval": "#eval(2 + 3 * 4 + 5 = 19)"
+  "Eval": "#eval('2 + 3 * 4 + 5 = 19')",
+  "GroupedEquation": "#eval(#valueOf($.groupedMathExpression)) + 5 = 30"
 }

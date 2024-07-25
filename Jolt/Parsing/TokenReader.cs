@@ -49,9 +49,13 @@ namespace Jolt.Parsing
                     yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.Identifier, ExpressionToken.OpenParentheses);
                     yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfMethodParameters);
                 }
+                else if (stream.CurrentToken == ExpressionToken.OpenParentheses)
+                {
+                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.OpenParenthesesGroup);
+                }
                 else if (stream.CurrentToken == ExpressionToken.CloseParentheses)
                 {
-                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.EndOfMethodCallAndParameters);
+                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.CloseParenthesesGroup);
                 }
                 else if (stream.CurrentToken == ExpressionToken.Comma)
                 {
@@ -198,7 +202,10 @@ namespace Jolt.Parsing
         {
             if (!stream.TryConsumeUntil(x => !isMatch(x), out var consumedTokens))
             {
-                throw new JoltParsingException($"Unable to locate expected character(s) in expression");
+                if (!stream.IsCompleted)
+                {
+                    throw new JoltParsingException($"Unable to locate expected character(s) in expression");
+                }
             }
 
             return new ExpressionToken(new string(consumedTokens), category);

@@ -1,3 +1,4 @@
 ﻿{
-	"mathExpression": "2 + 3 * 4 + 5 = 19"
+	"mathExpression": "2 + 3 * 4 + 5 = 19",
+	"groupedMathExpression": "(2 + 3) * (4 + 6) / 2"
 }

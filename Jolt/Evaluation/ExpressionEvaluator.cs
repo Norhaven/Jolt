@@ -127,6 +127,7 @@ namespace Jolt.Evaluation
                     };
                 }
 
+
                 throw new JoltExecutionException($"Unable to perform math with mismatched types in expression '{left?.GetType()} {binary.Operator} {right?.GetType()}");
             }
         }
@@ -176,6 +177,8 @@ namespace Jolt.Evaluation
                 var currentFormalParameter = call.Signature.Parameters[i];
 
                 var value = currentFormalParameter.IsLazyEvaluated ? parameter : EvaluateExpression(parameter, context);
+
+                value = value.UnwrapWith(context.JsonContext.JsonTokenReader);
 
                 actualParameterValues.Add(value);
             }

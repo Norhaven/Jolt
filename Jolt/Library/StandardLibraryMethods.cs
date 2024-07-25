@@ -32,7 +32,7 @@ namespace Jolt.Library
                 return context.CreateTokenFrom(tokenExists);
             }
 
-            if (pathOrValue is string path)
+            if (pathOrValue is string path && context.JsonContext.QueryPathProvider.IsQueryPath(path))
             {
                 var tokenValue = context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, path, JsonQueryMode.StartFromRoot);
 
@@ -69,9 +69,24 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("eval")]
-        public static IJsonToken? Evaluate(object? result, EvaluationContext context)
+        public static EvaluationResult? Evaluate(string pathOrLiteral, EvaluationContext context)
         {
-            return context.CreateTokenFrom(result);
+            var actualTokens = context.JsonContext.TokenReader.ReadToEnd(pathOrLiteral, context.Mode);
+
+            if (!context.JsonContext.ExpressionParser.TryParseExpression(actualTokens, context.JsonContext.ReferenceResolver, out var expression))
+            {
+                throw new JoltExecutionException($"Unable to parse expression within #eval call with path or literal '{pathOrLiteral}'");
+            }
+
+            var evaluationContext = new EvaluationContext(
+                context.Mode,
+                expression,
+                context.JsonContext,
+                context.Token,
+                context.ClosureSources,
+                context.Transform);
+
+            return context.JsonContext.ExpressionEvaluator.Evaluate(evaluationContext);
         }
 
         [JoltLibraryMethod("loop")]

@@ -71,6 +71,7 @@ public abstract class Test
         public const string Sum = "Sum";
         public const string StringJoin = "StringJoin";
         public const string IntegerJoin = "IntegerJoin";
+        public const string GroupedEquation = "GroupedEquation";
     }
 
     protected readonly string _singleLevelDocument;

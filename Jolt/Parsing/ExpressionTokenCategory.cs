@@ -12,7 +12,6 @@ namespace Jolt.Parsing
         StartOfPipedMethodCall,
         StartOfMethodParameters,
         ParameterSeparator,
-        EndOfMethodCallAndParameters,
         StringLiteral,
         NumericLiteral,
         BooleanLiteral,
@@ -27,6 +26,8 @@ namespace Jolt.Parsing
         Subtraction,
         Multiplication,
         Division,
-        NotEqualComparison
+        NotEqualComparison,
+        OpenParenthesesGroup,
+        CloseParenthesesGroup
     }
 }
