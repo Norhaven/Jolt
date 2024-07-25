@@ -3,7 +3,10 @@
   "integerText": "1",
   "integerLiteral": 1,
   "doubleLiteral": 1.123,
+  "booleanText": "true",
+  "booleanLiteral": true,
   "empty": null,
   "array": [ 1, 2, 3 ],
-  "stringArray": [ "one", "two", "three" ]
+  "stringArray": [ "one", "two", "three" ],
+  "joinedStringLiteral": "1,2,3"
 }

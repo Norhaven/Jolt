@@ -206,6 +206,11 @@ namespace Jolt.Parsing
 
             var methodSignature = referenceResolver.GetMethod(potentiallyQualifiedMethodName.Value);
 
+            if (methodSignature is null)
+            {
+                throw new JoltParsingException($"Unable to find method implementation for unknown method '{potentiallyQualifiedMethodName.Value}'");
+            }
+
             if (reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.GeneratedNameIdentifier, out var generatedName))
             {
                 methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), generatedName.Value);

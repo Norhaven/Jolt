@@ -182,20 +182,42 @@ namespace Jolt.Library
             return context.CreateTokenFrom(rounded);
         }
 
+        [JoltLibraryMethod("max")]
+        public static IJsonToken? Maximum(object? value, EvaluationContext context)
+        {
+            return AsIntegerOrFloatingPoint(value, x => x.Max(), x => x.Max(), context);
+        }
+
+        [JoltLibraryMethod("min")]
+        public static IJsonToken? Minimum(object? value, EvaluationContext context)
+        {
+            return AsIntegerOrFloatingPoint(value, x => x.Min(), x => x.Min(), context);
+        }
+
         [JoltLibraryMethod("sum")]
         public static IJsonToken? Sum(object? value, EvaluationContext context)
         {
-            var sum = value switch
+            return AsIntegerOrFloatingPoint(value, x => x.Sum(), x => x.Sum(), context);
+        }
+
+        [JoltLibraryMethod("average")]
+        public static IJsonToken? Average(object? value, EvaluationContext context)
+        {
+            if (value is string text && context.JsonContext.QueryPathProvider.IsQueryPath(text))
             {
-                IEnumerable<int> integers => integers.Sum(),
-                IEnumerable<double> doubles => doubles.Sum(),
-                IJsonArray array when array.AllElementsAreOfTypes(typeof(int), typeof(long)) => array.Sum(x => x.AsValue().AsObject<long>()),
-                IJsonArray array when array.AllElementsAreOfType<double>() => array.Sum(x => x.AsValue().AsObject<double>()),
-                IJsonArray array when array.AllElementsAreOfTypes(typeof(int), typeof(long), typeof(double)) => array.Sum(x => (double)x.AsValue().AsObject<object>()),
-                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to sum for unsupported object type '{value?.GetType()}'")
+                value = ValueOf(text, context);
+            }
+
+            var average = value switch
+            {
+                IEnumerable<int> integers => integers.Average(),
+                IEnumerable<double> doubles => doubles.Average(),
+                IJsonArray array when array.IsOnlyIntegers() => array.AsSequenceOf<long>().Average(),
+                IJsonArray array when array.IsOnlyNumericPrimitives() => array.AsSequenceOf<double>().Average(),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get average for unsupported object type '{value?.GetType()}'")
             };
 
-            return context.CreateTokenFrom(sum);
+            return context.CreateTokenFrom(average);
         }
 
         [JoltLibraryMethod("joinWith")]
@@ -212,8 +234,51 @@ namespace Jolt.Library
             return context.CreateTokenFrom(joined);
         }
 
-        [JoltLibraryMethod("toInt")]
-        public static IJsonToken? ToInt(object? value, EvaluationContext context)
+        [JoltLibraryMethod("splitOn")]
+        public static IJsonToken? SplitOn(object? value, string delimiter, EvaluationContext context)
+        {
+            var split = value switch
+            {
+                string text => text.Split(delimiter),
+                IJsonValue jsonValue when jsonValue.ValueType == JsonValueType.String => jsonValue.ToTypeOf<string>().Split(delimiter),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to split with unsupported object type '{value?.GetType()}'")
+            };
+
+            return context.CreateTokenFrom(split);
+        }
+
+        [JoltLibraryMethod("isInteger")]
+        public static IJsonToken? IsInteger(object? value, EvaluationContext context)
+        {
+            return context.CreateTokenFrom(value is int || value is long);
+        }
+
+        [JoltLibraryMethod("isString")]
+        public static IJsonToken? IsString(object? value, EvaluationContext context)
+        {
+            return context.CreateTokenFrom(value is string);
+        }
+
+        [JoltLibraryMethod("isDecimal")]
+        public static IJsonToken? IsDecimal(object? value, EvaluationContext context)
+        {
+            return context.CreateTokenFrom(value is double);
+        }
+
+        [JoltLibraryMethod("isBoolean")]
+        public static IJsonToken? IsBoolean(object? value, EvaluationContext context)
+        {
+            return context.CreateTokenFrom(value is bool);
+        }
+
+        [JoltLibraryMethod("isArray")]
+        public static IJsonToken? IsArray(object? value, EvaluationContext context)
+        {
+            return context.CreateTokenFrom(value?.GetType().IsArray == true || value is IJsonArray);
+        }
+
+        [JoltLibraryMethod("toInteger")]
+        public static IJsonToken? ToInteger(object? value, EvaluationContext context)
         {
             return ConvertToType<int>(value, context);
         }
@@ -232,12 +297,45 @@ namespace Jolt.Library
             return ConvertToType<double>(value, context);
         }
 
-        [JoltLibraryMethod("toBool")]
+        [JoltLibraryMethod("toBoolean")]
         public static IJsonToken? ToBool(object? value, EvaluationContext context)
         {
             return ConvertToType<bool>(value, context);
         }
 
+        private static IJsonToken? AsIntegerOrFloatingPoint(object? value, Func<IEnumerable<long>, long?> asInt64, Func<IEnumerable<double>, double> asDouble, EvaluationContext context)
+        {
+            if (value is string text && context.JsonContext.QueryPathProvider.IsQueryPath(text))
+            {
+                value = ValueOf(text, context);
+            }
+
+            // We're separating out the integer sum from the floating point so we won't
+            // potentially get a rounding representation error by always defaulting to double.
+
+            var integerValue = value switch
+            {
+                IEnumerable<int> integers => asInt64(integers.Cast<long>()),
+                IEnumerable<long> integers => asInt64(integers),
+                IJsonArray array when array.IsOnlyIntegers() => asInt64(array.AsSequenceOf<long>()),
+                _ => null
+            };
+
+            if (integerValue != null)
+            {
+                return context.CreateTokenFrom(integerValue);
+            }
+
+            var doubleValue = value switch
+            {
+                IEnumerable<double> doubles => asDouble(doubles),
+                IJsonArray array when array.AllElementsAreOfType<double>() => asDouble(array.Select(x => x.AsValue().AsObject<double>())),
+                IJsonArray array when array.AllElementsAreOfType<int, long, double>() => asDouble(array.Select(x => (double)x.AsValue().AsObject<object>())),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get integer or floating point value for unsupported object type '{value?.GetType()}'")
+            };
+
+            return context.CreateTokenFrom(doubleValue);
+        }
         private static IJsonToken? ConvertToType<T>(object? value, EvaluationContext context)
         {
             if (value is IJsonToken token)

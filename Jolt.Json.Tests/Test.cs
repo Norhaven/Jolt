@@ -50,6 +50,7 @@ public abstract class Test
         public const string IntegerLiteral = "Integer";
         public const string StringLiteral = "String";
         public const string DoubleLiteral = "Double";
+        public const string BooleanLiteral = "Boolean";
         public const string BooleanTrueLiteral = "BooleanTrue";
         public const string BooleanFalseLiteral = "BooleanFalse";
         public const string Object = "Object";
@@ -69,9 +70,17 @@ public abstract class Test
         public const string StringContains = "StringContains";
         public const string RoundedValue = "RoundedValue";
         public const string Sum = "Sum";
+        public const string Average = "Average";
+        public const string Min = "Min";
+        public const string Max = "Max";
         public const string StringJoin = "StringJoin";
         public const string IntegerJoin = "IntegerJoin";
         public const string GroupedEquation = "GroupedEquation";
+        public const string IsInteger = "IsInteger";
+        public const string IsString = "IsString";
+        public const string IsDouble = "IsDouble";
+        public const string IsBoolean = "IsBoolean";
+        public const string IsArray = "IsArray";
     }
 
     protected readonly string _singleLevelDocument;
