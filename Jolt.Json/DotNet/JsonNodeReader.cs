@@ -15,6 +15,11 @@ namespace Jolt.Json.DotNet
             throw new NotImplementedException();
         }
 
+        public IJsonToken? CreateObjectFrom(IEnumerable<IJsonToken>? resultValue)
+        {
+            throw new NotImplementedException();
+        }
+
         public IJsonToken? CreateTokenFrom(object? value)
         {
             throw new NotImplementedException();

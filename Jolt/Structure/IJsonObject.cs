@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Jolt.Structure
 {
-    public interface IJsonObject : IJsonToken, IEnumerable<KeyValuePair<string, IJsonToken>>
+    public interface IJsonObject : IJsonToken, IEnumerable<IJsonProperty>
     {
         IJsonToken? this[string propertyName] { get; set; }
 

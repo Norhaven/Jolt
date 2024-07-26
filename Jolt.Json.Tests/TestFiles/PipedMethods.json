@@ -19,5 +19,6 @@
   "IsDouble": "#valueOf($.doubleLiteral)->#isDecimal()",
   "IsBoolean": "#valueOf($.booleanLiteral)->#isBoolean()",
   "IsArray": "#valueOf($.array)->#isArray()",
-  "Array": "#valueOf($.joinedStringLiteral)->#splitOn(',')"
+  "Array": "#valueOf($.joinedStringLiteral)->#splitOn(',')",
+  "Index": "#valueOf($.joinedStringLiteral)->#indexOf('2')"
 }

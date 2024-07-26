@@ -42,24 +42,38 @@ namespace Jolt
             {
                 var current = pendingNodes.Dequeue();
 
-                if (_context.TokenReader.StartsWithMethodCall(current.PropertyName))
+                if (!current.IsPendingValueEvaluation && _context.TokenReader.StartsWithMethodCall(current.PropertyName))
                 {
                     var result = TransformExpression(current, current.PropertyName, EvaluationMode.PropertyName, closureSources);
 
                     ApplyChangesToParent(current.ParentToken, result);
+
+                    if (result.IsValuePendingEvaluation)
+                    {
+                        var evaluationToken = new EvaluationToken(
+                            result.NewPropertyName ?? result.OriginalPropertyName,
+                            default,
+                            current.ParentToken,
+                            current.CurrentTransformerToken,
+                            current.CurrentSource,
+                            true
+                        );
+
+                        pendingNodes.Enqueue(evaluationToken);
+                    }
                 }
                 else if (current.CurrentTransformerToken is IJsonObject obj)
                 {
                     foreach(var property in obj)
                     {
-                        pendingNodes.Enqueue(new EvaluationToken(property.Key, default, current.CurrentTransformerToken, property.Value, token.Index));
+                        pendingNodes.Enqueue(new EvaluationToken(property.PropertyName, default, current.CurrentTransformerToken, property.Value, token.CurrentSource));
                     }
                 }
                 else if (current.CurrentTransformerToken is IJsonArray array)
                 {
                     foreach(var element in array)
                     {
-                        pendingNodes.Enqueue(new EvaluationToken(current.PropertyName, default, current.CurrentTransformerToken, element, token.Index));
+                        pendingNodes.Enqueue(new EvaluationToken(current.PropertyName, default, current.CurrentTransformerToken, element, token.CurrentSource));
                     }
                 }
                 else if (current.CurrentTransformerToken is IJsonValue value && value.ValueType == JsonValueType.String)

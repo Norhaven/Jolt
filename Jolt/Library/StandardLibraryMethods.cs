@@ -89,41 +89,71 @@ namespace Jolt.Library
             return context.JsonContext.ExpressionEvaluator.Evaluate(evaluationContext);
         }
 
-        [JoltLibraryMethod("loop")]
-        public static IEnumerable<IJsonToken> LoopOnArrayAtPath(string path, EvaluationContext context)
+        [JoltLibraryMethod("loop", true)]
+        public static IEnumerable<IJsonToken> LoopOnArrayOrObjectAtPath(string path, EvaluationContext context)
         {
-            if (context.Token.CurrentTransformerToken.Type != JsonTokenType.Array)
+            var token = context.Token.CurrentTransformerToken;
+
+            if (!token.Type.IsAnyOf(JsonTokenType.Array, JsonTokenType.Object))
             {
                 yield break;
             }
 
             var closestViableNode = context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, path, JsonQueryMode.StartFromClosestMatch);
 
-            if (closestViableNode?.Type != JsonTokenType.Array)
+            if (closestViableNode?.Type.IsAnyOf(JsonTokenType.Array, JsonTokenType.Object) != true)
             {
                 yield break;
             }
 
-            var transformerArray = context.Token.CurrentTransformerToken.AsArray();
+            var contentTemplate = token.Type switch
+            { 
+                JsonTokenType.Array => token.AsArray().RemoveAt(0),
+                JsonTokenType.Object => token.AsObject().Copy(),
+                _ => throw new JoltExecutionException($"Unable to locate loop content template for unsupported token type '{token.Type}'")
+            };
 
-            var contentTemplate = transformerArray.RemoveAt(0);
+            token.Clear();
 
             var index = 0;
 
-            foreach (var propertyOrElement in closestViableNode.AsArray() ?? Enumerable.Empty<IJsonToken>())
+            if (token.Type == JsonTokenType.Array)
             {
-                var templateCopy = contentTemplate.Copy();
-                var propertyName = context.Token.ResolvedPropertyName ?? context.Token.PropertyName;
+                foreach (var element in closestViableNode.AsArray() ?? Enumerable.Empty<IJsonToken>())
+                {
+                    var templateCopy = contentTemplate.Copy();
+                    var propertyName = context.Token.ResolvedPropertyName ?? context.Token.PropertyName;
+                    var currentSource = new SourceToken(index, default);
 
-                var templateEvaluationToken = new EvaluationToken(propertyName, default, transformerArray, templateCopy, index);
+                    var templateEvaluationToken = new EvaluationToken(propertyName, default, token, templateCopy, currentSource);
 
-                context.ClosureSources.Push(propertyOrElement);
+                    context.ClosureSources.Push(element);
 
-                yield return context.Transform(templateEvaluationToken, context.ClosureSources);
-                
-                context.ClosureSources.Pop();
+                    yield return context.Transform(templateEvaluationToken, context.ClosureSources);
 
-                index++;
+                    context.ClosureSources.Pop();
+
+                    index++;
+                }
+            }
+            else if (token.Type == JsonTokenType.Object)
+            {
+                foreach (var property in closestViableNode.AsObject() ?? Enumerable.Empty<IJsonProperty>())
+                {
+                    var templateCopy = contentTemplate.Copy();
+                    var propertyName = context.Token.ResolvedPropertyName ?? context.Token.PropertyName;
+                    var currentSource = new SourceToken(index, property);
+
+                    var templateEvaluationToken = new EvaluationToken(propertyName, default, token, templateCopy, currentSource);
+
+                    context.ClosureSources.Push(property.Value);
+
+                    yield return context.Transform(templateEvaluationToken, context.ClosureSources);
+
+                    context.ClosureSources.Pop();
+
+                    index++;
+                }
             }
         }
 
@@ -144,7 +174,26 @@ namespace Jolt.Library
         [JoltLibraryMethod("loopIndex")]
         public static IJsonToken? LoopIndex(EvaluationContext context)
         {
-            return context.CreateTokenFrom(context.Token.Index);
+            return context.CreateTokenFrom(context.Token.CurrentSource.Index);
+        }
+
+        [JoltLibraryMethod("loopProperty")]
+        public static IJsonToken? LoopProperty(EvaluationContext context)
+        {
+            return context.Token.CurrentSource.Property;
+        }
+
+        [JoltLibraryMethod("indexOf")]
+        public static IJsonToken? IndexOf(object? value, string searchText, EvaluationContext context)
+        {
+            var index = value switch
+            {
+                string text => text.IndexOf(searchText),
+                IJsonValue jsonValue when jsonValue.ValueType == JsonValueType.String => jsonValue.ToTypeOf<string>().IndexOf(searchText),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get index of '{searchText}' for unsupported object type '{value?.GetType()}'")
+            };
+
+            return context.CreateTokenFrom(index);
         }
 
         [JoltLibraryMethod("length")]

@@ -14,6 +14,7 @@ namespace Jolt.Structure
         IJsonValue AsValue();
         IJsonToken? SelectTokenAtPath(string path);
         IJsonToken? Copy();
+        void Clear();
         T ToTypeOf<T>();
     }
 }

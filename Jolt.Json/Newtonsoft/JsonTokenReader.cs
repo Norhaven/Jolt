@@ -1,7 +1,9 @@
-﻿using Jolt.Structure;
+﻿using Jolt.Exceptions;
+using Jolt.Structure;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Jolt.Json.Newtonsoft
@@ -25,6 +27,28 @@ namespace Jolt.Json.Newtonsoft
             }
 
             return JsonToken.FromObject(array);
+        }
+
+        public IJsonToken? CreateObjectFrom(IEnumerable<IJsonToken> tokens)
+        {
+            var obj = new JObject();
+
+            foreach(var token in tokens)
+            {
+                if (token is IJsonObject json)
+                {
+                    foreach (var property in json)
+                    {
+                        obj[property.PropertyName] = JToken.Parse(property.Value.ToString());
+                    }
+                }
+                else
+                {
+                    throw new JoltExecutionException($"Unable to create JSON object from unsupported token type '{token.Type}'");
+                }
+            }
+
+            return JsonToken.FromObject(obj);
         }
 
         public IJsonToken? CreateTokenFrom(object? value)

@@ -4,6 +4,7 @@ using Jolt.Extensions;
 using Jolt.Parsing;
 using Jolt.Structure;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -198,15 +199,38 @@ namespace Jolt.Evaluation
             }
 
             var resultValue = InvokeMethod(call.Signature, actualParameterValues, context);
-
+            
             if (typeof(IEnumerable<IJsonToken>).IsAssignableFrom(resultValue?.GetType()))
             {
-                resultValue = context.JsonContext.JsonTokenReader.CreateArrayFrom((IEnumerable<IJsonToken>)resultValue);
+                // We may have gotten a sequence of either array elements or object properties back
+                // with that call so we need to iterate over them and populate the appropriate target structure.
+
+                if (context.Token.CurrentTransformerToken.Type == JsonTokenType.Array)
+                {
+                    resultValue = context.JsonContext.JsonTokenReader.CreateArrayFrom((IEnumerable<IJsonToken>)resultValue);
+                }
+                else if (context.Token.CurrentTransformerToken.Type == JsonTokenType.Object)
+                {
+                    resultValue = context.JsonContext.JsonTokenReader.CreateObjectFrom((IEnumerable<IJsonToken>)resultValue);
+                }
             }
 
             if (context.Mode == EvaluationMode.PropertyName)
             {
-                return new EvaluationResult(context.Token.PropertyName, context.Token.ResolvedPropertyName, (IJsonToken)resultValue); 
+                // The method may have been a value generator, meaning that evaluating the property name will
+                // also cause the value for that property to be generated (e.g. the loop method) but if we're
+                // taking a look at a non-generator then this needs to be flagged when it's sent back so that
+                // the transformer follows up with evaluating the value as well and doesn't just assume that
+                // it's already happened.
+
+                if (!call.Signature.IsValueGenerator && resultValue is IJsonProperty property)
+                {
+                    return new EvaluationResult(context.Token.PropertyName, property.PropertyName, context.Token.CurrentTransformerToken, true);
+                }
+
+                var resolvedPropertyName = call.Signature.IsValueGenerator ? context.Token.ResolvedPropertyName : ((IJsonProperty)context.Token.CurrentSource.Property)?.PropertyName;
+
+                return new EvaluationResult(context.Token.PropertyName, resolvedPropertyName, (IJsonToken)resultValue); 
             }
             else if (context.Mode == EvaluationMode.PropertyValue)
             {

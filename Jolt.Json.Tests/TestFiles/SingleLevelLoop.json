@@ -5,5 +5,8 @@
       "GlobalId": "#valueOf($.integerLiteral)",
       "Index": "#loopIndex()"
     }
-  ]
+  ],
+  "#loop($.exampleBaseProperty)->'Object'": {
+    "#loopProperty()": "#loopValueOf($.value)"
+  }
 }

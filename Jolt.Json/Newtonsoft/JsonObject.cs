@@ -41,8 +41,14 @@ namespace Jolt.Json.Newtonsoft
             return propertyToken;
         }
 
-        public IEnumerator<KeyValuePair<string, IJsonToken>> GetEnumerator() => _properties.GetEnumerator();
+        public IEnumerator<IJsonProperty> GetEnumerator() => ((JObject)_token).Properties().Select(x => (IJsonProperty)FromObject(x)).GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public override void Clear()
+        {
+            _properties.Clear();
+            ((JObject)_token).RemoveAll();
+        }
     }
 }

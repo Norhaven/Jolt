@@ -40,5 +40,11 @@ namespace Jolt.Json.Newtonsoft
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public override void Clear()
+        {
+            _arrayElements?.Clear();
+            ((JArray)_token).Clear();
+        }
     }
 }

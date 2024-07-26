@@ -70,6 +70,13 @@ public class JoltJsonTransformerTests : Test
         secondElement.PropertyValueFor<int>(TargetProperty.ArrayElementId).Should().Be(Value.SecondArrayElementId, "because that was the value in the source document");
         secondElement.PropertyValueFor<int>(TargetProperty.GlobalId).Should().Be(Value.GlobalId, "because that was the value in the source document");
         secondElement.PropertyValueFor<int>(TargetProperty.Index).Should().Be(1, "because this is the index of the second element in the array");
+
+        var nestedObject = (JObject)json[TargetProperty.Object];
+
+        nestedObject.Should().NotBeNull("because the transformer looped over properties to build up a new object");
+
+        nestedObject.PropertyValueFor<int>(TargetProperty.First).Should().Be(1, "because that's the value in the related document path");
+        nestedObject.PropertyValueFor<int>(TargetProperty.Second).Should().Be(2, "because that's the value in the related document path");
     }
 
     [Fact]
@@ -148,6 +155,7 @@ public class JoltJsonTransformerTests : Test
         json.PropertyValueFor<bool>(TargetProperty.IsDouble).Should().Be(true, "because that's the type of the value");
         json.PropertyValueFor<bool>(TargetProperty.IsBoolean).Should().Be(true, "because that's the type of the value");
         json.PropertyValueFor<bool>(TargetProperty.IsArray).Should().Be(true, "because that's the type of the value");
+        json.PropertyValueFor<int>(TargetProperty.Index).Should().Be(2, "because that's the first index of the value in the string");
 
         var array = (JArray)json[TargetProperty.Array];
 

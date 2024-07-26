@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Jolt.Json.Newtonsoft
 {
-    public class JsonToken : IJsonToken
+    public abstract class JsonToken : IJsonToken
     {
         public static IJsonToken? Parse(string json)
         {
@@ -26,6 +26,7 @@ namespace Jolt.Json.Newtonsoft
             {
                 JTokenType.Object => new JsonObject(token),
                 JTokenType.Array => new JsonArray(token),
+                JTokenType.Property => new JsonProperty(token),
                 JTokenType.String => new JsonValue(token),
                 JTokenType.Integer => new JsonValue(token),
                 JTokenType.Boolean => new JsonValue(token),
@@ -54,6 +55,7 @@ namespace Jolt.Json.Newtonsoft
                 {
                     JTokenType.Object => JsonTokenType.Object,
                     JTokenType.Array => JsonTokenType.Array,
+                    JTokenType.Property => JsonTokenType.Property,
                     JTokenType.String => JsonTokenType.Value,
                     JTokenType.Integer => JsonTokenType.Value,
                     JTokenType.Boolean => JsonTokenType.Value,
@@ -63,6 +65,8 @@ namespace Jolt.Json.Newtonsoft
                 };
             }
         }
+
+        public abstract void Clear();
 
         public IJsonArray AsArray() => (JsonArray)this;
         public IJsonObject AsObject() => (JsonObject)this;

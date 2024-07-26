@@ -19,7 +19,7 @@ namespace Jolt.Library
                    let attribute = method.GetCustomAttribute<JoltLibraryMethodAttribute>()
                    where attribute != null
                    let parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, x.GetCustomAttribute<LazyEvaluationAttribute>() != null))
-                   select new MethodSignature(Assembly.GetExecutingAssembly().FullName, type.FullName, method.Name, attribute.Name, method.ReturnType, CallType.Static, true, parameters.ToArray());
+                   select new MethodSignature(Assembly.GetExecutingAssembly().FullName, type.FullName, method.Name, attribute.Name, method.ReturnType, CallType.Static, true, attribute.IsValueGenerator, parameters.ToArray());
         }
 
         public static MethodSignature GetCustomMethodRegistration(MethodRegistration registration)
@@ -38,7 +38,7 @@ namespace Jolt.Library
             var callType = method.IsStatic ? CallType.Static : CallType.Instance;
             var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false)).ToArray();
 
-            return new MethodSignature(assemblyName, typeName, methodName, methodName, method.ReturnType, callType, false, parameters);
+            return new MethodSignature(assemblyName, typeName, methodName, methodName, method.ReturnType, callType, false, false, parameters);
         }
     }
 }

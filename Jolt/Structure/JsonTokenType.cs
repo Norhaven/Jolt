@@ -7,9 +7,10 @@ namespace Jolt.Structure
     public enum JsonTokenType
     {
         Unknown = 0,
-        Object = 1,
-        Array = 2,
-        Value = 3,
-        Null = 4
+        Object,
+        Array,
+        Property,
+        Value,
+        Null
     }
 }

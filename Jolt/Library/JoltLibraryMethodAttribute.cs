@@ -7,10 +7,12 @@ namespace Jolt.Library
     internal class JoltLibraryMethodAttribute : Attribute
     {
         public string Name { get; }
+        public bool IsValueGenerator { get; }
 
-        public JoltLibraryMethodAttribute(string name)
+        public JoltLibraryMethodAttribute(string name, bool isValueGenerator = false)
         {
             Name = name;
+            IsValueGenerator = isValueGenerator;
         }
     }
 }
