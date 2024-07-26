@@ -20,6 +20,11 @@ namespace Jolt.Extensions
                 return array;
             }
 
+            if (value is IJsonObject obj)
+            {
+                return obj;
+            }
+
             if (value is IJsonToken token)
             {
                 return token.AsValue().AsObject<object>();

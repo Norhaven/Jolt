@@ -164,6 +164,25 @@ public class JoltJsonTransformerTests : Test
         array[0].Value<int>().Should().Be(1, "because that is the first element value in the source document");
         array[1].Value<int>().Should().Be(2, "because that is the second element value in the source document");
         array[2].Value<int>().Should().Be(3, "because that is the third element value in the source document");
+
+        json.PropertyValueFor<string>(TargetProperty.AppendedString).Should().Be("1.1231,2,3", "because the strings should be concatenated together");
+
+        var appendedArray = (JArray)json[TargetProperty.AppendedArray];
+
+        appendedArray.Should().NotBeNull("because both arrays exist in the source document");
+        appendedArray.Count.Should().Be(6, "because there are three elements in each array");
+        appendedArray[0].Value<string>().Should().Be("one", "because that is the first element");
+        appendedArray[1].Value<string>().Should().Be("two", "because that is the second element");
+        appendedArray[2].Value<string>().Should().Be("three", "because that is the third element");
+        appendedArray[3].Value<string>().Should().Be("one", "because that is the first element");
+        appendedArray[4].Value<string>().Should().Be("two", "because that is the second element");
+        appendedArray[5].Value<string>().Should().Be("three", "because that is the third element");
+
+        var appendedObject = (JObject)json[TargetProperty.AppendedObject];
+
+        appendedObject.Should().NotBeNull("because both objects exist in the source document");
+        appendedObject["first"].Value<int>().Should().Be(1, "because that is the value of the first property in the first object");
+        appendedObject["second"].Value<int>().Should().Be(2, "because that is the value of the second property in the second object");
     }
 
     private JObject ExecuteTestFor(string transformerJson, string documentJson) => ExecuteTestFor(transformerJson, documentJson, JObject.Parse);

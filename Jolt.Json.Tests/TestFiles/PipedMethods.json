@@ -20,5 +20,8 @@
   "IsBoolean": "#valueOf($.booleanLiteral)->#isBoolean()",
   "IsArray": "#valueOf($.array)->#isArray()",
   "Array": "#valueOf($.joinedStringLiteral)->#splitOn(',')",
-  "Index": "#valueOf($.joinedStringLiteral)->#indexOf('2')"
+  "Index": "#valueOf($.joinedStringLiteral)->#indexOf('2')",
+  "AppendedString": "#valueOf($.stringLiteral)->#append(#valueOf($.joinedStringLiteral))",
+  "AppendedArray": "#valueOf($.stringArray)->#append(#valueOf($.stringArray))",
+  "AppendedObject": "#valueOf($.firstObject)->#append(#valueOf($.secondObject))"
 }

@@ -82,6 +82,9 @@ public abstract class Test
         public const string IsBoolean = "IsBoolean";
         public const string IsArray = "IsArray";
         public const string Index = "Index";
+        public const string AppendedString = "AppendedString";
+        public const string AppendedArray = "AppendedArray";
+        public const string AppendedObject = "AppendedObject";
 
         public const string First = "first";
         public const string Second = "second";

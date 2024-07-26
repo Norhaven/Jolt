@@ -42,6 +42,10 @@ namespace Jolt.Json.Newtonsoft
                         obj[property.PropertyName] = JToken.Parse(property.Value.ToString());
                     }
                 }
+                else if (token is IJsonProperty property)
+                {
+                    obj[property.PropertyName] = JToken.Parse(property.Value.ToString());
+                }
                 else
                 {
                     throw new JoltExecutionException($"Unable to create JSON object from unsupported token type '{token.Type}'");
@@ -57,7 +61,11 @@ namespace Jolt.Json.Newtonsoft
             {
                 return JsonToken.FromObject(JValue.CreateNull());
             }
-
+            else if (value is IJsonToken token)
+            {
+                return token;
+            }
+            
             return JsonToken.FromObject(JToken.FromObject(value));
         }
 

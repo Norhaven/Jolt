@@ -8,5 +8,11 @@
   "empty": null,
   "array": [ 1, 2, 3 ],
   "stringArray": [ "one", "two", "three" ],
-  "joinedStringLiteral": "1,2,3"
+  "joinedStringLiteral": "1,2,3",
+  "firstObject": {
+    "first": 1
+  },
+  "secondObject": {
+    "second": 2
+  }
 }

@@ -306,6 +306,19 @@ namespace Jolt.Library
             return context.CreateTokenFrom(split);
         }
 
+        [JoltLibraryMethod("append")]
+        public static IJsonToken? Append(object? value, object? additionalValue, EvaluationContext context)
+        {
+            return (value, additionalValue) switch
+            {
+                (IJsonArray first, IJsonArray second) => context.JsonContext.JsonTokenReader.CreateArrayFrom(first.Concat(second).ToArray()),
+                (IJsonObject first, IJsonObject second) => context.JsonContext.JsonTokenReader.CreateObjectFrom(first.Concat(second).ToArray()),
+                (IEnumerable<object> first, IEnumerable<object> second) => context.CreateTokenFrom(first.Concat(second).ToArray()),
+                (string first, string second) => context.CreateTokenFrom($"{first}{second}"),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to append with unsupported object types '{value?.GetType()}' and '{additionalValue?.GetType()}'")
+            };
+        }
+
         [JoltLibraryMethod("isInteger")]
         public static IJsonToken? IsInteger(object? value, EvaluationContext context)
         {
