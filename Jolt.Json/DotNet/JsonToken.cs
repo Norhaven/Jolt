@@ -11,11 +11,11 @@ using NodeType = System.Text.Json.JsonValueKind;
 
 namespace Jolt.Json.DotNet
 {
-    public sealed class JsonNode : IJsonNode
+    public sealed class JsonToken 
     {
         private Node _node;
 
-        public IJsonNode? Parent => new JsonNode(_node.Parent);
+        public JsonToken? Parent => new JsonToken(_node.Parent);
 
         public string? PropertyName => _node?.GetPropertyName();
 
@@ -56,16 +56,16 @@ namespace Jolt.Json.DotNet
 
         public bool IsValue => throw new NotImplementedException();
 
-        public IJsonNode this[int index] => throw new NotImplementedException();
+        public JsonToken this[int index] => throw new NotImplementedException();
 
-        public IJsonNode this[string propertyName] => throw new NotImplementedException();
+        public JsonToken this[string propertyName] => throw new NotImplementedException();
 
-        public JsonNode(Node? node)
+        public JsonToken(Node? node)
         {
             _node = node;
         }
 
-        public IJsonNode? GetChildTemplate()
+        public JsonToken? GetChildTemplate()
         {
             if (_node is null)
             {
@@ -76,7 +76,7 @@ namespace Jolt.Json.DotNet
             {
                 var array = _node.AsArray();
                 var template = array[0];
-                var jsonNode = new JsonNode(template);
+                var jsonNode = new JsonToken(template);
 
                 array.Remove(template);
 
@@ -86,7 +86,7 @@ namespace Jolt.Json.DotNet
             return default;
         }
 
-        public void AddChild(IJsonNode? node)
+        public void AddChild(JsonToken? node)
         {
             if (node is null)
             {
@@ -97,14 +97,14 @@ namespace Jolt.Json.DotNet
             {
                 var array = _node.AsArray();
 
-                if (node is JsonNode json)
+                if (node is JsonToken json)
                 {
                     array.Add(json.UnderlyingNode);
                 }
             }
         }
 
-        public IJsonNode? Copy(string? propertyName = default)
+        public JsonToken? Copy(string? propertyName = default)
         {
             if (_node is null)
             {
@@ -119,45 +119,45 @@ namespace Jolt.Json.DotNet
                 keyValuePairs[propertyName] = Value;
             }
 
-            return new JsonNode(Node.Parse(JsonSerializer.Serialize(keyValuePairs)));
+            return new JsonToken(Node.Parse(JsonSerializer.Serialize(keyValuePairs)));
         }
 
-        public IEnumerator<IJsonNode> GetEnumerator() => CreateEnumerator();
+        public IEnumerator<JsonToken> GetEnumerator() => CreateEnumerator();
 
-        public IJsonNode SelectNodeAtPath(string path) => throw new NotImplementedException();
+        public JsonToken SelectNodeAtPath(string path) => throw new NotImplementedException();
 
         public override string ToString()
         {
             return _node.ToJsonString();
         }
 
-        IEnumerator IEnumerable.GetEnumerator() => CreateEnumerator();
+        //IEnumerator IEnumerable.GetEnumerator() => CreateEnumerator();
 
-        private IEnumerator<IJsonNode> CreateEnumerator()
+        private IEnumerator<JsonToken> CreateEnumerator()
         {
             if (Type == JsonNodeType.Array)
             {
-                return _node.AsArray().Select(x => new JsonNode(x)).GetEnumerator();
+                return _node.AsArray().Select(x => new JsonToken(x)).GetEnumerator();
             }
             else if (Type == JsonNodeType.Object)
             {
-                return _node.AsObject().Select(x => new JsonNode(x.Value)).GetEnumerator();
+                return _node.AsObject().Select(x => new JsonToken(x.Value)).GetEnumerator();
             }
 
-            return Enumerable.Empty<IJsonNode>().GetEnumerator();
+            return Enumerable.Empty<JsonToken>().GetEnumerator();
         }
 
-        public IJsonNode? ApplyChange(object? value)
+        public JsonToken? ApplyChange(object? value)
         {
             throw new NotImplementedException();
         }
 
-        public IJsonNode? ApplyChange(string propertyName, object? value)
+        public JsonToken? ApplyChange(string propertyName, object? value)
         {
             throw new NotImplementedException();
         }
 
-        public IJsonNode? ApplyChange(IJsonNode? node)
+        public JsonToken? ApplyChange(JsonToken? node)
         {
             throw new NotImplementedException();
         }
