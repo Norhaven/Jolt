@@ -251,7 +251,17 @@ namespace Jolt.Evaluation
             }
             else if (method.CallType == CallType.Instance)
             {
-                var methodInfo = context.JsonContext.GetType().GetMethod(method.Name, BindingFlags.Public | BindingFlags.Instance);
+                if (context.JsonContext.MethodContext is null)
+                {
+                    throw new JoltExecutionException($"Unable to execute external instance method '{method.Name}', no method context was provided");
+                }
+
+                var methodInfo = context.JsonContext.MethodContext.GetType().GetMethod(method.Name, BindingFlags.Public | BindingFlags.Instance);
+
+                if (methodInfo is null)
+                {
+                    throw new JoltExecutionException($"Unable to locate instance method '{method.Name}' on type '{context.JsonContext.MethodContext.GetType().FullName}'");
+                }
 
                 return methodInfo.Invoke(context.JsonContext, actualParameterValues.ToArray());
             }

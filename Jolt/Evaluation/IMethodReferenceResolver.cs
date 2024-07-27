@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Jolt.Evaluation
 {
-    public interface IReferenceResolver
+    public interface IMethodReferenceResolver
     {
         MethodSignature? GetMethod(string methodName);
     }

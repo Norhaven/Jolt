@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Jolt.Library
 {
-    public static class Registrar
+    internal static class Registrar
     {
         public static IEnumerable<MethodSignature> GetStandardLibraryRegistrations()
         {
@@ -22,7 +22,12 @@ namespace Jolt.Library
                    select new MethodSignature(Assembly.GetExecutingAssembly().FullName, type.FullName, method.Name, attribute.Name, method.ReturnType, CallType.Static, true, attribute.IsValueGenerator, parameters.ToArray());
         }
 
-        public static MethodSignature GetCustomMethodRegistration(MethodRegistration registration)
+        public static IEnumerable<MethodSignature> GetExternalMethodRegistrations(IEnumerable<MethodRegistration> registrations)
+        {
+            return registrations.Select(x => GetExternalMethodRegistration(x));
+        }
+
+        public static MethodSignature GetExternalMethodRegistration(MethodRegistration registration)
         {
             var hasAssemblyName = registration.FullyQualifiedTypeName.Contains(',');
 

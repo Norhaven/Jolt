@@ -5,13 +5,14 @@ using Jolt.Structure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace Jolt
 {
     public class JoltContext : IJsonContext
     {
-        public string JsonTransformer { get; }
+        public string JsonTransformer { get; private set; }
 
         public IExpressionParser ExpressionParser { get; }
 
@@ -23,9 +24,11 @@ namespace Jolt
 
         public IQueryPathProvider QueryPathProvider { get; }
 
-        public MethodRegistration[] MethodRegistrations { get; }
+        public MethodRegistration[] MethodRegistrations { get; private set; }
 
-        public IReferenceResolver ReferenceResolver { get; }
+        public IMethodReferenceResolver ReferenceResolver { get; }
+
+        public object? MethodContext { get; }
 
         public JoltContext(string jsonTransformer, 
                            IExpressionParser expressionParser, 
@@ -33,7 +36,8 @@ namespace Jolt
                            ITokenReader tokenReader, 
                            IJsonTokenReader jsonTokenReader,
                            IQueryPathProvider queryPathProvider,
-                           IReferenceResolver referenceResolver)
+                           IMethodReferenceResolver referenceResolver,
+                           object? methodContext = default)
         {
             JsonTransformer = jsonTransformer;
             ExpressionParser = expressionParser;
@@ -42,21 +46,53 @@ namespace Jolt
             JsonTokenReader = jsonTokenReader;
             QueryPathProvider = queryPathProvider;
             ReferenceResolver = referenceResolver;
+            MethodContext = methodContext;
         }
 
         public IJsonContext RegisterMethod(MethodRegistration method)
         {
-            throw new NotImplementedException();
+            var registrations = MethodRegistrations.ToList();
+
+            registrations.Add(method);
+
+            MethodRegistrations = registrations.ToArray();
+
+            return this;
         }
 
         public IJsonContext RegisterAllMethods(IEnumerable<MethodRegistration> methods)
         {
-            throw new NotImplementedException();
+            var registrations = MethodRegistrations.ToList();
+
+            registrations.AddRange(methods);
+
+            MethodRegistrations = registrations.ToArray();
+
+            return this;
         }
 
         public IJsonContext UseTransformer(string jsonTransformer)
         {
-            throw new NotImplementedException();
+            JsonTransformer = jsonTransformer;
+
+            return this;
+        }
+
+        public IJsonContext RegisterAllMethodsFrom<T>()
+        {
+            var type = typeof(T);
+            var registrations = MethodRegistrations.ToList();
+
+            var methods = from method in type.GetMethods(BindingFlags.Public)
+                          let attribute = method.GetCustomAttribute<JoltExternalMethodAttribute>()
+                          where attribute != null
+                          select method.IsStatic ? new MethodRegistration(type.AssemblyQualifiedName, method.Name) : new MethodRegistration(method.Name);
+
+            registrations.AddRange(methods);
+
+            MethodRegistrations = registrations.ToArray();
+
+            return this;
         }
     }
 }

@@ -23,12 +23,12 @@ namespace Jolt.Parsing
             }
         }
 
-        public bool TryParseExpression(IEnumerable<ExpressionToken> tokens, IReferenceResolver referenceResolver, out Expression? expression) => TryParseExpression(new ExpressionReader(tokens), referenceResolver, out expression);
+        public bool TryParseExpression(IEnumerable<ExpressionToken> tokens, IMethodReferenceResolver referenceResolver, out Expression? expression) => TryParseExpression(new ExpressionReader(tokens), referenceResolver, out expression);
         public bool TryParseLiteral(IEnumerable<ExpressionToken> tokens, out LiteralExpression? literal) => TryParseLiteral(new ExpressionReader(tokens), out literal);
-        public bool TryParseMethod(IEnumerable<ExpressionToken> tokens, IReferenceResolver referenceResolver, out MethodCallExpression? methodCall) => TryParseMethod(new ExpressionReader(tokens), referenceResolver, out methodCall);
+        public bool TryParseMethod(IEnumerable<ExpressionToken> tokens, IMethodReferenceResolver referenceResolver, out MethodCallExpression? methodCall) => TryParseMethod(new ExpressionReader(tokens), referenceResolver, out methodCall);
         public bool TryParsePath(IEnumerable<ExpressionToken> tokens, out PathExpression? path) => TryParsePath(new ExpressionReader(tokens), out path);
                 
-        private bool TryParseExpression(ExpressionReader reader, IReferenceResolver referenceResolver, out Expression expression)
+        private bool TryParseExpression(ExpressionReader reader, IMethodReferenceResolver referenceResolver, out Expression expression)
         {
             Expression ReadNextAtom(ExpressionReader reader)
             {
@@ -158,7 +158,7 @@ namespace Jolt.Parsing
             return isParseSuccessful;
         }
 
-        private bool TryParseMethod(ExpressionReader reader, IReferenceResolver referenceResolver, out MethodCallExpression? methodCall)
+        private bool TryParseMethod(ExpressionReader reader, IMethodReferenceResolver referenceResolver, out MethodCallExpression? methodCall)
         {
             methodCall = default;
 

@@ -9,6 +9,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace Jolt
@@ -144,6 +145,17 @@ namespace Jolt
             {
                 throw new JoltExecutionException($"Unable to apply changes to parent token with unsupported type '{parent.Type}'");
             }
+        }
+
+        protected static IEnumerable<MethodRegistration> GetExternalMethodRegistrationsFrom<T>()
+        {
+            var type = typeof(T);
+            var methods = type.GetMethods(BindingFlags.Public);
+
+            return from method in methods
+                   let attribute = method.GetCustomAttribute<JoltExternalMethodAttribute>()
+                   where attribute != null
+                   select method.IsStatic ? new MethodRegistration(type.AssemblyQualifiedName, method.Name) : new MethodRegistration(method.Name);
         }
     }
 }

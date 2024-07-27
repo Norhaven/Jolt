@@ -12,24 +12,24 @@ namespace Jolt.Library
         public CallType CallType { get; }
         public bool IsStandardLibraryCall { get; }
 
-        public MethodRegistration(string fullyQualifiedTypeName, string methodName)
+        public MethodRegistration(string assemblyQualifiedTypeName, string staticMethodName)
         {
-            FullyQualifiedTypeName = fullyQualifiedTypeName;
-            MethodName = methodName;
+            FullyQualifiedTypeName = assemblyQualifiedTypeName;
+            MethodName = staticMethodName;
             CallType = CallType.Static;
         }
 
-        internal MethodRegistration(string fullyQualifiedTypeName, string methodName, bool isStandardLibraryCall)
+        internal MethodRegistration(string fullyQualifiedTypeName, string staticMethodName, bool isStandardLibraryCall)
         {
             FullyQualifiedTypeName = fullyQualifiedTypeName;
-            MethodName = methodName;
+            MethodName = staticMethodName;
             CallType = CallType.Static;
         }
 
-        public MethodRegistration(string methodName)
+        public MethodRegistration(string instanceMethodName)
         {
             FullyQualifiedTypeName = string.Empty;
-            MethodName = methodName;
+            MethodName = instanceMethodName;
             CallType = CallType.Instance;
         }
     }

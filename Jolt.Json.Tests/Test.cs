@@ -151,7 +151,7 @@ public abstract class Test
             new TokenReader(),
             tokenReader,
             pathQueryProvider,
-            new ReferenceResolver()
+            new MethodReferenceResolver()
         );
 
         return CreateTransformer(context);

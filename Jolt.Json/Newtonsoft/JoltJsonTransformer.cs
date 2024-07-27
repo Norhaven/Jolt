@@ -12,9 +12,21 @@ namespace Jolt.Json.Newtonsoft
     {
         public static JoltJsonTransformer DefaultWith(string jsonTransformer, IEnumerable<MethodRegistration>? methodRegistrations = null)
         {
-            var thirdPartyMethods = methodRegistrations?.Select(x => Registrar.GetCustomMethodRegistration(x));
-            var referenceResolver = new ReferenceResolver(thirdPartyMethods);
+            var referenceResolver = new MethodReferenceResolver(methodRegistrations);
 
+            return CreateTransformerWith(jsonTransformer, referenceResolver);
+        }
+
+        public static JoltJsonTransformer DefaultWith<TMethodContext>(string jsonTransformer)
+        {
+            var thirdPartyMethods = GetExternalMethodRegistrationsFrom<TMethodContext>();
+            var referenceResolver = new MethodReferenceResolver(thirdPartyMethods);
+
+            return CreateTransformerWith(jsonTransformer, referenceResolver);
+        }
+
+        private static JoltJsonTransformer CreateTransformerWith(string jsonTransformer, IMethodReferenceResolver referenceResolver)
+        {
             var context = new JoltContext(
                 jsonTransformer,
                 new ExpressionParser(),

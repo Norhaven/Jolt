@@ -17,10 +17,12 @@ namespace Jolt
         IExpressionEvaluator ExpressionEvaluator { get; }
         IQueryPathProvider QueryPathProvider { get; }
         MethodRegistration[] MethodRegistrations { get; }
-        IReferenceResolver ReferenceResolver { get; }
+        IMethodReferenceResolver ReferenceResolver { get; }
+        object? MethodContext { get; }
 
         IJsonContext RegisterMethod(MethodRegistration method);
         IJsonContext RegisterAllMethods(IEnumerable<MethodRegistration> methods);
+        IJsonContext RegisterAllMethodsFrom<T>();
         IJsonContext UseTransformer(string jsonTransformer);
     }
 }
