@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Jolt.Parsing
 {
-    public class TokenStream<T>
+    internal class TokenStream<T>
     {
         private readonly IEnumerator<T> _enumerator;
         private bool _isCompleted;

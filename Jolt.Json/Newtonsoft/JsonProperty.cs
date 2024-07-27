@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Jolt.Json.Newtonsoft
 {
-    public class JsonProperty : JsonToken, IJsonProperty
+    public sealed class JsonProperty : JsonToken, IJsonProperty
     {
         public string PropertyName => ((JProperty)_token).Name;
 

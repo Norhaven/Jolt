@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Jolt.Evaluation
 {
-    public class SourceToken
+    public sealed class SourceToken
     {
         public int Index { get; }
         public IJsonToken? Property { get; }

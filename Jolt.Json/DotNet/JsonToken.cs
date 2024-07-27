@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using Node = System.Text.Json.Nodes.JsonNode;
 using NodeType = System.Text.Json.JsonValueKind;
@@ -35,19 +34,19 @@ namespace Jolt.Json.DotNet
             }
         }
 
-        public JsonNodeType Type
+        public JsonTokenType Type
         {
             get
             {
                 return _node.GetValueKind() switch
                 {
-                    NodeType.Array => JsonNodeType.Array,
-                    NodeType.Object => JsonNodeType.Object,
-                    NodeType.String => JsonNodeType.String,
-                    NodeType.Number => JsonNodeType.Number,
-                    NodeType.True => JsonNodeType.Boolean,
-                    NodeType.False => JsonNodeType.Boolean,
-                    _ => JsonNodeType.Unknown
+                    NodeType.Array => JsonTokenType.Array,
+                    NodeType.Object => JsonTokenType.Object,
+                    //NodeType.String => JsonTokenType.String,
+                    //NodeType.Number => JsonTokenType.Number,
+                    //NodeType.True => JsonTokenType.Boolean,
+                    //NodeType.False => JsonTokenType.Boolean,
+                    _ => JsonTokenType.Unknown
                 };
             }
         }
@@ -72,7 +71,7 @@ namespace Jolt.Json.DotNet
                 return default;
             }
 
-            if (Type == JsonNodeType.Array)
+            if (Type == JsonTokenType.Array)
             {
                 var array = _node.AsArray();
                 var template = array[0];
@@ -93,7 +92,7 @@ namespace Jolt.Json.DotNet
                 return;
             }
 
-            if (Type == JsonNodeType.Array)
+            if (Type == JsonTokenType.Array)
             {
                 var array = _node.AsArray();
 
@@ -111,15 +110,16 @@ namespace Jolt.Json.DotNet
                 return default;
             }
 
-            var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(_node);
+            return null;
+            //var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(_node);
 
-            if (!string.IsNullOrWhiteSpace(propertyName))
-            {
-                keyValuePairs.Remove(_node.GetPropertyName());
-                keyValuePairs[propertyName] = Value;
-            }
+            //if (!string.IsNullOrWhiteSpace(propertyName))
+            //{
+            //    keyValuePairs.Remove(_node.GetPropertyName());
+            //    keyValuePairs[propertyName] = Value;
+            //}
 
-            return new JsonToken(Node.Parse(JsonSerializer.Serialize(keyValuePairs)));
+            //return new JsonToken(Node.Parse(JsonSerializer.Serialize(keyValuePairs)));
         }
 
         public IEnumerator<JsonToken> GetEnumerator() => CreateEnumerator();
@@ -135,11 +135,11 @@ namespace Jolt.Json.DotNet
 
         private IEnumerator<JsonToken> CreateEnumerator()
         {
-            if (Type == JsonNodeType.Array)
+            if (Type == JsonTokenType.Array)
             {
                 return _node.AsArray().Select(x => new JsonToken(x)).GetEnumerator();
             }
-            else if (Type == JsonNodeType.Object)
+            else if (Type == JsonTokenType.Object)
             {
                 return _node.AsObject().Select(x => new JsonToken(x.Value)).GetEnumerator();
             }

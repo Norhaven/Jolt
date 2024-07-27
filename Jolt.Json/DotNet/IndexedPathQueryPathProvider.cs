@@ -9,7 +9,7 @@ using JsonArray = System.Text.Json.Nodes.JsonArray;
 
 namespace Jolt.Json.DotNet
 {
-    public class IndexedPathQueryPathProvider : QueryPathProvider
+    public sealed class IndexedPathQueryPathProvider : QueryPathProvider
     {
         private readonly IDictionary<string, Node> _rootQueryPaths;
         private readonly IDictionary<string, Node> _sourceQueryPaths;

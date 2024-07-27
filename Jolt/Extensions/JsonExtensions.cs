@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Jolt.Extensions
 {
-    public static class JsonExtensions
+    internal static class JsonExtensions
     {
         public static bool AllElementsAreOfTypes(this IJsonArray array, params Type[] types) => array.All(x => x.IsValue() && x.ToTypeOf<object>().GetType().IsAnyOf(types));
         public static bool AllElementsAreOfType<T>(this IJsonArray array) => array.Length > 0 && array.All(x => x.IsValue() && x.AsValue().IsTypeOf<T>());

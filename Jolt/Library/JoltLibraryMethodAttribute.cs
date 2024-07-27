@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Jolt.Library
 {
-    internal class JoltLibraryMethodAttribute : Attribute
+    internal sealed class JoltLibraryMethodAttribute : Attribute
     {
         public string Name { get; }
         public bool IsValueGenerator { get; }

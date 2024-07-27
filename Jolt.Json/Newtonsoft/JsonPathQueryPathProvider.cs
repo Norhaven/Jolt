@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Jolt.Json.Newtonsoft
 {
-    public class JsonPathQueryPathProvider : QueryPathProvider
+    public sealed class JsonPathQueryPathProvider : QueryPathProvider
     {
         public override bool IsQueryPath(string path)
         {

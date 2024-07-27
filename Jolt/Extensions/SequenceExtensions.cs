@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Jolt.Extensions
 {
-    public static class SequenceExtensions
+    internal static class SequenceExtensions
     {
         public static bool IsAnyOf<T>(this T currentValue, params T[] values)
         {

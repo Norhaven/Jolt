@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Jolt.Expressions
 {
-    public class MethodCallExpression : Expression
+    public sealed class MethodCallExpression : Expression
     {
         public MethodSignature Signature { get; }
         public Expression[] ParameterValues { get; }

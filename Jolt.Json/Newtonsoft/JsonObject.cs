@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Jolt.Json.Newtonsoft
 {
-    public class JsonObject : JsonToken, IJsonObject
+    public sealed class JsonObject : JsonToken, IJsonObject
     {
         private readonly IDictionary<string, IJsonToken> _properties = new Dictionary<string, IJsonToken>();
 

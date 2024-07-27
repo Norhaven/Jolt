@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Jolt.Parsing
 {
-    public class TokenReader : ITokenReader
+    public sealed class TokenReader : ITokenReader
     {
         public bool StartsWithMethodCall(string expression)
         {

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Jolt.Library
 {
-    public class JoltExternalMethodAttribute : Attribute
+    public sealed class JoltExternalMethodAttribute : Attribute
     {
         public string Name { get; }
 

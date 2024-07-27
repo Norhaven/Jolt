@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Jolt.Expressions
 {
-    public class Expression
+    public abstract class Expression
     {
     }
 }

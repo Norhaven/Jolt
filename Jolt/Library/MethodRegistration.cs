@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Jolt.Library
 {
-    public class MethodRegistration
+    public sealed class MethodRegistration
     {
         public string FullyQualifiedTypeName { get; }
         public string MethodName { get; }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Jolt.Expressions
 {
-    public class BinaryExpression : Expression
+    public sealed class BinaryExpression : Expression
     {
         public Expression Left { get; }
         public Expression Right { get; }

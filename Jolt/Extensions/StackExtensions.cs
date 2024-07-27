@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Jolt.Extensions
 {
-    public static class StackExtensions
+    internal static class StackExtensions
     {
         public static Stack<T> Copy<T>(this Stack<T> stack)
         {

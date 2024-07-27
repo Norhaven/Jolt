@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Jolt.Json.Newtonsoft
 {
-    public class JoltJsonTransformer : JoltTransformer<JoltContext>
+    public sealed class JoltJsonTransformer : JoltTransformer<JoltContext>
     {
         public static JoltJsonTransformer DefaultWith(string jsonTransformer, IEnumerable<MethodRegistration>? methodRegistrations = null)
         {

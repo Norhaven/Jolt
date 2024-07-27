@@ -12,7 +12,7 @@ using System.Text;
 
 namespace Jolt.Evaluation
 {
-    public class ExpressionEvaluator : IExpressionEvaluator
+    public sealed class ExpressionEvaluator : IExpressionEvaluator
     {
         public EvaluationResult Evaluate(EvaluationContext context)
         {

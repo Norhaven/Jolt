@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Jolt.Parsing
 {
-    public class MethodSignature
+    public sealed class MethodSignature
     {
         public string Assembly { get; }
         public string TypeName { get; }

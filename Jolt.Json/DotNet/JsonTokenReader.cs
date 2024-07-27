@@ -8,7 +8,7 @@ using System.Text.Json.Nodes;
 
 namespace Jolt.Json.DotNet
 {
-    public class JsonTokenReader : IJsonTokenReader
+    public sealed class JsonTokenReader : IJsonTokenReader
     {
         public IJsonToken? CreateArrayFrom(IEnumerable<IJsonToken> tokens)
         {

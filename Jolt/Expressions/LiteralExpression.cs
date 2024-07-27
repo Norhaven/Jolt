@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Jolt.Expressions
 {
-    public class LiteralExpression : Expression
+    public sealed class LiteralExpression : Expression
     {
         public Type Type { get; }
         public string Value { get; }

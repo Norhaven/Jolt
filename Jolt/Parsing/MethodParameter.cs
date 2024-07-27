@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Jolt.Parsing
 {
-    public class MethodParameter
+    public sealed class MethodParameter
     {
         public Type Type { get; }
         public string Name { get; }

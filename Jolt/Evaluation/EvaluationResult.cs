@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Jolt.Evaluation
 {
-    public class EvaluationResult
+    public sealed class EvaluationResult
     {
         public string OriginalPropertyName { get; }
         public string NewPropertyName { get; }

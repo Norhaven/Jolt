@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Jolt.Parsing
 {
-    public class ExpressionToken
+    public sealed class ExpressionToken
     {
         public const char OpenParentheses = '(';
         public const char CloseParentheses = ')';

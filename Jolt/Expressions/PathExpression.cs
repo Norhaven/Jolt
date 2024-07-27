@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Jolt.Expressions
 {
-    public class PathExpression : Expression
+    public sealed class PathExpression : Expression
     {
         public string PathQuery { get; }
 

@@ -13,7 +13,7 @@ using System.Text;
 
 namespace Jolt.Parsing
 {
-    public class ExpressionParser : IExpressionParser
+    public sealed class ExpressionParser : IExpressionParser
     {
         private sealed class ExpressionReader : TokenStream<ExpressionToken>
         {

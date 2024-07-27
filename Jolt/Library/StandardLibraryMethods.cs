@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Jolt.Library
 {
-    public static class StandardLibraryMethods
+    internal static class StandardLibraryMethods
     {
         [JoltLibraryMethod("valueOf")]
         public static IJsonToken? ValueOf(string path, EvaluationContext context)

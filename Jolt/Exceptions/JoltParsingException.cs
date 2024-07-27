@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Jolt.Exceptions
 {
-    public class JoltParsingException : Exception
+    public sealed class JoltParsingException : Exception
     {
         public JoltParsingException(string message)
             : base(message) { }

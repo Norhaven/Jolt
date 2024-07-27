@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Jolt.Json.Newtonsoft
 {
-    public class JsonTokenReader : IJsonTokenReader
+    public sealed class JsonTokenReader : IJsonTokenReader
     {
         public IJsonToken? CreateArrayFrom(IEnumerable<IJsonToken> tokens)
         {
