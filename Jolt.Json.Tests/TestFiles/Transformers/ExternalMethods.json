@@ -1,0 +1,5 @@
+﻿{
+  "String": "#ConcatAlias(#valueOf($.stringLiteral), #valueOf($.stringLiteral))",
+  "Boolean": "#TakesAndReturnsBoolean(#valueOf($.booleanLiteral))",
+  "AppendedString": "#AppendString(#AppendString(#valueOf($.stringLiteral)))"
+}

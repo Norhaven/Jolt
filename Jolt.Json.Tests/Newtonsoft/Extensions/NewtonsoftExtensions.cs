@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Jolt.Json.Tests.TestExtensions;
+namespace Jolt.Json.Tests.Newtonsoft.Extensions;
 
 internal static class NewtonsoftExtensions
 {

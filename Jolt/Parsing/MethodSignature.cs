@@ -6,21 +6,18 @@ namespace Jolt.Parsing
 {
     public sealed class MethodSignature
     {
-        public string Assembly { get; }
-        public string TypeName { get; }
+        public string AssemblyQualifiedTypeName { get; }
         public string Name { get; }
         public string Alias { get; }
-        public string FullyQualifiedName => $"{Assembly},{TypeName}.{Alias}";
         public MethodParameter[] Parameters { get; } = Array.Empty<MethodParameter>();
         public Type ReturnType { get; }
         public CallType CallType { get; }
         public bool IsSystemMethod { get; }
         public bool IsValueGenerator { get; }
 
-        public MethodSignature(string assembly, string typeName, string name, string alias, Type returnType, CallType callType, bool isSystemMethod, bool isValueGenerator, params MethodParameter[] parameters)
+        public MethodSignature(string assemblyQualifiedTypeName, string name, string alias, Type returnType, CallType callType, bool isSystemMethod, bool isValueGenerator, params MethodParameter[] parameters)
         {
-            Assembly = assembly;
-            TypeName = typeName;
+            AssemblyQualifiedTypeName = assemblyQualifiedTypeName;
             Name = name;
             Alias = alias ?? name;
             ReturnType = returnType;

@@ -10,22 +10,19 @@ namespace Jolt.Json.Newtonsoft
 {
     public sealed class JoltJsonTransformer : JoltTransformer<JoltContext>
     {
-        public static JoltJsonTransformer DefaultWith(string jsonTransformer, IEnumerable<MethodRegistration>? methodRegistrations = null)
+        public static JoltJsonTransformer DefaultWith(string jsonTransformer, object? methodContext, IEnumerable<MethodRegistration>? methodRegistrations = null)
         {
-            var referenceResolver = new MethodReferenceResolver(methodRegistrations);
-
-            return CreateTransformerWith(jsonTransformer, referenceResolver);
+            return CreateTransformerWith(jsonTransformer, methodContext, methodRegistrations);
         }
 
-        public static JoltJsonTransformer DefaultWith<TMethodContext>(string jsonTransformer)
+        public static JoltJsonTransformer DefaultWith<TMethodContext>(string jsonTransformer, TMethodContext methodContext = default)
         {
             var thirdPartyMethods = GetExternalMethodRegistrationsFrom<TMethodContext>();
-            var referenceResolver = new MethodReferenceResolver(thirdPartyMethods);
 
-            return CreateTransformerWith(jsonTransformer, referenceResolver);
+            return CreateTransformerWith(jsonTransformer, methodContext, thirdPartyMethods);
         }
 
-        private static JoltJsonTransformer CreateTransformerWith(string jsonTransformer, IMethodReferenceResolver referenceResolver)
+        private static JoltJsonTransformer CreateTransformerWith(string jsonTransformer, object? methodContext, IEnumerable<MethodRegistration> methodRegistrations)
         {
             var context = new JoltContext(
                 jsonTransformer,
@@ -34,7 +31,10 @@ namespace Jolt.Json.Newtonsoft
                 new TokenReader(),
                 new JsonTokenReader(),
                 new JsonPathQueryPathProvider(),
-                referenceResolver);
+                new MethodReferenceResolver(),
+                methodContext);
+
+            context.RegisterAllMethods(methodRegistrations);
 
             return new JoltJsonTransformer(context);
         }

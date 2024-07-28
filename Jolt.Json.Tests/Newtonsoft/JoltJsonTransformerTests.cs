@@ -1,6 +1,8 @@
 ﻿using FluentAssertions;
 using Jolt.Json.Newtonsoft;
-using Jolt.Json.Tests.TestExtensions;
+using Jolt.Json.Tests.Newtonsoft.Extensions;
+using Jolt.Json.Tests.TestMethods;
+using Jolt.Library;
 using Jolt.Structure;
 using Newtonsoft.Json.Linq;
 using System;
@@ -15,7 +17,7 @@ public class JoltJsonTransformerTests : Test
 {
     protected override IJsonTokenReader CreateTokenReader() => new JsonTokenReader();
     protected override IJsonTransformer<IJsonContext> CreateTransformer(JoltContext context) => new JoltJsonTransformer(context);
-    protected override IQueryPathProvider CreatePathQueryProvider() => new JsonPathQueryPathProvider();
+    protected override IQueryPathProvider CreateQueryPathProvider() => new JsonPathQueryPathProvider();
 
     [Fact]
     public void ValueOf_IsSuccessful_AtSingleLevelForNumericLiteral()
@@ -129,7 +131,7 @@ public class JoltJsonTransformerTests : Test
     }
 
     [Fact]
-    public void PipedMethod_IsSuccessful_WithCallToSingleParameterMethod()
+    public void PipedMethod_IsSuccessful_WithCallToSingleAndMultiParameterMethod()
     {
         var json = ExecuteTestFor(_pipedMethods, _pipedMethodsDocument);
 
@@ -185,7 +187,26 @@ public class JoltJsonTransformerTests : Test
         appendedObject["second"].Value<int>().Should().Be(2, "because that is the value of the second property in the second object");
     }
 
-    private JObject ExecuteTestFor(string transformerJson, string documentJson) => ExecuteTestFor(transformerJson, documentJson, JObject.Parse);
+    [Fact]
+    public void ExternalMethod_IsSuccessful_WithStaticAndInstanceCallToSingleAndMultiParameterMethod()
+    {
+        var staticBoolRegistration = MethodRegistration.FromStaticMethod(typeof(ExternalStaticMethods), nameof(ExternalStaticMethods.TakesAndReturnsBoolean));
+        var staticConcatRegistration = MethodRegistration.FromStaticMethod(typeof(ExternalStaticMethods), nameof(ExternalStaticMethods.Concatenate), "ConcatAlias");
+
+        var instanceAppendRegistration = MethodRegistration.FromInstanceMethod(nameof(ExternalInstanceMethods.AppendString));
+
+        var externalMethods = new[] { staticBoolRegistration, staticConcatRegistration, instanceAppendRegistration };
+
+        var json = ExecuteTestFor(_externalMethods, _externalMethodsDocument, externalMethods, new ExternalInstanceMethods());
+
+        json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
+
+        json.PropertyValueFor<bool>(TargetProperty.BooleanLiteral).Should().BeTrue("because that is the value in the source document");
+        json.PropertyValueFor<string>(TargetProperty.StringLiteral).Should().Be("testtest", "because that is the value concatenated with itself in the source document");
+        json.PropertyValueFor<string>(TargetProperty.AppendedString).Should().Be("testtest", "because that is the value appended twice with itself in the source document");
+    }
+
+    private JObject ExecuteTestFor(string transformerJson, string documentJson, IEnumerable<MethodRegistration> methodRegistrations = default, object? methodContext = default) => ExecuteTestFor(transformerJson, documentJson, JObject.Parse, methodRegistrations, methodContext);
 
     private void ValidateLiteralIsTransformed<T>(string transformerJson, string documentJson, string targetProperty, T targetValue)
     {

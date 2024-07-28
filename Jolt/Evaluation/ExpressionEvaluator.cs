@@ -244,7 +244,7 @@ namespace Jolt.Evaluation
         {
             if (method.CallType == CallType.Static)
             {
-                var type = Type.GetType($"{method.TypeName}, {method.Assembly}");
+                var type = Type.GetType(method.AssemblyQualifiedTypeName);
                 var methodInfo = type.GetMethod(method.Name, BindingFlags.Public | BindingFlags.Static);
 
                 return methodInfo.Invoke(null, actualParameterValues.ToArray());
@@ -263,7 +263,7 @@ namespace Jolt.Evaluation
                     throw new JoltExecutionException($"Unable to locate instance method '{method.Name}' on type '{context.JsonContext.MethodContext.GetType().FullName}'");
                 }
 
-                return methodInfo.Invoke(context.JsonContext, actualParameterValues.ToArray());
+                return methodInfo.Invoke(context.JsonContext.MethodContext, actualParameterValues.ToArray());
             }
 
             throw new JoltExecutionException($"Unable to invoke method with unknown call type '{method.CallType}'");

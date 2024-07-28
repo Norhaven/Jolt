@@ -4,9 +4,9 @@ using System.Text;
 
 namespace Jolt.Exceptions
 {
-    public sealed class JoltExecutionException : JoltException
+    public abstract class JoltException : Exception
     {
-        public JoltExecutionException(string message) 
+        public JoltException(string message)
             : base(message)
         {
         }

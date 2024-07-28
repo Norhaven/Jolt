@@ -12,8 +12,6 @@ namespace Jolt.Json.DotNet
     {
         public static JoltJsonTransformer DefaultWith(string jsonTransformer, IEnumerable<MethodRegistration>? methodRegistrations = null)
         {
-            var referenceResolver = new MethodReferenceResolver(methodRegistrations);
-
             var context = new JoltContext(
                 jsonTransformer,
                 new ExpressionParser(),
@@ -21,7 +19,9 @@ namespace Jolt.Json.DotNet
                 new TokenReader(),
                 new JsonTokenReader(),
                 new IndexedPathQueryPathProvider(),
-                referenceResolver);
+                new MethodReferenceResolver());
+
+            context.RegisterAllMethods(methodRegistrations);
 
             return new JoltJsonTransformer(context);
         }

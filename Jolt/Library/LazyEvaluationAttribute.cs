@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Jolt.Library
 {
-    public sealed class LazyEvaluationAttribute : Attribute
+    internal sealed class LazyEvaluationAttribute : Attribute
     {
     }
 }

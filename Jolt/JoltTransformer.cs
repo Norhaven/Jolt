@@ -22,6 +22,9 @@ namespace Jolt
         public JoltTransformer(TContext context)
         {
             _context = context;
+
+            _context.ReferenceResolver.Clear();
+            _context.ReferenceResolver.RegisterMethods(_context.MethodRegistrations, _context.MethodContext);
         }
 
         public string? Transform(string json)
@@ -155,7 +158,7 @@ namespace Jolt
             return from method in methods
                    let attribute = method.GetCustomAttribute<JoltExternalMethodAttribute>()
                    where attribute != null
-                   select method.IsStatic ? new MethodRegistration(type.AssemblyQualifiedName, method.Name) : new MethodRegistration(method.Name);
+                   select method.IsStatic ? new MethodRegistration(type.AssemblyQualifiedName, method.Name) : new MethodRegistration(method.Name, attribute.Name);
         }
     }
 }

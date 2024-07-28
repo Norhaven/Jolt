@@ -24,7 +24,7 @@ namespace Jolt
 
         public IQueryPathProvider QueryPathProvider { get; }
 
-        public MethodRegistration[] MethodRegistrations { get; private set; }
+        public MethodRegistration[] MethodRegistrations { get; private set; } = Array.Empty<MethodRegistration>();
 
         public IMethodReferenceResolver ReferenceResolver { get; }
 
@@ -51,6 +51,11 @@ namespace Jolt
 
         public IJsonContext RegisterMethod(MethodRegistration method)
         {
+            if (method is null)
+            {
+                return this;
+            }
+
             var registrations = MethodRegistrations.ToList();
 
             registrations.Add(method);
@@ -62,6 +67,11 @@ namespace Jolt
 
         public IJsonContext RegisterAllMethods(IEnumerable<MethodRegistration> methods)
         {
+            if (methods is null)
+            {
+                return this;
+            }
+
             var registrations = MethodRegistrations.ToList();
 
             registrations.AddRange(methods);
@@ -86,7 +96,7 @@ namespace Jolt
             var methods = from method in type.GetMethods(BindingFlags.Public)
                           let attribute = method.GetCustomAttribute<JoltExternalMethodAttribute>()
                           where attribute != null
-                          select method.IsStatic ? new MethodRegistration(type.AssemblyQualifiedName, method.Name) : new MethodRegistration(method.Name);
+                          select method.IsStatic ? new MethodRegistration(type.AssemblyQualifiedName, method.Name) : new MethodRegistration(method.Name, attribute.Name);
 
             registrations.AddRange(methods);
 

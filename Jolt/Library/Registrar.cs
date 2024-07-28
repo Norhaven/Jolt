@@ -1,4 +1,5 @@
-﻿using Jolt.Parsing;
+﻿using Jolt.Exceptions;
+using Jolt.Parsing;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -19,31 +20,37 @@ namespace Jolt.Library
                    let attribute = method.GetCustomAttribute<JoltLibraryMethodAttribute>()
                    where attribute != null
                    let parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, x.GetCustomAttribute<LazyEvaluationAttribute>() != null))
-                   select new MethodSignature(Assembly.GetExecutingAssembly().FullName, type.FullName, method.Name, attribute.Name, method.ReturnType, CallType.Static, true, attribute.IsValueGenerator, parameters.ToArray());
+                   select new MethodSignature(type.AssemblyQualifiedName, method.Name, attribute.Name, method.ReturnType, CallType.Static, true, attribute.IsValueGenerator, parameters.ToArray());
         }
 
-        public static IEnumerable<MethodSignature> GetExternalMethodRegistrations(IEnumerable<MethodRegistration> registrations)
+        public static IEnumerable<MethodSignature> GetExternalMethodRegistrations(IEnumerable<MethodRegistration> registrations, object? methodContext = default)
         {
-            return registrations.Select(x => GetExternalMethodRegistration(x));
+            return registrations.Select(x => GetExternalMethodRegistration(x, methodContext));
         }
 
-        public static MethodSignature GetExternalMethodRegistration(MethodRegistration registration)
+        public static MethodSignature GetExternalMethodRegistration(MethodRegistration registration, object? methodContext = default)
         {
-            var hasAssemblyName = registration.FullyQualifiedTypeName.Contains(',');
+            if (string.IsNullOrWhiteSpace(registration.FullyQualifiedTypeName))
+            {
+                if (methodContext is null)
+                {
+                    throw new JoltMethodResolutionException(default, registration.MethodName, $"Unable to locate instance method '{registration.MethodName}' during method resolution, no method context was provided");
+                }
 
-            var assemblyPieces = hasAssemblyName ? registration.FullyQualifiedTypeName.Split(',') : Array.Empty<string>();
-            var namespacePieces = hasAssemblyName ? assemblyPieces[1].Split('.') : registration.FullyQualifiedTypeName.Split('.');
+                var type = methodContext.GetType();
+                var method = type.GetMethod(registration.MethodName);
+                var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false)).ToArray();
 
-            var assemblyName = hasAssemblyName ? assemblyPieces[0] : string.Empty;
-            var methodName = namespacePieces[^1];
-            var typeName = string.Join('.', namespacePieces[..^1]);
+                return new MethodSignature(type?.AssemblyQualifiedName, registration.MethodName, registration.Alias, method?.ReturnType, registration.CallType, false, false, parameters);
+            }
+            else
+            {
+                var type = Type.GetType(registration.FullyQualifiedTypeName);
+                var method = type.GetMethod(registration.MethodName);
+                var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false)).ToArray();
 
-            var type = Type.GetType(hasAssemblyName ? $"{assemblyName},{typeName}" : typeName);
-            var method = type.GetMethod(methodName);
-            var callType = method.IsStatic ? CallType.Static : CallType.Instance;
-            var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false)).ToArray();
-
-            return new MethodSignature(assemblyName, typeName, methodName, methodName, method.ReturnType, callType, false, false, parameters);
+                return new MethodSignature(type.AssemblyQualifiedName, registration.MethodName, registration.Alias, method.ReturnType, registration.CallType, false, false, parameters);
+            }
         }
     }
 }

@@ -13,6 +13,7 @@
     <None Remove="TestFiles\Conditions.json" />
     <None Remove="TestFiles\Documents\ConditionsDocument.json" />
     <None Remove="TestFiles\Documents\ExistenceDocument.json" />
+    <None Remove="TestFiles\Documents\ExternalMethodsDocument.json" />
     <None Remove="TestFiles\Documents\MathDocument.json" />
     <None Remove="TestFiles\Documents\PipedMethodsDocument.json" />
     <None Remove="TestFiles\Existence.json" />
@@ -24,23 +25,26 @@
     <None Remove="TestFiles\SingleLevelLoop.json" />
     <None Remove="TestFiles\SingleLevelLoopDocument.json" />
     <None Remove="TestFiles\SingleLevelValueOf.json" />
+    <None Remove="TestFiles\Transformers\ExternalMethods.json" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="TestFiles\Documents\PipedMethodsDocument.json" />
-    <EmbeddedResource Include="TestFiles\PipedMethods.json" />
+    <EmbeddedResource Include="TestFiles\Documents\ExternalMethodsDocument.json" />
+    <EmbeddedResource Include="TestFiles\Transformers\ExternalMethods.json" />
+    <EmbeddedResource Include="TestFiles\Transformers\PipedMethods.json" />
     <EmbeddedResource Include="TestFiles\Documents\ConditionsDocument.json" />
     <EmbeddedResource Include="TestFiles\Documents\ExistenceDocument.json" />
     <EmbeddedResource Include="TestFiles\Documents\MathDocument.json" />
     <EmbeddedResource Include="TestFiles\Documents\MultiLevelDocument.json" />
-    <EmbeddedResource Include="TestFiles\Conditions.json" />
-    <EmbeddedResource Include="TestFiles\Existence.json" />
-    <EmbeddedResource Include="TestFiles\Math.json" />
-    <EmbeddedResource Include="TestFiles\MultiLevelValueOf.json" />
+    <EmbeddedResource Include="TestFiles\Transformers\Conditions.json" />
+    <EmbeddedResource Include="TestFiles\Transformers\Existence.json" />
+    <EmbeddedResource Include="TestFiles\Transformers\Math.json" />
+    <EmbeddedResource Include="TestFiles\Transformers\MultiLevelValueOf.json" />
     <EmbeddedResource Include="TestFiles\Documents\SingleLevelDocument.json" />
     <EmbeddedResource Include="TestFiles\Documents\SingleLevelLoopDocument.json" />
-    <EmbeddedResource Include="TestFiles\SingleLevelLoop.json" />
-    <EmbeddedResource Include="TestFiles\SingleLevelValueOf.json" />
+    <EmbeddedResource Include="TestFiles\Transformers\SingleLevelLoop.json" />
+    <EmbeddedResource Include="TestFiles\Transformers\SingleLevelValueOf.json" />
   </ItemGroup>
 
   <ItemGroup>

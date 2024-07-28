@@ -97,6 +97,7 @@ public abstract class Test
     protected readonly string _existenceDocument;
     protected readonly string _conditionsDocument;
     protected readonly string _pipedMethodsDocument;
+    protected readonly string _externalMethodsDocument;
 
     protected readonly string _singleLevelValueOf;
     protected readonly string _multiLevelValueOf;
@@ -105,6 +106,7 @@ public abstract class Test
     protected readonly string _existence;
     protected readonly string _conditions;
     protected readonly string _pipedMethods;
+    protected readonly string _externalMethods;
 
     public Test()
     {
@@ -115,23 +117,25 @@ public abstract class Test
         _existenceDocument = ReadTestDocument("ExistenceDocument");
         _conditionsDocument = ReadTestDocument("ConditionsDocument");
         _pipedMethodsDocument = ReadTestDocument("PipedMethodsDocument");
+        _externalMethodsDocument = ReadTestDocument("ExternalMethodsDocument");
 
-        _singleLevelValueOf = ReadTestFile("SingleLevelValueOf");
-        _multiLevelValueOf = ReadTestFile("MultiLevelValueOf");
-        _singleLevelLoop = ReadTestFile("SingleLevelLoop");
-        _math = ReadTestFile("Math");
-        _existence = ReadTestFile("Existence");
-        _conditions = ReadTestFile("Conditions");
-        _pipedMethods = ReadTestFile("PipedMethods");
+        _singleLevelValueOf = ReadTestTransformer("SingleLevelValueOf");
+        _multiLevelValueOf = ReadTestTransformer("MultiLevelValueOf");
+        _singleLevelLoop = ReadTestTransformer("SingleLevelLoop");
+        _math = ReadTestTransformer("Math");
+        _existence = ReadTestTransformer("Existence");
+        _conditions = ReadTestTransformer("Conditions");
+        _pipedMethods = ReadTestTransformer("PipedMethods");
+        _externalMethods = ReadTestTransformer("ExternalMethods");
     }
 
     protected abstract IJsonTokenReader CreateTokenReader();
     protected abstract IJsonTransformer<IJsonContext> CreateTransformer(JoltContext context);
-    protected abstract IQueryPathProvider CreatePathQueryProvider();
+    protected abstract IQueryPathProvider CreateQueryPathProvider();
 
-    protected T? ExecuteTestFor<T>(string transformerJson, string testDocumentJson, Func<string?, T?> convertResult)
+    protected T? ExecuteTestFor<T>(string transformerJson, string testDocumentJson, Func<string?, T?> convertResult, IEnumerable<MethodRegistration> methodRegistrations = default, object? methodContext = default)
     {
-        var transformer = CreateTransformerWith(transformerJson);
+        var transformer = CreateTransformerWith(transformerJson, methodRegistrations, methodContext);
         var transformedDocument = transformer.Transform(testDocumentJson);
 
         transformedDocument.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
@@ -139,10 +143,10 @@ public abstract class Test
         return convertResult(transformedDocument);
     }
 
-    protected IJsonTransformer<IJsonContext> CreateTransformerWith(string transformerJson)
+    protected IJsonTransformer<IJsonContext> CreateTransformerWith(string transformerJson, IEnumerable<MethodRegistration> methodRegistrations, object? methodContext = default)
     {
         var tokenReader = CreateTokenReader();
-        var pathQueryProvider = CreatePathQueryProvider();
+        var pathQueryProvider = CreateQueryPathProvider();
 
         var context = new JoltContext(
             transformerJson,
@@ -151,13 +155,17 @@ public abstract class Test
             new TokenReader(),
             tokenReader,
             pathQueryProvider,
-            new MethodReferenceResolver()
+            new MethodReferenceResolver(),
+            methodContext
         );
+
+        context.RegisterAllMethods(methodRegistrations);
 
         return CreateTransformer(context);
     }
 
     protected string ReadTestDocument(string fileName) => ReadTestFile($"Documents.{fileName}");
+    protected string ReadTestTransformer(string fileName) => ReadTestFile($"Transformers.{fileName}");
 
     protected string ReadTestFile(string fileName)
     {

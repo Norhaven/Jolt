@@ -21,6 +21,31 @@ namespace Jolt.Parsing
                 : base(tokens)
             {
             }
+
+            public bool Expect(ExpressionTokenCategory category)
+            {
+                if (IsCompleted)
+                {
+                    throw new JoltParsingException($"Unable to continue parsing, expected {category.GetDescription()} but found end of expression");
+                }
+
+                if (CurrentToken.Category != category)
+                {
+                    throw new JoltParsingException($"Unable to continue parsing, expected {category.GetDescription()} but found {CurrentToken.Category.GetDescription()} instead");
+                }
+
+                return true;
+            }
+
+            public bool IsCategory(ExpressionTokenCategory category)
+            {
+                if (IsCompleted)
+                {
+                    throw new JoltParsingException($"Unable to continue parsing, expected {category.GetDescription()} but found end of expression");
+                }
+
+                return CurrentToken.Category == category;
+            }
         }
 
         public bool TryParseExpression(IEnumerable<ExpressionToken> tokens, IMethodReferenceResolver referenceResolver, out Expression? expression) => TryParseExpression(new ExpressionReader(tokens), referenceResolver, out expression);
@@ -36,12 +61,12 @@ namespace Jolt.Parsing
                 {
                     if (!TryParseExpression(reader, referenceResolver, out var parenthesizedExpression))
                     {
-                        throw new JoltParsingException($"Unable to parse");
+                        throw new JoltParsingException($"Unable to parse parenthesized expression at position '{reader.Position}");
                     }
 
                     if (!reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.CloseParenthesesGroup))
                     {
-                        throw new JoltParsingException($"Unable to close parens");
+                        throw new JoltParsingException($"Unable to close parenthesized expression at position '{reader.Position}'");
                     }
 
                     return parenthesizedExpression;
@@ -59,7 +84,7 @@ namespace Jolt.Parsing
                     return literal;
                 }
 
-                throw new JoltParsingException($"Unable to get next atom starting with token '{reader.CurrentToken}'");
+                throw new JoltParsingException($"Unable to parse expression starting with {reader.CurrentToken.Category.GetDescription()}");
             }
 
             int GetOperatorPrecedence(Operator @operator)
@@ -191,7 +216,7 @@ namespace Jolt.Parsing
 
                     actualParameters.Add(actualValue);
 
-                    if (reader.CurrentToken.Category == ExpressionTokenCategory.CloseParenthesesGroup)
+                    if (reader.IsCategory(ExpressionTokenCategory.CloseParenthesesGroup))
                     {
                         break;
                     }
