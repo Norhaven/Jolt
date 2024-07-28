@@ -79,6 +79,19 @@ public class JoltJsonTransformerTests : Test
 
         nestedObject.PropertyValueFor<int>(TargetProperty.First).Should().Be(1, "because that's the value in the related document path");
         nestedObject.PropertyValueFor<int>(TargetProperty.Second).Should().Be(2, "because that's the value in the related document path");
+
+        var arrayFromObject = (JArray)json[TargetProperty.ArrayFromObject];
+
+        arrayFromObject.Should().NotBeNull("because an array should have been created due to the existence of the source object");
+
+        arrayFromObject[0][TargetProperty.First].ToString().Should().Be("1", "because that is the value of the first property in the source object");
+        arrayFromObject[1][TargetProperty.Second].ToString().Should().Be("2", "because that is the value of the first property in the source object");
+
+        var objectFromArray = (JObject)json[TargetProperty.ObjectFromArray];
+
+        objectFromArray.Should().NotBeNull("because an object should have been created due to the existence of the source array with elements");
+
+        objectFromArray.PropertyValueFor<int>(TargetProperty.Result).Should().Be(2, "because the last element of the array contained that value in its property");
     }
 
     [Fact]

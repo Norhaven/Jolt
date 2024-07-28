@@ -56,11 +56,7 @@ namespace Jolt
                 return this;
             }
 
-            var registrations = MethodRegistrations.ToList();
-
-            registrations.Add(method);
-
-            MethodRegistrations = registrations.ToArray();
+            MethodRegistrations = MethodRegistrations.Concat(new[] { method }).ToArray();
 
             return this;
         }
@@ -72,11 +68,7 @@ namespace Jolt
                 return this;
             }
 
-            var registrations = MethodRegistrations.ToList();
-
-            registrations.AddRange(methods);
-
-            MethodRegistrations = registrations.ToArray();
+            MethodRegistrations = MethodRegistrations.Concat(methods).ToArray();
 
             return this;
         }
@@ -91,16 +83,13 @@ namespace Jolt
         public IJsonContext RegisterAllMethodsFrom<T>()
         {
             var type = typeof(T);
-            var registrations = MethodRegistrations.ToList();
 
             var methods = from method in type.GetMethods(BindingFlags.Public)
                           let attribute = method.GetCustomAttribute<JoltExternalMethodAttribute>()
                           where attribute != null
                           select method.IsStatic ? new MethodRegistration(type.AssemblyQualifiedName, method.Name) : new MethodRegistration(method.Name, attribute.Name);
 
-            registrations.AddRange(methods);
-
-            MethodRegistrations = registrations.ToArray();
+            MethodRegistrations = MethodRegistrations.Concat(methods).ToArray();
 
             return this;
         }

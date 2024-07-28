@@ -85,6 +85,9 @@ public abstract class Test
         public const string AppendedString = "AppendedString";
         public const string AppendedArray = "AppendedArray";
         public const string AppendedObject = "AppendedObject";
+        public const string ObjectFromArray = "ObjectFromArray";
+        public const string ArrayFromObject = "ArrayFromObject";
+        public const string Result = "Result";
 
         public const string First = "first";
         public const string Second = "second";

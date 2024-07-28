@@ -8,5 +8,13 @@
   ],
   "#loop($.exampleBaseProperty)->'Object'": {
     "#loopProperty()": "#loopValueOf($.value)"
+  },
+  "#loop($.exampleBaseProperty)->'ArrayFromObject'": [
+    {
+      "#loopProperty()": "#loopValueOf($.value)"
+    }
+  ],
+  "#loop($.array)->'ObjectFromArray'": {
+    "Result": "#loopValueOf($.arrayElementId)"
   }
 }

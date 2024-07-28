@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 
 namespace Jolt.Library
 {
@@ -96,14 +97,14 @@ namespace Jolt.Library
 
             if (!token.Type.IsAnyOf(JsonTokenType.Array, JsonTokenType.Object))
             {
-                yield break;
+                throw new JoltExecutionException($"Unable to loop using non-enumerable transformer token of type '{token.Type}'");
             }
 
-            var closestViableNode = context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, path, JsonQueryMode.StartFromClosestMatch);
+            var closestViableSourceToken = context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, path, JsonQueryMode.StartFromClosestMatch);
 
-            if (closestViableNode?.Type.IsAnyOf(JsonTokenType.Array, JsonTokenType.Object) != true)
+            if (closestViableSourceToken?.Type.IsAnyOf(JsonTokenType.Array, JsonTokenType.Object) != true)
             {
-                yield break;
+                throw new JoltExecutionException($"Unable to loop over non-enumerable source token of type '{closestViableSourceToken?.Type}'");
             }
 
             var contentTemplate = token.Type switch
@@ -115,46 +116,58 @@ namespace Jolt.Library
 
             token.Clear();
 
-            var index = 0;
-
-            if (token.Type == JsonTokenType.Array)
+            IEnumerable<IJsonToken> EnumerateClosestSourceToken()
             {
-                foreach (var element in closestViableNode.AsArray() ?? Enumerable.Empty<IJsonToken>())
+                var index = 0;
+
+                (EvaluationToken, IJsonToken) CreateEvaluationToken(IJsonToken currentToken)
                 {
-                    var templateCopy = contentTemplate.Copy();
-                    var propertyName = context.Token.ResolvedPropertyName ?? context.Token.PropertyName;
-                    var currentSource = new SourceToken(index, default);
-
-                    var templateEvaluationToken = new EvaluationToken(propertyName, default, token, templateCopy, currentSource);
-
-                    context.ClosureSources.Push(element);
-
-                    yield return context.Transform(templateEvaluationToken, context.ClosureSources);
-
-                    context.ClosureSources.Pop();
-
-                    index++;
-                }
-            }
-            else if (token.Type == JsonTokenType.Object)
-            {
-                foreach (var property in closestViableNode.AsObject() ?? Enumerable.Empty<IJsonProperty>())
-                {
+                    var property = currentToken as IJsonProperty;
                     var templateCopy = contentTemplate.Copy();
                     var propertyName = context.Token.ResolvedPropertyName ?? context.Token.PropertyName;
                     var currentSource = new SourceToken(index, property);
 
-                    var templateEvaluationToken = new EvaluationToken(propertyName, default, token, templateCopy, currentSource);
+                    var evaluationToken = new EvaluationToken(propertyName, default, token, templateCopy, currentSource);
 
-                    context.ClosureSources.Push(property.Value);
+                    return (evaluationToken, property?.Value ?? currentToken);
+                }
 
-                    yield return context.Transform(templateEvaluationToken, context.ClosureSources);
+                IJsonToken TransformEvaluationToken(IJsonToken elementOrProperty)
+                {
+                    (var templateEvaluationToken, var closureSource) = CreateEvaluationToken(elementOrProperty);
+
+                    context.ClosureSources.Push(closureSource);
+
+                    var transformedToken = context.Transform(templateEvaluationToken, context.ClosureSources);
 
                     context.ClosureSources.Pop();
 
                     index++;
+
+                    return transformedToken;
+                }
+
+                if (closestViableSourceToken is IJsonArray array)
+                {
+                    foreach(var element in array)
+                    {
+                        yield return TransformEvaluationToken(element);
+                    }
+                }
+                else if (closestViableSourceToken is IJsonObject obj)
+                {
+                    foreach(var property in obj)
+                    {
+                        yield return TransformEvaluationToken(property);
+                    }
+                }
+                else
+                {
+                    throw new JoltExecutionException($"Unable to loop over non-enumerable token type '{closestViableSourceToken.Type}'");
                 }
             }
+
+            return EnumerateClosestSourceToken();
         }
 
         [JoltLibraryMethod("loopValueOf")]
