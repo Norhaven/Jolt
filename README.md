@@ -21,15 +21,14 @@ You'll notice the use of a JSON Path query as a parameter. This allows you to qu
     "otherValueExists": "#exists(#valueOf($.some.other.json.path))"
 }
 ```
-You can also optionally use the piped method syntax to use the result of one method as the first parameter of another method. In that case, that parameter is removed from the second call.
+You can also optionally use the piped method syntax with an arrow in order to use the result of one method as the first parameter of another method. In that case, that parameter is removed from the second call.
 ```json
 {
     "valueExists": "#valueOf($.some.json.path)->#exists()"
 }
 ```
 If you are familiar with C# extension methods, this is the same sort of concept. We can interchangeably use any method as either static or piped and pretend that a method call is an instance method for a little while to help with readability.
-
-We'll go into the available library methods further down, but let's talk about how you'd possibly go about implementing your own method to use in a transformer.
+We'll go into the available library methods further down, but let's talk first about how you'd possibly go about implementing your own method to use in a transformer.
 
 ## External Methods
 
