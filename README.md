@@ -33,23 +33,49 @@ We'll go into the available library methods further down, but let's talk about h
 
 ## External Methods
 
-These are methods that you have created in your code. In order to use them, you will need to register them prior to using the transformer. Let's assume that you have the following C# method that you would like to be able to use. The easiest way to approach this is to use the `JoltExternalMethod` attribute.
+These are methods that you have created in your code. In order to use them, you will need to register them prior to using the transformer. Let's assume that you have the following C# method that you would like to be able to use. The easiest way to approach this is to use the `JoltExternalMethod` attribute from the `Jolt.Library` namespace.
 ```csharp
+using Jolt.Library;
+
+namespace JoltExample;
+
 public class TransformerMethods
 {
     [JoltExternalMethod]
     public static bool IsNotNull(string value) => value != null;
 }
 ```
-You will need to create a JSON transformer and add your methods to it. The `Jolt.Json` package support either `Newtonsoft` or `System.Text.Json` implementations, so choose which flavor you would like to use and instantiate one. For our demonstration purposes here, we'll assume Newtonsoft. The `Jolt.Json.DotNet` namespace contains the other one.
+You will need to create a JSON transformer and register your methods with it prior to the actual transformation. The `Jolt.Json` package supports either `Newtonsoft` or `System.Text.Json` implementations, so choose which flavor you would like to use and instantiate one. For our demonstration purposes here, we'll assume Newtonsoft. The `Jolt.Json.DotNet` namespace contains the other one.
 ```csharp
 using Jolt.Json.Newtonsoft;
 
-// Omitting boilerplate class definitions.
+// Omitting boilerplate class definition.
 
-public void TransformationExample(string transformerJson)
+public string TransformationExample(string transformerJson, string sourceJsonDocument)
 {
     var transformer = JoltJsonTransformer.DefaultWith<TransformerMethods>(transformerJson);
+    return transformer.Transform(sourceJsonDocument);
+}
+```
+Now that we've got the transformer set up, let's create a JSON transformer that makes use of the new method.
+```json
+{
+    "result": "#IsNotNull(#valueOf($.stringValue))"
+}
+```
+You'll notice that the JSON path above is to a property called `stringValue`. This transformer assumes that you know that a string property with that name exists on the source document so, for example, this document here could be your source.
+```json
+{
+    "stringValue": "not null"
+}
+```
+That will execute your method with the value "not null" and create the following output.
+```json
+{
+    "result": true
 }
 ```
 
+# Library Methods
+
+# Alternate External Method Registrations
