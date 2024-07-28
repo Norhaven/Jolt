@@ -18,7 +18,7 @@ You'll notice the use of a JSON Path query as a parameter. This allows you to qu
 ```json
 {
     "valueExists": "#exists($.some.json.path)",
-    "otherValueExists": "#exists(#valueOf($.some.json.path))"
+    "otherValueExists": "#exists(#valueOf($.some.other.json.path))"
 }
 ```
 You can also optionally use the piped method syntax to use the result of one method as the first parameter of another method. In that case, that parameter is removed from the second call.
