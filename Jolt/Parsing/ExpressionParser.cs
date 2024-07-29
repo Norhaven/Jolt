@@ -22,7 +22,7 @@ namespace Jolt.Parsing
             {
             }
 
-            public bool Expect(ExpressionTokenCategory category)
+            public bool ExpectAndConsume(ExpressionTokenCategory category)
             {
                 if (IsCompleted)
                 {
@@ -49,10 +49,7 @@ namespace Jolt.Parsing
         }
 
         public bool TryParseExpression(IEnumerable<ExpressionToken> tokens, IMethodReferenceResolver referenceResolver, out Expression? expression) => TryParseExpression(new ExpressionReader(tokens), referenceResolver, out expression);
-        public bool TryParseLiteral(IEnumerable<ExpressionToken> tokens, out LiteralExpression? literal) => TryParseLiteral(new ExpressionReader(tokens), out literal);
-        public bool TryParseMethod(IEnumerable<ExpressionToken> tokens, IMethodReferenceResolver referenceResolver, out MethodCallExpression? methodCall) => TryParseMethod(new ExpressionReader(tokens), referenceResolver, out methodCall);
-        public bool TryParsePath(IEnumerable<ExpressionToken> tokens, out PathExpression? path) => TryParsePath(new ExpressionReader(tokens), out path);
-                
+               
         private bool TryParseExpression(ExpressionReader reader, IMethodReferenceResolver referenceResolver, out Expression expression)
         {
             Expression ReadNextAtom(ExpressionReader reader)
@@ -167,7 +164,8 @@ namespace Jolt.Parsing
         {
             literal = reader.CurrentToken.Category switch
             { 
-                ExpressionTokenCategory.NumericLiteral => new LiteralExpression(typeof(int), reader.CurrentToken.Value),
+                ExpressionTokenCategory.NumericLiteral when reader.CurrentToken.Value.ToString().Contains('.') => new LiteralExpression(typeof(double), reader.CurrentToken.Value),
+                ExpressionTokenCategory.NumericLiteral => new LiteralExpression(typeof(long), reader.CurrentToken.Value),
                 ExpressionTokenCategory.BooleanLiteral => new LiteralExpression(typeof(bool), reader.CurrentToken.Value),
                 ExpressionTokenCategory.StringLiteral => new LiteralExpression(typeof(string), reader.CurrentToken.Value),
                 _ => default

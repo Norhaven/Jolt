@@ -108,7 +108,7 @@ namespace Jolt
             if (!_context.ExpressionParser.TryParseExpression(actualTokens, _context.ReferenceResolver, out var expression))
             {
                 return new EvaluationResult(token.PropertyName, null, token.CurrentTransformerToken);
-            }
+            }   
 
             var evaluationContext = new EvaluationContext(
                 evaluationMode, 

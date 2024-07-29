@@ -50,36 +50,55 @@ namespace Jolt.Evaluation
 
             if (binary.IsComparison)
             {
-                var left = (IComparable)leftResult;
-                var right = (IComparable)rightResult;
-
-                return binary.Operator switch
+                if (leftResult is null || rightResult is null)
                 {
-                    Operator.Equal => (left is null && right is null) || left?.CompareTo(right) == 0,
-                    Operator.NotEqual => !(left is null && right is null) && left?.CompareTo(right) != 0,
-                    Operator.GreaterThan => left?.CompareTo(right) > 0,
-                    Operator.LessThan => left?.CompareTo(right) < 0,
-                    Operator.GreaterThanOrEquals => left?.CompareTo(right) >= 0,
-                    Operator.LessThanOrEquals => left?.CompareTo(right) <= 0,
-                    _ => default
-                };
+                    return binary.Operator switch
+                    { 
+                        Operator.Equal => leftResult is null && rightResult is null,
+                        Operator.NotEqual => !(leftResult is null && rightResult is null),
+                        _ => throw new JoltExecutionException($"Unable to evaluate operator '{binary.Operator}' with arguments '{leftResult}' and '{rightResult}'")
+                    };
+                }
+
+                if (Numeric.IsSupported(leftResult))
+                {
+                    var left = new Numeric(leftResult);
+                    var right = new Numeric(rightResult);
+
+                    return binary.Operator switch
+                    {
+                        Operator.Equal => left.Equals(right),
+                        Operator.NotEqual => !left.Equals(right),
+                        Operator.GreaterThan => left.IsGreaterThan(right),
+                        Operator.LessThan => left.IsLessThan(right),
+                        Operator.GreaterThanOrEquals => left.IsGreaterThan(right) || left.Equals(right),
+                        Operator.LessThanOrEquals => left.IsLessThan(right) || left.Equals(right),
+                        _ => throw new JoltExecutionException($"Unable to evaluate unsupported operator '{binary.Operator}' with arguments '{left}' and '{right}'")
+                    };
+                }
+                else
+                {
+                    return binary.Operator switch
+                    { 
+                        Operator.Equal => leftResult.Equals(rightResult),
+                        Operator.NotEqual => !leftResult.Equals(rightResult),
+                        _ => throw new JoltExecutionException($"Unable to evaluate operator '{binary.Operator}' with arguments '{leftResult}' and '{rightResult}'")
+                    };
+                }
             }
             else
             {
-                var left = leftResult;
-                var right = rightResult;
-
-                if (left is null || right is null)
+                if (leftResult is null || rightResult is null)
                 {
                     throw new JoltExecutionException($"Unable to perform math using operator '{binary.Operator}' on a null value");
                 }
 
-                if (left is bool || right is bool)
+                if (leftResult is bool || rightResult is bool)
                 {
                     throw new JoltExecutionException($"Unable to perform math using operator '{binary.Operator}' on a boolean value");
                 }
 
-                if (left is string leftString && right is string rightString)
+                if (leftResult is string leftString && rightResult is string rightString)
                 {
                     if (binary.Operator == Operator.Addition)
                     {
@@ -89,47 +108,27 @@ namespace Jolt.Evaluation
                     throw new JoltExecutionException($"Unable to perform math on strings, found unexpected operator '{binary.Operator}' in an expression containing only strings");
                 }
 
-                if (left is int leftInt && right is int rightInt)
+                if (Numeric.IsSupported(leftResult))
                 {
+                    var left = new Numeric(leftResult);
+                    var right = new Numeric(rightResult);
+
                     return binary.Operator switch
                     {
-                        Operator.Addition => leftInt + rightInt,
-                        Operator.Subtraction => leftInt - rightInt,
-                        Operator.Multiplication => leftInt * rightInt,
-                        Operator.Division => leftInt / rightInt,
+                        Operator.Addition => left.Add(right),
+                        Operator.Subtraction => left.Subtract(right),
+                        Operator.Multiplication => left.Multiply(right),
+                        Operator.Division => left.Divide(right),
                         _ => default
                     };
                 }
 
-                if (left is double leftDouble && right is double rightDouble)
+                if (binary.Operator == Operator.Addition && leftResult is ICombinable combinable)
                 {
-                    return binary.Operator switch
-                    {
-                        Operator.Addition => leftDouble + rightDouble,
-                        Operator.Subtraction => leftDouble - rightDouble,
-                        Operator.Multiplication => leftDouble * rightDouble,
-                        Operator.Division => leftDouble / rightDouble,
-                        _ => default
-                    };
+                    return combinable.CombineWith(rightResult);
                 }
 
-                if ((left is int || left is double) && (right is int || right is double))
-                {
-                    var convertedLeftDouble = (double)left;
-                    var convertedRightDouble = (double)right;
-
-                    return binary.Operator switch
-                    {
-                        Operator.Addition => convertedLeftDouble + convertedRightDouble,
-                        Operator.Subtraction => convertedLeftDouble - convertedRightDouble,
-                        Operator.Multiplication => convertedLeftDouble * convertedRightDouble,
-                        Operator.Division => convertedLeftDouble / convertedRightDouble,
-                        _ => default
-                    };
-                }
-
-
-                throw new JoltExecutionException($"Unable to perform math with mismatched types in expression '{left?.GetType()} {binary.Operator} {right?.GetType()}");
+                throw new JoltExecutionException($"Unable to perform math with mismatched types in expression '{leftResult?.GetType()} {binary.Operator} {rightResult?.GetType()}");
             }
         }
 
@@ -145,9 +144,19 @@ namespace Jolt.Evaluation
                 return literal.Value;
             }
 
-            if (literal.Type == typeof(int))
+            if (literal.Type == typeof(long))
             {
-                if (!int.TryParse(literal.Value, out var numericValue))
+                if (!long.TryParse(literal.Value, out var numericValue))
+                {
+                    throw new JoltExecutionException($"Unable to convert value '{literal.Value}' to an integer");
+                }
+
+                return numericValue;
+            }
+
+            if (literal.Type == typeof(double))
+            {
+                if (!double.TryParse(literal.Value, out var numericValue))
                 {
                     throw new JoltExecutionException($"Unable to convert value '{literal.Value}' to an integer");
                 }

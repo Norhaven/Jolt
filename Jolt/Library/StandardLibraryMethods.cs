@@ -243,10 +243,10 @@ namespace Jolt.Library
         {
             var rounded = value switch
             {
-                int i => i,
-                double d when decimalPlaces is int i => Math.Round(d, i),
+                long i => i,
+                double d when decimalPlaces is long i => Math.Round(d, (int)i),
                 double d when decimalPlaces is IJsonValue token && token.ValueType == JsonValueType.Number => Math.Round(d, token.AsObject<int>()),
-                IJsonValue token when token.ValueType == JsonValueType.Number && decimalPlaces is int i => Math.Round(token.AsObject<double>(), i),
+                IJsonValue token when token.ValueType == JsonValueType.Number && decimalPlaces is long i => Math.Round(token.AsObject<double>(), (int)i),
                 IJsonValue token when token.ValueType == JsonValueType.Number && decimalPlaces is IJsonValue val && val.ValueType == JsonValueType.Number => Math.Round(token.AsObject<double>(), val.AsObject<int>()),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to determine rounding for unsupported object types '{value?.GetType()}' and '{decimalPlaces?.GetType()}'")
             };
