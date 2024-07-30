@@ -2,6 +2,8 @@
 using Jolt.Structure;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Jolt.Extensions
@@ -36,6 +38,36 @@ namespace Jolt.Extensions
         public static IJsonToken? CreateTokenFrom(this EvaluationContext context, object? value)
         {
             return context.JsonContext.JsonTokenReader.CreateTokenFrom(value);
+        }
+
+        public static IJsonToken? CreateArrayFrom(this EvaluationContext context, IJsonToken[]? value)
+        {
+            return context.JsonContext.JsonTokenReader.CreateArrayFrom(value);
+        }
+
+        public static IJsonToken? CreateObjectFrom(this EvaluationContext context, IJsonToken[]? value)
+        {
+            return context.JsonContext.JsonTokenReader.CreateObjectFrom(value);
+        }
+
+        public static bool IsQueryPath(this EvaluationContext context, string path)
+        {
+            return context.JsonContext.QueryPathProvider.IsQueryPath(path);
+        }
+
+        public static object? ResolveQueryPathIfPresent(this EvaluationContext context, object potentialPath)
+        {
+            if (potentialPath is null)
+            {
+                return default;
+            }
+
+            if (potentialPath is string value && context.IsQueryPath(value))
+            {
+                return context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, value, JsonQueryMode.StartFromRoot);
+            }
+
+            return potentialPath;
         }
     }
 }

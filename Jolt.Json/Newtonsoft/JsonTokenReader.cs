@@ -65,6 +65,27 @@ namespace Jolt.Json.Newtonsoft
             {
                 return token;
             }
+            else if (value is IEnumerable<IGrouping<string?, IJsonToken>> grouping)
+            {
+                var grouped = new List<JToken>();
+
+                foreach(var group in grouping)
+                {
+                    var json = new JObject
+                    { 
+                        ["key"] = group.Key.ToString(),
+                        ["results"] = new JArray(group.Select(x => JToken.Parse(x.ToString())))
+                    };
+
+                    grouped.Add(json);
+                }
+
+                return JsonToken.FromObject(JToken.FromObject(grouped));
+            }
+            else if (value is IEnumerable<IJsonToken> sequence)
+            {
+                return JsonToken.FromObject(JToken.FromObject(sequence.Select(x => JToken.Parse(x.ToString()))));
+            }
             
             return JsonToken.FromObject(JToken.FromObject(value));
         }

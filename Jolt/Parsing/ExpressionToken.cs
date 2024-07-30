@@ -24,6 +24,7 @@ namespace Jolt.Parsing
         public const char ForwardSlash = '/';
         public const char Not = '!';
         public const char DecimalPoint = '.';
+        public const char RangeEndIndexer = '^';
 
         public string Value { get; }
         public ExpressionTokenCategory Category { get; }

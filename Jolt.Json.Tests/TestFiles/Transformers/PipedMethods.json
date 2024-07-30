@@ -1,4 +1,4 @@
-﻿{ 
+﻿{
   "TrueResult": "#valueOf($.stringLiteral)->#exists()",
   "FalseResult": "#valueOf($.empty)->#exists()",
   "Integer": "#valueOf($.integerText)->#toInteger()",
@@ -21,7 +21,16 @@
   "IsArray": "#valueOf($.array)->#isArray()",
   "Array": "#valueOf($.joinedStringLiteral)->#splitOn(',')",
   "Index": "#valueOf($.joinedStringLiteral)->#indexOf('2')",
-  "AppendedString": "#valueOf($.stringLiteral)->#append(#valueOf($.joinedStringLiteral))",
-  "AppendedArray": "#valueOf($.stringArray)->#append(#valueOf($.stringArray))",
-  "AppendedObject": "#valueOf($.firstObject)->#append(#valueOf($.secondObject))"
+  "AppendedString": "#valueOf($.stringLiteral)->#append($.joinedStringLiteral)",
+  "AppendedArray": "#valueOf($.stringArray)->#append($.stringArray)",
+  "AppendedObject": "#valueOf($.firstObject)->#append($.secondObject)",
+  "Group": "#valueOf($.groupableArray)->#groupBy('type')",
+  "Order": "#valueOf($.groupableArray)->#orderBy('type')",
+  "OrderDesc": "#valueOf($.groupableArray)->#orderByDesc('type')",
+  "Substring1": "#valueOf($.stringLiteral)->#substring(1..3)",
+  "Substring2": "#valueOf($.stringLiteral)->#substring(1..)",
+  "Substring3": "#valueOf($.stringLiteral)->#substring(..3)",
+  "Substring4": "#valueOf($.stringLiteral)->#substring(^1..)",
+  "Substring5": "#valueOf($.stringLiteral)->#substring(1..^3)",
+  "Substring6": "#valueOf($.stringLiteral)->#substring(..^3)"
 }

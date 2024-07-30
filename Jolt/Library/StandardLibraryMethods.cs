@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Jolt.Library
 {
@@ -224,6 +225,57 @@ namespace Jolt.Library
             return context.CreateTokenFrom(length);
         }
 
+        [JoltLibraryMethod("substring")]
+        public static IJsonToken? Substring(object? value, Range range, EvaluationContext context)
+        {   
+            string AsString(IJsonValue token) => token.AsValue().AsObject<string>();
+
+            var content = value switch
+            {
+                string text => text.Substring(range),
+                IJsonValue token when token.AsValue().ValueType == JsonValueType.String => AsString(token).Substring(range),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get substring for unsupported object type '{value?.GetType()}'")
+            };
+
+            return context.CreateTokenFrom(content);
+        }
+
+        [JoltLibraryMethod("groupBy")]
+        public static IJsonToken? GroupBy(object? value, string propertyName, EvaluationContext context)
+        {
+            var grouping = value switch
+            {
+                IJsonArray array => array.GroupBy(x => ((IJsonObject)x)[propertyName]?.ToString()),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to group by '{propertyName}' for unsupported object type '{value?.GetType()}'")
+            };
+
+            return context.CreateTokenFrom(grouping);
+        }
+
+        [JoltLibraryMethod("orderBy")]
+        public static IJsonToken? OrderBy(object? value, string propertyName, EvaluationContext context)
+        {
+            var grouping = value switch
+            {
+                IJsonArray array => array.OrderBy(x => ((IJsonObject)x)[propertyName]?.ToString()),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to order by '{propertyName}' for unsupported object type '{value?.GetType()}'")
+            };
+
+            return context.CreateTokenFrom(grouping);
+        }
+
+        [JoltLibraryMethod("orderByDesc")]
+        public static IJsonToken? OrderByDescending(object? value, string propertyName, EvaluationContext context)
+        {
+            var grouping = value switch
+            {
+                IJsonArray array => array.OrderByDescending(x => ((IJsonObject)x)[propertyName]?.ToString()),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to group by '{propertyName}' for unsupported object type '{value?.GetType()}'")
+            };
+
+            return context.CreateTokenFrom(grouping);
+        }
+
         [JoltLibraryMethod("contains")]
         public static IJsonToken? Contains(object? instance, object? value, EvaluationContext context)
         {
@@ -322,11 +374,14 @@ namespace Jolt.Library
         [JoltLibraryMethod("append")]
         public static IJsonToken? Append(object? value, object? additionalValue, EvaluationContext context)
         {
+            additionalValue = context.ResolveQueryPathIfPresent(additionalValue);
+
             return (value, additionalValue) switch
             {
                 (IJsonArray first, IJsonArray second) => context.JsonContext.JsonTokenReader.CreateArrayFrom(first.Concat(second).ToArray()),
                 (IJsonObject first, IJsonObject second) => context.JsonContext.JsonTokenReader.CreateObjectFrom(first.Concat(second).ToArray()),
                 (IEnumerable<object> first, IEnumerable<object> second) => context.CreateTokenFrom(first.Concat(second).ToArray()),
+                (string first, IJsonValue second) when second.ValueType == JsonValueType.String => context.CreateTokenFrom($"{first}{second}"),
                 (string first, string second) => context.CreateTokenFrom($"{first}{second}"),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to append with unsupported object types '{value?.GetType()}' and '{additionalValue?.GetType()}'")
             };
@@ -365,7 +420,7 @@ namespace Jolt.Library
         [JoltLibraryMethod("toInteger")]
         public static IJsonToken? ToInteger(object? value, EvaluationContext context)
         {
-            return ConvertToType<int>(value, context);
+            return ConvertToType<long>(value, context);
         }
 
         [JoltLibraryMethod("toString")]

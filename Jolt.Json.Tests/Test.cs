@@ -88,6 +88,15 @@ public abstract class Test
         public const string ObjectFromArray = "ObjectFromArray";
         public const string ArrayFromObject = "ArrayFromObject";
         public const string Result = "Result";
+        public const string Group = "Group";
+        public const string Order = "Order";
+        public const string OrderDesc = "OrderDesc";
+        public const string Substring1 = "Substring1";
+        public const string Substring2 = "Substring2";
+        public const string Substring3 = "Substring3";
+        public const string Substring4 = "Substring4";
+        public const string Substring5 = "Substring5";
+        public const string Substring6 = "Substring6";
 
         public const string First = "first";
         public const string Second = "second";

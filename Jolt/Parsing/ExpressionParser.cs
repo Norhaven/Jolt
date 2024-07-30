@@ -76,6 +76,10 @@ namespace Jolt.Parsing
                 {
                     return path;
                 }
+                else if (TryParseRange(reader, out var range))
+                {
+                    return range;
+                }
                 else if (TryParseLiteral(reader, out var literal))
                 {
                     return literal;
@@ -156,6 +160,55 @@ namespace Jolt.Parsing
             var leftExpression = ReadNextAtom(reader);
 
             expression = ParsePrecedenceExpression(reader, leftExpression, 0);
+
+            return true;
+        }
+
+        private bool TryParseRange(ExpressionReader reader, out RangeExpression? range)
+        {
+            const string RangeDots = "..";
+
+            range = default;
+            
+            if (reader.CurrentToken.Category != ExpressionTokenCategory.NumericLiteral)
+            {
+                return false;
+            }
+
+            var value = reader.CurrentToken.Value;
+
+            if (!value.Contains(RangeDots) && !value.Contains(ExpressionToken.RangeEndIndexer))
+            {
+                return false;
+            }
+
+            var pieces = value.Split(RangeDots, StringSplitOptions.RemoveEmptyEntries);
+
+            if (pieces.Length > 2)
+            {
+                throw new JoltParsingException($"Unable to use multiple range operators within the same range expression");
+            }
+
+            bool IsEndIndexerUsedAt(int index) => pieces[index].StartsWith(ExpressionToken.RangeEndIndexer);
+            Index ParseWithOptionalEndIndexerAt(int index) => IsEndIndexerUsedAt(index) ? new Index(int.Parse(pieces[index][1..]), true) : new Index(int.Parse(pieces[index]));
+
+            var startIndex = value switch
+            {
+                var x when x.StartsWith(RangeDots) => new Index(0), 
+                _ => ParseWithOptionalEndIndexerAt(0)
+            };
+
+            var endIndex = value switch
+            {
+                var x when x.EndsWith(RangeDots) => new Index(0, true),
+                var x when pieces.Length == 1 => ParseWithOptionalEndIndexerAt(0),
+                var x when pieces.Length == 2 => ParseWithOptionalEndIndexerAt(1),
+                _ => throw new JoltParsingException($"Unable to parse range index expression '{value}', format is invalid")
+            };
+
+            range = new RangeExpression(startIndex, endIndex);
+
+            reader.ConsumeCurrent();
 
             return true;
         }

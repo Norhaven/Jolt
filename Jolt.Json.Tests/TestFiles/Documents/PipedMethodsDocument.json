@@ -14,5 +14,19 @@
   },
   "secondObject": {
     "second": 2
-  }
+  },
+  "groupableArray": [
+    {
+      "type": "one",
+      "value": "1"
+    },
+    {
+      "type": "one",
+      "value": "3"
+    },
+    {
+      "type": "two",
+      "value": "2"
+    }
+  ]
 }

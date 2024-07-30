@@ -112,9 +112,9 @@ namespace Jolt.Parsing
                 {
                     yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.PathLiteral, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace);
                 }
-                else if (char.IsNumber(stream.CurrentToken))
+                else if (char.IsNumber(stream.CurrentToken) || stream.CurrentToken == ExpressionToken.RangeEndIndexer || stream.CurrentToken == ExpressionToken.DecimalPoint)
                 {
-                    yield return TokenUntilNotMatchedWith(stream, ExpressionTokenCategory.NumericLiteral, x => char.IsNumber(x) || x == ExpressionToken.DecimalPoint);
+                    yield return TokenUntilNotMatchedWith(stream, ExpressionTokenCategory.NumericLiteral, x => char.IsNumber(x) || x == ExpressionToken.DecimalPoint || x == ExpressionToken.RangeEndIndexer);
                 }
                 else if (char.IsLetter(stream.CurrentToken))
                 {

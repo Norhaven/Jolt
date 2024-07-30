@@ -35,6 +35,7 @@ namespace Jolt.Evaluation
         {
             return expression switch
             {
+                RangeExpression range => UnwrapRange(range, context),
                 LiteralExpression literal => UnwrapLiteralValue(literal, context),
                 PathExpression path => ExtractPath(path, context),
                 MethodCallExpression call => ExecuteMethodCall(call, context),
@@ -135,6 +136,11 @@ namespace Jolt.Evaluation
         private object ExtractPath(PathExpression path, EvaluationContext context)
         {
             return path.PathQuery;
+        }
+
+        private Range UnwrapRange(RangeExpression range, EvaluationContext context)
+        {
+            return new Range(range.StartIndex,range.EndIndex);
         }
 
         private object UnwrapLiteralValue(LiteralExpression literal, EvaluationContext context)
