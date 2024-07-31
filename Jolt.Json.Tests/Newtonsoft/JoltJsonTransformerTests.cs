@@ -182,6 +182,7 @@ public class JoltJsonTransformerTests : Test
         array[2].Value<int>().Should().Be(3, "because that is the third element value in the source document");
 
         json.PropertyValueFor<string>(TargetProperty.AppendedString).Should().Be("1.1231,2,3", "because the strings should be concatenated together");
+        json.PropertyValueFor<string>(TargetProperty.AppendedVariadic).Should().Be("1.1231,2,31,2,3", "because the strings should be concatenated together");
 
         var appendedArray = (JArray)json[TargetProperty.AppendedArray];
 

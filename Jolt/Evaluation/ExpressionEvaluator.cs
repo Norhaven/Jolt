@@ -186,17 +186,41 @@ namespace Jolt.Evaluation
         private object? ExecuteMethodCall(MethodCallExpression call, EvaluationContext context)
         {
             var actualParameterValues = new List<object>();
-            
+            var variadicParameterValue = new List<object>();
+
+            // We could have the last parameter prior to the EvaluationContext be variadic
+            // so if that's the case then we need to start collecting those differently
+            // when we reach that location. For external methods, though, it will be the
+            // last parameter because the EvaluationContext is not allowed, so it needs to
+            // understand that case as well.
+
+            var numberOfFormalParameters = call.Signature.Parameters.Length;
+            var hasEvaluationContext = call.Signature.Parameters[^1].Type == typeof(EvaluationContext);
+            var lastParameterIndexFromEnd = hasEvaluationContext && numberOfFormalParameters > 1 ? numberOfFormalParameters - 2 : numberOfFormalParameters - 1;
+            var lastParameterIsVariadic = call.Signature.Parameters[lastParameterIndexFromEnd].IsVariadic;
+
             for(var i = 0; i < call.ParameterValues.Length; i++)
             {
                 var parameter = call.ParameterValues[i];
-                var currentFormalParameter = call.Signature.Parameters[i];
+                var currentFormalParameter = (lastParameterIsVariadic && i >= lastParameterIndexFromEnd) ? call.Signature.Parameters[lastParameterIndexFromEnd] : call.Signature.Parameters[i];
 
                 var value = currentFormalParameter.IsLazyEvaluated ? parameter : EvaluateExpression(parameter, context);
 
                 value = value.UnwrapWith(context.JsonContext.JsonTokenReader);
 
-                actualParameterValues.Add(value);
+                if (currentFormalParameter.IsVariadic)
+                {
+                    variadicParameterValue.Add(value);
+                }
+                else
+                {
+                    actualParameterValues.Add(value);
+                }
+            }
+
+            if (lastParameterIsVariadic)
+            {
+                actualParameterValues.Add(variadicParameterValue.ToArray());
             }
 
             if (call.Signature.IsSystemMethod)

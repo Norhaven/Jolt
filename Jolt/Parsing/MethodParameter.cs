@@ -11,12 +11,14 @@ namespace Jolt.Parsing
         public Type Type { get; }
         public string Name { get; }
         public bool IsLazyEvaluated { get; }
+        public bool IsVariadic { get; }
 
-        public MethodParameter(Type type, string name, bool isLazyEvaluated)
+        public MethodParameter(Type type, string name, bool isLazyEvaluated, bool isVariadic)
         {
             Type = type;
             Name = name;
             IsLazyEvaluated = isLazyEvaluated;
+            IsVariadic = isVariadic;
         }
     }
 }

@@ -372,19 +372,26 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("append")]
-        public static IJsonToken? Append(object? value, object? additionalValue, EvaluationContext context)
+        public static IJsonToken? Append(object? value, [VariadicEvaluation] object[]? additionalValues, EvaluationContext context)
         {
-            additionalValue = context.ResolveQueryPathIfPresent(additionalValue);
+            IJsonToken? resultToken = context.CreateTokenFrom(value); 
 
-            return (value, additionalValue) switch
+            foreach (var additionalValue in additionalValues)
             {
-                (IJsonArray first, IJsonArray second) => context.JsonContext.JsonTokenReader.CreateArrayFrom(first.Concat(second).ToArray()),
-                (IJsonObject first, IJsonObject second) => context.JsonContext.JsonTokenReader.CreateObjectFrom(first.Concat(second).ToArray()),
-                (IEnumerable<object> first, IEnumerable<object> second) => context.CreateTokenFrom(first.Concat(second).ToArray()),
-                (string first, IJsonValue second) when second.ValueType == JsonValueType.String => context.CreateTokenFrom($"{first}{second}"),
-                (string first, string second) => context.CreateTokenFrom($"{first}{second}"),
-                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to append with unsupported object types '{value?.GetType()}' and '{additionalValue?.GetType()}'")
-            };
+                var resolvedValue = context.ResolveQueryPathIfPresent(additionalValue);
+
+                resultToken = (resultToken, resolvedValue) switch
+                {
+                    (IJsonArray first, IJsonArray second) => context.CreateArrayFrom(first.Concat(second).ToArray()),
+                    (IJsonObject first, IJsonObject second) => context.CreateObjectFrom(first.Concat(second).ToArray()),
+                    (IEnumerable<object> first, IEnumerable<object> second) => context.CreateTokenFrom(first.Concat(second).ToArray()),
+                    (IJsonValue first, string second) when first.IsString() => context.CreateTokenFrom($"{first.ToTypeOf<string>()}{second}"),
+                    (IJsonValue first, IJsonValue second) when first.IsString() && second.IsString() => context.CreateTokenFrom($"{first}{second}"),
+                    _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to append with unsupported object types '{value?.GetType()}' and '{resolvedValue?.GetType()}'")
+                };
+            }
+
+            return resultToken;
         }
 
         [JoltLibraryMethod("isInteger")]

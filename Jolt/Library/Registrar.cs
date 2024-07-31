@@ -19,7 +19,7 @@ namespace Jolt.Library
             return from method in methods
                    let attribute = method.GetCustomAttribute<JoltLibraryMethodAttribute>()
                    where attribute != null
-                   let parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, x.GetCustomAttribute<LazyEvaluationAttribute>() != null))
+                   let parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, x.GetCustomAttribute<LazyEvaluationAttribute>() != null, x.GetCustomAttribute<VariadicEvaluationAttribute>() != null))
                    select new MethodSignature(type.AssemblyQualifiedName, method.Name, attribute.Name, method.ReturnType, CallType.Static, true, attribute.IsValueGenerator, parameters.ToArray());
         }
 
@@ -39,7 +39,7 @@ namespace Jolt.Library
 
                 var type = methodContext.GetType();
                 var method = type.GetMethod(registration.MethodName);
-                var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false)).ToArray();
+                var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false, false)).ToArray();
 
                 return new MethodSignature(type?.AssemblyQualifiedName, registration.MethodName, registration.Alias, method?.ReturnType, registration.CallType, false, false, parameters);
             }
@@ -47,7 +47,7 @@ namespace Jolt.Library
             {
                 var type = Type.GetType(registration.FullyQualifiedTypeName);
                 var method = type.GetMethod(registration.MethodName);
-                var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false)).ToArray();
+                var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false, false)).ToArray();
 
                 return new MethodSignature(type.AssemblyQualifiedName, registration.MethodName, registration.Alias, method.ReturnType, registration.CallType, false, false, parameters);
             }

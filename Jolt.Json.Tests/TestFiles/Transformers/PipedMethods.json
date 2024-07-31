@@ -22,6 +22,7 @@
   "Array": "#valueOf($.joinedStringLiteral)->#splitOn(',')",
   "Index": "#valueOf($.joinedStringLiteral)->#indexOf('2')",
   "AppendedString": "#valueOf($.stringLiteral)->#append($.joinedStringLiteral)",
+  "AppendedVariadic": "#valueOf($.stringLiteral)->#append($.joinedStringLiteral, $.joinedStringLiteral)",
   "AppendedArray": "#valueOf($.stringArray)->#append($.stringArray)",
   "AppendedObject": "#valueOf($.firstObject)->#append($.secondObject)",
   "Group": "#valueOf($.groupableArray)->#groupBy('type')",
