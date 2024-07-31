@@ -14,8 +14,10 @@ namespace Jolt.Parsing
         public CallType CallType { get; }
         public bool IsSystemMethod { get; }
         public bool IsValueGenerator { get; }
+        public bool IsAllowedAsPropertyName { get; }
+        public bool IsAllowedAsPropertyValue { get; }
 
-        public MethodSignature(string assemblyQualifiedTypeName, string name, string alias, Type returnType, CallType callType, bool isSystemMethod, bool isValueGenerator, params MethodParameter[] parameters)
+        public MethodSignature(string assemblyQualifiedTypeName, string name, string alias, Type returnType, CallType callType, bool isSystemMethod, bool isValueGenerator, bool isAllowedAsPropertyName, bool isAllowedAsPropertyValue, params MethodParameter[] parameters)
         {
             AssemblyQualifiedTypeName = assemblyQualifiedTypeName;
             Name = name;
@@ -25,6 +27,8 @@ namespace Jolt.Parsing
             Parameters = parameters;
             IsSystemMethod = isSystemMethod;
             IsValueGenerator = isValueGenerator;
+            IsAllowedAsPropertyName = isAllowedAsPropertyName;
+            IsAllowedAsPropertyValue = isAllowedAsPropertyValue;
         }
     }
 }

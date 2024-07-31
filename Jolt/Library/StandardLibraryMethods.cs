@@ -15,6 +15,7 @@ namespace Jolt.Library
     internal static class StandardLibraryMethods
     {
         [JoltLibraryMethod("valueOf")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyName | LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? ValueOf(string path, EvaluationContext context)
         {
             // ValueOf will always start a search from the root, other similar methods may search differently.
@@ -23,6 +24,7 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("exists")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Exists(object? pathOrValue, EvaluationContext context)
         {
             var valueExists = pathOrValue != null;
@@ -47,6 +49,7 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("if")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyName | LibraryMethodTarget.PropertyValue)]
         public static EvaluationResult? If(object? result, [LazyEvaluation]Expression trueExpression, [LazyEvaluation]Expression falseExpression, EvaluationContext context)
         {
             var isTrue = result switch
@@ -71,6 +74,7 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("eval")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyName | LibraryMethodTarget.PropertyValue)]
         public static EvaluationResult? Evaluate(string pathOrLiteral, EvaluationContext context)
         {
             var actualTokens = context.JsonContext.TokenReader.ReadToEnd(pathOrLiteral, context.Mode);
@@ -92,6 +96,7 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("loop", true)]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyName)]
         public static IEnumerable<IJsonToken> LoopOnArrayOrObjectAtPath(string path, EvaluationContext context)
         {
             var token = context.Token.CurrentTransformerToken;
@@ -172,6 +177,7 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("loopValueOf")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken LoopValueOf(string path, EvaluationContext context)
         {
             // LoopValueOf will always search from the closest node, other similar methods may search differently.
@@ -180,24 +186,28 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("loopValue")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? LoopValue(EvaluationContext context)
         {
             return context.ClosureSources.Peek();
         }
 
         [JoltLibraryMethod("loopIndex")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? LoopIndex(EvaluationContext context)
         {
             return context.CreateTokenFrom(context.Token.CurrentSource.Index);
         }
 
         [JoltLibraryMethod("loopProperty")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyName)]
         public static IJsonToken? LoopProperty(EvaluationContext context)
         {
             return context.Token.CurrentSource.Property;
         }
 
         [JoltLibraryMethod("indexOf")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IndexOf(object? value, string searchText, EvaluationContext context)
         {
             var index = value switch
@@ -211,6 +221,7 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("length")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Length(object? value, EvaluationContext context)
         {
             var length = value switch
@@ -226,6 +237,7 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("substring")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyName | LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Substring(object? value, Range range, EvaluationContext context)
         {   
             string AsString(IJsonValue token) => token.AsValue().AsObject<string>();
@@ -241,6 +253,7 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("groupBy")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? GroupBy(object? value, string propertyName, EvaluationContext context)
         {
             var grouping = value switch
@@ -253,6 +266,7 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("orderBy")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? OrderBy(object? value, string propertyName, EvaluationContext context)
         {
             var grouping = value switch
@@ -265,6 +279,7 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("orderByDesc")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? OrderByDescending(object? value, string propertyName, EvaluationContext context)
         {
             var grouping = value switch
@@ -277,6 +292,7 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("contains")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Contains(object? instance, object? value, EvaluationContext context)
         {
             var contains = instance switch
@@ -291,6 +307,7 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("roundTo")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? RoundTo(object? value, object? decimalPlaces, EvaluationContext context)
         {
             var rounded = value switch
@@ -307,24 +324,28 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("max")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Maximum(object? value, EvaluationContext context)
         {
             return AsIntegerOrFloatingPoint(value, x => x.Max(), x => x.Max(), context);
         }
 
         [JoltLibraryMethod("min")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Minimum(object? value, EvaluationContext context)
         {
             return AsIntegerOrFloatingPoint(value, x => x.Min(), x => x.Min(), context);
         }
 
         [JoltLibraryMethod("sum")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Sum(object? value, EvaluationContext context)
         {
             return AsIntegerOrFloatingPoint(value, x => x.Sum(), x => x.Sum(), context);
         }
 
         [JoltLibraryMethod("average")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Average(object? value, EvaluationContext context)
         {
             if (value is string text && context.JsonContext.QueryPathProvider.IsQueryPath(text))
@@ -345,6 +366,7 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("joinWith")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyName | LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? JoinWith(object? value, string delimiter, EvaluationContext context)
         {
             var joined = value switch
@@ -359,6 +381,7 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("splitOn")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? SplitOn(object? value, string delimiter, EvaluationContext context)
         {
             var split = value switch
@@ -372,6 +395,7 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("append")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Append(object? value, [VariadicEvaluation] object[]? additionalValues, EvaluationContext context)
         {
             IJsonToken? resultToken = context.CreateTokenFrom(value); 
@@ -395,36 +419,42 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("isInteger")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsInteger(object? value, EvaluationContext context)
         {
             return context.CreateTokenFrom(value is int || value is long);
         }
 
         [JoltLibraryMethod("isString")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsString(object? value, EvaluationContext context)
         {
             return context.CreateTokenFrom(value is string);
         }
 
         [JoltLibraryMethod("isDecimal")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsDecimal(object? value, EvaluationContext context)
         {
             return context.CreateTokenFrom(value is double);
         }
 
         [JoltLibraryMethod("isBoolean")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsBoolean(object? value, EvaluationContext context)
         {
             return context.CreateTokenFrom(value is bool);
         }
 
         [JoltLibraryMethod("isArray")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsArray(object? value, EvaluationContext context)
         {
             return context.CreateTokenFrom(value?.GetType().IsArray == true || value is IJsonArray);
         }
 
         [JoltLibraryMethod("isEmpty")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsEmpty(object? value, EvaluationContext context)
         {
             if (value is null)
@@ -444,6 +474,7 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("any")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Any(object? value, EvaluationContext context)
         {
             if (value is null)
@@ -462,12 +493,14 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("toInteger")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? ToInteger(object? value, EvaluationContext context)
         {
             return ConvertToType<long>(value, context);
         }
 
         [JoltLibraryMethod("toString")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? ToString(object? value, EvaluationContext context)
         {
             var convertedValue = value?.ToString();
@@ -476,12 +509,14 @@ namespace Jolt.Library
         }
 
         [JoltLibraryMethod("toDecimal")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? ToDecimal(object? value, EvaluationContext context)
         {
             return ConvertToType<double>(value, context);
         }
 
         [JoltLibraryMethod("toBoolean")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? ToBool(object? value, EvaluationContext context)
         {
             return ConvertToType<bool>(value, context);

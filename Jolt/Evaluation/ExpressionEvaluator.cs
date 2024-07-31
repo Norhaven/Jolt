@@ -185,6 +185,16 @@ namespace Jolt.Evaluation
 
         private object? ExecuteMethodCall(MethodCallExpression call, EvaluationContext context)
         {
+            if (context.Mode == EvaluationMode.PropertyName && !call.Signature.IsAllowedAsPropertyName)
+            {
+                throw new JoltExecutionException($"Unable to use method '{call.Signature.Alias}' within a property name");
+            }
+
+            if (context.Mode == EvaluationMode.PropertyValue && !call.Signature.IsAllowedAsPropertyValue)
+            {
+                throw new JoltExecutionException($"Unable to use method '{call.Signature.Alias}' within a property value");
+            }
+
             var actualParameterValues = new List<object>();
             var variadicParameterValue = new List<object>();
 

@@ -7,7 +7,7 @@ namespace Jolt.Extensions
     internal static class RangeExtensions
     {
         public static int GetIndexIn(this Index index, string text) => index.IsFromEnd ? text.Length - index.Value : index.Value;
-        public static int GetLengthIn(this Index index, Index end, string text) => end.GetIndexIn(text) - index.GetIndexIn(text);
+
         public static string Substring(this string text, Range range)
         {
             var startIndex = range.Start.GetIndexIn(text);
