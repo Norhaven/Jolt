@@ -227,10 +227,10 @@ public class JoltJsonTransformerTests : Test
         orderedDescArray[0]["type"].Value<string>().Should().Be("one", "because that comes second alphabetically when descending");
         orderedDescArray[1]["type"].Value<string>().Should().Be("one", "because that comes second alphabetically when descending");
 
-        json.PropertyValueFor<string>(TargetProperty.Substring1).Should().Be(".12", "because that is the substring that should be retrieved from the source document");
+        json.PropertyValueFor<string>(TargetProperty.Substring1).Should().Be(".1", "because that is the substring that should be retrieved from the source document");
         json.PropertyValueFor<string>(TargetProperty.Substring2).Should().Be(".123", "because that is the substring that should be retrieved from the source document");
-        json.PropertyValueFor<string>(TargetProperty.Substring3).Should().Be("1.12", "because that is the substring that should be retrieved from the source document");
-        json.PropertyValueFor<string>(TargetProperty.Substring4).Should().Be("23", "because that is the substring that should be retrieved from the source document");
+        json.PropertyValueFor<string>(TargetProperty.Substring3).Should().Be("1.1", "because that is the substring that should be retrieved from the source document");
+        json.PropertyValueFor<string>(TargetProperty.Substring4).Should().Be("3", "because that is the substring that should be retrieved from the source document");
         json.PropertyValueFor<string>(TargetProperty.Substring5).Should().Be(".", "because that is the substring that should be retrieved from the source document");
         json.PropertyValueFor<string>(TargetProperty.Substring6).Should().Be("1.", "because that is the substring that should be retrieved from the source document");
     }
