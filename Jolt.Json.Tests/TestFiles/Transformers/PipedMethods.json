@@ -12,6 +12,8 @@
   "Average": "#valueOf($.array)->#average()",
   "Min": "#valueOf($.array)->#min()",
   "Max": "#valueOf($.array)->#max()",
+  "Empty": "#valueOf($.array)->#isEmpty()",
+  "Any": "#valueOf($.array)->#any()",
   "IntegerJoin": "#valueOf($.array)->#joinWith(',')",
   "StringJoin": "#valueOf($.stringArray)->#joinWith(',')",
   "IsInteger": "#valueOf($.integerLiteral)->#isInteger()",

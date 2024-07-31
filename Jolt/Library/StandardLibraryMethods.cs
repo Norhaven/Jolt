@@ -424,6 +424,43 @@ namespace Jolt.Library
             return context.CreateTokenFrom(value?.GetType().IsArray == true || value is IJsonArray);
         }
 
+        [JoltLibraryMethod("isEmpty")]
+        public static IJsonToken? IsEmpty(object? value, EvaluationContext context)
+        {
+            if (value is null)
+            {
+                return context.CreateTokenFrom(false);
+            }
+
+            var empty = value switch
+            {
+                IJsonArray array => array.Length == 0,
+                IJsonValue val when val.IsString() => val.ToTypeOf<string>().Length == 0,
+                string val => val.Length == 0,
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check emptiness with unsupported object type '{value?.GetType()}'")
+            };
+
+            return context.CreateTokenFrom(empty);
+        }
+
+        [JoltLibraryMethod("any")]
+        public static IJsonToken? Any(object? value, EvaluationContext context)
+        {
+            if (value is null)
+            {
+                return context.CreateTokenFrom(false);
+            }
+
+            var empty = value switch
+            {
+                IJsonArray array => array.Length > 0,
+                IJsonValue val when val.IsString() => val.ToTypeOf<string>().Length > 0,
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for any with unsupported object type '{value?.GetType()}'")
+            };
+
+            return context.CreateTokenFrom(empty);
+        }
+
         [JoltLibraryMethod("toInteger")]
         public static IJsonToken? ToInteger(object? value, EvaluationContext context)
         {

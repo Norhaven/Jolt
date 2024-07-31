@@ -63,7 +63,6 @@ public abstract class Test
         public const string Equation = "Equation";
         public const string LiteralEquation = "LiteralEquation";
         public const string Eval = "Eval";
-        public const string Empty = "Empty";
         public const string TrueResult = "TrueResult";
         public const string FalseResult = "FalseResult";
         public const string Length = "Length";
@@ -73,6 +72,8 @@ public abstract class Test
         public const string Average = "Average";
         public const string Min = "Min";
         public const string Max = "Max";
+        public const string Empty = "Empty";
+        public const string Any = "Any";
         public const string StringJoin = "StringJoin";
         public const string IntegerJoin = "IntegerJoin";
         public const string GroupedEquation = "GroupedEquation";
