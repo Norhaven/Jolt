@@ -27,12 +27,11 @@ You can also optionally use the piped method syntax with an arrow in order to us
     "valueExists": "#valueOf($.some.json.path)->#exists()"
 }
 ```
-If you are familiar with C# extension methods, this is the same sort of concept. We can interchangeably use any method as either static or piped and pretend that a method call is an instance method for a little while to help with readability.
-We'll go into the available library methods further down, but let's talk first about how you'd possibly go about implementing your own method to use in a transformer.
+If you are familiar with C# extension methods, this is the same sort of concept. We can interchangeably use any method (including your own external methods) as either standalone or piped and pretend that a method call is an instance method for a little while to help with readability. We'll go into the available library methods further down, but let's talk first about how you'd possibly go about implementing your own method to use in a transformer.
 
 ## External Methods
 
-These are methods that you have created in your code. In order to use them, you will need to register them prior to using the transformer. Let's assume that you have the following C# method that you would like to be able to use. The easiest way to approach this is to use the `JoltExternalMethod` attribute from the `Jolt.Library` namespace.
+These are methods that you have created in your code. In order to use them, you will need to register them prior to using the transformer. Let's assume that you have the following C# method that you would like to be able to use. The easiest way to approach this is to use the `JoltExternalMethod` attribute from the `Jolt.Library` namespace. If the method name needs to be different when used from a transformer, specify an alias in the attribute constructor, such as `[JoltExternalMethod("differentName)]`.
 ```csharp
 using Jolt.Library;
 
@@ -72,6 +71,29 @@ That will execute your method with the value "not null" and create the following
 ```json
 {
     "result": true
+}
+```
+Your external methods that provide their output at the root level, as in the example above, must return a value that is either an acceptable JSON value (e.g. string, boolean), an `IJsonToken` instance, an `EvaluationResult` instance, or an instance that will be serialized to JSON. Your other non-root external methods may return and consume whatever instance types they want.
+
+The external methods you create may be either static or instance methods. We took a look at how a static method would be used above, and you can follow the same path for instance methods with one extra step. Let's assume we added the following instance method to the `TransformerMethods` class above.
+```csharp
+[JoltExternalMethod]
+public string ReverseString(string value) => value.Reverse();
+```
+In order to use the instance method, we need to pass an instance of `TransformerMethods` to the transformer creation call.
+```csharp
+var transformer = JoltJsonTransformer.DefaultWith<TransformerMethods>(transformerJson, new TransformerMethods());
+```
+This instance will be used for all instance method calls during the transformation step, so you could easily modify your JSON transformer to include this as before.
+```json
+{
+    "reversed": "#ReverseString(#valueOf($.stringValue))"
+}
+```
+This will create the following output when used to transform the same source JSON we used earlier.
+```json
+{
+    "reversed": "llun ton"
 }
 ```
 
