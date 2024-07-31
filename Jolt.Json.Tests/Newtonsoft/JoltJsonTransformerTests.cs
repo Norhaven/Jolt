@@ -142,6 +142,15 @@ public class JoltJsonTransformerTests : Test
 
         json.PropertyValueFor<string>(TargetProperty.TrueResult).Should().Be(Value.HasContents, "because the condition evaluated to be true");
         json.PropertyValueFor<string>(TargetProperty.FalseResult).Should().Be(Value.NoContents, "because the condition evaluated to be false");
+
+        var firstObject = (JObject)json[TargetProperty.Object];
+
+        firstObject.Should().NotBeNull("because the condition should have evaluated to true");
+        firstObject.PropertyValueFor<string>(TargetProperty.First).Should().Be(Value.Contents, "because its expression read that value");
+
+        var secondObject = (JValue)json[TargetProperty.Result];
+
+        secondObject.Value.Should().BeNull("because the condition should have evaluated to false");
     }
 
     [Fact]

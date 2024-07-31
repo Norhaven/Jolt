@@ -1,4 +1,10 @@
 ﻿{ 
   "TrueResult": "#if(#valueOf($.stringLiteral) = 'contents', 'Has Contents', 'No Contents')",
-  "FalseResult": "#if(#valueOf($.empty) = 'contents', 'Has Contents', 'No Contents')"
+  "FalseResult": "#if(#valueOf($.empty) = 'contents', 'Has Contents', 'No Contents')",
+  "#includeIf($.booleanLiteralTrue)->'Object'": {
+    "first": "#valueOf($.stringLiteral)"
+  },
+  "#includeIf($.booleanLiteralFalse)->'Result'": {
+    "second": 2
+  }
 }

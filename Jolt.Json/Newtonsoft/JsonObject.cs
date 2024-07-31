@@ -18,7 +18,7 @@ namespace Jolt.Json.Newtonsoft
             set
             {
                 _properties[propertyName] = value;
-                ((JObject)_token)[propertyName] = value.ToTypeOf<JToken>();
+                ((JObject)_token)[propertyName] = value?.ToTypeOf<JToken>();
             }
         }
 

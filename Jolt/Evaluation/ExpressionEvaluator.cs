@@ -248,8 +248,17 @@ namespace Jolt.Evaluation
             }
 
             var resultValue = InvokeMethod(call.Signature, actualParameterValues, context);
-            
-            if (typeof(IEnumerable<IJsonToken>).IsAssignableFrom(resultValue?.GetType()))
+
+            // An enumerable sequence of JSON tokens is possible to get back from a method call, such as the
+            // result of looping over an object or array, and those tokens are orphans that need to be
+            // collected and put into the appropriate structure before sending back to the caller.
+            // We could also potentially get back a JSON object or array itself, which is already
+            // contained and does not need to be packed up into a structure even though they can be enumerated
+            // as a sequence of tokens, so we're disallowing the repackaging operation for those types here.
+
+            var isResultObjectOrArray = resultValue is IJsonObject || resultValue is IJsonArray;
+
+            if (!isResultObjectOrArray && typeof(IEnumerable<IJsonToken>).IsAssignableFrom(resultValue?.GetType()))
             {
                 // We may have gotten a sequence of either array elements or object properties back
                 // with that call so we need to iterate over them and populate the appropriate target structure.

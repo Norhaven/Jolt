@@ -6,6 +6,7 @@ using Jolt.Structure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
@@ -71,6 +72,33 @@ namespace Jolt.Library
             );
 
             return context.JsonContext.ExpressionEvaluator.Evaluate(evaluationContext);
+        }
+
+        [JoltLibraryMethod("includeIf", true)]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyName)]
+        public static IJsonToken? IncludeIf(object? result, EvaluationContext context)
+        {
+            var resolvedToken = context.ResolveQueryPathIfPresent(result);
+
+            var shouldInclude = resolvedToken switch
+            {
+                bool include => include,
+                IJsonValue value when value.IsBoolean() => value.ToTypeOf<bool>(),
+                _ => throw new JoltExecutionException($"Unable to complete #includeIf() call, failed to identify result '{result}' as a boolean value")
+            };
+
+            if (!shouldInclude)
+            {
+                return default;
+            }
+
+            var includedJson = context.Token.CurrentTransformerToken;
+            var propertyName = context.Token.ResolvedPropertyName ?? context.Token.PropertyName;
+            var currentSource = new SourceToken(0, default);
+
+            var evaluationToken = new EvaluationToken(propertyName, default, includedJson.Parent, includedJson, currentSource);
+
+            return context.Transform(evaluationToken, context.ClosureSources);
         }
 
         [JoltLibraryMethod("eval")]

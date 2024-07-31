@@ -1,4 +1,6 @@
 ﻿{
   "stringLiteral": "contents",
-  "empty": null
+  "empty": null,
+  "booleanLiteralTrue": true,
+  "booleanLiteralFalse": false
 }

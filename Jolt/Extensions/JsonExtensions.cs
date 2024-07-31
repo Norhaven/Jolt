@@ -23,6 +23,7 @@ namespace Jolt.Extensions
         public static bool IsInteger(this IJsonToken token) => token.IsValue() && token.AsValue().IsTypeOf<long>();
         public static bool IsDouble(this IJsonToken token) => token.IsValue() && token.AsValue().IsTypeOf<double>();
         public static bool IsString(this IJsonToken token) => token.IsValue() && token.AsValue().IsTypeOf<string>();
+        public static bool IsBoolean(this IJsonToken token) => token.IsValue() && token.AsValue().IsTypeOf<bool>();
         public static bool IsTypeOf<T>(this IJsonValue value) => value.IsObject<T>();
 
         public static IEnumerable<T> AsSequenceOf<T>(this object? value)
