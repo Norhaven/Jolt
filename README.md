@@ -152,6 +152,18 @@ This package comes with quite a few methods built into it to get you started, al
 | average | Returns the average value found within an array of numbers | `#average($.some.path)` | Property Value
 | joinWith | Returns a string that joins all elements of an array with the provided delimiter | `#joinWith($.some.path, ',')` | Property Name/Value
 | splitOn | Returns an array of substrings from a string value splitting on the provided delimiter | `#splitOn($.some.path, ',')` | Property Value
-
+| append | Returns a string or array made from appending one or more strings or arrays onto them | `#append($.some.path, 'one', 'two')` | Property Value
+| isInteger | Returns true if the value is represented as a whole number | `#isInteger(5)` | Property Value
+| isString | Returns true if the value is represented as a string | `#isString('some string)` | Property Value
+| isDecimal | Returns true if the value is represented as a floating point number | `#isDecimal(5.12)` | Property Value
+| isBoolean | Returns true if the value is represented as a boolean | `#isBoolean(true)` | Property Value
+| isArray | Returns true if the value is represented as an array, false otherwise | `#isArray($.some.path)` | Property Value
+| isEmpty | Returns true if the value is an array or string with no contents, false otherwise | `#isArray($.some.path)` | Property Value
+| any | Returns true if the value is an array or string with contents, false otherwise | `#any($.some.path)` | Property Value
+| toInteger | Returns a value converted to a whole number | `#toInteger(1.53)` | Property Value
+| toString | Returns the string representation of a value | `#toString(2)` | Property Value
+| toDecimal | Returns a value converted to a floating point number | `#toDecimal(3)` | Property Value
+| toBoolean | Returns a value converted to a boolean | `#toBoolean('true')` | Property Value
 
 # Alternate External Method Registrations
+
