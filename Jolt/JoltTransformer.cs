@@ -46,7 +46,7 @@ namespace Jolt
             {
                 var current = pendingNodes.Dequeue();
 
-                if (!current.IsPendingValueEvaluation && _context.TokenReader.StartsWithMethodCall(current.PropertyName))
+                if (!current.IsPendingValueEvaluation && _context.TokenReader.StartsWithMethodCallOrOpenParentheses(current.PropertyName))
                 {
                     var result = TransformExpression(current, current.PropertyName, EvaluationMode.PropertyName, closureSources);
 
@@ -84,7 +84,7 @@ namespace Jolt
                 {
                     var transformerPropertyValue = value.AsObject<string>();
 
-                    if (!_context.TokenReader.StartsWithMethodCall(transformerPropertyValue))
+                    if (!_context.TokenReader.StartsWithMethodCallOrOpenParentheses(transformerPropertyValue))
                     {
                         // All transformable expressions need to be rooted in a method call otherwise
                         // we may transform things that the user intended to be literal values.

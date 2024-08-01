@@ -10,7 +10,7 @@ namespace Jolt.Parsing
 {
     public sealed class TokenReader : ITokenReader
     {
-        public bool StartsWithMethodCall(string expression)
+        public bool StartsWithMethodCallOrOpenParentheses(string expression)
         {
             if (string.IsNullOrWhiteSpace(expression))
             {
@@ -29,7 +29,7 @@ namespace Jolt.Parsing
                 stream.ConsumeCurrent();
             }
 
-            return stream.CurrentToken == ExpressionToken.Hash;
+            return stream.CurrentToken == ExpressionToken.Hash || stream.CurrentToken == ExpressionToken.OpenParentheses;
         }
 
         public IEnumerable<ExpressionToken> ReadToEnd(string expression, EvaluationMode mode)
@@ -43,13 +43,7 @@ namespace Jolt.Parsing
 
             while(!stream.IsCompleted)
             {
-                if (stream.CurrentToken == ExpressionToken.Hash)
-                {
-                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfMethodCall);
-                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.Identifier, ExpressionToken.OpenParentheses);
-                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfMethodParameters);
-                }
-                else if (stream.CurrentToken == ExpressionToken.OpenParentheses)
+                if (stream.CurrentToken == ExpressionToken.OpenParentheses)
                 {
                     yield return TokenFromCurrent(stream, ExpressionTokenCategory.OpenParenthesesGroup);
                 }
@@ -57,76 +51,18 @@ namespace Jolt.Parsing
                 {
                     yield return TokenFromCurrent(stream, ExpressionTokenCategory.CloseParenthesesGroup);
                 }
-                else if (stream.CurrentToken == ExpressionToken.Comma)
-                {
-                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.ParameterSeparator);
-                }
-                else if (stream.CurrentToken == ExpressionToken.ArrowBody)
-                {
-                    stream.ConsumeCurrent();
-
-                    if (stream.CurrentToken != ExpressionToken.ArrowHead)
-                    {
-                        throw new JoltParsingException($"Found token '-' and expected '>' at position '{stream.Position}' but found '{stream.CurrentToken}'.");
-                    }
-
-                    stream.ConsumeCurrent();
-
-                    // This could be a piped method call (if on the value side) or a
-                    // generated property name (if on the key side), so let's figure it out here.
-
-                    if (stream.CurrentToken == ExpressionToken.Hash)
-                    {   
-                        yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfPipedMethodCall);
-                        yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.Identifier, ExpressionToken.OpenParentheses);
-                        yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfMethodParameters);
-                    }
-                    else
-                    {
-                        if (mode == EvaluationMode.PropertyValue)
-                        {
-                            throw new JoltParsingException($"Expected a '#' character to begin a piped method but found character '{stream.CurrentToken}' at position '{stream.Position}'");
-                        }
-
-                        if (stream.CurrentToken == ExpressionToken.SingleQuote)
-                        {
-                            stream.ConsumeCurrent();
-
-                            yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.GeneratedNameIdentifier, ExpressionToken.SingleQuote);
-                        }
-                        else
-                        {
-                            throw new JoltParsingException($"The property key must resolve to a string literal surrounded with single quote marks, but found token '{stream.CurrentToken}' instead");
-                        }
-                    }
-                }
-                else if (stream.CurrentToken == ExpressionToken.SingleQuote)
-                {
-                    stream.ConsumeCurrent();
-
-                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.StringLiteral, ExpressionToken.SingleQuote);
-
-                    stream.ConsumeCurrent();
-                }
-                else if (stream.CurrentToken == ExpressionToken.DollarSign)
-                {
-                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.PathLiteral, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace);
-                }
-                else if (char.IsNumber(stream.CurrentToken) || stream.CurrentToken == ExpressionToken.RangeEndIndexer || stream.CurrentToken == ExpressionToken.DecimalPoint)
-                {
-                    yield return TokenUntilNotMatchedWith(stream, ExpressionTokenCategory.NumericLiteral, x => char.IsNumber(x) || x == ExpressionToken.DecimalPoint || x == ExpressionToken.RangeEndIndexer);
-                }
-                else if (char.IsLetter(stream.CurrentToken))
-                {
-                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.BooleanLiteral, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace);
-                }
-                else if (stream.CurrentToken == ExpressionToken.Whitespace)
-                {
-                    stream.ConsumeCurrent();
-                }
                 else if (stream.CurrentToken == ExpressionToken.Equal)
                 {
                     yield return TokenFromCurrent(stream, ExpressionTokenCategory.EqualComparison);
+                }
+                else if (stream.CurrentToken == ExpressionToken.Not)
+                {
+                    stream.ConsumeCurrent();
+
+                    if (stream.CurrentToken == ExpressionToken.Equal)
+                    {
+                        yield return TokenFromCurrent(stream, ExpressionTokenCategory.NotEqualComparison);
+                    }
                 }
                 else if (stream.CurrentToken == ExpressionToken.LessThan)
                 {
@@ -158,10 +94,6 @@ namespace Jolt.Parsing
                 {
                     yield return TokenFromCurrent(stream, ExpressionTokenCategory.Addition);
                 }
-                else if (stream.CurrentToken == ExpressionToken.Minus)
-                {
-                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.Subtraction);
-                }
                 else if (stream.CurrentToken == ExpressionToken.Star)
                 {
                     yield return TokenFromCurrent(stream, ExpressionTokenCategory.Multiplication);
@@ -170,15 +102,81 @@ namespace Jolt.Parsing
                 {
                     yield return TokenFromCurrent(stream, ExpressionTokenCategory.Division);
                 }
-                else if (stream.CurrentToken == ExpressionToken.Not)
+                else if (stream.CurrentToken == ExpressionToken.ArrowBody || stream.CurrentToken == ExpressionToken.Minus)
                 {
                     stream.ConsumeCurrent();
 
-                    if (stream.CurrentToken == ExpressionToken.Equal)
+                    if (stream.CurrentToken == ExpressionToken.ArrowHead)
                     {
-                        yield return TokenFromCurrent(stream, ExpressionTokenCategory.NotEqualComparison);
+                        stream.ConsumeCurrent();
+
+                        // This could be a piped method call (if on the value side) or a
+                        // generated property name (if on the key side), so let's figure it out here.
+
+                        if (stream.CurrentToken == ExpressionToken.Hash)
+                        {
+                            yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfPipedMethodCall);
+                            yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.Identifier, ExpressionToken.OpenParentheses);
+                            yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfMethodParameters);
+                        }
+                        else
+                        {
+                            if (mode == EvaluationMode.PropertyValue)
+                            {
+                                throw new JoltParsingException($"Expected a '#' character to begin a piped method but found character '{stream.CurrentToken}' at position '{stream.Position}'");
+                            }
+
+                            if (stream.CurrentToken == ExpressionToken.SingleQuote)
+                            {
+                                stream.ConsumeCurrent();
+
+                                yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.GeneratedNameIdentifier, ExpressionToken.SingleQuote);
+                            }
+                            else
+                            {
+                                throw new JoltParsingException($"The property key must resolve to a string literal surrounded with single quote marks, but found token '{stream.CurrentToken}' instead");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        yield return TokenFromCurrent(stream, ExpressionTokenCategory.Subtraction);
                     }
                 }
+                else if (stream.CurrentToken == ExpressionToken.Hash)
+                {
+                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfMethodCall);
+                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.Identifier, ExpressionToken.OpenParentheses);
+                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfMethodParameters);
+                }                
+                else if (stream.CurrentToken == ExpressionToken.Comma)
+                {
+                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.ParameterSeparator);
+                }                
+                else if (stream.CurrentToken == ExpressionToken.SingleQuote)
+                {
+                    stream.ConsumeCurrent();
+
+                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.StringLiteral, ExpressionToken.SingleQuote);
+
+                    stream.ConsumeCurrent();
+                }
+                else if (stream.CurrentToken == ExpressionToken.DollarSign)
+                {
+                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.PathLiteral, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace);
+                }
+                else if (char.IsNumber(stream.CurrentToken) || stream.CurrentToken == ExpressionToken.RangeEndIndexer || stream.CurrentToken == ExpressionToken.DecimalPoint)
+                {
+                    yield return TokenUntilNotMatchedWith(stream, ExpressionTokenCategory.NumericLiteral, x => char.IsNumber(x) || x == ExpressionToken.DecimalPoint || x == ExpressionToken.RangeEndIndexer);
+                }
+                else if (char.IsLetter(stream.CurrentToken))
+                {
+                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.BooleanLiteral, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace);
+                }
+                else if (stream.CurrentToken == ExpressionToken.Whitespace)
+                {
+                    stream.ConsumeCurrent();
+                }                
                 else
                 {
                     throw new JoltParsingException($"Unable to categorize token '{stream.CurrentToken}' at position '{stream.Position}'.");

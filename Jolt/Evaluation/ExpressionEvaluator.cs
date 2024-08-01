@@ -277,7 +277,7 @@ namespace Jolt.Evaluation
             {
                 // The method may have been a value generator, meaning that evaluating the property name will
                 // also cause the value for that property to be generated (e.g. the loop method) but if we're
-                // taking a look at a non-generator then this needs to be flagged when it's sent back so that
+                // taking a look at a non-generator property then this needs to be flagged when it's sent back so that
                 // the transformer follows up with evaluating the value as well and doesn't just assume that
                 // it's already happened.
 

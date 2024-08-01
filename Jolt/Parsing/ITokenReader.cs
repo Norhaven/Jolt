@@ -7,7 +7,7 @@ namespace Jolt.Parsing
 {
     public interface ITokenReader
     {
-        bool StartsWithMethodCall(string expression);
+        bool StartsWithMethodCallOrOpenParentheses(string expression);
         IEnumerable<ExpressionToken> ReadToEnd(string expression, EvaluationMode mode);
     }
 }

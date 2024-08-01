@@ -3,5 +3,7 @@
   "LiteralEquation": "2 + 3 * 4 + 5 = 19",
   "Eval": "#eval('2 + 3 * 4 + 5 = 19')",
   "GroupedEquation": "#eval(#valueOf($.groupedMathExpression)) + 5 = 30",
-  "Result": "#eval('3 + 1.123')"
+  "Result": "#eval('3 + 1.123')",
+  "BooleanTrue": "#valueOf($.first) * #valueOf($.second) - #valueOf($.third) + #valueOf($.fourth) / #valueOf($.fifth) = 19",
+  "Boolean": "(#valueOf($.first) + #valueOf($.second)) * (#valueOf($.third) - #valueOf($.fourth)) / 3 = 3"
 }
