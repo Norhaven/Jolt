@@ -97,6 +97,61 @@ This will create the following output when used to transform the same source JSO
 }
 ```
 
+# Math And Equality
+
+The usual basic math operators are implemented, namely addition, subtraction, multiplication, and division, using `+`, `-`, `*`, and `/` respectively, along with comparison and equality as `=`, `!=`, `>`, `>=`, `<`, and `<=`. Operations can be parenthesized as well. These are all used much like you're used to and can take the results of methods as operands. For example, assuming the following source JSON:
+```json
+{
+    "first": 5,
+    "second": 4,
+    "third": 3,
+    "fourth": 2,
+    "fifth": 1
+}
+```
+You could create a transformer that would look something like this:
+```json
+{
+    "result": "#valueOf($.first) * #valueOf($.second) - #valueOf($.third) + #valueOf($.fourth) / #valueOf($.fifth) = 19"
+}
+```
+And after transformation it would look like this:
+```json
+{
+    "result": true
+}
+```
+
 # Library Methods
+
+This package comes with quite a few methods built into it to get you started, all of which are documented here and represent the most common things that you may want to do when transforming a JSON file. If you find that an opportunity for a new library method exists, please raise an issue and it will be considered.
+
+| Method | Description | Example | Valid On
+| ------ | ----------- | ------- | --------
+| valueOf | Gets the value of a property at the specified path | `#valueOf($.some.path)` | Property Value
+| exists | Returns true if the provided value is not null, false otherwise | `#exists($.some.path)` | Property Value
+| if | Takes three parameters: a boolean condition, an expression to evaluate when that condition is true, and an expression to evaluate when false | `#if(#valueOf($.some.path), 'Yes', 'No')` | Property Value
+| includeIf | Takes a path or boolean condition and will evaluate the property object if true, returning null otherwise | `"#includeIf($.some.path)": { "nestedValue": "#valueOf($.other.path)" }` | Property Name
+| eval | Evaluates an arbitrary expression, either from a path or literal value, and returns the result | `#eval('1 + 2 = 3')` | Property Name/Value
+| loop | Evaluates a path and loops over the array elements or object properties it finds there to create its property values, naming the property as the string literal referred to by the arrow | `"$loop($.some.path)->'Result'": [ { "templateValue": "#valueOf($.other.path)" } ]` | Property Name
+| loopValueOf | Evaluates a path, searching within the current loop first and expanding out until it resolves a path or returns null | `#loopValueOf($.some.path)` | Property Value
+| loopValue | Returns the JSON object that is the value of a loop's current iteration | `#loopValueOf()` | Property Value
+| loopIndex | Returns the zero-based index value of a loop's current iteration | `#loopIndex()` | Property Value
+| loopProperty | Returns the name of the property being evaluated by the loop's current iteration | `"#loopProperty()": "#valueOf($.some.path)"` | Property Name
+| indexOf | Returns the zero-based index value of the first occurence of the provided value | `#indexOf(#valueOf($.some.path), 'some string')` | Property Value
+| length | Returns the length of a string or array value | `#length($.some.path)` | Property Value
+| substring | Returns the string value that falls within the provided range in a given string | `#substring(1..2)` | Property Value
+| groupBy | Returns a JSON object that represents the grouping of an array's contents by its individual property values | `#groupBy($.some.path, 'propertyName')` | Property Value
+| orderBy | Returns an array in ascending order as determined by its individual property values | `#orderBy($.some.path, 'propertyName')` | Property Value
+| orderByDesc | Returns an array in desccending order as determined by its individual property values | `#orderByDesc($.some.path, 'propertyName')` | Property Value
+| contains | Returns true when an array or string contains the provided value | `#contains($.some.path, 'some string')` | Property Value
+| roundTo | Returns the value of a provided number rounded to the specified decimal places | `#roundTo($.some.path, 2)` | Property Value
+| max | Returns the maximum value found within an array of numbers | `#max($.some.path)` | Property Value
+| min | Returns the minimum value found within an array of numbers | `#min($.some.path)` | Property Value
+| sum | Returns the total value found within an array of numbers | `#sum($.some.path)` | Property Value
+| average | Returns the average value found within an array of numbers | `#average($.some.path)` | Property Value
+| joinWith | Returns a string that joins all elements of an array with the provided delimiter | `#joinWith($.some.path, ',')` | Property Name/Value
+| splitOn | Returns an array of substrings from a string value splitting on the provided delimiter | `#splitOn($.some.path, ',')` | Property Value
+
 
 # Alternate External Method Registrations
