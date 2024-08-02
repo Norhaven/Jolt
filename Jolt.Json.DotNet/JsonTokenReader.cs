@@ -19,7 +19,7 @@ namespace Jolt.Json.DotNet
             {
                 if (token is IJsonValue value)
                 {
-                    array.Add(value.AsObject<object>());
+                    array.Add(value.ToTypeOf<object>());
                 }
                 else
                 {

@@ -18,7 +18,7 @@ namespace Jolt.Json.Newtonsoft
             {
                 if (token is IJsonValue value)
                 {
-                    array.Add(value.AsObject<object>());
+                    array.Add(value.ToTypeOf<object>());
                 }
                 else
                 {

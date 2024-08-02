@@ -33,9 +33,9 @@ namespace Jolt.Json.DotNet
             }
         }
 
-        public bool IsObject<T>() => AsObject<object>()?.GetType() == typeof(T);
+        public bool IsObject<T>() => ToTypeOf<object>()?.GetType() == typeof(T);
 
-        public T AsObject<T>() => ToTypeOf<T>();
+        public T ToTypeOf<T>() => base.ToTypeOf<T>();
 
         public override void Clear()
         {

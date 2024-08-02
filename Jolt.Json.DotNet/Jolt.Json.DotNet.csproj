@@ -8,7 +8,15 @@
     <RepositoryUrl>https://github.com/Norhaven/Jolt</RepositoryUrl>
     <Description>A friendly way of transforming JSON into different JSON.</Description>
     <Copyright>Chris Hannon</Copyright>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="JsonPath.Net" Version="1.1.3" />

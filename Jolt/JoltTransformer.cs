@@ -82,7 +82,7 @@ namespace Jolt
                 }
                 else if (current.CurrentTransformerToken is IJsonValue value && value.ValueType == JsonValueType.String)
                 {
-                    var transformerPropertyValue = value.AsObject<string>();
+                    var transformerPropertyValue = value.ToTypeOf<string>();
 
                     if (!_context.TokenReader.StartsWithMethodCallOrOpenParentheses(transformerPropertyValue))
                     {
@@ -92,7 +92,7 @@ namespace Jolt
                         continue;
                     }
 
-                    var result = TransformExpression(current, value.AsObject<string>(), EvaluationMode.PropertyValue, closureSources);
+                    var result = TransformExpression(current, value.ToTypeOf<string>(), EvaluationMode.PropertyValue, closureSources);
 
                     ApplyChangesToParent(current.ParentToken, result);
                 }

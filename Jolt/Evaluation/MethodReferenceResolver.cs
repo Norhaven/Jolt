@@ -23,7 +23,7 @@ namespace Jolt.Evaluation
         public void Clear()
         {
             _thirdPartyMethods.Clear();
-            _availableMethods = default;
+            _availableMethods = _standardMethods.ToLookup(x => x.Alias);
         }
 
         public void RegisterMethods(IEnumerable<MethodRegistration> methodRegistrations, object? methodContext = default)

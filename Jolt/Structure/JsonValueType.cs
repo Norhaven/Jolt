@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Jolt.Structure
 {
+    /// <summary>
+    /// Represents the type of a JSON value.
+    /// </summary>
     public enum JsonValueType
     {
         Unknown = 0,

@@ -149,7 +149,7 @@ public abstract class JoltJsonTransformerTests : Test
 
         if (secondObject is not null)
         {
-            secondObject.AsObject<object>().Should().BeNull("because the condition should have evaluated to false");
+            secondObject.ToTypeOf<object>().Should().BeNull("because the condition should have evaluated to false");
         }
     }
 

@@ -33,7 +33,7 @@ namespace Jolt.Library
 
             if (pathOrValue is IJsonToken token)
             {
-                var tokenExists = valueExists && token.Type != JsonTokenType.Null && token.AsValue().AsObject<object>() != null;
+                var tokenExists = valueExists && token.Type != JsonTokenType.Null && token.AsValue().ToTypeOf<object>() != null;
 
                 return context.CreateTokenFrom(tokenExists);
             }
@@ -263,7 +263,7 @@ namespace Jolt.Library
             {
                 string text => text.Length,
                 IJsonArray array => array.Count(),
-                IJsonValue token when token.AsValue().ValueType == JsonValueType.String => token.AsValue().AsObject<string>().Length,
+                IJsonValue token when token.AsValue().ValueType == JsonValueType.String => token.AsValue().ToTypeOf<string>().Length,
                 object[] array => array.Length,
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get length for unsupported object type '{value?.GetType()}'")
             };
@@ -275,7 +275,7 @@ namespace Jolt.Library
         [MethodIsValidOn(LibraryMethodTarget.PropertyName | LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Substring(object? value, Range range, EvaluationContext context)
         {   
-            string AsString(IJsonValue token) => token.AsValue().AsObject<string>();
+            string AsString(IJsonValue token) => token.AsValue().ToTypeOf<string>();
             
             var resolved = context.ResolveQueryPathIfPresent(value);
 
@@ -344,7 +344,7 @@ namespace Jolt.Library
             {
                 string text when value is string valueText => text.Contains(valueText),
                 IJsonArray array => array.Contains(context.CreateTokenFrom(value)),
-                IJsonValue token when token.ValueType == JsonValueType.String => token.AsValue().AsObject<string>().Contains(value?.ToString()),
+                IJsonValue token when token.ValueType == JsonValueType.String => token.AsValue().ToTypeOf<string>().Contains(value?.ToString()),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to determine contents for unsupported object type '{value?.GetType()}'")
             };
 
@@ -361,11 +361,11 @@ namespace Jolt.Library
             {
                 long i => i,
                 double d when decimalPlaces is long i => Math.Round(d, (int)i),
-                double d when decimalPlaces is IJsonValue token && token.ValueType == JsonValueType.Number => Math.Round(d, token.AsObject<int>()),
+                double d when decimalPlaces is IJsonValue token && token.ValueType == JsonValueType.Number => Math.Round(d, token.ToTypeOf<int>()),
                 decimal d when decimalPlaces is long i => Math.Round(d, (int)i),
-                decimal d when decimalPlaces is IJsonValue token && token.ValueType == JsonValueType.Number => Math.Round(d, token.AsObject<int>()),
-                IJsonValue token when token.ValueType == JsonValueType.Number && decimalPlaces is long i => Math.Round(token.AsObject<decimal>(), (int)i),
-                IJsonValue token when token.ValueType == JsonValueType.Number && decimalPlaces is IJsonValue val && val.ValueType == JsonValueType.Number => Math.Round(token.AsObject<decimal>(), val.AsObject<int>()),
+                decimal d when decimalPlaces is IJsonValue token && token.ValueType == JsonValueType.Number => Math.Round(d, token.ToTypeOf<int>()),
+                IJsonValue token when token.ValueType == JsonValueType.Number && decimalPlaces is long i => Math.Round(token.ToTypeOf<decimal>(), (int)i),
+                IJsonValue token when token.ValueType == JsonValueType.Number && decimalPlaces is IJsonValue val && val.ValueType == JsonValueType.Number => Math.Round(token.ToTypeOf<decimal>(), val.ToTypeOf<int>()),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to determine rounding for unsupported object types '{value?.GetType()}' and '{decimalPlaces?.GetType()}'")
             };
 
@@ -421,8 +421,8 @@ namespace Jolt.Library
             var joined = resolved switch
             {
                 IEnumerable<string> strings => string.Join(delimiter, strings),
-                IJsonArray array when array.AllElementsAreOfType<string>() => string.Join(delimiter, array.Select(x => x.AsValue().AsObject<string>())),
-                IJsonArray array => string.Join(delimiter, array.Select(x => x.AsValue().AsObject<object>()?.ToString())),
+                IJsonArray array when array.AllElementsAreOfType<string>() => string.Join(delimiter, array.Select(x => x.AsValue().ToTypeOf<string>())),
+                IJsonArray array => string.Join(delimiter, array.Select(x => x.AsValue().ToTypeOf<object>()?.ToString())),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to join with unsupported object type '{value?.GetType()}'")
             };
 
@@ -621,8 +621,8 @@ namespace Jolt.Library
             {
                 IEnumerable<decimal> decimals => asDecimal(decimals.Cast<double>()),
                 IEnumerable<double> doubles => asDecimal(doubles),
-                IJsonArray array when array.AllElementsAreOfType<double>() => asDecimal(array.Select(x => x.AsValue().AsObject<double>())),
-                IJsonArray array when array.AllElementsAreOfType<int, long, decimal, double>() => asDecimal(array.Select(x => x.AsValue().AsObject<double>())),
+                IJsonArray array when array.AllElementsAreOfType<double>() => asDecimal(array.Select(x => x.AsValue().ToTypeOf<double>())),
+                IJsonArray array when array.AllElementsAreOfType<int, long, decimal, double>() => asDecimal(array.Select(x => x.AsValue().ToTypeOf<double>())),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get integer or floating point value for unsupported object type '{value?.GetType()}'")
             };
 

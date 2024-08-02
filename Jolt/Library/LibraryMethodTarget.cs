@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Jolt.Library
 {
+    /// <summary>
+    /// Represents the allowed locations that a library method may be used within.
+    /// </summary>
     [Flags]
     internal enum LibraryMethodTarget
     {

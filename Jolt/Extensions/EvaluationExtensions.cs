@@ -29,7 +29,7 @@ namespace Jolt.Extensions
 
             if (value is IJsonToken token)
             {
-                return token.AsValue().AsObject<object>();
+                return token.AsValue().ToTypeOf<object>();
             }
 
             return value;

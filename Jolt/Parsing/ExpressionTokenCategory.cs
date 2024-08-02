@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Jolt.Parsing
 {
+    /// <summary>
+    /// Represents a category of expression token.
+    /// </summary>
     public enum ExpressionTokenCategory
     {
         Unknown = 0,

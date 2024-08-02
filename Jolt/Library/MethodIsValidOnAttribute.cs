@@ -4,6 +4,10 @@ using System.Text;
 
 namespace Jolt.Library
 {
+    /// <summary>
+    /// Represents a way to determine whether a particular library method is valid to be used
+    /// within the property name, property value, or both.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     internal sealed class MethodIsValidOnAttribute : Attribute
     {
