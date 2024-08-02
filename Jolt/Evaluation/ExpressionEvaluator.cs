@@ -160,9 +160,9 @@ namespace Jolt.Evaluation
                 return numericValue;
             }
 
-            if (literal.Type == typeof(decimal))
+            if (literal.Type == typeof(double))
             {
-                if (!decimal.TryParse(literal.Value, out var numericValue))
+                if (!double.TryParse(literal.Value, out var numericValue))
                 {
                     throw new JoltExecutionException($"Unable to convert value '{literal.Value}' to an integer");
                 }

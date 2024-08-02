@@ -114,7 +114,7 @@ public abstract class JoltJsonTransformerTests : Test
         json.PropertyValueFor<string>(TargetProperty.LiteralEquation).Should().Be(equation, "because this is the value of an equation without the context of evaluation");
         json.PropertyValueFor<bool>(TargetProperty.Eval).Should().BeTrue("because this is the result of evaluating an equation");
         json.PropertyValueFor<bool>(TargetProperty.GroupedEquation).Should().BeTrue("because this is the result of evaluating the equation");
-        json.PropertyValueFor<decimal>(TargetProperty.Result).Should().Be(4.123m, "because this is the result of evaluating the equation with mixed types");
+        json.PropertyValueFor<double>(TargetProperty.Result).Should().Be(4.123d, "because this is the result of evaluating the equation with mixed types");
         json.PropertyValueFor<bool>(TargetProperty.BooleanTrueLiteral).Should().Be(true, "because this is the result of evaluating the equation");
         json.PropertyValueFor<bool>(TargetProperty.BooleanLiteral).Should().Be(true, "because this is the result of evaluating the equation");
     }
@@ -165,16 +165,16 @@ public abstract class JoltJsonTransformerTests : Test
         json.PropertyValueFor<int>(TargetProperty.IntegerLiteral).Should().Be(1, "because the decimal value should truncate during conversion");
         json.PropertyValueFor<string>(TargetProperty.StringLiteral).Should().Be("1.123", "because the decimal value should convert to string");
         json.PropertyValueFor<bool>(TargetProperty.BooleanLiteral).Should().Be(true, "because the string value should convert to boolean");
-        json.PropertyValueFor<decimal>(TargetProperty.DecimalLiteral).Should().Be(1.123m, "because the decimal value should be preserved");
+        json.PropertyValueFor<double>(TargetProperty.DecimalLiteral).Should().Be(1.123d, "because the decimal value should be preserved");
         json.PropertyValueFor<int>(TargetProperty.Length).Should().Be(5, "because that's the number of characters in the source string");
         json.PropertyValueFor<bool>(TargetProperty.StringContains).Should().BeTrue("because the string contains the appropriate value");
-        json.PropertyValueFor<decimal>(TargetProperty.RoundedValue).Should().Be(1.12m, "because the decimal is supposed to be rounded to 2 places");
+        json.PropertyValueFor<double>(TargetProperty.RoundedValue).Should().Be(1.12d, "because the decimal is supposed to be rounded to 2 places");
         json.PropertyValueFor<int>(TargetProperty.Sum).Should().Be(6, "because the array values add up to that number");
         json.PropertyValueFor<string>(TargetProperty.StringJoin).Should().Be("one,two,three", "because the array values should be joined by commas");
         json.PropertyValueFor<string>(TargetProperty.IntegerJoin).Should().Be("1,2,3", "because the array values should be joined by commas");
-        json.PropertyValueFor<decimal>(TargetProperty.Average).Should().Be(2m, "because the array values should be averaged");
-        json.PropertyValueFor<decimal>(TargetProperty.Min).Should().Be(1, "because that's the lowest value in the array");
-        json.PropertyValueFor<decimal>(TargetProperty.Max).Should().Be(3, "because that's the highest value in the array");
+        json.PropertyValueFor<double>(TargetProperty.Average).Should().Be(2d, "because the array values should be averaged");
+        json.PropertyValueFor<double>(TargetProperty.Min).Should().Be(1, "because that's the lowest value in the array");
+        json.PropertyValueFor<double>(TargetProperty.Max).Should().Be(3, "because that's the highest value in the array");
         json.PropertyValueFor<bool>(TargetProperty.Empty).Should().BeFalse("because the array has at least one element");
         json.PropertyValueFor<bool>(TargetProperty.Any).Should().BeTrue("because the array has at least one element");
         json.PropertyValueFor<bool>(TargetProperty.IsInteger).Should().Be(true, "because that's the type of the value");

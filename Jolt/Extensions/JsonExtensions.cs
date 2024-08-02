@@ -27,6 +27,7 @@ namespace Jolt.Extensions
             {
                 IEnumerable<int> integers => integers.Cast<T>(),
                 IEnumerable<decimal> decimals => decimals.Cast<T>(),
+                IEnumerable<double> doubles => doubles.Cast<T>(),
                 IJsonArray array => array.Select(x => x.AsValue().ToTypeOf<T>()),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to convert to sequence for unsupported object type '{value?.GetType()}'")
             };

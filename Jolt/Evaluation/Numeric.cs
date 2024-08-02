@@ -63,7 +63,7 @@ namespace Jolt.Evaluation
             return PerformOperationWith(value, "-", (left, right) => left - right, (left, right) => left - right);
         }
 
-        private object? PerformOperationWith(object? value, string operation, Func<long, long, object> useIntegers, Func<decimal, decimal, object> useFloatingPoints)
+        private object? PerformOperationWith(object? value, string operation, Func<long, long, object> useIntegers, Func<double, double, object> useFloatingPoints)
         {
             value = UnwrapNumericIfPresent(value);
             
@@ -78,7 +78,7 @@ namespace Jolt.Evaluation
                 _value is float || value is float ||
                 _value is decimal || value is decimal)
             {
-                return useFloatingPoints(_value.ConvertTo<decimal>(), value.ConvertTo<decimal>());
+                return useFloatingPoints(_value.ConvertTo<double>(), value.ConvertTo<double>());
             }
 
             if (OperatorEvaluator.CanBothConvertTo<long>(_value, value))

@@ -26,7 +26,7 @@ public abstract class Test
         public const int SecondArrayElementId = 2;
         public const int GlobalId = 3;
 
-        public const decimal DecimalLiteral = 1.123m;
+        public const double DecimalLiteral = 1.123d;
 
         public const string Contents = "contents";
         public const string HasContents = "Has Contents";

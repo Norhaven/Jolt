@@ -217,7 +217,7 @@ namespace Jolt.Parsing
         {
             literal = reader.CurrentToken.Category switch
             { 
-                ExpressionTokenCategory.NumericLiteral when reader.CurrentToken.Value.ToString().Contains('.') => new LiteralExpression(typeof(decimal), reader.CurrentToken.Value),
+                ExpressionTokenCategory.NumericLiteral when reader.CurrentToken.Value.ToString().Contains('.') => new LiteralExpression(typeof(double), reader.CurrentToken.Value),
                 ExpressionTokenCategory.NumericLiteral => new LiteralExpression(typeof(long), reader.CurrentToken.Value),
                 ExpressionTokenCategory.BooleanLiteral => new LiteralExpression(typeof(bool), reader.CurrentToken.Value),
                 ExpressionTokenCategory.StringLiteral => new LiteralExpression(typeof(string), reader.CurrentToken.Value),

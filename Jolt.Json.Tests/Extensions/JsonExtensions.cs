@@ -15,7 +15,7 @@ internal static class JsonExtensions
         {
             null => default,
             var x when x.ValueType == JsonValueType.String => x.ToTypeOf<string>(),
-            var x when x.ValueType == JsonValueType.Number => x.ToTypeOf<decimal>(),
+            var x when x.ValueType == JsonValueType.Number => x.ToTypeOf<double>(),
             var x when x.ValueType == JsonValueType.Boolean => x.ToTypeOf<bool>(),
             var x when x.ValueType == JsonValueType.Null => default,
             _ => throw new ArgumentOutOfRangeException($"Expected a value for property name '{propertyName}' in order to verify the test results but received an unsupported type")
