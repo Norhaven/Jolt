@@ -10,8 +10,8 @@ There are two `.Net Standard 2.1` packages available: `Jolt.Json.Newtonsoft` and
 
 | Package Name | NuGet Version |
 | ------------ | ------------- |
-| Jolt.Json.DotNet | [![NuGet version](https://badge.fury.io/nu/Jolt.Json.DotNet.svg)](https://badge.fury.io/nu/Jolt.Json.DotNet) |
-| Jolt.Json.Newtonsoft | [![NuGet version](https://badge.fury.io/nu/Jolt.Json.Newtonsoft.svg)](https://badge.fury.io/nu/Jolt.Json.Newtonsoft) |
+| Jolt.Json.DotNet | ![NuGet Version](https://img.shields.io/nuget/v/Jolt.Json.DotNet) |
+| Jolt.Json.Newtonsoft | ![NuGet Version](https://img.shields.io/nuget/v/Jolt.Json.Newtonsoft) |
 
 # Syntax
 
