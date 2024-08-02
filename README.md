@@ -4,9 +4,14 @@ Welcome! This is a JSON transformation language inspired by XSLT and the wonderf
 
 There are two `.Net Standard 2.1` packages available: `Jolt.Json.Newtonsoft` and `Jolt.Json.DotNet`. These use `Newtonsoft` or `System.Text.Json` functionality, respectively.
 
-**Build/Release Status**
+## Build/Release Status
 
-![Latest Build](https://github.com/Norhaven/Jolt/actions/workflows/build.yml/badge.svg)
+[![Latest Build](https://github.com/Norhaven/Jolt/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/Norhaven/Jolt/actions/workflows/build-and-release.yml)
+
+| Package Name | NuGet Version |
+| ------------ | ------------- |
+| Jolt.Json.DotNet | [![NuGet version](https://badge.fury.io/nu/Jolt.Json.DotNet.svg)](https://badge.fury.io/nu/Jolt.Json.DotNet) |
+| Jolt.Json.Newtonsoft | [![NuGet version](https://badge.fury.io/nu/Jolt.Json.Newtonsoft.svg)](https://badge.fury.io/nu/Jolt.Json.Newtonsoft) |
 
 # Syntax
 
@@ -129,7 +134,7 @@ And after transformation it would look like this:
     "result": true
 }
 ```
-It's also worth noting that the addition operator `+` is overloaded and can serve as a shortcut to string concatenation. For example, in the following source JSON:
+It's also worth noting that the addition operator `+` is overloaded and can serve as a shortcut to string concatenation, either with a source document value or a literal string. For example, in the following source JSON:
 ```json
 {
     "value": "example"
@@ -138,13 +143,13 @@ It's also worth noting that the addition operator `+` is overloaded and can serv
 And assuming that you have a transformer that looks like this:
 ```json
 {
-    "result": "#valueOf($.value) + #valueOf($.value)"
+    "result": "#valueOf($.value) + #valueOf($.value) + 'hello'"
 }
 ```
 The output would look like this:
 ```json
 {
-    "result": "exampleexample"
+    "result": "exampleexamplehello"
 }
 ```
 
