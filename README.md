@@ -134,7 +134,7 @@ And after transformation it would look like this:
     "result": true
 }
 ```
-It's also worth noting that the addition operator `+` is overloaded and can serve as a shortcut to string concatenation. For example, in the following source JSON:
+It's also worth noting that the addition operator `+` is overloaded and can serve as a shortcut to string concatenation, either with a source document value or a literal string. For example, in the following source JSON:
 ```json
 {
     "value": "example"
@@ -143,13 +143,13 @@ It's also worth noting that the addition operator `+` is overloaded and can serv
 And assuming that you have a transformer that looks like this:
 ```json
 {
-    "result": "#valueOf($.value) + #valueOf($.value)"
+    "result": "#valueOf($.value) + #valueOf($.value) + 'hello'"
 }
 ```
 The output would look like this:
 ```json
 {
-    "result": "exampleexample"
+    "result": "exampleexamplehello"
 }
 ```
 
