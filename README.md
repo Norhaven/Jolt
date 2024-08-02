@@ -8,9 +8,10 @@ There are two `.Net Standard 2.1` packages available: `Jolt.Json.Newtonsoft` and
 
 [![Latest Build](https://github.com/Norhaven/Jolt/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/Norhaven/Jolt/actions/workflows/build-and-release.yml)
 
-[![Jolt.Json.DotNet](https://badge.fury.io/nu/Jolt.Json.DotNet.svg)](https://badge.fury.io/nu/Jolt.Json.DotNet)
-
-[![Jolt.Json.Newtonsoft](https://badge.fury.io/nu/Jolt.Json.Newtonsoft.svg)](https://badge.fury.io/nu/Jolt.Json.Newtonsoft)
+| Package Name | NuGet Version |
+| ------------ | ------------- |
+| Jolt.Json.DotNet | [![Jolt.Json.DotNet](https://badge.fury.io/nu/Jolt.Json.DotNet.svg)](https://badge.fury.io/nu/Jolt.Json.DotNet) |
+| Jolt.Json.Newtonsoft | [![Jolt.Json.Newtonsoft](https://badge.fury.io/nu/Jolt.Json.Newtonsoft.svg)](https://badge.fury.io/nu/Jolt.Json.Newtonsoft) |
 
 # Syntax
 
