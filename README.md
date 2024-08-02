@@ -4,7 +4,7 @@ Welcome! This is a JSON transformation language inspired by XSLT and the wonderf
 
 There are two `.Net Standard 2.1` packages available: `Jolt.Json.Newtonsoft` and `Jolt.Json.DotNet`. These use `Newtonsoft` or `System.Text.Json` functionality, respectively.
 
-**Main Branch**
+**Build/Release Status**
 
 ![Latest Build](https://github.com/Norhaven/Jolt/actions/workflows/build.yml/badge.svg)
 
