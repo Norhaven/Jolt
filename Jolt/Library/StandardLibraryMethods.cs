@@ -5,6 +5,7 @@ using Jolt.Extensions;
 using Jolt.Structure;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -356,13 +357,14 @@ namespace Jolt.Library
         {
             var resolved = context.ResolveQueryPathIfPresent(value);
 
-            var rounded = resolved switch
+            object? rounded = resolved switch
             {
                 long i => i,
                 double d when decimalPlaces is long i => Math.Round(d, (int)i),
-                double d when decimalPlaces is IJsonValue token && token.ValueType == JsonValueType.Number => Math.Round(d, token.AsObject<int>()),
-                IJsonValue token when token.ValueType == JsonValueType.Number && decimalPlaces is long i => Math.Round(token.AsObject<double>(), (int)i),
-                IJsonValue token when token.ValueType == JsonValueType.Number && decimalPlaces is IJsonValue val && val.ValueType == JsonValueType.Number => Math.Round(token.AsObject<double>(), val.AsObject<int>()),
+                decimal d when decimalPlaces is long i => Math.Round(d, (int)i),
+                decimal d when decimalPlaces is IJsonValue token && token.ValueType == JsonValueType.Number => Math.Round(d, token.AsObject<int>()),
+                IJsonValue token when token.ValueType == JsonValueType.Number && decimalPlaces is long i => Math.Round(token.AsObject<decimal>(), (int)i),
+                IJsonValue token when token.ValueType == JsonValueType.Number && decimalPlaces is IJsonValue val && val.ValueType == JsonValueType.Number => Math.Round(token.AsObject<decimal>(), val.AsObject<int>()),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to determine rounding for unsupported object types '{value?.GetType()}' and '{decimalPlaces?.GetType()}'")
             };
 
@@ -396,12 +398,12 @@ namespace Jolt.Library
         {
             var resolved = context.ResolveQueryPathIfPresent(value);
 
-            var average = resolved switch
+            object? average = resolved switch
             {
                 IEnumerable<int> integers => integers.Average(),
-                IEnumerable<double> doubles => doubles.Average(),
+                IEnumerable<decimal> decimals => decimals.Average(),
                 IJsonArray array when array.IsOnlyIntegers() => array.AsSequenceOf<long>().Average(),
-                IJsonArray array when array.IsOnlyNumericPrimitives() => array.AsSequenceOf<double>().Average(),
+                IJsonArray array when array.IsOnlyNumericPrimitives() => array.AsSequenceOf<decimal>().Average(),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get average for unsupported object type '{value?.GetType()}'")
             };
 
@@ -473,7 +475,7 @@ namespace Jolt.Library
         {
             var resolved = context.ResolveQueryPathIfPresent(value);
 
-            return context.CreateTokenFrom(resolved is int || resolved is long);
+            return context.CreateTokenFrom(resolved is int || resolved is long || (resolved is decimal && !resolved.ToString().Contains(".")));
         }
 
         [JoltLibraryMethod("isString")]
@@ -491,7 +493,7 @@ namespace Jolt.Library
         {
             var resolved = context.ResolveQueryPathIfPresent(value);
 
-            return context.CreateTokenFrom(resolved is double);
+            return context.CreateTokenFrom(resolved is decimal || resolved is double);
         }
 
         [JoltLibraryMethod("isBoolean")]
@@ -581,7 +583,7 @@ namespace Jolt.Library
         {
             var resolved = context.ResolveQueryPathIfPresent(value);
 
-            return ConvertToType<double>(resolved, context);
+            return ConvertToType<decimal>(resolved, context);
         }
 
         [JoltLibraryMethod("toBoolean")]
@@ -593,7 +595,7 @@ namespace Jolt.Library
             return ConvertToType<bool>(resolved, context);
         }
 
-        private static IJsonToken? AsIntegerOrFloatingPoint(object? value, Func<IEnumerable<long>, long?> asInt64, Func<IEnumerable<double>, double> asDouble, EvaluationContext context)
+        private static IJsonToken? AsIntegerOrFloatingPoint(object? value, Func<IEnumerable<long>, long?> asInt64, Func<IEnumerable<decimal>, decimal> asDecimal, EvaluationContext context)
         {
             var resolved = context.ResolveQueryPathIfPresent(value);
 
@@ -613,15 +615,15 @@ namespace Jolt.Library
                 return context.CreateTokenFrom(integerValue);
             }
 
-            var doubleValue = value switch
+            var decimalValue = value switch
             {
-                IEnumerable<double> doubles => asDouble(doubles),
-                IJsonArray array when array.AllElementsAreOfType<double>() => asDouble(array.Select(x => x.AsValue().AsObject<double>())),
-                IJsonArray array when array.AllElementsAreOfType<int, long, double>() => asDouble(array.Select(x => (double)x.AsValue().AsObject<object>())),
+                IEnumerable<decimal> decimals => asDecimal(decimals),
+                IJsonArray array when array.AllElementsAreOfType<decimal>() => asDecimal(array.Select(x => x.AsValue().AsObject<decimal>())),
+                IJsonArray array when array.AllElementsAreOfType<int, long, decimal>() => asDecimal(array.Select(x => x.AsValue().AsObject<decimal>())),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get integer or floating point value for unsupported object type '{value?.GetType()}'")
             };
 
-            return context.CreateTokenFrom(doubleValue);
+            return context.CreateTokenFrom(decimalValue);
         }
 
         private static IJsonToken? ConvertToType<T>(object? value, EvaluationContext context)

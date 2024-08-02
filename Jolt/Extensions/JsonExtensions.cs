@@ -14,14 +14,9 @@ namespace Jolt.Extensions
         public static bool AllElementsAreOfType<T, T1, T2>(this IJsonArray array) => array.AllElementsAreOfTypes(typeof(T), typeof(T1), typeof(T2));
 
         public static bool IsOnlyIntegers(this IJsonArray array) => array.AllElementsAreOfType<int, long>();
-        public static bool IsOnlyNumericPrimitives(this IJsonArray array) => array.AllElementsAreOfType<int, long, double>();
-
-        public static IEnumerable<double> AsDoubles(this IJsonArray array) => array.Select(x => x.ToTypeOf<double>());
-        public static IEnumerable<long> AsInt64s(this IJsonArray array) => array.Select(x => x.ToTypeOf<long>());
+        public static bool IsOnlyNumericPrimitives(this IJsonArray array) => array.AllElementsAreOfType<int, long, decimal>();
 
         public static bool IsValue(this IJsonToken token) => token.Type == JsonTokenType.Value;
-        public static bool IsInteger(this IJsonToken token) => token.IsValue() && token.AsValue().IsTypeOf<long>();
-        public static bool IsDouble(this IJsonToken token) => token.IsValue() && token.AsValue().IsTypeOf<double>();
         public static bool IsString(this IJsonToken token) => token.IsValue() && token.AsValue().IsTypeOf<string>();
         public static bool IsBoolean(this IJsonToken token) => token.IsValue() && token.AsValue().IsTypeOf<bool>();
         public static bool IsTypeOf<T>(this IJsonValue value) => value.IsObject<T>();
@@ -31,7 +26,7 @@ namespace Jolt.Extensions
             return value switch
             {
                 IEnumerable<int> integers => integers.Cast<T>(),
-                IEnumerable<double> doubles => doubles.Cast<T>(),
+                IEnumerable<decimal> decimals => decimals.Cast<T>(),
                 IJsonArray array => array.Select(x => x.AsValue().ToTypeOf<T>()),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to convert to sequence for unsupported object type '{value?.GetType()}'")
             };

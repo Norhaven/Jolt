@@ -26,7 +26,7 @@ public abstract class Test
         public const int SecondArrayElementId = 2;
         public const int GlobalId = 3;
 
-        public const double DoubleLiteral = 1.123d;
+        public const decimal DecimalLiteral = 1.123m;
 
         public const string Contents = "contents";
         public const string HasContents = "Has Contents";
@@ -49,7 +49,7 @@ public abstract class Test
     {
         public const string IntegerLiteral = "Integer";
         public const string StringLiteral = "String";
-        public const string DoubleLiteral = "Double";
+        public const string DecimalLiteral = "Decimal";
         public const string BooleanLiteral = "Boolean";
         public const string BooleanTrueLiteral = "BooleanTrue";
         public const string BooleanFalseLiteral = "BooleanFalse";
@@ -79,7 +79,7 @@ public abstract class Test
         public const string GroupedEquation = "GroupedEquation";
         public const string IsInteger = "IsInteger";
         public const string IsString = "IsString";
-        public const string IsDouble = "IsDouble";
+        public const string IsDecimal = "IsDecimal";
         public const string IsBoolean = "IsBoolean";
         public const string IsArray = "IsArray";
         public const string Index = "Index";
@@ -146,6 +146,7 @@ public abstract class Test
     protected abstract IJsonTokenReader CreateTokenReader();
     protected abstract IJsonTransformer<IJsonContext> CreateTransformer(JoltContext context);
     protected abstract IQueryPathProvider CreateQueryPathProvider();
+    protected abstract IJsonObject ParseJson(string json);
 
     protected T? ExecuteTestFor<T>(string transformerJson, string testDocumentJson, Func<string?, T?> convertResult, IEnumerable<MethodRegistration> methodRegistrations = default, object? methodContext = default)
     {

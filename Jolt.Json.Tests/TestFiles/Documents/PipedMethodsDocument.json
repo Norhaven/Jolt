@@ -2,7 +2,7 @@
   "stringLiteral": "1.123",
   "integerText": "1",
   "integerLiteral": 1,
-  "doubleLiteral": 1.123,
+  "decimalLiteral": 1.123,
   "booleanText": "true",
   "booleanLiteral": true,
   "empty": null,

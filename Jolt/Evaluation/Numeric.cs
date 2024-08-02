@@ -63,22 +63,22 @@ namespace Jolt.Evaluation
             return PerformOperationWith(value, "-", (left, right) => left - right, (left, right) => left - right);
         }
 
-        private object? PerformOperationWith(object? value, string operation, Func<long, long, object> useIntegers, Func<double, double, object> useFloatingPoints)
+        private object? PerformOperationWith(object? value, string operation, Func<long, long, object> useIntegers, Func<decimal, decimal, object> useFloatingPoints)
         {
             value = UnwrapNumericIfPresent(value);
             
             // Handle the cases where we may have a non-whole number in the mix first, when that
             // happens we need to lift whatever the other one happens to be for the operation.
-            // Internally we're assuming double or long for every numeric literal but the user may
+            // Internally we're assuming decimal or long for every numeric literal but the user may
             // have additional types coming into the expressions from their external methods and
             // we need to handle those appropriately too. Note that we're currently not splitting out
-            // the decimal operations from double so there may be a few slight rounding errors using that type.
+            // the decimal operations from float/double so there may be a few slight rounding errors using that type.
 
             if (_value is double || value is double || 
                 _value is float || value is float ||
                 _value is decimal || value is decimal)
             {
-                return useFloatingPoints(_value.ConvertTo<double>(), value.ConvertTo<double>());
+                return useFloatingPoints(_value.ConvertTo<decimal>(), value.ConvertTo<decimal>());
             }
 
             if (OperatorEvaluator.CanBothConvertTo<long>(_value, value))

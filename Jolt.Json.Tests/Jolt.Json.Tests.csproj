@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -60,11 +60,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DotNet\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Jolt.Json\Jolt.Json.csproj" />
+    <ProjectReference Include="..\Jolt.Json.DotNet\Jolt.Json.DotNet.csproj" />
+    <ProjectReference Include="..\Jolt.Json.Newtonsoft\Jolt.Json.Newtonsoft.csproj" />
   </ItemGroup>
 
 </Project>
