@@ -205,7 +205,7 @@ The first thing is the `MethodRegistration` class. This wraps up all of the rele
 var staticRegistration = MethodRegistration.FromStaticMethod(typeof(TransformerMethods), nameof(TransformerMethods.IsNotNull));
 var instanceRegistration = MethodRegistration.FromInstanceMethod(nameof(TransformerMethods.ReverseString));
 ```
-You'll notice that you don't have to provide a type name for the instance method. This is because the transformer will assume that you sent in an appropriate method context instance when it was created and will just use whatever you provide during method resolution. Include the registrations and an instance for your methods (if needed) when you create the `JoltJsonTransformer` instance.
+You'll notice that you don't have to provide an instance type for the instance method, just the name of the method itself. This is because the transformer will assume that you sent in an appropriate method context instance when it was created and will just use whatever you provide during method resolution. Include the registrations and an instance for your methods (if needed) when you create the `JoltJsonTransformer` instance.
 ```csharp
 var transformer = JoltJsonTransformer.DefaultWith(transformerJson, new[] { staticRegistration, instanceRegistration }, new TransformerMethods());
 ```
