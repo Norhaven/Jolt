@@ -361,6 +361,7 @@ namespace Jolt.Library
             {
                 long i => i,
                 double d when decimalPlaces is long i => Math.Round(d, (int)i),
+                double d when decimalPlaces is IJsonValue token && token.ValueType == JsonValueType.Number => Math.Round(d, token.AsObject<int>()),
                 decimal d when decimalPlaces is long i => Math.Round(d, (int)i),
                 decimal d when decimalPlaces is IJsonValue token && token.ValueType == JsonValueType.Number => Math.Round(d, token.AsObject<int>()),
                 IJsonValue token when token.ValueType == JsonValueType.Number && decimalPlaces is long i => Math.Round(token.AsObject<decimal>(), (int)i),
@@ -402,6 +403,7 @@ namespace Jolt.Library
             {
                 IEnumerable<int> integers => integers.Average(),
                 IEnumerable<decimal> decimals => decimals.Average(),
+                IEnumerable<double> doubles => doubles.Average(),
                 IJsonArray array when array.IsOnlyIntegers() => array.AsSequenceOf<long>().Average(),
                 IJsonArray array when array.IsOnlyNumericPrimitives() => array.AsSequenceOf<decimal>().Average(),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get average for unsupported object type '{value?.GetType()}'")
@@ -618,8 +620,9 @@ namespace Jolt.Library
             var decimalValue = value switch
             {
                 IEnumerable<decimal> decimals => asDecimal(decimals),
+                IEnumerable<double> doubles => asDecimal(doubles.Cast<decimal>()),
                 IJsonArray array when array.AllElementsAreOfType<decimal>() => asDecimal(array.Select(x => x.AsValue().AsObject<decimal>())),
-                IJsonArray array when array.AllElementsAreOfType<int, long, decimal>() => asDecimal(array.Select(x => x.AsValue().AsObject<decimal>())),
+                IJsonArray array when array.AllElementsAreOfType<int, long, decimal, double>() => asDecimal(array.Select(x => x.AsValue().AsObject<decimal>())),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get integer or floating point value for unsupported object type '{value?.GetType()}'")
             };
 
