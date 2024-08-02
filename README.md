@@ -43,7 +43,9 @@ public class TransformerMethods
     public static bool IsNotNull(string value) => value != null;
 }
 ```
-You will need to create a JSON transformer and register your methods with it prior to the actual transformation. The `Jolt.Json` package supports either `Newtonsoft` or `System.Text.Json` implementations, so choose which flavor you would like to use and instantiate one. For our demonstration purposes here, we'll assume Newtonsoft. The `Jolt.Json.DotNet` namespace contains the other one.
+You will need to create a JSON transformer and register your methods with it prior to the actual transformation. There are two packages available by default: `Jolt.Json.Newtonsoft` and `Jolt.Json.DotNet`, which use either `Newtonsoft` or `System.Text.Json` as their particular flavor of implementation. Also, note that the `Jolt.Json.DotNet` package has an additional dependency, namely on [JsonPath.Net](https://github.com/json-everything/json-everything), due to there being no default JSON Path support out of the box in `System.Text.Json` as of yet. 
+
+For our demonstration purposes here, we'll assume Newtonsoft.
 ```csharp
 using Jolt.Json.Newtonsoft;
 
@@ -84,10 +86,10 @@ In order to use the instance method, we need to pass an instance of `Transformer
 ```csharp
 var transformer = JoltJsonTransformer.DefaultWith<TransformerMethods>(transformerJson, new TransformerMethods());
 ```
-This instance will be used for all instance method calls during the transformation step, so you could easily modify your JSON transformer to include this as before.
+This instance will be used for all instance method calls during the transformation step, so you could easily modify your JSON transformer to include this in the same way as before. Keep in mind that your own methods can also take advantage of the piped method syntax, so let's demonstrate that here.
 ```json
 {
-    "reversed": "#ReverseString(#valueOf($.stringValue))"
+    "reversed": "#valueOf($.stringValue)->#ReverseString()"
 }
 ```
 This will create the following output when used to transform the same source JSON we used earlier.
@@ -154,7 +156,7 @@ This package comes with quite a few methods built into it to get you started, al
 | splitOn | Returns an array of substrings from a string value splitting on the provided delimiter | `#splitOn($.some.path, ',')` | Property Value
 | append | Returns a string or array made from appending one or more strings or arrays onto them | `#append($.some.path, 'one', 'two')` | Property Value
 | isInteger | Returns true if the value is represented as a whole number | `#isInteger(5)` | Property Value
-| isString | Returns true if the value is represented as a string | `#isString('some string)` | Property Value
+| isString | Returns true if the value is represented as a string | `#isString('some string')` | Property Value
 | isDecimal | Returns true if the value is represented as a floating point number | `#isDecimal(5.12)` | Property Value
 | isBoolean | Returns true if the value is represented as a boolean | `#isBoolean(true)` | Property Value
 | isArray | Returns true if the value is represented as an array, false otherwise | `#isArray($.some.path)` | Property Value
@@ -167,3 +169,20 @@ This package comes with quite a few methods built into it to get you started, al
 
 # Alternate External Method Registrations
 
+There are additional ways available to register your external methods, let's take a look at a few different ways.
+
+## Method Registration
+
+The slight bit of added complexity that the previous way (using the `[JoltExternalMethod]` attribute) hid from you is the registration process. If you'd like to do this process manually, you will need a few things.
+
+The first thing is the `MethodRegistration` class. This wraps up all of the relevant information about your external method in a way that the transformer can understand in order to call it. You can either choose static or instance methods. Let's register the ones we defined earlier.
+
+```csharp
+var staticRegistration = MethodRegistration.FromStaticMethod(typeof(TransformerMethods), nameof(TransformerMethods.IsNotNull));
+var instanceRegistration = MethodRegistration.FromInstanceMethod(nameof(TransformerMethods.ReverseString));
+```
+You'll notice that you don't have to provide a type name for the instance method. This is because the transformer will assume that you sent in an appropriate instance when it was created and will just use whatever you provide during method resolution. Include the registrations when you create the `JoltJsonTransformer` instance.
+```csharp
+var transformer = JoltJsonTransformer.DefaultWith(transformerJson, new[] { staticRegistration, instanceRegistration }, new TransformerMethods());
+```
+That's it! You can pass in your source JSON document to the `Transform` method call just like before and collect the transformed result.
