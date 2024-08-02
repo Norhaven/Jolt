@@ -7,6 +7,7 @@ There are two `.Net Standard 2.1` packages available: `Jolt.Json.Newtonsoft` and
 **Build/Release Status**
 
 ![Latest Build](https://github.com/Norhaven/Jolt/actions/workflows/build.yml/badge.svg)
+
 [![NuGet Release](https://github.com/Norhaven/Jolt/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/Norhaven/Jolt/actions/workflows/build-and-release.yml)
 
 # Syntax
