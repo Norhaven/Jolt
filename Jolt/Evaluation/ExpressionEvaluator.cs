@@ -124,11 +124,6 @@ namespace Jolt.Evaluation
                     };
                 }
 
-                if (binary.Operator == Operator.Addition && leftResult is ICombinable combinable)
-                {
-                    return combinable.CombineWith(rightResult);
-                }
-
                 throw new JoltExecutionException($"Unable to perform math with mismatched types in expression '{leftResult?.GetType()} {binary.Operator} {rightResult?.GetType()}");
             }
         }
