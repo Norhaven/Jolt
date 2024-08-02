@@ -31,7 +31,7 @@ If you are familiar with C# extension methods, this is the same sort of concept.
 
 ## External Methods
 
-These are methods that you have created in your code. In order to use them, you will need to register them prior to using the transformer. Let's assume that you have the following C# method that you would like to be able to use. The easiest way to approach this is to use the `JoltExternalMethod` attribute from the `Jolt.Library` namespace. If the method name needs to be different when used from a transformer, specify an alias in the attribute constructor, such as `[JoltExternalMethod("differentName)]`.
+These are methods that you have created in your code. In order to use them, you will need to register them prior to using the transformer. Let's assume that you have the following C# method that you would like to be able to use. The easiest way to approach this is to use the `JoltExternalMethod` attribute from the `Jolt.Library` namespace. If the method name needs to be different when used from a transformer, specify an alias in the attribute constructor, such as `[JoltExternalMethod("differentName")]`.
 ```csharp
 using Jolt.Library;
 
