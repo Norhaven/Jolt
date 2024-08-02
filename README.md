@@ -8,6 +8,10 @@ There are two `.Net Standard 2.1` packages available: `Jolt.Json.Newtonsoft` and
 
 [![Latest Build](https://github.com/Norhaven/Jolt/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/Norhaven/Jolt/actions/workflows/build-and-release.yml)
 
+[![Jolt.Json.DotNet](https://badge.fury.io/nu/Jolt.Json.DotNet.svg)](https://badge.fury.io/nu/Jolt.Json.DotNet)
+
+[![Jolt.Json.Newtonsoft](https://badge.fury.io/nu/Jolt.Json.Newtonsoft.svg)](https://badge.fury.io/nu/Jolt.Json.Newtonsoft)
+
 # Syntax
 
 The transformation language itself is pretty straightforward and primarily relies on defining and using methods to handle the transformation work needed, both as provided by the library within the package or external methods that you will create and register for use.
