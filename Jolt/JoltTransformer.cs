@@ -16,7 +16,6 @@ namespace Jolt
 {
     public class JoltTransformer<TContext> : IJsonTransformer<TContext> where TContext : IJsonContext
     {
-        private readonly ConcurrentDictionary<string, Expression> _cachedExpressions = new ConcurrentDictionary<string, Expression>();
         private readonly TContext _context;
 
         public JoltTransformer(TContext context)
@@ -46,6 +45,11 @@ namespace Jolt
             {
                 var current = pendingNodes.Dequeue();
 
+                // We need to check up front if the property name contains an expression and evaluate that first because
+                // some property name expressions will be responsible for generating their own values. Also, in some cases,
+                // we have already evaluated the name and need to continue to evaluate the property value portion instead of
+                // introducing cycles and evaluating the name again.
+
                 if (!current.IsPendingValueEvaluation && _context.TokenReader.StartsWithMethodCallOrOpenParentheses(current.PropertyName))
                 {
                     var result = TransformExpression(current, current.PropertyName, EvaluationMode.PropertyName, closureSources);
@@ -54,6 +58,8 @@ namespace Jolt
 
                     if (result.IsValuePendingEvaluation)
                     {
+                        // Property name evaluation has already happened now, send this back around for the value now.
+
                         var evaluationToken = new EvaluationToken(
                             result.NewPropertyName ?? result.OriginalPropertyName,
                             default,
@@ -86,7 +92,7 @@ namespace Jolt
 
                     if (!_context.TokenReader.StartsWithMethodCallOrOpenParentheses(transformerPropertyValue))
                     {
-                        // All transformable expressions need to be rooted in a method call otherwise
+                        // All transformable expressions need to be rooted in a method call or parenthesized expression otherwise
                         // we may transform things that the user intended to be literal values.
 
                         continue;
