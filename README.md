@@ -129,6 +129,24 @@ And after transformation it would look like this:
     "result": true
 }
 ```
+It's also worth noting that the addition operator `+` is overloaded and can serve as a shortcut to string concatenation. For example, in the following source JSON:
+```json
+{
+    "value": "example"
+}
+```
+And assuming that you have a transformer that looks like this:
+```json
+{
+    "result": "#valueOf($.value) + #valueOf($.value)"
+}
+```
+The output would look like this:
+```json
+{
+    "result": "exampleexample"
+}
+```
 
 # Library Methods
 
