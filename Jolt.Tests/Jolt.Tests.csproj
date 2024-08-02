@@ -7,6 +7,7 @@
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <Copyright>Chris Hannon</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

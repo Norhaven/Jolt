@@ -3,6 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
+    <Title>Jolt</Title>
+    <Authors>Norhaven</Authors>
+    <Description>A friendly way of transforming JSON into different JSON.</Description>
+    <Copyright>Chris Hannon</Copyright>
+    <RepositoryUrl>https://github.com/Norhaven/Jolt</RepositoryUrl>
   </PropertyGroup>
 
 </Project>
