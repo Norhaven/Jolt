@@ -162,7 +162,7 @@ This package comes with quite a few methods built into it to get you started, al
 | valueOf | Gets the value of a property at the specified path | `#valueOf($.some.path)` | Property Value
 | exists | Returns true if the provided value is not null, false otherwise | `#exists($.some.path)` | Property Value
 | if | Takes three parameters: a boolean condition, an expression to evaluate when that condition is true, and an expression to evaluate when false | `#if(#valueOf($.some.path), 'Yes', 'No')` | Property Value
-| includeIf | Takes a path or boolean condition and will evaluate and include the property's object if true, returning null otherwise | `"#includeIf($.some.path)": { "nestedValue": "#valueOf($.other.path)" }` | Property Name
+| includeIf | Takes a path or boolean condition and will evaluate and include the property's object if true, returning null otherwise | `"#includeIf($.some.path)->'someName'": { "nestedValue": "#valueOf($.other.path)" }` | Property Name
 | eval | Evaluates an arbitrary expression, either from a path or literal value, and returns the result | `#eval('1 + 2 = 3')` | Property Name/Value
 | loop | Evaluates a path and loops over the array elements or object properties it finds there to create its property values, naming the property as the string literal referred to by the arrow | `"$loop($.some.path)->'Result'": [ { "templateValue": "#valueOf($.other.path)" } ]` | Property Name
 | loopValueOf | Evaluates a path, searching within the current loop first and expanding out until it resolves a path or returns null | `#loopValueOf($.some.path)` | Property Value
