@@ -306,12 +306,14 @@ namespace Jolt.Library
 
         [JoltLibraryMethod("orderBy")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? OrderBy(object? value, string propertyName, EvaluationContext context)
+        public static IJsonToken? OrderBy(object? value, [OptionalParameter(null)] string? propertyName, EvaluationContext context)
         {
             var resolved = context.ResolveQueryPathIfPresent(value);
 
             var grouping = resolved switch
             {
+                IJsonArray array when array.ContainsOnlyNumbers() && array.ContainsAtLeastOneDecimal() => array.OrderBy(x => x.ToTypeOf<double>()),
+                IJsonArray array when array.ContainsOnlyNumbers() => array.OrderBy(x => x.ToTypeOf<long>()),
                 IJsonArray array => array.OrderBy(x => ((IJsonObject)x)[propertyName]?.ToString()),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to order by '{propertyName}' for unsupported object type '{value?.GetType()}'")
             };
@@ -321,12 +323,14 @@ namespace Jolt.Library
 
         [JoltLibraryMethod("orderByDesc")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? OrderByDescending(object? value, string propertyName, EvaluationContext context)
+        public static IJsonToken? OrderByDescending(object? value, [OptionalParameter(null)] string? propertyName, EvaluationContext context)
         {
             var resolved = context.ResolveQueryPathIfPresent(value);
 
             var grouping = resolved switch
             {
+                IJsonArray array when array.ContainsOnlyNumbers() && array.ContainsAtLeastOneDecimal() => array.OrderByDescending(x => x.ToTypeOf<double>()),
+                IJsonArray array when array.ContainsOnlyNumbers() => array.OrderByDescending(x => x.ToTypeOf<long>()),
                 IJsonArray array => array.OrderByDescending(x => ((IJsonObject)x)[propertyName]?.ToString()),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to group by '{propertyName}' for unsupported object type '{value?.GetType()}'")
             };
@@ -399,13 +403,14 @@ namespace Jolt.Library
         {
             var resolved = context.ResolveQueryPathIfPresent(value);
 
+
             object? average = resolved switch
             {
                 IEnumerable<int> integers => integers.Average(),
                 IEnumerable<decimal> decimals => decimals.Average(),
                 IEnumerable<double> doubles => doubles.Average(),
-                IJsonArray array when array.IsOnlyIntegers() => array.AsSequenceOf<long>().Average(),
-                IJsonArray array when array.IsOnlyNumericPrimitives() => array.AsSequenceOf<double>().Average(),
+                IJsonArray array when array.ContainsAtLeastOneDecimal() => array.AsSequenceOf<double>().Average(),
+                IJsonArray array when array.ContainsOnlyIntegers() => array.AsSequenceOf<double>().Average(),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get average for unsupported object type '{value?.GetType()}'")
             };
 
@@ -421,7 +426,7 @@ namespace Jolt.Library
             var joined = resolved switch
             {
                 IEnumerable<string> strings => string.Join(delimiter, strings),
-                IJsonArray array when array.AllElementsAreOfType<string>() => string.Join(delimiter, array.Select(x => x.AsValue().ToTypeOf<string>())),
+                IJsonArray array when array.ContainsOnlyStrings() => string.Join(delimiter, array.Select(x => x.AsValue().ToTypeOf<string>())),
                 IJsonArray array => string.Join(delimiter, array.Select(x => x.AsValue().ToTypeOf<object>()?.ToString())),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to join with unsupported object type '{value?.GetType()}'")
             };
@@ -608,7 +613,7 @@ namespace Jolt.Library
             {
                 IEnumerable<int> integers => asInt64(integers.Cast<long>()),
                 IEnumerable<long> integers => asInt64(integers),
-                IJsonArray array when array.IsOnlyIntegers() => asInt64(array.AsSequenceOf<long>()),
+                IJsonArray array when array.ContainsOnlyIntegers() => asInt64(array.AsSequenceOf<long>()),
                 _ => null
             };
 
@@ -621,8 +626,7 @@ namespace Jolt.Library
             {
                 IEnumerable<decimal> decimals => asDecimal(decimals.Cast<double>()),
                 IEnumerable<double> doubles => asDecimal(doubles),
-                IJsonArray array when array.AllElementsAreOfType<double>() => asDecimal(array.Select(x => x.AsValue().ToTypeOf<double>())),
-                IJsonArray array when array.AllElementsAreOfType<int, long, decimal, double>() => asDecimal(array.Select(x => x.AsValue().ToTypeOf<double>())),
+                IJsonArray array when array.ContainsOnlyNumbers() => asDecimal(array.Select(x => x.AsValue().ToTypeOf<double>())),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get integer or floating point value for unsupported object type '{value?.GetType()}'")
             };
 

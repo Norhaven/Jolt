@@ -203,6 +203,7 @@ namespace Jolt.Evaluation
             var hasEvaluationContext = call.Signature.Parameters[^1].Type == typeof(EvaluationContext);
             var lastParameterIndexFromEnd = hasEvaluationContext && numberOfFormalParameters > 1 ? numberOfFormalParameters - 2 : numberOfFormalParameters - 1;
             var lastParameterIsVariadic = call.Signature.Parameters[lastParameterIndexFromEnd].IsVariadic;
+            var lastParameterIsOptional = call.Signature.Parameters[lastParameterIndexFromEnd].IsOptional;
 
             for(var i = 0; i < call.ParameterValues.Length; i++)
             {
@@ -226,6 +227,12 @@ namespace Jolt.Evaluation
             if (lastParameterIsVariadic)
             {
                 actualParameterValues.Add(variadicParameterValue.ToArray());
+            }
+            else if (lastParameterIsOptional && call.ParameterValues.Length < lastParameterIndexFromEnd + 1)
+            {
+                var optionalDefaultValue = call.Signature.Parameters[lastParameterIndexFromEnd].OptionalDefaultValue;
+
+                actualParameterValues.Add(optionalDefaultValue);
             }
 
             if (call.Signature.IsSystemMethod)

@@ -1,4 +1,5 @@
 ﻿using Jolt.Structure;
+using Jolt.Extensions;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
@@ -17,6 +18,8 @@ namespace Jolt.Json.Newtonsoft
             get => _arrayElements[index];
             set => _arrayElements[index] = value;
         }
+
+        public JsonArrayElementType ElementTypes => _arrayElements.DetermineElementTypes();
 
         public int Length => _arrayElements.Count;
 

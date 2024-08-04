@@ -35,8 +35,6 @@ namespace Jolt.Json.DotNet
 
         public bool IsObject<T>() => ToTypeOf<object>()?.GetType() == typeof(T);
 
-        public T ToTypeOf<T>() => base.ToTypeOf<T>();
-
         public override void Clear()
         {
             ((Nodes.JsonValue)_token).ReplaceWith<string>(default);

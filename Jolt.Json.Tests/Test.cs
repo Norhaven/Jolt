@@ -92,7 +92,9 @@ public abstract class Test
         public const string Result = "Result";
         public const string Group = "Group";
         public const string Order = "Order";
+        public const string Order1 = "Order1";
         public const string OrderDesc = "OrderDesc";
+        public const string OrderDesc1 = "OrderDesc1";
         public const string Substring1 = "Substring1";
         public const string Substring2 = "Substring2";
         public const string Substring3 = "Substring3";

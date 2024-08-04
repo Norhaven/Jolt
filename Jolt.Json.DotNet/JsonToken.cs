@@ -105,6 +105,10 @@ namespace Jolt.Json.DotNet
 
                 return (T)value;
             }
+            else if (typeof(T) == typeof(string))
+            {
+                return (T)(object)_token.ToString();
+            }
 
             return _token.GetValue<T>();
         }

@@ -7,6 +7,7 @@
   "booleanLiteral": true,
   "empty": null,
   "array": [ 1, 2, 3 ],
+  "orderableArray": [ 2, 3, 1 ],
   "stringArray": [ "one", "two", "three" ],
   "joinedStringLiteral": "1,2,3",
   "firstObject": {

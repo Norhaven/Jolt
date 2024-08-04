@@ -228,6 +228,14 @@ public abstract class JoltJsonTransformerTests : Test
         orderedArray[1].AsObject()["type"].ToTypeOf<string>().Should().Be("one", "because that comes second alphabetically");
         orderedArray[2].AsObject()["type"].ToTypeOf<string>().Should().Be("two", "because that comes third alphabetically");
 
+        var orderedArray1 = (IJsonArray)json[TargetProperty.Order1];
+
+        orderedArray1.Should().NotBeNull("because the array exists in the source document");
+
+        orderedArray1[0].AsValue().ToTypeOf<int>().Should().Be(1, "because that comes first alphabetically");
+        orderedArray1[1].AsValue().ToTypeOf<int>().Should().Be(2, "because that comes second alphabetically");
+        orderedArray1[2].AsValue().ToTypeOf<int>().Should().Be(3, "because that comes third alphabetically");
+
         var orderedDescArray = (IJsonArray)json[TargetProperty.Order];
 
         orderedDescArray.Should().NotBeNull("because the array exists in the source document");
@@ -235,6 +243,14 @@ public abstract class JoltJsonTransformerTests : Test
         orderedDescArray[2].AsObject()["type"].ToTypeOf<string>().Should().Be("two", "because that comes first alphabetically when descending");
         orderedDescArray[0].AsObject()["type"].ToTypeOf<string>().Should().Be("one", "because that comes second alphabetically when descending");
         orderedDescArray[1].AsObject()["type"].ToTypeOf<string>().Should().Be("one", "because that comes second alphabetically when descending");
+
+        var orderedDescArray1 = (IJsonArray)json[TargetProperty.OrderDesc1];
+
+        orderedArray1.Should().NotBeNull("because the array exists in the source document");
+
+        orderedDescArray1[0].AsValue().ToTypeOf<int>().Should().Be(3, "because that comes first alphabetically");
+        orderedDescArray1[1].AsValue().ToTypeOf<int>().Should().Be(2, "because that comes second alphabetically");
+        orderedDescArray1[2].AsValue().ToTypeOf<int>().Should().Be(1, "because that comes third alphabetically");
 
         json.PropertyValueFor<string>(TargetProperty.Substring1).Should().Be(".1", "because that is the substring that should be retrieved from the source document");
         json.PropertyValueFor<string>(TargetProperty.Substring2).Should().Be(".123", "because that is the substring that should be retrieved from the source document");

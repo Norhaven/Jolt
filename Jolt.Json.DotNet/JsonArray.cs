@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Jolt.Extensions;
 using System.Text;
 using Nodes = System.Text.Json.Nodes;
 
@@ -17,6 +18,8 @@ namespace Jolt.Json.DotNet
             get => _arrayElements[index];
             set => _arrayElements[index] = value;
         }
+
+        public JsonArrayElementType ElementTypes => _arrayElements.DetermineElementTypes();
 
         public int Length => _arrayElements.Count;
 

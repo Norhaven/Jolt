@@ -20,7 +20,7 @@ namespace Jolt.Library
                    let attribute = method.GetCustomAttribute<JoltLibraryMethodAttribute>()
                    where attribute != null
                    let validity = method.GetCustomAttribute<MethodIsValidOnAttribute>()
-                   let parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, x.GetCustomAttribute<LazyEvaluationAttribute>() != null, x.GetCustomAttribute<VariadicEvaluationAttribute>() != null))
+                   let parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, x.GetCustomAttribute<LazyEvaluationAttribute>() != null, x.GetCustomAttribute<VariadicEvaluationAttribute>() != null, x.GetCustomAttribute<OptionalParameterAttribute>() != null, x.GetCustomAttribute<OptionalParameterAttribute>()?.DefaultValue))
                    select new MethodSignature(type.AssemblyQualifiedName, method.Name, attribute.Name, method.ReturnType, CallType.Static, true, attribute.IsValueGenerator, validity.Target.HasFlag(LibraryMethodTarget.PropertyName), validity.Target.HasFlag(LibraryMethodTarget.PropertyValue), parameters.ToArray());
         }
 
@@ -40,7 +40,7 @@ namespace Jolt.Library
 
                 var type = methodContext.GetType();
                 var method = type.GetMethod(registration.MethodName);
-                var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false, false)).ToArray();
+                var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false, false, false, null)).ToArray();
 
                 return new MethodSignature(type?.AssemblyQualifiedName, registration.MethodName, registration.Alias, method?.ReturnType, registration.CallType, false, false, false, true, parameters);
             }
@@ -48,7 +48,7 @@ namespace Jolt.Library
             {
                 var type = Type.GetType(registration.FullyQualifiedTypeName);
                 var method = type.GetMethod(registration.MethodName);
-                var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false, false)).ToArray();
+                var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false, false, false, null)).ToArray();
 
                 return new MethodSignature(type.AssemblyQualifiedName, registration.MethodName, registration.Alias, method.ReturnType, registration.CallType, false, false, false, true, parameters);
             }

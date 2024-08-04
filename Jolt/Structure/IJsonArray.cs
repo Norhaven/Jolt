@@ -17,6 +17,11 @@ namespace Jolt.Structure
         IJsonToken? this[int index] { get; set; }
 
         /// <summary>
+        /// Gets the type of all elements in the array as flags. 
+        /// </summary>
+        JsonArrayElementType ElementTypes { get; }
+
+        /// <summary>
         /// Gets the number of elements that the array contains.
         /// </summary>
         int Length { get; }
