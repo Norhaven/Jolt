@@ -10,8 +10,8 @@ There are two `.Net Standard 2.1` packages available: `Jolt.Json.Newtonsoft` and
 
 | Package Name | NuGet Version |
 | ------------ | ------------- |
-| Jolt.Json.DotNet | [![NuGet version](https://badge.fury.io/nu/Jolt.Json.DotNet.svg)](https://badge.fury.io/nu/Jolt.Json.DotNet) |
-| Jolt.Json.Newtonsoft | [![NuGet version](https://badge.fury.io/nu/Jolt.Json.Newtonsoft.svg)](https://badge.fury.io/nu/Jolt.Json.Newtonsoft) |
+| Jolt.Json.DotNet | ![NuGet Version](https://img.shields.io/nuget/v/Jolt.Json.DotNet) |
+| Jolt.Json.Newtonsoft | ![NuGet Version](https://img.shields.io/nuget/v/Jolt.Json.Newtonsoft) |
 
 # Syntax
 
@@ -162,9 +162,9 @@ This package comes with quite a few methods built into it to get you started, al
 | valueOf | Gets the value of a property at the specified path | `#valueOf($.some.path)` | Property Value
 | exists | Returns true if the provided value is not null, false otherwise | `#exists($.some.path)` | Property Value
 | if | Takes three parameters: a boolean condition, an expression to evaluate when that condition is true, and an expression to evaluate when false | `#if(#valueOf($.some.path), 'Yes', 'No')` | Property Value
-| includeIf | Takes a path or boolean condition and will evaluate and include the property's object if true, returning null otherwise | `"#includeIf($.some.path)": { "nestedValue": "#valueOf($.other.path)" }` | Property Name
+| includeIf | Takes a path or boolean condition and will evaluate and include the property's object if true, returning null otherwise | `"#includeIf($.some.path)->'someName'": { "nestedValue": "#valueOf($.other.path)" }` | Property Name
 | eval | Evaluates an arbitrary expression, either from a path or literal value, and returns the result | `#eval('1 + 2 = 3')` | Property Name/Value
-| loop | Evaluates a path and loops over the array elements or object properties it finds there to create its property values, naming the property as the string literal referred to by the arrow | `"$loop($.some.path)->'Result'": [ { "templateValue": "#valueOf($.other.path)" } ]` | Property Name
+| loop | Evaluates a path and loops over the array elements or object properties it finds there to create its property values, naming the property as the string literal referred to by the arrow | `"#loop($.some.path)->'result'": [ { "templateValue": "#valueOf($.other.path)" } ]` | Property Name
 | loopValueOf | Evaluates a path, searching within the current loop first and expanding out until it resolves a path or returns null | `#loopValueOf($.some.path)` | Property Value
 | loopValue | Returns the JSON object that is the value of a loop's current iteration | `#loopValueOf()` | Property Value
 | loopIndex | Returns the zero-based index value of a loop's current iteration | `#loopIndex()` | Property Value
@@ -189,7 +189,7 @@ This package comes with quite a few methods built into it to get you started, al
 | isDecimal | Returns true if the value is represented as a floating point number | `#isDecimal($.some.path)` | Property Value
 | isBoolean | Returns true if the value is represented as a boolean | `#isBoolean($.some.path)` | Property Value
 | isArray | Returns true if the value is represented as an array, false otherwise | `#isArray($.some.path)` | Property Value
-| isEmpty | Returns true if the value is an array or string with no contents, false otherwise | `#isArray($.some.path)` | Property Value
+| isEmpty | Returns true if the value is an array or string with no contents, false otherwise | `#isEmpty($.some.path)` | Property Value
 | any | Returns true if the value is an array or string with contents, false otherwise | `#any($.some.path)` | Property Value
 | toInteger | Returns a value converted to a whole number | `#toInteger($.some.path)` | Property Value
 | toString | Returns the string representation of a value | `#toString($.some.path)` | Property Value
