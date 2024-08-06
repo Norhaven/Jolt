@@ -1,12 +1,15 @@
 ﻿using FluentAssertions;
 using Jolt.Json.Newtonsoft;
 using Jolt.Json.Tests.Extensions;
+using Jolt.Json.Tests.TestAttributes;
 using Jolt.Json.Tests.TestMethods;
 using Jolt.Library;
 using Jolt.Structure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -183,75 +186,16 @@ public abstract class JoltJsonTransformerTests : Test
         json.PropertyValueFor<bool>(TargetProperty.IsBoolean).Should().Be(true, "because that's the type of the value");
         json.PropertyValueFor<bool>(TargetProperty.IsArray).Should().Be(true, "because that's the type of the value");
         json.PropertyValueFor<int>(TargetProperty.Index).Should().Be(2, "because that's the first index of the value in the string");
-
-        var array = (IJsonArray)json[TargetProperty.Array];
-
-        array.Should().NotBeNull("because a valid array created by splitting text should have been created");
-        array.Length.Should().Be(3, "because there were two delimiters in the string which would leave three array entries");
-        array[0].ToTypeOf<string>().Should().Be("1", "because that is the first element value in the source document");
-        array[1].ToTypeOf<string>().Should().Be("2", "because that is the second element value in the source document");
-        array[2].ToTypeOf<string>().Should().Be("3", "because that is the third element value in the source document");
-
+        json[TargetProperty.Array].AsArray().ShouldContain("1", "2", "3");
         json.PropertyValueFor<string>(TargetProperty.AppendedString).Should().Be("1.1231,2,3", "because the strings should be concatenated together");
         json.PropertyValueFor<string>(TargetProperty.AppendedVariadic).Should().Be("1.1231,2,31,2,3", "because the strings should be concatenated together");
-
-        var appendedArray = (IJsonArray)json[TargetProperty.AppendedArray];
-
-        appendedArray.Should().NotBeNull("because both arrays exist in the source document");
-        appendedArray.Length.Should().Be(6, "because there are three elements in each array");
-        appendedArray[0].ToTypeOf<string>().Should().Be("one", "because that is the first element");
-        appendedArray[1].ToTypeOf<string>().Should().Be("two", "because that is the second element");
-        appendedArray[2].ToTypeOf<string>().Should().Be("three", "because that is the third element");
-        appendedArray[3].ToTypeOf<string>().Should().Be("one", "because that is the first element");
-        appendedArray[4].ToTypeOf<string>().Should().Be("two", "because that is the second element");
-        appendedArray[5].ToTypeOf<string>().Should().Be("three", "because that is the third element");
-
-        var appendedObject = (IJsonObject)json[TargetProperty.AppendedObject];
-
-        appendedObject.Should().NotBeNull("because both objects exist in the source document");
-        appendedObject["first"].ToTypeOf<int>().Should().Be(1, "because that is the value of the first property in the first object");
-        appendedObject["second"].ToTypeOf<int>().Should().Be(2, "because that is the value of the second property in the second object");
-
-        var groupedArray = (IJsonArray)json[TargetProperty.Group];
-
-        groupedArray.Should().NotBeNull("because the groupable array exists in the source document");
-        groupedArray.Length.Should().Be(2, "because the three items in the array can be grouped into two groups");
-
-        groupedArray[0].AsObject()["key"].ToTypeOf<string>().Should().Be("one", "because that is the key of the first group");
-        groupedArray[1].AsObject()["key"].ToTypeOf<string>().Should().Be("two", "because that is the key of the second group");
-
-        var orderedArray = (IJsonArray)json[TargetProperty.Order];
-
-        orderedArray.Should().NotBeNull("because the array exists in the source document");
-
-        orderedArray[0].AsObject()["type"].ToTypeOf<string>().Should().Be("one", "because that comes first alphabetically");
-        orderedArray[1].AsObject()["type"].ToTypeOf<string>().Should().Be("one", "because that comes second alphabetically");
-        orderedArray[2].AsObject()["type"].ToTypeOf<string>().Should().Be("two", "because that comes third alphabetically");
-
-        var orderedArray1 = (IJsonArray)json[TargetProperty.Order1];
-
-        orderedArray1.Should().NotBeNull("because the array exists in the source document");
-
-        orderedArray1[0].AsValue().ToTypeOf<int>().Should().Be(1, "because that comes first alphabetically");
-        orderedArray1[1].AsValue().ToTypeOf<int>().Should().Be(2, "because that comes second alphabetically");
-        orderedArray1[2].AsValue().ToTypeOf<int>().Should().Be(3, "because that comes third alphabetically");
-
-        var orderedDescArray = (IJsonArray)json[TargetProperty.Order];
-
-        orderedDescArray.Should().NotBeNull("because the array exists in the source document");
-
-        orderedDescArray[2].AsObject()["type"].ToTypeOf<string>().Should().Be("two", "because that comes first alphabetically when descending");
-        orderedDescArray[0].AsObject()["type"].ToTypeOf<string>().Should().Be("one", "because that comes second alphabetically when descending");
-        orderedDescArray[1].AsObject()["type"].ToTypeOf<string>().Should().Be("one", "because that comes second alphabetically when descending");
-
-        var orderedDescArray1 = (IJsonArray)json[TargetProperty.OrderDesc1];
-
-        orderedArray1.Should().NotBeNull("because the array exists in the source document");
-
-        orderedDescArray1[0].AsValue().ToTypeOf<int>().Should().Be(3, "because that comes first alphabetically");
-        orderedDescArray1[1].AsValue().ToTypeOf<int>().Should().Be(2, "because that comes second alphabetically");
-        orderedDescArray1[2].AsValue().ToTypeOf<int>().Should().Be(1, "because that comes third alphabetically");
-
+        json[TargetProperty.AppendedArray].AsArray().ShouldContain("one", "two", "three", "one", "two", "three");
+        json[TargetProperty.AppendedObject].AsObject().ShouldContainProperties(("first", 1), ("second", 2));
+        json[TargetProperty.Group].AsArray().ShouldContainProperties((0, "key", "one"), (1, "key", "two"));
+        json[TargetProperty.Order].AsArray().ShouldContainProperties((0, "type", "one"), (1, "type", "one"), (2, "type", "two"));
+        json[TargetProperty.Order1].AsArray().ShouldContain(1, 2, 3);
+        json[TargetProperty.OrderDesc].AsArray().ShouldContainProperties((0, "type", "two"), (1, "type", "one"), (2, "type", "one"));
+        json[TargetProperty.OrderDesc1].AsArray().ShouldContain(3, 2, 1);
         json.PropertyValueFor<string>(TargetProperty.Substring1).Should().Be(".1", "because that is the substring that should be retrieved from the source document");
         json.PropertyValueFor<string>(TargetProperty.Substring2).Should().Be(".123", "because that is the substring that should be retrieved from the source document");
         json.PropertyValueFor<string>(TargetProperty.Substring3).Should().Be("1.1", "because that is the substring that should be retrieved from the source document");
@@ -277,6 +221,64 @@ public abstract class JoltJsonTransformerTests : Test
         json.PropertyValueFor<bool>(TargetProperty.BooleanLiteral).Should().BeTrue("because that is the value in the source document");
         json.PropertyValueFor<string>(TargetProperty.StringLiteral).Should().Be("testtest", "because that is the value concatenated with itself in the source document");
         json.PropertyValueFor<string>(TargetProperty.AppendedString).Should().Be("testtest", "because that is the value appended twice with itself in the source document");
+    }
+
+    [Fact]
+    [SourceHas(SourceValueType.StringLiteral, SourceProperty.StringLiteral, "test")]
+    [TransformerIs(TargetProperty.StringLiteral, $"#valueOf($.{SourceProperty.StringLiteral})")]
+    [ExpectsResult(TargetProperty.StringLiteral, "test")]
+    public void ValueOf_IsSuccessful_WithStringLiteral() => ExecuteSmallTest();
+
+    [Fact]
+    [SourceHas(SourceValueType.IntegerLiteral, SourceProperty.IntegerLiteral, 1)]
+    [TransformerIs(TargetProperty.IntegerLiteral, $"#valueOf($.{SourceProperty.IntegerLiteral})")]
+    [ExpectsResult(TargetProperty.IntegerLiteral, 1)]
+    public void ValueOf_IsSuccessful_WithIntegerLiteral() => ExecuteSmallTest();
+
+    protected void ExecuteSmallTest([CallerMemberName] string methodName = default)
+    {
+        var method = GetType().GetMethod(methodName);
+        var source = method.GetCustomAttribute<SourceHasAttribute>();
+        var target = method.GetCustomAttribute<TransformerIsAttribute>();
+        var expectsResult = method.GetCustomAttribute<ExpectsResultAttribute>();
+        var expectsException = method.GetCustomAttribute<ExpectsExceptionAttribute>();
+
+        if (method is null)
+        {
+            throw new ArgumentNullException(nameof(method), $"Unable to locate test method '{methodName}'");
+        }
+
+        if (source is null || target is null)
+        {
+            throw new ArgumentNullException(nameof(source), $"Either source or transformer is missing for test method '{methodName}'");
+        }
+
+        var reader = CreateTokenReader();
+
+        var sourceJson = reader.Read("{}") as IJsonObject;
+        var transformerJson = reader.Read("{}") as IJsonObject;
+
+        sourceJson[source.Name] = reader.CreateTokenFrom(source.Value);
+        transformerJson[target.NameExpression] = reader.CreateTokenFrom(target.ValueExpression);
+
+        var transformer = CreateTransformerWith(transformerJson.ToString(), []);
+
+        try
+        {
+            var result = transformer.Transform(sourceJson.ToString());
+
+            var jsonResult = reader.Read(result) as IJsonObject;            
+            jsonResult[expectsResult.PropertyName].ToTypeOf<object>().Should().Be(expectsResult.Value, "because the result was expected by the test");
+        }
+        catch(Exception ex)
+        {
+            if (expectsException is null)
+            {
+                throw;
+            }
+
+            expectsException.ExceptionType.Should().Be(ex.GetType(), "because this exception was expected");
+        }
     }
 
     private IJsonObject ExecuteTestFor(string transformerJson, string documentJson, IEnumerable<MethodRegistration> methodRegistrations = default, object? methodContext = default) => ExecuteTestFor(transformerJson, documentJson, ParseJson, methodRegistrations, methodContext);

@@ -1,4 +1,5 @@
-﻿using Jolt.Structure;
+﻿using FluentAssertions;
+using Jolt.Structure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,5 +23,40 @@ internal static class JsonExtensions
         };
 
         return (T)Convert.ChangeType(underlyingObject, typeof(T));
+    }
+
+    public static T ArrayPropertyValueFor<T>(this IJsonArray array, int index, string propertyName)
+    {
+        return array[index].AsObject().PropertyValueFor<T>(propertyName);
+    }
+
+    public static IEnumerable<T> As<T>(this IJsonArray array) => array.Select(x => x.AsValue().ToTypeOf<T>());
+
+    public static void ShouldContainProperties<T>(this IJsonObject obj, params (string PropertyName, T ExpectedValue)[] values)
+    {
+        obj.Should().NotBeNull("because the object exists in the source document");
+
+        foreach(var value in values)
+        {
+            obj.PropertyValueFor<T>(value.PropertyName).Should().Be(value.ExpectedValue);
+        }
+    }
+
+    public static void ShouldContainProperties<T>(this IJsonArray array, params (int Index, string PropertyName, T ExpectedValue)[] values)
+    {
+        array.Should().NotBeNull("because the array exist in the source document");
+        array.Length.Should().Be(values.Length, $"because there are {values.Length} elements in each array");
+
+        foreach (var value in values)
+        {
+            array.ArrayPropertyValueFor<T>(value.Index, value.PropertyName).Should().Be(value.ExpectedValue);
+        }
+    }
+
+    public static void ShouldContain<T>(this IJsonArray array, params T[] values)
+    {
+        array.Should().NotBeNull("because both arrays exist in the source document");
+        array.Length.Should().Be(values.Length, $"because there are {values.Length} elements in each array");
+        array.As<T>().Should().BeEquivalentTo(values.AsEnumerable());
     }
 }
