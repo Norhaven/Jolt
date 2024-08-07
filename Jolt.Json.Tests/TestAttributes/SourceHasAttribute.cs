@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Jolt.Json.Tests.TestAttributes;
 
-internal sealed class SourceHasAttribute : Attribute
+internal class SourceHasAttribute : Attribute
 {
     public string Name { get; }
     public SourceValueType Type { get; }

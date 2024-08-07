@@ -224,62 +224,29 @@ public abstract class JoltJsonTransformerTests : Test
     }
 
     [Fact]
-    [SourceHas(SourceValueType.StringLiteral, SourceProperty.StringLiteral, "test")]
+    [SourceHasString(SourceProperty.StringLiteral, "test")]
     [TransformerIs(TargetProperty.StringLiteral, $"#valueOf($.{SourceProperty.StringLiteral})")]
     [ExpectsResult(TargetProperty.StringLiteral, "test")]
     public void ValueOf_IsSuccessful_WithStringLiteral() => ExecuteSmallTest();
 
     [Fact]
-    [SourceHas(SourceValueType.IntegerLiteral, SourceProperty.IntegerLiteral, 1)]
+    [SourceHasInteger(SourceProperty.IntegerLiteral, 1)]
     [TransformerIs(TargetProperty.IntegerLiteral, $"#valueOf($.{SourceProperty.IntegerLiteral})")]
     [ExpectsResult(TargetProperty.IntegerLiteral, 1)]
     public void ValueOf_IsSuccessful_WithIntegerLiteral() => ExecuteSmallTest();
 
-    protected void ExecuteSmallTest([CallerMemberName] string methodName = default)
-    {
-        var method = GetType().GetMethod(methodName);
-        var source = method.GetCustomAttribute<SourceHasAttribute>();
-        var target = method.GetCustomAttribute<TransformerIsAttribute>();
-        var expectsResult = method.GetCustomAttribute<ExpectsResultAttribute>();
-        var expectsException = method.GetCustomAttribute<ExpectsExceptionAttribute>();
+    [Fact]
+    [SourceHasBoolean(SourceProperty.BooleanTrue, true)]
+    [TransformerIs(TargetProperty.BooleanLiteral, $"#valueOf($.{SourceProperty.BooleanTrue})")]
+    [ExpectsResult(TargetProperty.BooleanLiteral, true)]
+    public void ValueOf_IsSuccessful_WithBooleanTrueLiteral() => ExecuteSmallTest();
 
-        if (method is null)
-        {
-            throw new ArgumentNullException(nameof(method), $"Unable to locate test method '{methodName}'");
-        }
-
-        if (source is null || target is null)
-        {
-            throw new ArgumentNullException(nameof(source), $"Either source or transformer is missing for test method '{methodName}'");
-        }
-
-        var reader = CreateTokenReader();
-
-        var sourceJson = reader.Read("{}") as IJsonObject;
-        var transformerJson = reader.Read("{}") as IJsonObject;
-
-        sourceJson[source.Name] = reader.CreateTokenFrom(source.Value);
-        transformerJson[target.NameExpression] = reader.CreateTokenFrom(target.ValueExpression);
-
-        var transformer = CreateTransformerWith(transformerJson.ToString(), []);
-
-        try
-        {
-            var result = transformer.Transform(sourceJson.ToString());
-
-            var jsonResult = reader.Read(result) as IJsonObject;            
-            jsonResult[expectsResult.PropertyName].ToTypeOf<object>().Should().Be(expectsResult.Value, "because the result was expected by the test");
-        }
-        catch(Exception ex)
-        {
-            if (expectsException is null)
-            {
-                throw;
-            }
-
-            expectsException.ExceptionType.Should().Be(ex.GetType(), "because this exception was expected");
-        }
-    }
+    [Fact]
+    [SourceHasBoolean(SourceProperty.BooleanFalse, false)]
+    [TransformerIs(TargetProperty.BooleanLiteral, $"#valueOf($.{SourceProperty.BooleanFalse})")]
+    [ExpectsResult(TargetProperty.BooleanLiteral, false)]
+    public void ValueOf_IsSuccessful_WithBooleanFalseLiteral() => ExecuteSmallTest();
+        
 
     private IJsonObject ExecuteTestFor(string transformerJson, string documentJson, IEnumerable<MethodRegistration> methodRegistrations = default, object? methodContext = default) => ExecuteTestFor(transformerJson, documentJson, ParseJson, methodRegistrations, methodContext);
 

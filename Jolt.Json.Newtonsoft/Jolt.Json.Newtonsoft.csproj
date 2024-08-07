@@ -9,9 +9,14 @@
     <Copyright>Chris Hannon</Copyright>
     <RepositoryUrl>https://github.com/Norhaven/Jolt</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>JoltLogo.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\JoltLogo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Include="..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
