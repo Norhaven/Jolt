@@ -9,8 +9,8 @@ namespace Jolt.Exceptions
         public string TypeName { get; }
         public string MethodName { get; }
 
-        public JoltMethodResolutionException(string typeName, string methodName, string message) 
-            : base(message)
+        public JoltMethodResolutionException(ExceptionCode code, string typeName, string methodName, string message) 
+            : base(code, message)
         {
             TypeName = typeName;
             MethodName = methodName;

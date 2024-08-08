@@ -48,7 +48,7 @@ namespace Jolt.Json.Newtonsoft
                 }
                 else
                 {
-                    throw new JoltExecutionException($"Unable to create JSON object from unsupported token type '{token.Type}'");
+                    throw new ArgumentOutOfRangeException(nameof(token), $"Unable to create JSON object from unsupported token type '{token.Type}'");
                 }
             }
 

@@ -60,7 +60,7 @@ namespace Jolt.Evaluation
                 return systemMethod;
             }
 
-            throw new JoltExecutionException($"Encountered multiple non-system methods with the name or alias '{methodName}'");
+            throw Error.CreateExecutionErrorFrom(ExceptionCode.EncounteredMultipleNonSystemMethodsWithSameNameOrAlias, methodName);
         }
     }
 }

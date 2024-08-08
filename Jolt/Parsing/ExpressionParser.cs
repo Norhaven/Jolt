@@ -26,12 +26,12 @@ namespace Jolt.Parsing
             {
                 if (IsCompleted)
                 {
-                    throw new JoltParsingException($"Unable to continue parsing, expected {category.GetDescription()} but found end of expression");
+                    throw Error.CreateParsingErrorFrom(ExceptionCode.ExpectedTokenButFoundEndOfExpression, category.GetDescription());
                 }
 
                 if (CurrentToken.Category != category)
                 {
-                    throw new JoltParsingException($"Unable to continue parsing, expected {category.GetDescription()} but found {CurrentToken.Category.GetDescription()} instead");
+                    throw Error.CreateParsingErrorFrom(ExceptionCode.ExpectedTokenButFoundDifferentToken, category.GetDescription(), CurrentToken.Category.GetDescription());
                 }
 
                 return true;
@@ -41,7 +41,7 @@ namespace Jolt.Parsing
             {
                 if (IsCompleted)
                 {
-                    throw new JoltParsingException($"Unable to continue parsing, expected {category.GetDescription()} but found end of expression");
+                    throw Error.CreateParsingErrorFrom(ExceptionCode.ExpectedTokenButFoundEndOfExpression, category.GetDescription());
                 }
 
                 return CurrentToken.Category == category;
@@ -58,12 +58,12 @@ namespace Jolt.Parsing
                 {
                     if (!TryParseExpression(reader, referenceResolver, out var parenthesizedExpression))
                     {
-                        throw new JoltParsingException($"Unable to parse parenthesized expression at position '{reader.Position}");
+                        throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToParseParenthesizedExpressionAtPosition, reader.Position);
                     }
 
                     if (!reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.CloseParenthesesGroup))
                     {
-                        throw new JoltParsingException($"Unable to close parenthesized expression at position '{reader.Position}'");
+                        throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToCloseParenthesizedExpressionAtPosition, reader.Position);
                     }
 
                     return parenthesizedExpression;
@@ -85,7 +85,7 @@ namespace Jolt.Parsing
                     return literal;
                 }
 
-                throw new JoltParsingException($"Unable to parse expression starting with {reader.CurrentToken.Category.GetDescription()}");
+                throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToParseExpressionStartingWithDescription, reader.CurrentToken.Category.GetDescription());
             }
 
             int GetOperatorPrecedence(Operator @operator)
@@ -186,7 +186,7 @@ namespace Jolt.Parsing
 
             if (pieces.Length > 2)
             {
-                throw new JoltParsingException($"Unable to use multiple range operators within the same range expression");
+                throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToUseMultipleRangeOperatorsWithinSameExpression);
             }
 
             bool IsEndIndexerUsedAt(int index) => pieces[index].StartsWith(ExpressionToken.RangeEndIndexer);
@@ -203,7 +203,7 @@ namespace Jolt.Parsing
                 var x when x.EndsWith(RangeDots) => new Index(0, true),
                 var x when pieces.Length == 1 => ParseWithOptionalEndIndexerAt(0),
                 var x when pieces.Length == 2 => ParseWithOptionalEndIndexerAt(1),
-                _ => throw new JoltParsingException($"Unable to parse range index expression '{value}', format is invalid")
+                _ => throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToParseRangeExpressionFormatIsInvalid, value)
             };
 
             range = new RangeExpression(startIndex, endIndex);
@@ -284,7 +284,7 @@ namespace Jolt.Parsing
 
             if (methodSignature is null)
             {
-                throw new JoltParsingException($"Unable to find method implementation for unknown method '{potentiallyQualifiedMethodName.Value}'");
+                throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToFindMethodImplementation, potentiallyQualifiedMethodName.Value);
             }
 
             if (reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.GeneratedNameIdentifier, out var generatedName))
@@ -295,7 +295,7 @@ namespace Jolt.Parsing
             {
                 if (!TryParseMethod(reader, referenceResolver, out var pipedMethodCall))
                 {
-                    throw new JoltParsingException("Expected piped method call but could not complete parsing it");
+                    throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToCompleteParsingOfPipedMethodCall);
                 }
 
                 // We're piping the initial method call results into the first argument of the target method,

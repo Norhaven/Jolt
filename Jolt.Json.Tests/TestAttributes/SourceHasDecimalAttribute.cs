@@ -8,6 +8,10 @@ namespace Jolt.Json.Tests.TestAttributes;
 
 internal class SourceHasDecimalAttribute : SourceHasAttribute
 {
+    public SourceHasDecimalAttribute(object? value) : base(SourceValueType.DecimalLiteral, Default.Value, value)
+    {
+    }
+
     public SourceHasDecimalAttribute(string name, object? value) : base(SourceValueType.DecimalLiteral, name, value)
     {
     }

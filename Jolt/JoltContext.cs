@@ -28,7 +28,7 @@ namespace Jolt
 
         public IMethodReferenceResolver ReferenceResolver { get; }
 
-        public object? MethodContext { get; }
+        public object? MethodContext { get; private set; }
 
         public JoltContext(string jsonTransformer, 
                            IExpressionParser expressionParser, 
@@ -76,6 +76,13 @@ namespace Jolt
         public IJsonContext UseTransformer(string jsonTransformer)
         {
             JsonTransformer = jsonTransformer;
+
+            return this;
+        }
+
+        public IJsonContext UseMethodContext(object? methodContext)
+        {
+            MethodContext = methodContext;
 
             return this;
         }

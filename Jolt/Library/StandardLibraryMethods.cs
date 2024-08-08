@@ -87,7 +87,7 @@ namespace Jolt.Library
             {
                 bool include => include,
                 IJsonValue value when value.IsBoolean() => value.ToTypeOf<bool>(),
-                _ => throw new JoltExecutionException($"Unable to complete #includeIf() call, failed to identify result '{result}' as a boolean value")
+                _ => throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToCompleteIncludeIfLibraryCallDueToNonBooleanCondition, result)
             };
 
             if (!shouldInclude)
@@ -112,7 +112,7 @@ namespace Jolt.Library
 
             if (!context.JsonContext.ExpressionParser.TryParseExpression(actualTokens, context.JsonContext.ReferenceResolver, out var expression))
             {
-                throw new JoltExecutionException($"Unable to parse expression within #eval call with path or literal '{pathOrLiteral}'");
+                throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToParseEvalLibraryCallExpression, pathOrLiteral);
             }
 
             var evaluationContext = new EvaluationContext(
@@ -134,21 +134,21 @@ namespace Jolt.Library
 
             if (!token.Type.IsAnyOf(JsonTokenType.Array, JsonTokenType.Object))
             {
-                throw new JoltExecutionException($"Unable to loop using non-enumerable transformer token of type '{token.Type}'");
+                throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToPerformLoopLibraryCallOnNonLoopableToken, token.Type);
             }
 
             var closestViableSourceToken = context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, path, JsonQueryMode.StartFromClosestMatch);
 
             if (closestViableSourceToken?.Type.IsAnyOf(JsonTokenType.Array, JsonTokenType.Object) != true)
             {
-                throw new JoltExecutionException($"Unable to loop over non-enumerable source token of type '{closestViableSourceToken?.Type}'");
+                throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToPerformLoopLibraryCallOnNonLoopableSourceToken, closestViableSourceToken?.Type);
             }
 
             var contentTemplate = token.Type switch
             { 
                 JsonTokenType.Array => token.AsArray().RemoveAt(0),
                 JsonTokenType.Object => token.AsObject().Copy(),
-                _ => throw new JoltExecutionException($"Unable to locate loop content template for unsupported token type '{token.Type}'")
+                _ => throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToPerformLoopLibraryCallDueToMissingContentTemplate, token.Type)
             };
 
             token.Clear();
@@ -200,7 +200,7 @@ namespace Jolt.Library
                 }
                 else
                 {
-                    throw new JoltExecutionException($"Unable to loop over non-enumerable token type '{closestViableSourceToken.Type}'");
+                    throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToPerformLoopLibraryCallOnNonLoopableSourceToken, closestViableSourceToken.Type);
                 }
             }
 

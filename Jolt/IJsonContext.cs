@@ -87,5 +87,12 @@ namespace Jolt
         /// <param name="jsonTransformer">The JSON transformer.</param>
         /// <returns>An instance of <see cref="IJsonContext"/> with the transformer usage applied to it.</returns>
         IJsonContext UseTransformer(string jsonTransformer);
+
+        /// <summary>
+        /// Specifies the method context that will be used for registered instance method calls.
+        /// </summary>
+        /// <param name="methodContext">The method context instance.</param>
+        /// <returns>An instance of <see cref="IJsonContext"/> with the method context usage applied to it.</returns>
+        IJsonContext UseMethodContext(object? methodContext);
     }
 }

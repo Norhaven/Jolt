@@ -35,7 +35,7 @@ namespace Jolt.Library
             {
                 if (methodContext is null)
                 {
-                    throw new JoltMethodResolutionException(default, registration.MethodName, $"Unable to locate instance method '{registration.MethodName}' during method resolution, no method context was provided");
+                    throw new JoltMethodResolutionException(ExceptionCode.UnableToLocateInstanceMethod, default, registration.MethodName, $"Unable to locate instance method '{registration.MethodName}' during method resolution, no method context was provided");
                 }
 
                 var type = methodContext.GetType();

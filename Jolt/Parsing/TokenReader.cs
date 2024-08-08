@@ -123,7 +123,7 @@ namespace Jolt.Parsing
                         {
                             if (mode == EvaluationMode.PropertyValue)
                             {
-                                throw new JoltParsingException($"Expected a '#' character to begin a piped method but found character '{stream.CurrentToken}' at position '{stream.Position}'");
+                                throw Error.CreateParsingErrorFrom(ExceptionCode.ExpectedStartOfMethodCallButFoundDifferentTokenAtPosition, stream.CurrentToken, stream.Position);
                             }
 
                             if (stream.CurrentToken == ExpressionToken.SingleQuote)
@@ -134,7 +134,7 @@ namespace Jolt.Parsing
                             }
                             else
                             {
-                                throw new JoltParsingException($"The property key must resolve to a string literal surrounded with single quote marks, but found token '{stream.CurrentToken}' instead");
+                                throw Error.CreateParsingErrorFrom(ExceptionCode.ExpectedStringLiteralPropertyNameButFoundDifferentToken, stream.CurrentToken);
                             }
                         }
                     }
@@ -179,7 +179,7 @@ namespace Jolt.Parsing
                 }                
                 else
                 {
-                    throw new JoltParsingException($"Unable to categorize token '{stream.CurrentToken}' at position '{stream.Position}'.");
+                    throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToCategorizeTokenAtPosition, stream.CurrentToken, stream.Position);
                 }
             }
         }
@@ -202,7 +202,7 @@ namespace Jolt.Parsing
             {
                 if (!stream.IsCompleted)
                 {
-                    throw new JoltParsingException($"Unable to locate expected character(s) in expression");
+                    throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToLocateExpectedCharactersInExpression);
                 }
             }
 
@@ -217,7 +217,7 @@ namespace Jolt.Parsing
                 {
                     var expectedCharacters = string.Join(", ", tokens);
 
-                    throw new JoltParsingException($"Unable to locate expected character(s) '{expectedCharacters}' in expression");
+                    throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToLocateSpecificExpectedCharactersInExpression, expectedCharacters);
                 }
             }
 

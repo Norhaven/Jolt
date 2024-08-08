@@ -57,7 +57,7 @@ namespace Jolt.Evaluation
                     { 
                         Operator.Equal => leftResult is null && rightResult is null,
                         Operator.NotEqual => !(leftResult is null && rightResult is null),
-                        _ => throw new JoltExecutionException($"Unable to evaluate operator '{binary.Operator}' with arguments '{leftResult}' and '{rightResult}'")
+                        _ => throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToEvaluateExpressionWithOperatorAndArguments, leftResult, binary.Operator, rightResult)
                     };
                 }
 
@@ -74,7 +74,7 @@ namespace Jolt.Evaluation
                         Operator.LessThan => left.IsLessThan(right),
                         Operator.GreaterThanOrEquals => left.IsGreaterThan(right) || left.Equals(right),
                         Operator.LessThanOrEquals => left.IsLessThan(right) || left.Equals(right),
-                        _ => throw new JoltExecutionException($"Unable to evaluate unsupported operator '{binary.Operator}' with arguments '{left}' and '{right}'")
+                        _ => throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToEvaluateExpressionWithOperatorAndArguments, left, binary.Operator, right)
                     };
                 }
                 else
@@ -83,7 +83,7 @@ namespace Jolt.Evaluation
                     { 
                         Operator.Equal => leftResult.Equals(rightResult),
                         Operator.NotEqual => !leftResult.Equals(rightResult),
-                        _ => throw new JoltExecutionException($"Unable to evaluate operator '{binary.Operator}' with arguments '{leftResult}' and '{rightResult}'")
+                        _ => throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToEvaluateExpressionWithOperatorAndArguments, leftResult, binary.Operator, rightResult)
                     };
                 }
             }
@@ -91,12 +91,12 @@ namespace Jolt.Evaluation
             {
                 if (leftResult is null || rightResult is null)
                 {
-                    throw new JoltExecutionException($"Unable to perform math using operator '{binary.Operator}' on a null value");
+                    throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToEvaluateExpressionWithNullArgument, binary.Operator);
                 }
 
                 if (leftResult is bool || rightResult is bool)
                 {
-                    throw new JoltExecutionException($"Unable to perform math using operator '{binary.Operator}' on a boolean value");
+                    throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToEvaluateExpressionWithBooleanArgument, binary.Operator);
                 }
 
                 if (leftResult is string leftString && rightResult is string rightString)
@@ -106,7 +106,7 @@ namespace Jolt.Evaluation
                         return leftString + rightString;
                     }
 
-                    throw new JoltExecutionException($"Unable to perform math on strings, found unexpected operator '{binary.Operator}' in an expression containing only strings");
+                    throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToEvaluateExpressionWithOnlyStrings, binary.Operator);
                 }
 
                 if (Numeric.IsSupported(leftResult))
@@ -124,7 +124,7 @@ namespace Jolt.Evaluation
                     };
                 }
 
-                throw new JoltExecutionException($"Unable to perform math with mismatched types in expression '{leftResult?.GetType()} {binary.Operator} {rightResult?.GetType()}");
+                throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToEvaluateExpressionWithMismatchedTypes, leftResult?.GetType(), binary.Operator, rightResult?.GetType());
             }
         }
 
@@ -149,7 +149,7 @@ namespace Jolt.Evaluation
             {
                 if (!long.TryParse(literal.Value, out var numericValue))
                 {
-                    throw new JoltExecutionException($"Unable to convert value '{literal.Value}' to an integer");
+                    throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToConvertValueToInteger, literal.Value);
                 }
 
                 return numericValue;
@@ -159,7 +159,7 @@ namespace Jolt.Evaluation
             {
                 if (!double.TryParse(literal.Value, out var numericValue))
                 {
-                    throw new JoltExecutionException($"Unable to convert value '{literal.Value}' to an integer");
+                    throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToConvertValueToDecimal, literal.Value);
                 }
 
                 return numericValue;
@@ -169,25 +169,25 @@ namespace Jolt.Evaluation
             {
                 if (!bool.TryParse(literal.Value, out var booleanValue))
                 {
-                    throw new JoltExecutionException($"Unable to convert value '{literal.Value}' to an boolean");
+                    throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToConvertValueToBoolean, literal.Value);
                 }
 
                 return booleanValue;
             }
 
-            throw new JoltExecutionException($"Unable to convert to best type for literal value '{literal.Value}'");
+            throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToConvertToBestTypeForLiteralValue, literal.Value);
         }
 
         private object? ExecuteMethodCall(MethodCallExpression call, EvaluationContext context)
         {
             if (context.Mode == EvaluationMode.PropertyName && !call.Signature.IsAllowedAsPropertyName)
             {
-                throw new JoltExecutionException($"Unable to use method '{call.Signature.Alias}' within a property name");
+                throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToUseMethodWithinPropertyName, call.Signature.Alias);
             }
 
             if (context.Mode == EvaluationMode.PropertyValue && !call.Signature.IsAllowedAsPropertyValue)
             {
-                throw new JoltExecutionException($"Unable to use method '{call.Signature.Alias}' within a property value");
+                throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToUseMethodWithinPropertyValue, call.Signature.Alias);
             }
 
             var actualParameterValues = new List<object>();
@@ -297,7 +297,7 @@ namespace Jolt.Evaluation
                 return resultValue;
             }
 
-            throw new JoltExecutionException($"Unable to apply results of method invocation for unknown evaluation mode '{context.Mode}'");
+            throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToApplyMethodResultsWithUnknownEvaluationMode, context.Mode);
         }
 
         private static object? InvokeMethod(MethodSignature method, IEnumerable<object?> actualParameterValues, EvaluationContext context)
@@ -313,20 +313,20 @@ namespace Jolt.Evaluation
             {
                 if (context.JsonContext.MethodContext is null)
                 {
-                    throw new JoltExecutionException($"Unable to execute external instance method '{method.Name}', no method context was provided");
+                    throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToInvokeInstanceMethodWithoutMethodContext, method.Name);
                 }
 
                 var methodInfo = context.JsonContext.MethodContext.GetType().GetMethod(method.Name, BindingFlags.Public | BindingFlags.Instance);
 
                 if (methodInfo is null)
                 {
-                    throw new JoltExecutionException($"Unable to locate instance method '{method.Name}' on type '{context.JsonContext.MethodContext.GetType().FullName}'");
+                    throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToLocateInstanceMethodWithProvidedMethodContext, method.Name, context.JsonContext.MethodContext.GetType().FullName);
                 }
 
                 return methodInfo.Invoke(context.JsonContext.MethodContext, actualParameterValues.ToArray());
             }
 
-            throw new JoltExecutionException($"Unable to invoke method with unknown call type '{method.CallType}'");
+            throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToInvokeMethodWithUnknownCallType, method.CallType);
         }
     }
 }

@@ -4,6 +4,7 @@ using Jolt.Json.Tests.TestAttributes;
 using Jolt.Library;
 using Jolt.Parsing;
 using Jolt.Structure;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,9 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft = Jolt.Json.Newtonsoft;
+using DotNet = Jolt.Json.DotNet;
+using Xunit.DependencyInjection;
 
 namespace Jolt.Json.Tests;
 
@@ -45,6 +49,7 @@ public abstract class Test
         public const string MathExpression = "mathExpression";
 
         public const string ArrayElementId = "arrayElementId";
+        public const string Value = "value";
     }
 
     protected static class TargetProperty
@@ -56,7 +61,7 @@ public abstract class Test
         public const string BooleanTrueLiteral = "BooleanTrue";
         public const string BooleanFalseLiteral = "BooleanFalse";
         public const string Object = "Object";
-
+        public const string Result = "Result";
         public const string ArrayElementId = "ArrayElementId";
         public const string Array = "Array";
 
@@ -91,7 +96,6 @@ public abstract class Test
         public const string AppendedVariadic = "AppendedVariadic";
         public const string ObjectFromArray = "ObjectFromArray";
         public const string ArrayFromObject = "ArrayFromObject";
-        public const string Result = "Result";
         public const string Group = "Group";
         public const string Order = "Order";
         public const string Order1 = "Order1";
@@ -126,7 +130,10 @@ public abstract class Test
     protected readonly string _pipedMethods;
     protected readonly string _externalMethods;
 
-    public Test()
+    protected readonly IJsonContext _testContext;
+    protected readonly IJsonTransformer<IJsonContext> _transformer;
+
+    public Test(IJsonContext context)
     {
         _singleLevelDocument = ReadTestDocument("SingleLevelDocument");
         _multiLevelDocument = ReadTestDocument("MultiLevelDocument");
@@ -145,88 +152,64 @@ public abstract class Test
         _conditions = ReadTestTransformer("Conditions");
         _pipedMethods = ReadTestTransformer("PipedMethods");
         _externalMethods = ReadTestTransformer("ExternalMethods");
+
+        _testContext = context;
     }
 
-    protected abstract IJsonTokenReader CreateTokenReader();
-    protected abstract IJsonTransformer<IJsonContext> CreateTransformer(JoltContext context);
-    protected abstract IQueryPathProvider CreateQueryPathProvider();
-    protected abstract IJsonObject ParseJson(string json);
+    public class Startup
+    {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            IJsonContext CreateNewtonsoftContext()
+            {
+                return new JoltContext(
+                    default,
+                    new ExpressionParser(),
+                    new ExpressionEvaluator(),
+                    new TokenReader(),
+                    new Newtonsoft.JsonTokenReader(),
+                    new Newtonsoft.JsonPathQueryPathProvider(),
+                    new MethodReferenceResolver()
+                );
+            }
 
-    protected T? ExecuteTestFor<T>(string transformerJson, string testDocumentJson, Func<string?, T?> convertResult, IEnumerable<MethodRegistration> methodRegistrations = default, object? methodContext = default)
+            IJsonContext CreateDotNetContext()
+            {
+                return new JoltContext(
+                    default,
+                    new ExpressionParser(),
+                    new ExpressionEvaluator(),
+                    new TokenReader(),
+                    new DotNet.JsonTokenReader(),
+                    new DotNet.JsonPathQueryPathProvider(),
+                    new MethodReferenceResolver()
+                );
+            }
+
+            services
+                .AddKeyedTransient(TestType.Newtonsoft, (x, _) => CreateNewtonsoftContext())
+                .AddKeyedTransient(TestType.DotNet, (x, _) => CreateDotNetContext());            
+        }
+    }
+
+    protected IJsonObject? ExecuteTestFor(string transformerJson, string testDocumentJson, IEnumerable<MethodRegistration> methodRegistrations = default, object? methodContext = default)
     {
         var transformer = CreateTransformerWith(transformerJson, methodRegistrations, methodContext);
         var transformedDocument = transformer.Transform(testDocumentJson);
 
         transformedDocument.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
 
-        return convertResult(transformedDocument);
-    }
-
-    protected void ExecuteSmallTest([CallerMemberName] string methodName = default)
-    {
-        var method = GetType().GetMethod(methodName);
-        var source = method.GetCustomAttribute<SourceHasAttribute>();
-        var target = method.GetCustomAttribute<TransformerIsAttribute>();
-        var expectsResult = method.GetCustomAttribute<ExpectsResultAttribute>();
-        var expectsException = method.GetCustomAttribute<ExpectsExceptionAttribute>();
-
-        if (method is null)
-        {
-            throw new ArgumentNullException(nameof(method), $"Unable to locate test method '{methodName}'");
-        }
-
-        if (source is null || target is null)
-        {
-            throw new ArgumentNullException(nameof(source), $"Either source or transformer is missing for test method '{methodName}'");
-        }
-
-        var reader = CreateTokenReader();
-
-        var sourceJson = reader.Read("{}") as IJsonObject;
-        var transformerJson = reader.Read("{}") as IJsonObject;
-
-        sourceJson[source.Name] = reader.CreateTokenFrom(source.Value);
-        transformerJson[target.NameExpression] = reader.CreateTokenFrom(target.ValueExpression);
-
-        var transformer = CreateTransformerWith(transformerJson.ToString(), []);
-
-        try
-        {
-            var result = transformer.Transform(sourceJson.ToString());
-
-            var jsonResult = reader.Read(result) as IJsonObject;
-            jsonResult[expectsResult.PropertyName].ToTypeOf<object>().Should().Be(expectsResult.Value, "because the result was expected by the test");
-        }
-        catch (Exception ex)
-        {
-            if (expectsException is null)
-            {
-                throw;
-            }
-
-            expectsException.ExceptionType.Should().Be(ex.GetType(), "because this exception was expected");
-        }
+        return _testContext.JsonTokenReader.Read(transformedDocument) as IJsonObject;
     }
 
     protected IJsonTransformer<IJsonContext> CreateTransformerWith(string transformerJson, IEnumerable<MethodRegistration> methodRegistrations, object? methodContext = default)
     {
-        var tokenReader = CreateTokenReader();
-        var pathQueryProvider = CreateQueryPathProvider();
+        var context = _testContext
+            .UseTransformer(transformerJson)
+            .RegisterAllMethods(methodRegistrations)
+            .UseMethodContext(methodContext);
 
-        var context = new JoltContext(
-            transformerJson,
-            new ExpressionParser(),
-            new ExpressionEvaluator(),
-            new TokenReader(),
-            tokenReader,
-            pathQueryProvider,
-            new MethodReferenceResolver(),
-            methodContext
-        );
-
-        context.RegisterAllMethods(methodRegistrations);
-
-        return CreateTransformer(context);
+        return new JoltTransformer<IJsonContext>(context);
     }
 
     protected string ReadTestDocument(string fileName) => ReadTestFile($"Documents.{fileName}");

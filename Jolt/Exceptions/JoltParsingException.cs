@@ -6,7 +6,7 @@ namespace Jolt.Exceptions
 {
     public sealed class JoltParsingException : JoltException
     {
-        public JoltParsingException(string message)
-            : base(message) { }
+        public JoltParsingException(ExceptionCode code, string message)
+            : base(code, message) { }
     }
 }

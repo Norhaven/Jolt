@@ -8,6 +8,10 @@ namespace Jolt.Json.Tests.TestAttributes;
 
 internal class SourceHasBooleanAttribute : SourceHasAttribute
 {
+    public SourceHasBooleanAttribute(object? value) : base(SourceValueType.BooleanLiteral, Default.Value, value)
+    {
+    }
+
     public SourceHasBooleanAttribute(string name, object? value) : base(SourceValueType.BooleanLiteral, name, value)
     {
     }

@@ -11,9 +11,15 @@ internal class TransformerIsAttribute : Attribute
     public string NameExpression { get; }
     public string ValueExpression { get; }
 
+    public TransformerIsAttribute(string valueExpression)
+    {
+        NameExpression = Default.Result;
+        ValueExpression = valueExpression;
+    }
+
     public TransformerIsAttribute(string nameExpression, string valueExpression)
     {
-        ValueExpression = valueExpression;
         NameExpression = nameExpression;
+        ValueExpression = valueExpression;
     }
 }

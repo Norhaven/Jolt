@@ -152,7 +152,7 @@ namespace Jolt
             }
             else
             {
-                throw new JoltExecutionException($"Unable to apply changes to parent token with unsupported type '{parent.Type}'");
+                throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToApplyChangesToUnsupportedParentToken, parent.Type);
             }
         }
 

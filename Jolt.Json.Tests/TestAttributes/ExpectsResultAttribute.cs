@@ -11,6 +11,12 @@ internal class ExpectsResultAttribute : Attribute
     public string PropertyName { get; }
     public object? Value { get; }
 
+    public ExpectsResultAttribute(object? value)
+    {
+        PropertyName = Default.Result;
+        Value = value;
+    }
+
     public ExpectsResultAttribute(string propertyName, object? value)
     {
         PropertyName = propertyName;

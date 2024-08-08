@@ -6,11 +6,8 @@ using System.Threading.Tasks;
 
 namespace Jolt.Json.Tests.TestAttributes;
 
-internal enum SourceValueType
+internal static class Default
 {
-    Unknown,
-    StringLiteral,
-    IntegerLiteral,
-    DecimalLiteral,
-    BooleanLiteral
+    public const string Value = "value";
+    public const string Result = "Result";
 }

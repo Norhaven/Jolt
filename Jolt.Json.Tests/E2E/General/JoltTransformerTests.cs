@@ -5,6 +5,7 @@ using Jolt.Json.Tests.TestAttributes;
 using Jolt.Json.Tests.TestMethods;
 using Jolt.Library;
 using Jolt.Structure;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,11 +13,17 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Xunit.DependencyInjection;
 
-namespace Jolt.Json.Tests;
+namespace Jolt.Json.Tests.E2E.General;
 
-public abstract class JoltJsonTransformerTests : Test
-{    
+public abstract class JoltTransformerTests : Test
+{
+    public JoltTransformerTests(IJsonContext context)
+        : base(context)
+    {
+    }
+
     [Fact]
     public void ValueOf_IsSuccessful_AtSingleLevelForNumericLiteral()
     {
@@ -223,36 +230,11 @@ public abstract class JoltJsonTransformerTests : Test
         json.PropertyValueFor<string>(TargetProperty.AppendedString).Should().Be("testtest", "because that is the value appended twice with itself in the source document");
     }
 
-    [Fact]
-    [SourceHasString(SourceProperty.StringLiteral, "test")]
-    [TransformerIs(TargetProperty.StringLiteral, $"#valueOf($.{SourceProperty.StringLiteral})")]
-    [ExpectsResult(TargetProperty.StringLiteral, "test")]
-    public void ValueOf_IsSuccessful_WithStringLiteral() => ExecuteSmallTest();
 
-    [Fact]
-    [SourceHasInteger(SourceProperty.IntegerLiteral, 1)]
-    [TransformerIs(TargetProperty.IntegerLiteral, $"#valueOf($.{SourceProperty.IntegerLiteral})")]
-    [ExpectsResult(TargetProperty.IntegerLiteral, 1)]
-    public void ValueOf_IsSuccessful_WithIntegerLiteral() => ExecuteSmallTest();
-
-    [Fact]
-    [SourceHasBoolean(SourceProperty.BooleanTrue, true)]
-    [TransformerIs(TargetProperty.BooleanLiteral, $"#valueOf($.{SourceProperty.BooleanTrue})")]
-    [ExpectsResult(TargetProperty.BooleanLiteral, true)]
-    public void ValueOf_IsSuccessful_WithBooleanTrueLiteral() => ExecuteSmallTest();
-
-    [Fact]
-    [SourceHasBoolean(SourceProperty.BooleanFalse, false)]
-    [TransformerIs(TargetProperty.BooleanLiteral, $"#valueOf($.{SourceProperty.BooleanFalse})")]
-    [ExpectsResult(TargetProperty.BooleanLiteral, false)]
-    public void ValueOf_IsSuccessful_WithBooleanFalseLiteral() => ExecuteSmallTest();
-        
-
-    private IJsonObject ExecuteTestFor(string transformerJson, string documentJson, IEnumerable<MethodRegistration> methodRegistrations = default, object? methodContext = default) => ExecuteTestFor(transformerJson, documentJson, ParseJson, methodRegistrations, methodContext);
 
     private void ValidateLiteralIsTransformed<T>(string transformerJson, string documentJson, string targetProperty, T targetValue)
     {
-        var json = ExecuteTestFor(transformerJson, documentJson, ParseJson);
+        var json = ExecuteTestFor(transformerJson, documentJson);
 
         json.PropertyValueFor<T>(targetProperty).Should().Be(targetValue, "because that was the value in the source document");
     }

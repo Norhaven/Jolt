@@ -8,6 +8,10 @@ namespace Jolt.Json.Tests.TestAttributes;
 
 internal class SourceHasStringAttribute : SourceHasAttribute
 {
+    public SourceHasStringAttribute(object? value) : base(SourceValueType.StringLiteral, Default.Value, value)
+    { 
+    }
+
     public SourceHasStringAttribute(string name, object? value) : base(SourceValueType.StringLiteral, name, value)
     {
     }
