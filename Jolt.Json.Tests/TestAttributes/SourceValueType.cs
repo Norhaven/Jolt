@@ -12,5 +12,6 @@ internal enum SourceValueType
     StringLiteral,
     IntegerLiteral,
     DecimalLiteral,
-    BooleanLiteral
+    BooleanLiteral,
+    Object
 }

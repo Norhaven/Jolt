@@ -7,44 +7,95 @@ namespace Jolt.Exceptions
 {
     public enum ExceptionCode
     {
+        // Parsing
+
         [Description("JLT100")]
         MissingRequiredMethodParameter,
+        [Description("JLT101")]
         ExpectedTokenButFoundEndOfExpression,
+        [Description("JLT102")]
         ExpectedTokenButFoundDifferentToken,
+        [Description("JLT103")]
         UnableToParseParenthesizedExpressionAtPosition,
+        [Description("JLT104")]
         UnableToCloseParenthesizedExpressionAtPosition,
+        [Description("JLT105")]
         UnableToParseExpressionStartingWithDescription,
+        [Description("JLT106")]
         UnableToUseMultipleRangeOperatorsWithinSameExpression,
+        [Description("JLT107")]
         UnableToParseRangeExpressionFormatIsInvalid,
+        [Description("JLT108")]
         UnableToFindMethodImplementation,
+        [Description("JLT109")]
         UnableToCompleteParsingOfPipedMethodCall,
+        [Description("JLT110")]
         ExpectedStartOfMethodCallButFoundDifferentTokenAtPosition,
+        [Description("JLT111")]
         ExpectedStringLiteralPropertyNameButFoundDifferentToken,
+        [Description("JLT112")]
         UnableToCategorizeTokenAtPosition,
+        [Description("JLT113")]
         UnableToLocateExpectedCharactersInExpression,
+        [Description("JLT114")]
         UnableToLocateSpecificExpectedCharactersInExpression,
+        [Description("JLT115")]
+        ExpectedBooleanLiteralTokenButFoundUnknownToken,
+
+        // Resolution
+
+        [Description("JLT300")]
+        UnableToLocateTypeForStaticMethod,
+        [Description("JLT301")]
+        UnableToLocateStaticMethodWithProvidedType,
+
+        // Execution
+
+        [Description("JLT501")]
         UnableToLocateInstanceMethod,
+        [Description("JLT502")]
         UnableToApplyChangesToUnsupportedParentToken,
+        [Description("JLT503")]
         EncounteredMultipleNonSystemMethodsWithSameNameOrAlias,
+        [Description("JLT504")]
         UnableToEvaluateExpressionWithOperatorAndArguments,
+        [Description("JLT505")]
         UnableToEvaluateExpressionWithNullArgument,
+        [Description("JLT506")]
         UnableToEvaluateExpressionWithBooleanArgument,
+        [Description("JLT507")]
         UnableToEvaluateExpressionWithOnlyStrings,
+        [Description("JLT508")]
         UnableToEvaluateExpressionWithMismatchedTypes,
+        [Description("JLT509")]
         UnableToConvertValueToInteger,
+        [Description("JLT510")]
         UnableToConvertValueToDecimal,
+        [Description("JLT511")]
         UnableToConvertValueToBoolean,
+        [Description("JLT512")]
         UnableToConvertToBestTypeForLiteralValue,
+        [Description("JLT513")]
         UnableToUseMethodWithinPropertyName,
+        [Description("JLT514")]
         UnableToUseMethodWithinPropertyValue,
+        [Description("JLT515")]
         UnableToApplyMethodResultsWithUnknownEvaluationMode,
+        [Description("JLT516")]
         UnableToInvokeInstanceMethodWithoutMethodContext,
+        [Description("JLT517")]
         UnableToLocateInstanceMethodWithProvidedMethodContext,
+        [Description("JLT518")]
         UnableToInvokeMethodWithUnknownCallType,
+        [Description("JLT519")]
         UnableToCompleteIncludeIfLibraryCallDueToNonBooleanCondition,
+        [Description("JLT520")]
         UnableToParseEvalLibraryCallExpression,
+        [Description("JLT521")]
         UnableToPerformLoopLibraryCallOnNonLoopableToken,
+        [Description("JLT522")]
         UnableToPerformLoopLibraryCallOnNonLoopableSourceToken,
+        [Description("JLT523")]
         UnableToPerformLoopLibraryCallDueToMissingContentTemplate
     }
 }

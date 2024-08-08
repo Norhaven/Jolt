@@ -249,6 +249,13 @@ namespace Jolt.Evaluation
                 };
             }
 
+            if (call.Signature.Parameters.Length > actualParameterValues.Count)
+            {
+                var nextMissingParameter = call.Signature.Parameters[actualParameterValues.Count - 1];
+
+                throw Error.CreateExecutionErrorFrom(ExceptionCode.MissingRequiredMethodParameter, call.Signature.Name, nextMissingParameter.Name, nextMissingParameter.Type);
+            }
+
             var resultValue = InvokeMethod(call.Signature, actualParameterValues, context);
 
             // An enumerable sequence of JSON tokens is possible to get back from a method call, such as the

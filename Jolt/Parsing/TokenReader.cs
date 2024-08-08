@@ -171,7 +171,16 @@ namespace Jolt.Parsing
                 }
                 else if (char.IsLetter(stream.CurrentToken))
                 {
-                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.BooleanLiteral, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace);
+                    var possibleBoolToken = TokenUntilMatchedWith(stream, ExpressionTokenCategory.BooleanLiteral, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace);
+
+                    if (bool.TryParse(possibleBoolToken.Value, out var value))
+                    {
+                        yield return possibleBoolToken;
+                    }
+                    else
+                    {
+                        throw Error.CreateParsingErrorFrom(ExceptionCode.ExpectedBooleanLiteralTokenButFoundUnknownToken, possibleBoolToken.Value);
+                    }
                 }
                 else if (stream.CurrentToken == ExpressionToken.Whitespace)
                 {

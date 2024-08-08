@@ -26,6 +26,13 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToCategorizeTokenAtPosition] = "Unable to categorize token '{0}' at position '{1}'.",
             [ExceptionCode.UnableToLocateExpectedCharactersInExpression] = "Unable to locate expected character(s) in expression",
             [ExceptionCode.UnableToLocateSpecificExpectedCharactersInExpression] = "Unable to locate expected character(s) '{0}' in expression",
+            [ExceptionCode.ExpectedBooleanLiteralTokenButFoundUnknownToken] = "Expected a boolean value but found unsupported value '{0}' in expression",
+
+            // Resolution
+
+            [ExceptionCode.UnableToLocateInstanceMethod] = "Unable to locate instance method '{0}' during method resolution, no method context was provided",
+            [ExceptionCode.UnableToLocateTypeForStaticMethod] = "Unable to locate defining type '{0}' for method '{1}' during method resolution",
+            [ExceptionCode.UnableToLocateStaticMethodWithProvidedType] = "Unable to locate static method '{0}' during method resolution within type '{1}'",
 
             // Execution
 
@@ -57,6 +64,7 @@ namespace Jolt.Exceptions
 
         public static JoltException CreateParsingErrorFrom(ExceptionCode code, params object[] parameters) => BuildExceptionFrom(code, parameters, x => new JoltParsingException(code, x));
         public static JoltException CreateExecutionErrorFrom(ExceptionCode code, params object[] parameters) => BuildExceptionFrom(code, parameters, x => new JoltExecutionException(code, x));
+        public static JoltException CreateResolutionErrorFrom(ExceptionCode code, string typeName, string methodName, params object[] parameters) => BuildExceptionFrom(code, parameters, x => new JoltMethodResolutionException(code, typeName, methodName, x));
 
         private static JoltException BuildExceptionFrom(ExceptionCode code, object[] parameters, Func<string, JoltException> createWith)
         {

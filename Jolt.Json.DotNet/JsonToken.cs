@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using Json.Path;
 using JsonElement = System.Text.Json.JsonElement;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using JsonSerializerOptions = System.Text.Json.JsonSerializerOptions;
 
 namespace Jolt.Json.DotNet
 {
@@ -91,6 +92,11 @@ namespace Jolt.Json.DotNet
         {
             if (typeof(T) == typeof(object))
             {
+                if (_token is Nodes.JsonObject)
+                {
+                    return JsonSerializer.Deserialize<T>(_token.ToJsonString());
+                }
+
                 object? value = ((JsonElement)_token.GetValue<object>()) switch
                 {
                     var x when x.ValueKind == JsonValueKind.String => x.GetString(),
@@ -113,7 +119,7 @@ namespace Jolt.Json.DotNet
             return _token.GetValue<T>();
         }
 
-        public override string ToString() => _token?.ToString();
+        public override string ToString() => _token?.ToJsonString();
 
         private Nodes.JsonNode? SelectToken(string path)
         {

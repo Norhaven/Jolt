@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Jolt.Exceptions;
 using Jolt.Json.Tests.TestAttributes;
 using Jolt.Structure;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,7 +39,12 @@ public abstract class SmallTest(IJsonContext context) : Test(context)
         var sourceJson = reader.Read("{}") as IJsonObject;
         var transformerJson = reader.Read("{}") as IJsonObject;
 
-        sourceJson[source.Name] = reader.CreateTokenFrom(source.Value);
+        sourceJson[source.Name] = source.Type switch
+        {
+            SourceValueType.Object => reader.Read(source.Value?.ToString()),
+            _ => reader.CreateTokenFrom(source.Value)
+        };
+
         transformerJson[target.NameExpression] = reader.CreateTokenFrom(target.ValueExpression);
 
         var transformer = CreateTransformerWith(transformerJson.ToString(), []);
@@ -48,7 +54,39 @@ public abstract class SmallTest(IJsonContext context) : Test(context)
             var result = transformer.Transform(sourceJson.ToString());
 
             var jsonResult = reader.Read(result) as IJsonObject;
-            jsonResult[expectsResult.PropertyName].ToTypeOf<object>().Should().Be(expectsResult.Value, "because the result was expected by the test");
+            var value = jsonResult[expectsResult.PropertyName];
+
+            if (value is null && expectsResult.Value is null)
+            {
+                return;
+            }
+
+            value.Should().NotBeNull($"because we are expecting a value '{expectsResult.Value}' instead");
+
+            if (value.Type == JsonTokenType.Object)
+            {
+                value.ToString().Equals(expectsResult.Value.ToString().Replace(" ", string.Empty)).Should().BeTrue("because the transformed JSON should match the expectation");
+            }
+            else
+            {
+                value.ToTypeOf<object>().Should().Be(expectsResult.Value, "because the result was expected by the test");
+            }
+        }
+        catch (JoltException ex)
+        {
+            if (expectsException is null)
+            {
+                throw;
+            }
+
+            if (expectsException.ExceptionType is null)
+            {
+                expectsException.Code.Should().Be(ex.Code, "because this exception code was expected");
+            }
+            else
+            {
+                expectsException.ExceptionType.Should().Be(ex.GetType(), "because this exception was expected");
+            }
         }
         catch (Exception ex)
         {

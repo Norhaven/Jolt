@@ -35,11 +35,17 @@ namespace Jolt.Library
             {
                 if (methodContext is null)
                 {
-                    throw new JoltMethodResolutionException(ExceptionCode.UnableToLocateInstanceMethod, default, registration.MethodName, $"Unable to locate instance method '{registration.MethodName}' during method resolution, no method context was provided");
+                    throw Error.CreateResolutionErrorFrom(ExceptionCode.UnableToLocateInstanceMethod, default, registration.MethodName, registration.MethodName);
                 }
 
                 var type = methodContext.GetType();
                 var method = type.GetMethod(registration.MethodName);
+
+                if (method is null)
+                {
+                    throw Error.CreateResolutionErrorFrom(ExceptionCode.UnableToLocateInstanceMethodWithProvidedMethodContext, type.FullName, registration.MethodName, registration.MethodName, type.FullName);
+                }
+
                 var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false, false, false, null)).ToArray();
 
                 return new MethodSignature(type?.AssemblyQualifiedName, registration.MethodName, registration.Alias, method?.ReturnType, registration.CallType, false, false, false, true, parameters);
@@ -47,7 +53,19 @@ namespace Jolt.Library
             else
             {
                 var type = Type.GetType(registration.FullyQualifiedTypeName);
+
+                if (type is null)
+                {
+                    throw Error.CreateResolutionErrorFrom(ExceptionCode.UnableToLocateTypeForStaticMethod, registration.FullyQualifiedTypeName, registration.MethodName, registration.FullyQualifiedTypeName, registration.MethodName);
+                }
+
                 var method = type.GetMethod(registration.MethodName);
+
+                if (method is null)
+                {
+                    throw Error.CreateResolutionErrorFrom(ExceptionCode.UnableToLocateStaticMethodWithProvidedType, type.FullName, registration.MethodName, registration.MethodName, type.FullName);
+                }
+
                 var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false, false, false, null)).ToArray();
 
                 return new MethodSignature(type.AssemblyQualifiedName, registration.MethodName, registration.Alias, method.ReturnType, registration.CallType, false, false, false, true, parameters);
