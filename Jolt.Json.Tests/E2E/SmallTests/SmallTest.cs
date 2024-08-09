@@ -65,7 +65,8 @@ public abstract class SmallTest(IJsonContext context) : Test(context)
 
             if (value.Type == JsonTokenType.Object)
             {
-                value.ToString().Equals(expectsResult.Value.ToString().Replace(" ", string.Empty)).Should().BeTrue("because the transformed JSON should match the expectation");
+                var expectedToken = reader.Read(expectsResult.Value?.ToString());
+                value.Equals(expectedToken).Should().BeTrue("because the transformed JSON should match the expectation");
             }
             else
             {

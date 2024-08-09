@@ -74,7 +74,7 @@ namespace Jolt.Json.DotNet
                 {
                     var json = new Nodes.JsonObject
                     { 
-                        ["key"] = group.Key.ToString(),
+                        ["key"] = group.Key,
                         ["results"] = new Nodes.JsonArray(group.Select(x => Nodes.JsonNode.Parse(x.ToString())).ToArray())
                     };
 

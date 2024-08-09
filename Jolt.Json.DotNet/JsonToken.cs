@@ -119,7 +119,7 @@ namespace Jolt.Json.DotNet
             return _token.GetValue<T>();
         }
 
-        public override string ToString() => _token?.ToJsonString();
+        public override string ToString() => _token?.ToString();
 
         private Nodes.JsonNode? SelectToken(string path)
         {
@@ -136,6 +136,21 @@ namespace Jolt.Json.DotNet
             }
 
             return result.Matches[0].Value;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is JsonToken json)
+            {
+                return Nodes.JsonNode.DeepEquals(_token, json._token);
+            }
+
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return _token.GetHashCode();
         }
     }
 }

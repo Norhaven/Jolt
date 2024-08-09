@@ -1,4 +1,5 @@
 ﻿using Jolt.Structure;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -84,5 +85,20 @@ namespace Jolt.Json.Newtonsoft
         public T ToTypeOf<T>() => _token.ToObject<T>();
 
         public override string ToString() => _token?.ToString();
+
+        public override bool Equals(object obj)
+        {
+            if (obj is JsonToken json)
+            {
+                return JToken.DeepEquals(_token, json._token);
+            }
+
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return _token.GetHashCode();
+        }
     }
 }

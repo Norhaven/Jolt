@@ -73,7 +73,7 @@ namespace Jolt.Json.Newtonsoft
                 {
                     var json = new JObject
                     { 
-                        ["key"] = group.Key.ToString(),
+                        ["key"] = group.Key,
                         ["results"] = new JArray(group.Select(x => JToken.Parse(x.ToString())))
                     };
 
