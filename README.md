@@ -70,7 +70,7 @@ public string TransformationExample(string transformerJson, string sourceJsonDoc
     return transformer.Transform(sourceJsonDocument);
 }
 ```
-Now that we've got the transformer set up, let's create a JSON transformer that makes use of the new method.
+Now that we've got the transformer set up in code and the method registered, let's create a JSON transformer that makes use of the new method.
 ```json
 {
     "result": "#IsNotNull(#valueOf($.stringValue))"
@@ -157,7 +157,7 @@ The output would look like this:
 
 # Library Methods
 
-This package comes with quite a few methods built into it to get you started, all of which are documented here and represent the most common things that you may want to do when transforming a JSON file. If you find that an opportunity for a new library method exists, please raise an issue and it will be considered.
+This package comes with quite a few methods built into it to get you started, all of which are documented here and represent the most common things that you may want to do when transforming a JSON file. If you find that an opportunity for a new library method exists, please raise an issue and it will be considered. For more detail on the individual library methods, please see the Jolt wiki [over here.](https://github.com/Norhaven/Jolt/wiki)
 
 | Method | Description | Example | Valid On
 | ------ | ----------- | ------- | --------
