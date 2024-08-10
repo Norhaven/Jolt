@@ -230,6 +230,20 @@ public abstract class JoltTransformerTests : Test
         json.PropertyValueFor<string>(TargetProperty.AppendedString).Should().Be("testtest", "because that is the value appended twice with itself in the source document");
     }
 
+    [Fact]
+    public void RangeVariables_AreSuccessful_WithDeclarationAndUsage()
+    {
+        var json = ExecuteTestFor(_rangeVariables, _singleLevelLoopDocument);
+
+        json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
+
+        json.PropertyValueFor<int>(TargetProperty.IntegerLiteral).Should().Be(3, "because that's the value in the source document");
+        json.PropertyValueFor<int>(TargetProperty.Result).Should().Be(5, "because that's the result value of the equation");
+
+        json["Temp3Copy"].AsArray().ShouldContainProperties((0, "ElementId", 1), (1, "ElementId", 2));
+        json["ActualTemp3"].AsArray().ShouldContainProperties((0, "ActualElementId", 2), (1, "ActualElementId", 4));
+        json.PropertyValueFor<string>("InvalidVarReference").Should().BeNull("because the lifetime of the scoped variable ended with the loop");
+    }
 
 
     private void ValidateLiteralIsTransformed<T>(string transformerJson, string documentJson, string targetProperty, T targetValue)

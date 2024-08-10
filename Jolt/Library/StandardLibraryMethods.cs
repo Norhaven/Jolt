@@ -71,6 +71,7 @@ namespace Jolt.Library
                 context.JsonContext,
                 context.Token,
                 context.ClosureSources,
+                context.RangeVariables,
                 context.Transform
             );
 
@@ -101,7 +102,7 @@ namespace Jolt.Library
 
             var evaluationToken = new EvaluationToken(propertyName, default, includedJson.Parent, includedJson, currentSource);
 
-            return context.Transform(evaluationToken, context.ClosureSources);
+            return context.Transform(evaluationToken, context.ClosureSources, context.RangeVariables);
         }
 
         [JoltLibraryMethod("eval")]
@@ -121,6 +122,7 @@ namespace Jolt.Library
                 context.JsonContext,
                 context.Token,
                 context.ClosureSources,
+                context.RangeVariables,
                 context.Transform);
 
             return context.JsonContext.ExpressionEvaluator.Evaluate(evaluationContext);
@@ -128,7 +130,7 @@ namespace Jolt.Library
 
         [JoltLibraryMethod("loop", true)]
         [MethodIsValidOn(LibraryMethodTarget.PropertyName)]
-        public static IEnumerable<IJsonToken> LoopOnArrayOrObjectAtPath(string path, EvaluationContext context)
+        public static IEnumerable<IJsonToken> LoopOnArrayOrObjectAtPath(object pathOrVariable, EvaluationContext context)
         {
             var token = context.Token.CurrentTransformerToken;
 
@@ -137,7 +139,12 @@ namespace Jolt.Library
                 throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToPerformLoopLibraryCallOnNonLoopableToken, token.Type);
             }
 
-            var closestViableSourceToken = context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, path, JsonQueryMode.StartFromClosestMatch);
+            var closestViableSourceToken = pathOrVariable switch
+            {
+                string path => context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, path, JsonQueryMode.StartFromClosestMatch),
+                RangeVariable variable => variable.Value,
+                _ => throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToPerformLoopLibraryCallDueToInvalidParameter, pathOrVariable)
+            };
 
             if (closestViableSourceToken?.Type.IsAnyOf(JsonTokenType.Array, JsonTokenType.Object) != true)
             {
@@ -164,7 +171,7 @@ namespace Jolt.Library
                     var propertyName = context.Token.ResolvedPropertyName ?? context.Token.PropertyName;
                     var currentSource = new SourceToken(index, property);
 
-                    var evaluationToken = new EvaluationToken(propertyName, default, token, templateCopy, currentSource);
+                    var evaluationToken = new EvaluationToken(propertyName, default, token, templateCopy, currentSource, true);
 
                     return (evaluationToken, property?.Value ?? currentToken);
                 }
@@ -173,11 +180,31 @@ namespace Jolt.Library
                 {
                     (var templateEvaluationToken, var closureSource) = CreateEvaluationToken(elementOrProperty);
 
+                    // Looping adds a temporary scope for resolution purposes during each loop so that
+                    // the loop variable can only be accessed during the loop and so that any range variables
+                    // added in the loop have those same rules apply to them as well.
+
                     context.ClosureSources.Push(closureSource);
 
-                    var transformedToken = context.Transform(templateEvaluationToken, context.ClosureSources);
+                    if (context.RangeVariables.Count == 0)
+                    {
+                        // No variable scopes currently exist, so we just need to create one.
+
+                        context.RangeVariables.Push(new List<RangeVariable>());
+                    }
+                    else
+                    {
+                        // All variables in the outer scope are still accessible in the new scope but
+                        // if they happen to add more during the loop we can just drop the layer once we're
+                        // done and call it good.
+
+                        context.RangeVariables.Push(context.RangeVariables.Peek().Select(x => x).ToList());
+                    }
+
+                    var transformedToken = context.Transform(templateEvaluationToken, context.ClosureSources, context.RangeVariables);
 
                     context.ClosureSources.Pop();
+                    context.RangeVariables.Pop();
 
                     index++;
 

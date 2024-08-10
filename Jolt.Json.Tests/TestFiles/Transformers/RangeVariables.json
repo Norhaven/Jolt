@@ -1,0 +1,19 @@
+﻿{
+  "@temp": "#valueOf($.integerLiteral)",
+  "@temp2": "#valueOf($.integerLiteral)",
+  "Integer": "@temp",
+  "Result": "@temp + @temp2 - 1",
+  "#loop($.array)->@temp3": [
+    {
+      "ElementId": "#loopValueOf($.arrayElementId)"
+    }
+  ],
+  "Temp3Copy": "@temp3",
+  "#loop(@temp3)->'ActualTemp3'": [
+    {
+      "@scopedVar": "#loopValueOf($.ElementId)",
+      "ActualElementId": "@scopedVar * 2"
+    }
+  ],
+  "InvalidVarReference": "@scopedVar"
+}

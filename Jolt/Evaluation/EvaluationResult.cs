@@ -11,13 +11,15 @@ namespace Jolt.Evaluation
         public string NewPropertyName { get; }
         public IJsonToken TransformedToken { get; }
         public bool IsValuePendingEvaluation { get; }
+        public RangeVariable RangeVariable { get; }
 
-        public EvaluationResult(string originalPropertyName, string newPropertyName, IJsonToken transformedToken, bool isValuePendingEvaluation = false)
+        public EvaluationResult(string originalPropertyName, string newPropertyName, IJsonToken transformedToken, bool isValuePendingEvaluation = false, RangeVariable rangeVariable = default)
         {
             OriginalPropertyName = originalPropertyName;
             NewPropertyName = newPropertyName;
             TransformedToken = transformedToken;
             IsValuePendingEvaluation = isValuePendingEvaluation;
+            RangeVariable = rangeVariable;
         }
     }
 }

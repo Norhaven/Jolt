@@ -56,6 +56,8 @@ namespace Jolt.Parsing
         [Description("a close parentheses group")]
         CloseParenthesesGroup,
         [Description("a range expression")]
-        RangeExpression
+        RangeExpression,
+        [Description("a range variable")]
+        RangeVariable
     }
 }

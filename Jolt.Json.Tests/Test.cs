@@ -129,6 +129,7 @@ public abstract class Test
     protected readonly string _conditions;
     protected readonly string _pipedMethods;
     protected readonly string _externalMethods;
+    protected readonly string _rangeVariables;
 
     protected readonly IJsonContext _testContext;
     protected readonly IJsonTransformer<IJsonContext> _transformer;
@@ -152,6 +153,7 @@ public abstract class Test
         _conditions = ReadTestTransformer("Conditions");
         _pipedMethods = ReadTestTransformer("PipedMethods");
         _externalMethods = ReadTestTransformer("ExternalMethods");
+        _rangeVariables = ReadTestTransformer("RangeVariables");
 
         _testContext = context;
     }

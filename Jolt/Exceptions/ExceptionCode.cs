@@ -96,6 +96,12 @@ namespace Jolt.Exceptions
         [Description("JLT522")]
         UnableToPerformLoopLibraryCallOnNonLoopableSourceToken,
         [Description("JLT523")]
-        UnableToPerformLoopLibraryCallDueToMissingContentTemplate
+        UnableToPerformLoopLibraryCallDueToMissingContentTemplate,
+        [Description("JLT524")]
+        MethodCallActualParameterCountExceedsFormalParameterCount,
+        [Description("JLT525")]
+        ReferencedRangeVariableWithNoValue,
+        [Description("JLT526")]
+        UnableToPerformLoopLibraryCallDueToInvalidParameter
     }
 }

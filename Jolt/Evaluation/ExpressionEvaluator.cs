@@ -25,7 +25,14 @@ namespace Jolt.Evaluation
 
             if (result is IJsonToken token)
             {
-                return new EvaluationResult(context.Token.PropertyName, default, token);
+                return new EvaluationResult(context.Token.PropertyName, default, token, rangeVariable: context.Token.ParentRangeVariable);
+            }
+
+            if (result is RangeVariable range)
+            {
+                var isValuePendingEvaluation = context.Mode == EvaluationMode.PropertyName && range.Value is null;
+
+                return new EvaluationResult(context.Token.PropertyName, default, range.Value, isValuePendingEvaluation, range);
             }
 
             return new EvaluationResult(context.Token.PropertyName, default, context.JsonContext.JsonTokenReader.CreateTokenFrom(result));
@@ -36,6 +43,7 @@ namespace Jolt.Evaluation
             return expression switch
             {
                 RangeExpression range => UnwrapRange(range, context),
+                RangeVariableExpression range => UnwrapRangeVariable(range, context),
                 LiteralExpression literal => UnwrapLiteralValue(literal, context),
                 PathExpression path => ExtractPath(path, context),
                 MethodCallExpression call => ExecuteMethodCall(call, context),
@@ -48,6 +56,16 @@ namespace Jolt.Evaluation
         {
             var leftResult = EvaluateExpression(binary.Left, context).UnwrapWith(context.JsonContext.JsonTokenReader);
             var rightResult = EvaluateExpression(binary.Right, context).UnwrapWith(context.JsonContext.JsonTokenReader);
+
+            if (leftResult is RangeVariable leftResultVariable)
+            {
+                leftResult = leftResultVariable.Value.ToTypeOf<object>();
+            }
+
+            if (rightResult is RangeVariable rightResultVariable)
+            {
+                rightResult = rightResultVariable.Value.ToTypeOf<object>();
+            }
 
             if (binary.IsComparison)
             {
@@ -136,6 +154,23 @@ namespace Jolt.Evaluation
         private Range UnwrapRange(RangeExpression range, EvaluationContext context)
         {
             return new Range(range.StartIndex,range.EndIndex);
+        }
+
+        private RangeVariable UnwrapRangeVariable(RangeVariableExpression range, EvaluationContext context)
+        {
+            if (!context.RangeVariables.TryPeek(out var variables))
+            {
+                return new RangeVariable(range.Name);
+            }
+
+            var existingVariable = variables.FirstOrDefault(x => x.Name == range.Name);
+
+            if (existingVariable is null)
+            {
+                return new RangeVariable(range.Name);
+            }
+
+            return existingVariable;
         }
 
         private object UnwrapLiteralValue(LiteralExpression literal, EvaluationContext context)
@@ -255,6 +290,10 @@ namespace Jolt.Evaluation
 
                 throw Error.CreateExecutionErrorFrom(ExceptionCode.MissingRequiredMethodParameter, call.Signature.Name, nextMissingParameter.Name, nextMissingParameter.Type);
             }
+            else if (actualParameterValues.Count > call.Signature.Parameters.Length && !lastParameterIsVariadic)
+            {
+                throw Error.CreateExecutionErrorFrom(ExceptionCode.MethodCallActualParameterCountExceedsFormalParameterCount, call.Signature.Name, call.Signature.Parameters.Length);
+            }
 
             var resultValue = InvokeMethod(call.Signature, actualParameterValues, context);
 
@@ -297,7 +336,7 @@ namespace Jolt.Evaluation
 
                 var resolvedPropertyName = call.Signature.IsValueGenerator ? context.Token.ResolvedPropertyName : ((IJsonProperty)context.Token.CurrentSource.Property)?.PropertyName;
 
-                return new EvaluationResult(context.Token.PropertyName, resolvedPropertyName, (IJsonToken)resultValue); 
+                return new EvaluationResult(context.Token.PropertyName, resolvedPropertyName, (IJsonToken)resultValue, rangeVariable: context.Token.ParentRangeVariable ?? call.GeneratedVariable); 
             }
             else if (context.Mode == EvaluationMode.PropertyValue)
             {

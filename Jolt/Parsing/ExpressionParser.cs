@@ -76,9 +76,13 @@ namespace Jolt.Parsing
                 {
                     return path;
                 }
-                else if (TryParseRange(reader, out var range))
+                else if (TryParseRangeExpression(reader, out var range))
                 {
                     return range;
+                }
+                else if (TryParseRangeVariable(reader, out var rangeVariable))
+                {
+                    return rangeVariable;
                 }
                 else if (TryParseLiteral(reader, out var literal))
                 {
@@ -164,7 +168,7 @@ namespace Jolt.Parsing
             return true;
         }
 
-        private bool TryParseRange(ExpressionReader reader, out RangeExpression? range)
+        private bool TryParseRangeExpression(ExpressionReader reader, out RangeExpression? range)
         {
             const string RangeDots = "..";
 
@@ -207,6 +211,22 @@ namespace Jolt.Parsing
             };
 
             range = new RangeExpression(startIndex, endIndex);
+
+            reader.ConsumeCurrent();
+
+            return true;
+        }
+
+        private bool TryParseRangeVariable(ExpressionReader reader, out RangeVariableExpression rangeVariable)
+        {
+            rangeVariable = default;
+
+            if (reader.CurrentToken.Category != ExpressionTokenCategory.RangeVariable)
+            {
+                return false;
+            }
+
+            rangeVariable = new RangeVariableExpression(reader.CurrentToken.Value);
 
             reader.ConsumeCurrent();
 
@@ -290,6 +310,10 @@ namespace Jolt.Parsing
             if (reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.GeneratedNameIdentifier, out var generatedName))
             {
                 methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), generatedName.Value);
+            }
+            else if (reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.RangeVariable, out var rangeVariable))
+            {
+                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), rangeVariable.Value, new RangeVariable(rangeVariable.Value));
             }
             else if (reader.CurrentToken?.Category == ExpressionTokenCategory.StartOfPipedMethodCall)
             {

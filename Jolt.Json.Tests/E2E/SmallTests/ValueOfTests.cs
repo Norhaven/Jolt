@@ -21,6 +21,7 @@ public abstract partial class ValueOfTests(IJsonContext context) : SmallTest(con
         public const string NoParameter = "#valueOf()";
         public const string NonPathParameter = "#valueOf(test)";
         public const string InvalidPathParameter = "#valueOf($.nowhere)";
+        public const string TooManyParameters = "#valueOf($.value, $.wrong)";
     }
 
     [Fact]
@@ -70,4 +71,10 @@ public abstract partial class ValueOfTests(IJsonContext context) : SmallTest(con
     [TransformerIs(Transformer.NonPathParameter)]
     [ExpectsException(ExceptionCode.ExpectedBooleanLiteralTokenButFoundUnknownToken)]
     public void ValueOf_ThrowsException_WithNonPathParameter() => ExecuteSmallTest();
+
+    [Fact]
+    [SourceHasString("test")]
+    [TransformerIs(Transformer.TooManyParameters)]
+    [ExpectsException(ExceptionCode.MethodCallActualParameterCountExceedsFormalParameterCount)]
+    public void ValueOf_ThrowsException_WithTooManyParameters() => ExecuteSmallTest();
 }

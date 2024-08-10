@@ -25,6 +25,7 @@ namespace Jolt.Parsing
         public const char Not = '!';
         public const char DecimalPoint = '.';
         public const char RangeEndIndexer = '^';
+        public const char At = '@';
 
         public string Value { get; }
         public ExpressionTokenCategory Category { get; }

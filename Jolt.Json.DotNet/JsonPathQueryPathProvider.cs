@@ -6,6 +6,7 @@ using System.Text;
 using Node = System.Text.Json.Nodes.JsonNode;
 using JsonObject = System.Text.Json.Nodes.JsonObject;
 using JsonArray = System.Text.Json.Nodes.JsonArray;
+using System.Collections;
 
 namespace Jolt.Json.DotNet
 {
@@ -21,14 +22,28 @@ namespace Jolt.Json.DotNet
 
         public override IJsonToken? SelectNodeAtPath(Stack<IJsonToken> source, string queryPath, JsonQueryMode queryMode)
         {
-            var queryToken = queryMode switch
+            if (queryMode == JsonQueryMode.StartFromRoot)
             {
-                JsonQueryMode.StartFromRoot => GetRootNodeFrom(source, queryMode),
-                JsonQueryMode.StartFromClosestMatch => source.Peek(),
-                _ => throw new ArgumentOutOfRangeException(nameof(queryPath), $"Unable to select JSON node, found unsupported query mode '{queryMode}'")
-            };
+                var root = GetRootNodeFrom(source, queryMode);
+                return root.SelectTokenAtPath(queryPath);
+            }
 
-            return queryToken.SelectTokenAtPath(queryPath);
+            var validQuerySources = new Stack<IJsonToken>(source.Reverse());
+
+            while (validQuerySources.Count > 0)
+            {
+                var currentSource = validQuerySources.Pop();
+                var result = currentSource.SelectTokenAtPath(queryPath);
+
+                if (result is null)
+                {
+                    continue;
+                }
+
+                return result;
+            }
+
+            return default;
         }
     }
 }

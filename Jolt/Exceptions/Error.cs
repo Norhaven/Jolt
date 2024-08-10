@@ -58,7 +58,10 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToParseEvalLibraryCallExpression] = "Unable to parse expression '{0}' within #eval call as a path or literal value",
             [ExceptionCode.UnableToPerformLoopLibraryCallOnNonLoopableToken] = "Unable to loop using non-enumerable token of type '{token.Type}'",
             [ExceptionCode.UnableToPerformLoopLibraryCallOnNonLoopableSourceToken] = "Unable to loop over non-enumerable source token of type '{0}'",
-            [ExceptionCode.UnableToPerformLoopLibraryCallDueToMissingContentTemplate] = "Unable to locate loop content template for unsupported token type '{0}'"
+            [ExceptionCode.UnableToPerformLoopLibraryCallDueToMissingContentTemplate] = "Unable to locate loop content template for unsupported token type '{0}'",
+            [ExceptionCode.MethodCallActualParameterCountExceedsFormalParameterCount] = "The number of parameters passed to method '{0}' exceed the allowed amount of '{1}'",
+            [ExceptionCode.ReferencedRangeVariableWithNoValue] = "Referenced range variable '{0}' which had a null value",
+            [ExceptionCode.UnableToPerformLoopLibraryCallDueToInvalidParameter] = "Unable to loop on value '{0}' which is not a path or a variable reference"
 
         };
 

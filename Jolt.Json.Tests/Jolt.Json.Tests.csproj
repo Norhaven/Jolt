@@ -27,6 +27,7 @@
     <None Remove="TestFiles\SingleLevelLoopDocument.json" />
     <None Remove="TestFiles\SingleLevelValueOf.json" />
     <None Remove="TestFiles\Transformers\ExternalMethods.json" />
+    <None Remove="TestFiles\Transformers\RangeVariables.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,6 +46,7 @@
     <EmbeddedResource Include="TestFiles\Documents\SingleLevelDocument.json" />
     <EmbeddedResource Include="TestFiles\Documents\SingleLevelLoopDocument.json" />
     <EmbeddedResource Include="TestFiles\Transformers\SingleLevelLoop.json" />
+    <EmbeddedResource Include="TestFiles\Transformers\RangeVariables.json" />
     <EmbeddedResource Include="TestFiles\Transformers\SingleLevelValueOf.json" />
   </ItemGroup>
 

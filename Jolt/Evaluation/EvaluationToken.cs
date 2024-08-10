@@ -13,8 +13,9 @@ namespace Jolt.Evaluation
         public IJsonToken CurrentTransformerToken { get; }
         public SourceToken CurrentSource { get; }
         public bool IsPendingValueEvaluation { get; }
+        public RangeVariable ParentRangeVariable { get; }
 
-        public EvaluationToken(string propertyName, string resolvedPropertyName, IJsonToken? parentToken, IJsonToken currentTransformerToken, SourceToken currentSource = null, bool isPendingValueEvaluation = false)
+        public EvaluationToken(string propertyName, string resolvedPropertyName, IJsonToken? parentToken, IJsonToken currentTransformerToken, SourceToken currentSource = null, bool isPendingValueEvaluation = false, RangeVariable parentRangeVariable = null)
         {
             PropertyName = propertyName;
             ResolvedPropertyName = resolvedPropertyName;
@@ -22,6 +23,7 @@ namespace Jolt.Evaluation
             CurrentTransformerToken = currentTransformerToken;
             CurrentSource = currentSource;
             IsPendingValueEvaluation = isPendingValueEvaluation;
+            ParentRangeVariable = parentRangeVariable;
         }
     }
 }

@@ -16,7 +16,7 @@ namespace Jolt.Parsing
         /// </summary>
         /// <param name="expression">The Jolt expression to inspect.</param>
         /// <returns>True if the expression starts with a method call or open parentheses, false otherwise.</returns>
-        bool StartsWithMethodCallOrOpenParentheses(string expression);
+        bool StartsWithMethodCallOrOpenParenthesesOrRangeVariable(string expression);
 
         /// <summary>
         /// Reads an entire Jolt expression into a series of tokens.

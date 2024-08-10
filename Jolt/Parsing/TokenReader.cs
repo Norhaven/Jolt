@@ -10,7 +10,7 @@ namespace Jolt.Parsing
 {
     public sealed class TokenReader : ITokenReader
     {
-        public bool StartsWithMethodCallOrOpenParentheses(string expression)
+        public bool StartsWithMethodCallOrOpenParenthesesOrRangeVariable(string expression)
         {
             if (string.IsNullOrWhiteSpace(expression))
             {
@@ -29,7 +29,9 @@ namespace Jolt.Parsing
                 stream.ConsumeCurrent();
             }
 
-            return stream.CurrentToken == ExpressionToken.Hash || stream.CurrentToken == ExpressionToken.OpenParentheses;
+            return stream.CurrentToken == ExpressionToken.Hash || 
+                   stream.CurrentToken == ExpressionToken.OpenParentheses || 
+                   stream.CurrentToken == ExpressionToken.At;
         }
 
         public IEnumerable<ExpressionToken> ReadToEnd(string expression, EvaluationMode mode)
@@ -132,6 +134,10 @@ namespace Jolt.Parsing
 
                                 yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.GeneratedNameIdentifier, ExpressionToken.SingleQuote);
                             }
+                            else if (stream.CurrentToken == ExpressionToken.At)
+                            {
+                                yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace);
+                            }
                             else
                             {
                                 throw Error.CreateParsingErrorFrom(ExceptionCode.ExpectedStringLiteralPropertyNameButFoundDifferentToken, stream.CurrentToken);
@@ -149,6 +155,10 @@ namespace Jolt.Parsing
                     yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.Identifier, ExpressionToken.OpenParentheses);
                     yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfMethodParameters);
                 }                
+                else if (stream.CurrentToken == ExpressionToken.At)
+                {
+                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace);
+                }
                 else if (stream.CurrentToken == ExpressionToken.Comma)
                 {
                     yield return TokenFromCurrent(stream, ExpressionTokenCategory.ParameterSeparator);

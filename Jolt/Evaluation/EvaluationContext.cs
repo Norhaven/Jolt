@@ -13,15 +13,17 @@ namespace Jolt.Evaluation
         public IJsonContext JsonContext { get; }
         public EvaluationToken Token { get; }
         public Stack<IJsonToken> ClosureSources { get; }
-        public Func<EvaluationToken, Stack<IJsonToken>, IJsonToken> Transform { get; }
+        public Stack<IList<RangeVariable>> RangeVariables { get; }
+        public Func<EvaluationToken, Stack<IJsonToken>, Stack<IList<RangeVariable>>, IJsonToken> Transform { get; }
 
-        public EvaluationContext(EvaluationMode mode, Expression expression, IJsonContext jsonContext, EvaluationToken token, Stack<IJsonToken> closureSources, Func<EvaluationToken, Stack<IJsonToken>, IJsonToken> transform)
+        public EvaluationContext(EvaluationMode mode, Expression expression, IJsonContext jsonContext, EvaluationToken token, Stack<IJsonToken> closureSources, Stack<IList<RangeVariable>> rangeVariables, Func<EvaluationToken, Stack<IJsonToken>, Stack<IList<RangeVariable>>, IJsonToken> transform)
         {
             Mode = mode;
             Expression = expression;
             JsonContext = jsonContext;
             Token = token;
             ClosureSources = closureSources;
+            RangeVariables = rangeVariables;
             Transform = transform;
         }
     }
