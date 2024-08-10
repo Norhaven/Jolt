@@ -155,6 +155,49 @@ The output would look like this:
 }
 ```
 
+# Range Variables
+
+There are times that you may want to perform a particular transform and then do something additional to it, whether that's simple math or looping over it. Most of the time, you'd also rather that the intermediary transform not stick around in the final JSON output, it's just there to do some preprocessing. This is an area where you may find that range variables work for your needs.
+
+You can declare and set a variable in the property name one of two ways, either as the direct result of an expression or as the output of a loop. Let's take a look at both.
+```json
+{
+    "@firstVar": "#valueOf($.someInteger)",
+    "@secondVar": "#valueOf($.someOtherInteger)",
+    "sum": "@firstVar + @secondVar"
+}
+```
+This is one way to directly declare and use variables in your transformations. All variables are prefixed with the `@` symbol and specifying it in the property name indicates that you would like to set it and also remove that JSON node from the transformed result. Let's see how you would be able to do some preprocessing on an array now.
+```json
+{
+    "#loop($.someArray)->@tempResult": [
+        {
+            "intermediateValue": "#loopValueOf($.someInteger) * 2"
+        }
+    ],
+    "#loop(@tempResult)->'actualResult'": [
+        {
+            "finalValue": "#valueOf($.intermediateValue) + 5"
+        }
+    ]
+}
+```
+The first loop will set the variable `@tempResult` to the value of the transformed array, which will use the provided content template to transform each array element it finds, then removes the node from the output. The second loop takes the variable results as input and loops over that intermediary array, applying additional transformation to the results, naming the final array property as `actualResult`.
+
+You can also declare variables within the content template of a loop, but they only exist within it and on a per-iteration basis (meaning that the variable is redeclared, set, and thrown away every time through the loop). Let's see an example of that here.
+```json
+{
+    "#loop($.someArray)->'finalResult'": [
+        {
+            "@scopedVar": "#loopValueOf($.someInteger) / 2",
+            "multipliedValue": "@scopedVar - 3"
+        }
+    ],
+    "invalidValue": "@scopedVar"
+}
+```
+In the resulting JSON output, the `finalResult` property will be populated by the array loop but the `invalidValue` property will be null due to accessing a variable which has already been destroyed.
+
 # Library Methods
 
 This package comes with quite a few methods built into it to get you started, all of which are documented here and represent the most common things that you may want to do when transforming a JSON file. If you find that an opportunity for a new library method exists, please raise an issue and it will be considered. For more detail on the individual library methods, please see the Jolt wiki [over here.](https://github.com/Norhaven/Jolt/wiki)
@@ -200,7 +243,7 @@ This package comes with quite a few methods built into it to get you started, al
 
 # Alternate External Method Registrations
 
-There are additional ways available to register your external methods, let's take a look at a few different ways.
+There are additional ways available to register your external methods, let's take a look at another one.
 
 ## Method Registration
 
