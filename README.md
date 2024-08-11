@@ -177,7 +177,7 @@ This is one way to directly declare and use variables in your transformations. A
     ],
     "#loop(@tempResult)->'actualResult'": [
         {
-            "finalValue": "#valueOf($.intermediateValue) + 5"
+            "finalValue": "#loopValueOf($.intermediateValue) + 5"
         }
     ]
 }
