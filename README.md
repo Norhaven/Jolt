@@ -190,7 +190,7 @@ You can also declare variables within the content template of a loop, but they o
     "#loop($.someArray)->'finalResult'": [
         {
             "@scopedVar": "#loopValueOf($.someInteger) / 2",
-            "multipliedValue": "@scopedVar - 3"
+            "subtractedValue": "@scopedVar - 3"
         }
     ],
     "invalidValue": "@scopedVar"
