@@ -198,6 +198,49 @@ You can also declare variables within the content template of a loop, but they o
 ```
 In the resulting JSON output, the `finalResult` property will be populated by the array loop but the `invalidValue` property will be null due to accessing a variable which has already been destroyed.
 
+There are also another use for range variables, namely in lambda expressions. Several methods in the library will take a lambda in order to better filter and/or refine the JSON data, used in the form of declaring a range variable and a body expression separated by a colon `:`. The variable's lifetime is scoped to the lambda body and will not be accessible outside of it. Let's take a quick look at the methods which allow this usage.
+```json
+{
+    "hasValues": "#valueOf($.some.integerArray)->#any(@x: @x > 5)",
+    "filteredData": "#valueOf($.some.complexArray)->#where(@x: @x.some.path < 10)",
+    "projectedData": "#valueOf($.some.complexArray)->#select(@x: @x.some.path)"
+}
+```
+Assuming that we have the following data:
+```json
+{
+    "some": {
+        "integerArray": [ 1, 2, 6, 10 ],
+        "complexArray": [
+            {
+                "some": {
+                    "path": 5
+                }
+            },
+            {
+                "some": {
+                    "path": 30
+                }
+            }
+        ]
+    }
+}
+```
+Using the previous transform, the output would look like:
+```json
+{
+    "hasValues": true,
+    "filteredData": [
+        {
+            "some": {
+                "path": 5
+            }
+        }
+    ],
+    "projectedData": [ 5, 30 ]
+}
+```
+
 # Library Methods
 
 This package comes with quite a few methods built into it to get you started, all of which are documented here and represent the most common things that you may want to do when transforming a JSON file. If you find that an opportunity for a new library method exists, please raise an issue and it will be considered. For more detail on the individual library methods, please see the Jolt wiki [over here.](https://github.com/Norhaven/Jolt/wiki)
@@ -235,11 +278,13 @@ This package comes with quite a few methods built into it to get you started, al
 | isBoolean | Returns true if the value is represented as a boolean | `#isBoolean($.some.path)` | Property Value
 | isArray | Returns true if the value is represented as an array, false otherwise | `#isArray($.some.path)` | Property Value
 | isEmpty | Returns true if the value is an array or string with no contents, false otherwise | `#isEmpty($.some.path)` | Property Value
-| any | Returns true if the value is an array or string with contents, false otherwise | `#any($.some.path)` | Property Value
 | toInteger | Returns a value converted to a whole number | `#toInteger($.some.path)` | Property Value
 | toString | Returns the string representation of a value | `#toString($.some.path)` | Property Value
 | toDecimal | Returns a value converted to a floating point number | `#toDecimal($.some.path)` | Property Value
 | toBoolean | Returns a value converted to a boolean | `#toBoolean($.some.path)` | Property Value
+| any | Returns true if the value is an array or string with contents, false otherwise | `#any($.some.path)` | Property Value
+| where | Returns an array of objects that match a predicate | `#where($.some.path, @x: @x.other.path > 2)` | Property Value
+| select | Returns an array of objects that are the result of a projection | `#select($.some.path, @x: @x.other.path)` | Property Value
 
 # Alternate External Method Registrations
 
