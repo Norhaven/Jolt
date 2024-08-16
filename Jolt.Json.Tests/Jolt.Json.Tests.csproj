@@ -15,6 +15,7 @@
     <None Remove="TestFiles\Documents\ConditionsDocument.json" />
     <None Remove="TestFiles\Documents\ExistenceDocument.json" />
     <None Remove="TestFiles\Documents\ExternalMethodsDocument.json" />
+    <None Remove="TestFiles\Documents\LambdasDocument.json" />
     <None Remove="TestFiles\Documents\MathDocument.json" />
     <None Remove="TestFiles\Documents\PipedMethodsDocument.json" />
     <None Remove="TestFiles\Existence.json" />
@@ -27,13 +28,16 @@
     <None Remove="TestFiles\SingleLevelLoopDocument.json" />
     <None Remove="TestFiles\SingleLevelValueOf.json" />
     <None Remove="TestFiles\Transformers\ExternalMethods.json" />
+    <None Remove="TestFiles\Transformers\Lambdas.json" />
     <None Remove="TestFiles\Transformers\RangeVariables.json" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="TestFiles\Documents\PipedMethodsDocument.json" />
     <EmbeddedResource Include="TestFiles\Documents\ExternalMethodsDocument.json" />
+    <EmbeddedResource Include="TestFiles\Documents\LambdasDocument.json" />
     <EmbeddedResource Include="TestFiles\Transformers\ExternalMethods.json" />
+    <EmbeddedResource Include="TestFiles\Transformers\Lambdas.json" />
     <EmbeddedResource Include="TestFiles\Transformers\PipedMethods.json" />
     <EmbeddedResource Include="TestFiles\Documents\ConditionsDocument.json" />
     <EmbeddedResource Include="TestFiles\Documents\ExistenceDocument.json" />

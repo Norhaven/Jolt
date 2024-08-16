@@ -27,6 +27,7 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToLocateExpectedCharactersInExpression] = "Unable to locate expected character(s) in expression",
             [ExceptionCode.UnableToLocateSpecificExpectedCharactersInExpression] = "Unable to locate expected character(s) '{0}' in expression",
             [ExceptionCode.ExpectedBooleanLiteralTokenButFoundUnknownToken] = "Expected a boolean value but found unsupported value '{0}' in expression",
+            [ExceptionCode.UnableToParseLambdaExpressionBodyAtPosition] = "Expected a lambda expression body at position '{0}' but found '{1}'",
 
             // Resolution
 
@@ -61,7 +62,11 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToPerformLoopLibraryCallDueToMissingContentTemplate] = "Unable to locate loop content template for unsupported token type '{0}'",
             [ExceptionCode.MethodCallActualParameterCountExceedsFormalParameterCount] = "The number of parameters passed to method '{0}' exceed the allowed amount of '{1}'",
             [ExceptionCode.ReferencedRangeVariableWithNoValue] = "Referenced range variable '{0}' which had a null value",
-            [ExceptionCode.UnableToPerformLoopLibraryCallDueToInvalidParameter] = "Unable to loop on value '{0}' which is not a path or a variable reference"
+            [ExceptionCode.UnableToPerformLoopLibraryCallDueToInvalidParameter] = "Unable to loop on value '{0}' which is not a path or a variable reference",
+            [ExceptionCode.ExpectedLambdaResultToBeBooleanButFoundDifferentToken] = "Expected lambda result to be a boolean value but found '{0}' instead",
+            [ExceptionCode.UnableToParsePropertyDereferenceChain] = "Unable to parse property dereference chain, found value '{0}'",
+            [ExceptionCode.EncounteredValueInDereferenceChainButExpectedObject] = "Encountered value in dereference chain for property '{0}' but expected object",
+            [ExceptionCode.EncounteredNonObjectInDereferenceChainButExpectedObject] = "Encountered non-object in dereference chain for property '{0}' but expected object"
 
         };
 

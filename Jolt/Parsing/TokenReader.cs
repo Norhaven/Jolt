@@ -157,7 +157,18 @@ namespace Jolt.Parsing
                 }                
                 else if (stream.CurrentToken == ExpressionToken.At)
                 {
-                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace);
+                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot);
+
+                    while (stream.CurrentToken == ExpressionToken.Dot)
+                    {
+                        stream.ConsumeCurrent();
+
+                        yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.PropertyDereference, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot);
+                    }
+                }
+                else if (stream.CurrentToken == ExpressionToken.Colon)
+                {
+                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.LambdaSeparator);
                 }
                 else if (stream.CurrentToken == ExpressionToken.Comma)
                 {

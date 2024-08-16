@@ -58,6 +58,10 @@ namespace Jolt.Parsing
         [Description("a range expression")]
         RangeExpression,
         [Description("a range variable")]
-        RangeVariable
+        RangeVariable,
+        [Description("a lambda function separator")]
+        LambdaSeparator,
+        [Description("a property dereference")]
+        PropertyDereference
     }
 }

@@ -120,6 +120,7 @@ public abstract class Test
     protected readonly string _conditionsDocument;
     protected readonly string _pipedMethodsDocument;
     protected readonly string _externalMethodsDocument;
+    protected readonly string _lambdasDocument;
 
     protected readonly string _singleLevelValueOf;
     protected readonly string _multiLevelValueOf;
@@ -130,6 +131,7 @@ public abstract class Test
     protected readonly string _pipedMethods;
     protected readonly string _externalMethods;
     protected readonly string _rangeVariables;
+    protected readonly string _lambdas;
 
     protected readonly IJsonContext _testContext;
     protected readonly IJsonTransformer<IJsonContext> _transformer;
@@ -144,6 +146,7 @@ public abstract class Test
         _conditionsDocument = ReadTestDocument("ConditionsDocument");
         _pipedMethodsDocument = ReadTestDocument("PipedMethodsDocument");
         _externalMethodsDocument = ReadTestDocument("ExternalMethodsDocument");
+        _lambdasDocument = ReadTestDocument("LambdasDocument");
 
         _singleLevelValueOf = ReadTestTransformer("SingleLevelValueOf");
         _multiLevelValueOf = ReadTestTransformer("MultiLevelValueOf");
@@ -154,6 +157,7 @@ public abstract class Test
         _pipedMethods = ReadTestTransformer("PipedMethods");
         _externalMethods = ReadTestTransformer("ExternalMethods");
         _rangeVariables = ReadTestTransformer("RangeVariables");
+        _lambdas = ReadTestTransformer("Lambdas");
 
         _testContext = context;
     }

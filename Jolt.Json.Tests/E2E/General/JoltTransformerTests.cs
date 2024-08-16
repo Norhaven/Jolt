@@ -245,6 +245,16 @@ public abstract class JoltTransformerTests : Test
         json.PropertyValueFor<string>("InvalidVarReference").Should().BeNull("because the lifetime of the scoped variable ended with the loop");
     }
 
+    [Fact]
+    public void Lambdas_AreSuccessful_WithDeclarationAndUsage()
+    {
+        var json = ExecuteTestFor(_lambdas, _lambdasDocument);
+
+
+        json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
+
+
+    }
 
     private void ValidateLiteralIsTransformed<T>(string transformerJson, string documentJson, string targetProperty, T targetValue)
     {

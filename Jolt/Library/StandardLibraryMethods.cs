@@ -572,7 +572,7 @@ namespace Jolt.Library
 
         [JoltLibraryMethod("any")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? Any(object? value, EvaluationContext context)
+        public static IJsonToken? Any(object? value, [OptionalParameter(default)] LambdaMethod? lambda, EvaluationContext context)
         {
             if (value is null)
             {
@@ -583,12 +583,151 @@ namespace Jolt.Library
 
             var empty = resolved switch
             {
-                IJsonArray array => array.Length > 0,
-                IJsonValue val when val.IsString() => val.ToTypeOf<string>().Length > 0,
+                IJsonArray array => LambdaOrDefault<IJsonToken, IJsonToken>(array, lambda, Any, context, () => context.CreateTokenFrom(array.Length > 0)),
+                IJsonValue val when val.IsString() => LambdaOrDefault<char, IJsonToken>(val.ToTypeOf<string>(), lambda, Any, context, () => context.CreateTokenFrom(val.ToTypeOf<string>().Length > 0)),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for any with unsupported object type '{value?.GetType()}'")
             };
 
             return context.CreateTokenFrom(empty);
+        }
+
+        [JoltLibraryMethod("where")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? Where(object? value, LambdaMethod lambda, EvaluationContext context)
+        {
+            if (value is null)
+            {
+                return context.CreateTokenFrom(false);
+            }
+
+            var resolved = context.ResolveQueryPathIfPresent(value);
+
+            var empty = resolved switch
+            {
+                IJsonArray array => LambdaOrDefault(array, lambda, Where, context),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for any with unsupported object type '{value?.GetType()}'")
+            };
+
+            return context.CreateTokenFrom(empty);
+        }
+
+        [JoltLibraryMethod("select")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? Select(object? value, LambdaMethod lambda, EvaluationContext context)
+        {
+            if (value is null)
+            {
+                return context.CreateTokenFrom(false);
+            }
+
+            var resolved = context.ResolveQueryPathIfPresent(value);
+
+            var empty = resolved switch
+            {
+                IJsonArray array => LambdaOrDefault(array, lambda, Select, context),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for any with unsupported object type '{value?.GetType()}'")
+            };
+
+            return context.CreateTokenFrom(empty);
+        }
+
+        private static IJsonToken? ExecuteLambdaBody(Expression lambdaBodyExpression, EvaluationContext context)
+        {
+            var evaluationContext = new EvaluationContext(
+                context.Mode,
+                lambdaBodyExpression,
+                context.JsonContext,
+                context.Token,
+                context.ClosureSources,
+                context.RangeVariables,
+                context.Transform);
+
+            var result = context.JsonContext.ExpressionEvaluator.Evaluate(evaluationContext);
+
+            return result.TransformedToken;
+        }
+
+        private static IJsonToken? LambdaOrDefault<T, TResult>(IEnumerable<T> sequence, LambdaMethod? lambda, Func<IEnumerable<T>, LambdaMethod, Func<Expression, IJsonToken?>, EvaluationContext, IJsonToken?> applyToItems, EvaluationContext context, Func<TResult> useDefault)
+        {
+            if (lambda is null)
+            {
+                if (useDefault is null)
+                {
+                    return default;
+                }
+
+                var result = useDefault();
+
+                return context.CreateTokenFrom(result);
+            }
+
+            return applyToItems(sequence, lambda, body => ExecuteLambdaBody(lambda.Body, context), context);
+        }
+
+        private static IJsonToken? LambdaOrDefault<T>(IEnumerable<T> sequence, LambdaMethod lambda, Func<IEnumerable<T>, LambdaMethod, Func<Expression, IJsonToken?>, EvaluationContext, IEnumerable<IJsonToken>> applyToItems, EvaluationContext context)
+        {
+            var results = applyToItems(sequence, lambda, body => ExecuteLambdaBody(lambda.Body, context), context).ToArray();
+
+            return context.CreateArrayFrom(results);
+        }
+
+        private static IEnumerable<IJsonToken> ProjectInto<T>(IEnumerable<T> sequence, LambdaMethod lambda, Func<Expression, bool> shouldInclude, Func<IJsonToken, IJsonToken> createProjection, EvaluationContext context)
+        {
+            foreach (var item in sequence)
+            {
+                var itemToken = context.CreateTokenFrom(item);
+                var loopVariable = new RangeVariable(lambda.Variable.Name, itemToken);
+
+                if (context.RangeVariables.Count == 0)
+                {
+                    // No variable scopes currently exist, so we just need to create one.
+
+                    context.RangeVariables.Push(new List<RangeVariable>());
+                }
+                else
+                {
+                    // All variables in the outer scope are still accessible in the new scope but
+                    // if they happen to add more during the loop we can just drop the layer once we're
+                    // done and call it good.
+
+                    context.RangeVariables.Push(context.RangeVariables.Peek().Select(x => x).ToList());
+                }
+
+                context.RangeVariables.Peek().Add(loopVariable);
+
+                try
+                {
+                    if (shouldInclude(lambda.Body))
+                    {
+                        yield return createProjection(itemToken);
+                    }
+                    else
+                    {
+                        //throw Error.CreateExecutionErrorFrom(ExceptionCode.ExpectedLambdaResultToBeBooleanButFoundDifferentToken, matchResult);
+                    }
+                }
+                finally
+                {
+                    context.RangeVariables.Pop();
+                }
+            }
+        }
+
+        private static IEnumerable<IJsonToken> Select<T>(IEnumerable<T> sequence, LambdaMethod lambda, Func<Expression, IJsonToken> getSelection, EvaluationContext context)
+        {
+            return ProjectInto(sequence, lambda, x => true, x => ExecuteLambdaBody(lambda.Body, context), context);
+        }
+
+        private static IEnumerable<IJsonToken> Where<T>(IEnumerable<T> sequence, LambdaMethod lambda, Func<Expression, IJsonToken> isMatch, EvaluationContext context)
+        {
+            return ProjectInto(sequence, lambda, x => isMatch(x).ToTypeOf<bool>(), x => x, context);            
+        }
+
+        private static IJsonToken Any<T>(IEnumerable<T> sequence, LambdaMethod lambda, Func<Expression, IJsonToken> isMatch, EvaluationContext context)
+        {
+            var isAny = Where(sequence, lambda, isMatch, context).Any();
+
+            return context.CreateTokenFrom(isAny);
         }
 
         [JoltLibraryMethod("toInteger")]

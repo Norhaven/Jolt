@@ -41,6 +41,10 @@ namespace Jolt.Exceptions
         UnableToLocateSpecificExpectedCharactersInExpression,
         [Description("JLT115")]
         ExpectedBooleanLiteralTokenButFoundUnknownToken,
+        [Description("JLT116")]
+        UnableToParseLambdaExpressionBodyAtPosition,
+        [Description("JLT117")]
+        UnableToParsePropertyDereferenceChain,
 
         // Resolution
 
@@ -102,6 +106,12 @@ namespace Jolt.Exceptions
         [Description("JLT525")]
         ReferencedRangeVariableWithNoValue,
         [Description("JLT526")]
-        UnableToPerformLoopLibraryCallDueToInvalidParameter
+        UnableToPerformLoopLibraryCallDueToInvalidParameter,
+        [Description("JLT527")]
+        ExpectedLambdaResultToBeBooleanButFoundDifferentToken,
+        [Description("JLT528")]
+        EncounteredValueInDereferenceChainButExpectedObject,
+        [Description("JLT529")]
+        EncounteredNonObjectInDereferenceChainButExpectedObject
     }
 }

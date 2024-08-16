@@ -82,6 +82,27 @@ namespace Jolt.Parsing
                 }
                 else if (TryParseRangeVariable(reader, out var rangeVariable))
                 {
+                    if (reader.CurrentToken?.Category == ExpressionTokenCategory.LambdaSeparator)
+                    {
+                        reader.ConsumeCurrent();
+
+                        if (!TryParseExpression(reader, referenceResolver, out var bodyExpression))
+                        {
+                            throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToParseLambdaExpressionBodyAtPosition, reader.Position, reader.CurrentToken);
+                        }
+
+                        return new LambdaMethodExpression(rangeVariable, bodyExpression);
+                    }
+                    else if (reader.CurrentToken?.Category == ExpressionTokenCategory.PropertyDereference)
+                    {
+                        if (!reader.TryConsumeUntil(x => x.Category != ExpressionTokenCategory.PropertyDereference, out var dereferenceChain))
+                        {
+                            throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToParsePropertyDereferenceChain, reader.CurrentToken.Value);
+                        }
+
+                        return new PropertyDereferenceExpression(rangeVariable, dereferenceChain.Select(x => x.Value).ToArray());
+                    }
+
                     return rangeVariable;
                 }
                 else if (TryParseLiteral(reader, out var literal))
@@ -327,9 +348,23 @@ namespace Jolt.Parsing
 
                 methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), default);
 
-                var updatedParameters = new[] { methodCall }.Concat(pipedMethodCall.ParameterValues);
+                var leftMostMethodCall = pipedMethodCall;
 
-                methodCall = pipedMethodCall.WithParameters(updatedParameters);
+                while(leftMostMethodCall.ParameterValues.Length > 0)
+                {
+                    var next = leftMostMethodCall.ParameterValues[0] as MethodCallExpression;
+
+                    if (next is null)
+                    {
+                        break;
+                    }
+
+                    leftMostMethodCall = next;
+                }
+
+                var updatedParameters = new[] { methodCall }.Concat(leftMostMethodCall.ParameterValues);
+
+                methodCall = leftMostMethodCall.WithParameters(updatedParameters);                
             }
             else
             {

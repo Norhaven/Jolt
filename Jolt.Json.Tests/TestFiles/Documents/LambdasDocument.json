@@ -1,0 +1,19 @@
+﻿{
+	"integerLiteral": 3,
+	"array": [
+		{
+			"arrayElementId": 1
+		},
+		{
+			"arrayElementId": 2
+		}
+	],
+	"exampleBaseProperty": {
+		"first": {
+			"value": 1
+		},
+		"second": {
+			"value": 2
+		}
+	}
+}

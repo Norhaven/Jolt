@@ -44,10 +44,12 @@ namespace Jolt.Evaluation
             {
                 RangeExpression range => UnwrapRange(range, context),
                 RangeVariableExpression range => UnwrapRangeVariable(range, context),
+                PropertyDereferenceExpression dereference => UnwrapDereferenceChain(dereference, context),
                 LiteralExpression literal => UnwrapLiteralValue(literal, context),
                 PathExpression path => ExtractPath(path, context),
                 MethodCallExpression call => ExecuteMethodCall(call, context),
                 BinaryExpression binary => EvaluateBinaryExpression(binary, context),
+                LambdaMethodExpression lambda => EvaluateLambdaExpression(lambda, context),
                 _ => default
             };
         }
@@ -146,6 +148,13 @@ namespace Jolt.Evaluation
             }
         }
 
+        private LambdaMethod EvaluateLambdaExpression(LambdaMethodExpression lambda, EvaluationContext context)
+        {
+            var variable = UnwrapRangeVariable(lambda.Variable, context);
+
+            return new LambdaMethod(variable, lambda.Body);
+        }
+
         private object ExtractPath(PathExpression path, EvaluationContext context)
         {
             return path.PathQuery;
@@ -171,6 +180,38 @@ namespace Jolt.Evaluation
             }
 
             return existingVariable;
+        }
+
+        private object? UnwrapDereferenceChain(PropertyDereferenceExpression dereference, EvaluationContext context)
+        {
+            var rangeVariable = EvaluateExpression(dereference.Variable, context) as RangeVariable;
+
+            var currentProperty = rangeVariable.Value;
+
+            for(var i = 0; i < dereference.PropertyPaths.Length; i++)
+            {
+                var property = dereference.PropertyPaths[i];
+
+                if (currentProperty is IJsonObject json)
+                {
+                    currentProperty = json[property];
+                }
+                else if (currentProperty is IJsonValue value)
+                {
+                    if (i < dereference.PropertyPaths.Length - 1)
+                    {
+                        throw Error.CreateExecutionErrorFrom(ExceptionCode.EncounteredValueInDereferenceChainButExpectedObject, property);
+                    }
+
+                    return value;
+                }
+                else
+                {
+                    throw Error.CreateExecutionErrorFrom(ExceptionCode.EncounteredNonObjectInDereferenceChainButExpectedObject, property);
+                }
+            }
+
+            return currentProperty;
         }
 
         private object UnwrapLiteralValue(LiteralExpression literal, EvaluationContext context)

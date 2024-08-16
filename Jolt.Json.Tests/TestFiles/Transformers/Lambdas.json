@@ -1,0 +1,5 @@
+﻿{
+  "Any": "#valueOf($.array)->#any(@x: @x.arrayElementId < 2)",
+  "Filtered": "#valueOf($.array)->#where(@x: @x.arrayElementId < 2)->#sum()",
+  "Selected": "#valueOf($.array)->#select(@x: @x.arrayElementId)->#sum()"
+}

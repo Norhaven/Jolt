@@ -45,9 +45,9 @@ namespace Jolt.Evaluation
             return PerformOperationWith(value, "/", (left, right) => left / right, (left, right) => left / right);
         }
 
-        public bool IsGreaterThan(object? value) => (bool)PerformOperationWith(value, ">", (left, right) => left.CompareTo(_value) > 0, (left, right) => left.CompareTo(_value) > 0);
+        public bool IsGreaterThan(object? value) => (bool)PerformOperationWith(value, ">", (left, right) => left.CompareTo(right) > 0, (left, right) => left.CompareTo(right) > 0);
 
-        public bool IsLessThan(object? value) => (bool)PerformOperationWith(value, "<", (left, right) => left.CompareTo(_value) < 0, (left, right) => left.CompareTo(_value) < 0);
+        public bool IsLessThan(object? value) => (bool)PerformOperationWith(value, "<", (left, right) => left.CompareTo(right) < 0, (left, right) => left.CompareTo(right) < 0);
 
         public override bool Equals(object obj) => (bool)PerformOperationWith(obj, "=", (left, right) => left == right, (left, right) => left == right);
 
