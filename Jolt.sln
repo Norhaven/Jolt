@@ -9,9 +9,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jolt.Tests", "Jolt.Tests\Jo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jolt.Json.Tests", "Jolt.Json.Tests\Jolt.Json.Tests.csproj", "{85C69CC2-5DB6-40FD-A63B-6DF509505ACB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jolt.Json.Newtonsoft", "Jolt.Json.Newtonsoft\Jolt.Json.Newtonsoft.csproj", "{61254730-0D0B-4884-B963-0CA1559F33A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jolt.Json.Newtonsoft", "Jolt.Json.Newtonsoft\Jolt.Json.Newtonsoft.csproj", "{61254730-0D0B-4884-B963-0CA1559F33A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jolt.Json.DotNet", "Jolt.Json.DotNet\Jolt.Json.DotNet.csproj", "{AAA904F1-09B1-4396-8C3C-B3DC5C74427A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jolt.Json.DotNet", "Jolt.Json.DotNet\Jolt.Json.DotNet.csproj", "{AAA904F1-09B1-4396-8C3C-B3DC5C74427A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{667B9A34-0EF6-45AF-8426-3EE2BF4A3222}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -8,7 +8,7 @@ namespace Jolt.Evaluation
     public sealed class Enumeration
     {
         public RangeVariable Variable { get; }
-        public RangeVariable IndexVariable { get; }
+        public RangeVariable? IndexVariable { get; }
         public object? Source { get; }
 
         public Enumeration(RangeVariable variable, object? source, RangeVariable? indexVariable = null)
