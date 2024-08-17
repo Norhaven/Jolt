@@ -157,13 +157,52 @@ namespace Jolt.Parsing
                 }                
                 else if (stream.CurrentToken == ExpressionToken.At)
                 {
-                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot);
+                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Semicolon, ExpressionToken.Dot);
 
-                    while (stream.CurrentToken == ExpressionToken.Dot)
+                    if (stream.CurrentToken == ExpressionToken.Semicolon)
                     {
                         stream.ConsumeCurrent();
 
-                        yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.PropertyDereference, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot);
+                        while (stream.CurrentToken == ExpressionToken.Whitespace)
+                        {
+                            stream.ConsumeCurrent();
+                        }
+
+                        if (stream.CurrentToken != ExpressionToken.At)
+                        {
+                            throw Error.CreateParsingErrorFrom(ExceptionCode.ExpectedRangeVariableAfterSemicolonButFoundTokenInstead, stream.CurrentToken);
+                        }
+
+                        yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot);
+                    }
+                    
+                    if (stream.CurrentToken == ExpressionToken.Whitespace)
+                    {
+                        while(stream.CurrentToken == ExpressionToken.Whitespace)
+                        {
+                            stream.ConsumeCurrent();
+                        }
+
+                        if (stream.CurrentToken == ExpressionToken.LetterI)
+                        {
+                            var token = TokenUntilMatchedWith(stream, ExpressionTokenCategory.In, ExpressionToken.Whitespace);
+
+                            if (token.Value != ExpressionToken.In)
+                            {
+                                throw Error.CreateParsingErrorFrom(ExceptionCode.ExpectedInKeywordButFoundUnexpectedToken, token.Value);
+                            }
+
+                            yield return token;
+                        }
+                    }
+                    else
+                    {
+                        while (stream.CurrentToken == ExpressionToken.Dot)
+                        {
+                            stream.ConsumeCurrent();
+
+                            yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.PropertyDereference, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot);
+                        }
                     }
                 }
                 else if (stream.CurrentToken == ExpressionToken.Colon)

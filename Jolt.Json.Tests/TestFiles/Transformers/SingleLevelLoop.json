@@ -1,20 +1,20 @@
 ﻿{
-  "#loop($.array)->'Array'": [
+  "#foreach(@x;@i in $.array)->'Array'": [
     {
-      "ArrayElementId": "#loopValueOf($.arrayElementId)",
+      "ArrayElementId": "@x.arrayElementId",
       "GlobalId": "#valueOf($.integerLiteral)",
-      "Index": "#loopIndex()"
+      "Index": "@i"
     }
   ],
-  "#loop($.exampleBaseProperty)->'Object'": {
-    "#loopProperty()": "#loopValueOf($.value)"
+  "#foreach(@x in $.exampleBaseProperty)->'Object'": {
+    "#loopProperty()": "@x.value"
   },
-  "#loop($.exampleBaseProperty)->'ArrayFromObject'": [
+  "#foreach(@x in $.exampleBaseProperty)->'ArrayFromObject'": [
     {
-      "#loopProperty()": "#loopValueOf($.value)"
+      "#loopProperty()": "@x.value"
     }
   ],
-  "#loop($.array)->'ObjectFromArray'": {
-    "Result": "#loopValueOf($.arrayElementId)"
+  "#foreach(@x in $.array)->'ObjectFromArray'": {
+    "Result": "@x.arrayElementId"
   }
 }

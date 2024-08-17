@@ -28,6 +28,9 @@ namespace Jolt.Parsing
         public const char At = '@';
         public const char Colon = ':';
         public const char Dot = '.';
+        public const string In = "in";
+        public const char LetterI = 'i';
+        public const char Semicolon = ';';
 
         public string Value { get; }
         public ExpressionTokenCategory Category { get; }

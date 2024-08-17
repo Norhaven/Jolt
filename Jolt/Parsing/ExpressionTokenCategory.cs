@@ -62,6 +62,8 @@ namespace Jolt.Parsing
         [Description("a lambda function separator")]
         LambdaSeparator,
         [Description("a property dereference")]
-        PropertyDereference
+        PropertyDereference,
+        [Description("the 'in' keyword")]
+        In
     }
 }

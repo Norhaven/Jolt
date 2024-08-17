@@ -82,6 +82,11 @@ namespace Jolt.Parsing
                 }
                 else if (TryParseRangeVariable(reader, out var rangeVariable))
                 {
+                    if (TryParseRangeVariable(reader, out var secondRangeVariable))
+                    {
+                        rangeVariable = new RangeVariablePairExpression(rangeVariable, secondRangeVariable);
+                    }
+
                     if (reader.CurrentToken?.Category == ExpressionTokenCategory.LambdaSeparator)
                     {
                         reader.ConsumeCurrent();
@@ -95,12 +100,23 @@ namespace Jolt.Parsing
                     }
                     else if (reader.CurrentToken?.Category == ExpressionTokenCategory.PropertyDereference)
                     {
-                        if (!reader.TryConsumeUntil(x => x.Category != ExpressionTokenCategory.PropertyDereference, out var dereferenceChain))
+                        if (!reader.TryConsumeUntilMatchOrEnd(x => x.Category != ExpressionTokenCategory.PropertyDereference, out var dereferenceChain))
                         {
                             throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToParsePropertyDereferenceChain, reader.CurrentToken.Value);
                         }
 
                         return new PropertyDereferenceExpression(rangeVariable, dereferenceChain.Select(x => x.Value).ToArray());
+                    }
+                    else if (reader.CurrentToken?.Category == ExpressionTokenCategory.In)
+                    {
+                        reader.ConsumeCurrent();
+
+                        if (!TryParseExpression(reader, referenceResolver, out var enumerationSource))
+                        {
+                            throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToParseEnumerationSourceForVariable, rangeVariable.Name);
+                        }
+
+                        return new EnumerateAsVariableExpression(rangeVariable, enumerationSource);
                     }
 
                     return rangeVariable;
@@ -242,7 +258,7 @@ namespace Jolt.Parsing
         {
             rangeVariable = default;
 
-            if (reader.CurrentToken.Category != ExpressionTokenCategory.RangeVariable)
+            if (reader.CurrentToken?.Category != ExpressionTokenCategory.RangeVariable)
             {
                 return false;
             }

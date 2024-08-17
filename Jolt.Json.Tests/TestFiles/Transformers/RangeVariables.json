@@ -3,15 +3,15 @@
   "@temp2": "#valueOf($.integerLiteral)",
   "Integer": "@temp",
   "Result": "@temp + @temp2 - 1",
-  "#loop($.array)->@temp3": [
+  "#foreach(@x in $.array)->@temp3": [
     {
-      "ElementId": "#loopValueOf($.arrayElementId)"
+      "ElementId": "@x.arrayElementId"
     }
   ],
   "Temp3Copy": "@temp3",
-  "#loop(@temp3)->'ActualTemp3'": [
+  "#foreach(@x in @temp3)->'ActualTemp3'": [
     {
-      "@scopedVar": "#loopValueOf($.ElementId)",
+      "@scopedVar": "@x.ElementId",
       "ActualElementId": "@scopedVar * 2"
     }
   ],

@@ -28,6 +28,9 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToLocateSpecificExpectedCharactersInExpression] = "Unable to locate expected character(s) '{0}' in expression",
             [ExceptionCode.ExpectedBooleanLiteralTokenButFoundUnknownToken] = "Expected a boolean value but found unsupported value '{0}' in expression",
             [ExceptionCode.UnableToParseLambdaExpressionBodyAtPosition] = "Expected a lambda expression body at position '{0}' but found '{1}'",
+            [ExceptionCode.ExpectedInKeywordButFoundUnexpectedToken] = "Expected 'in' keyword but found '{0}'",
+            [ExceptionCode.UnableToParseEnumerationSourceForVariable] = "Unable to parse enumeration source for variable '{0}'",
+            [ExceptionCode.ExpectedRangeVariableAfterSemicolonButFoundTokenInstead] = "Expected range variable declaration after semicolon but found '{0}' instead",
 
             // Resolution
 

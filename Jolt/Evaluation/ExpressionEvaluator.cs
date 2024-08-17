@@ -45,6 +45,7 @@ namespace Jolt.Evaluation
                 RangeExpression range => UnwrapRange(range, context),
                 RangeVariableExpression range => UnwrapRangeVariable(range, context),
                 PropertyDereferenceExpression dereference => UnwrapDereferenceChain(dereference, context),
+                EnumerateAsVariableExpression enumerate => UnwrapEnumeration(enumerate, context),
                 LiteralExpression literal => UnwrapLiteralValue(literal, context),
                 PathExpression path => ExtractPath(path, context),
                 MethodCallExpression call => ExecuteMethodCall(call, context),
@@ -52,6 +53,20 @@ namespace Jolt.Evaluation
                 LambdaMethodExpression lambda => EvaluateLambdaExpression(lambda, context),
                 _ => default
             };
+        }
+
+        private object? UnwrapEnumeration(EnumerateAsVariableExpression enumerate, EvaluationContext context)
+        {
+            var variable = UnwrapRangeVariable(enumerate.Variable, context);
+            var source = EvaluateExpression(enumerate.EnumerationSource, context);
+
+            var indexVariable = enumerate.Variable switch
+            {
+                RangeVariablePairExpression pair => UnwrapRangeVariable(pair.SecondVariable, context),
+                _ => default
+            };
+
+            return new Enumeration(variable, source, indexVariable);
         }
 
         private object? EvaluateBinaryExpression(BinaryExpression binary, EvaluationContext context)

@@ -45,6 +45,12 @@ namespace Jolt.Exceptions
         UnableToParseLambdaExpressionBodyAtPosition,
         [Description("JLT117")]
         UnableToParsePropertyDereferenceChain,
+        [Description("JLT118")]
+        ExpectedInKeywordButFoundUnexpectedToken,
+        [Description("JLT119")]
+        UnableToParseEnumerationSourceForVariable,
+        [Description("JLT120")]
+        ExpectedRangeVariableAfterSemicolonButFoundTokenInstead,
 
         // Resolution
 

@@ -48,6 +48,37 @@ namespace Jolt.Parsing
             return false;
         }
 
+        public bool TryConsumeUntilMatchOrEnd(Predicate<T> isMatch, out T[] tokens)
+        {
+            tokens = Array.Empty<T>();
+
+            if (_isCompleted)
+            {
+                return false;
+            }
+
+            var collectedTokens = new List<T>
+            {
+                _enumerator.Current,
+            };
+
+            while (_enumerator.MoveNext())
+            {
+                if (isMatch(_enumerator.Current))
+                {
+                    tokens = collectedTokens.ToArray();
+                    return true;
+                }
+
+                collectedTokens.Add(_enumerator.Current);
+            }
+
+            tokens = collectedTokens.ToArray();
+
+            _isCompleted = true;
+            return true;
+        }
+
         public bool TryConsumeUntil(Predicate<T> isMatch, out T[] tokens)
         {
             tokens = Array.Empty<T>();

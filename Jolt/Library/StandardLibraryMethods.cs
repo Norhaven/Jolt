@@ -128,9 +128,9 @@ namespace Jolt.Library
             return context.JsonContext.ExpressionEvaluator.Evaluate(evaluationContext);
         }
 
-        [JoltLibraryMethod("loop", true)]
+        [JoltLibraryMethod("foreach", true)]
         [MethodIsValidOn(LibraryMethodTarget.PropertyName)]
-        public static IEnumerable<IJsonToken> LoopOnArrayOrObjectAtPath(object pathOrVariable, EvaluationContext context)
+        public static IEnumerable<IJsonToken> LoopOnArrayOrObjectAtPath(Enumeration enumeration, EvaluationContext context)
         {
             var token = context.Token.CurrentTransformerToken;
 
@@ -139,11 +139,11 @@ namespace Jolt.Library
                 throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToPerformLoopLibraryCallOnNonLoopableToken, token.Type);
             }
 
-            var closestViableSourceToken = pathOrVariable switch
-            {
+            var closestViableSourceToken = enumeration.Source switch
+            {                
                 string path => context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, path, JsonQueryMode.StartFromClosestMatch),
                 RangeVariable variable => variable.Value,
-                _ => throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToPerformLoopLibraryCallDueToInvalidParameter, pathOrVariable)
+                _ => throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToPerformLoopLibraryCallDueToInvalidParameter, enumeration.Source)
             };
 
             if (closestViableSourceToken?.Type.IsAnyOf(JsonTokenType.Array, JsonTokenType.Object) != true)
@@ -201,6 +201,17 @@ namespace Jolt.Library
                         context.RangeVariables.Push(context.RangeVariables.Peek().Select(x => x).ToList());
                     }
 
+                    var loopVariable = new RangeVariable(enumeration.Variable.Name, closureSource);
+
+                    context.RangeVariables.Peek().Add(loopVariable);
+
+                    if (enumeration.IndexVariable != null)
+                    {
+                        var indexVariable = new RangeVariable(enumeration.IndexVariable.Name, context.CreateTokenFrom(index));
+
+                        context.RangeVariables.Peek().Add(indexVariable);
+                    }
+
                     var transformedToken = context.Transform(templateEvaluationToken, context.ClosureSources, context.RangeVariables);
 
                     context.ClosureSources.Pop();
@@ -233,30 +244,7 @@ namespace Jolt.Library
 
             return EnumerateClosestSourceToken();
         }
-
-        [JoltLibraryMethod("loopValueOf")]
-        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken LoopValueOf(string path, EvaluationContext context)
-        {
-            // LoopValueOf will always search from the closest node, other similar methods may search differently.
-
-            return context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, path, JsonQueryMode.StartFromClosestMatch);
-        }
-
-        [JoltLibraryMethod("loopValue")]
-        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? LoopValue(EvaluationContext context)
-        {
-            return context.ClosureSources.Peek();
-        }
-
-        [JoltLibraryMethod("loopIndex")]
-        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? LoopIndex(EvaluationContext context)
-        {
-            return context.CreateTokenFrom(context.Token.CurrentSource.Index);
-        }
-
+        
         [JoltLibraryMethod("loopProperty")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyName)]
         public static IJsonToken? LoopProperty(EvaluationContext context)
