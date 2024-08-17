@@ -170,14 +170,14 @@ You can declare and set a variable in the property name one of two ways, either 
 This is one way to directly declare and use variables in your transformations. All variables are prefixed with the `@` symbol and specifying it in the property name indicates that you would like to set it and also remove that JSON node from the transformed result. Let's see how you would be able to do some preprocessing on an array now.
 ```json
 {
-    "#loop($.someArray)->@tempResult": [
+    "#foreach(@x in $.someArray)->@tempResult": [
         {
-            "intermediateValue": "#loopValueOf($.someInteger) * 2"
+            "intermediateValue": "@x.someInteger * 2"
         }
     ],
-    "#loop(@tempResult)->'actualResult'": [
+    "#foreach(@x in @tempResult)->'actualResult'": [
         {
-            "finalValue": "#loopValueOf($.intermediateValue) + 5"
+            "finalValue": "@x.intermediateValue + 5"
         }
     ]
 }
@@ -187,9 +187,9 @@ The first loop will set the variable `@tempResult` to the value of the transform
 You can also declare variables within the content template of a loop, but they only exist within it and on a per-iteration basis (meaning that the variable is redeclared, set, and thrown away every time through the loop). Let's see an example of that here.
 ```json
 {
-    "#loop($.someArray)->'finalResult'": [
+    "#foreach(@x in $.someArray)->'finalResult'": [
         {
-            "@scopedVar": "#loopValueOf($.someInteger) / 2",
+            "@scopedVar": "@x.someInteger / 2",
             "subtractedValue": "@scopedVar - 3"
         }
     ],
@@ -252,10 +252,7 @@ This package comes with quite a few methods built into it to get you started, al
 | if | Takes three parameters: a boolean condition, an expression to evaluate when that condition is true, and an expression to evaluate when false | `#if(#valueOf($.some.path), 'Yes', 'No')` | Property Value
 | includeIf | Takes a path or boolean condition and will evaluate and include the property's object if true, returning null otherwise | `"#includeIf($.some.path)->'someName'": { "nestedValue": "#valueOf($.other.path)" }` | Property Name
 | eval | Evaluates an arbitrary expression, either from a path or literal value, and returns the result | `#eval('1 + 2 = 3')` | Property Name/Value
-| loop | Evaluates a path and loops over the array elements or object properties it finds there to create its property values, naming the property as the string literal referred to by the arrow | `"#loop($.some.path)->'result'": [ { "templateValue": "#valueOf($.other.path)" } ]` | Property Name
-| loopValueOf | Evaluates a path, searching within the current loop first and expanding out until it resolves a path or returns null | `#loopValueOf($.some.path)` | Property Value
-| loopValue | Returns the JSON object that is the value of a loop's current iteration | `#loopValueOf()` | Property Value
-| loopIndex | Returns the zero-based index value of a loop's current iteration | `#loopIndex()` | Property Value
+| foreach | Evaluates a path and loops over the array elements or object properties it finds there to create its property values, naming the property as the string literal referred to by the arrow | `"#foreach(@x in $.some.path)->'result'": [ { "templateValue": "#valueOf($.other.path)" } ]` | Property Name
 | loopProperty | Returns the name of the property being evaluated by the loop's current iteration | `"#loopProperty()": "#valueOf($.some.path)"` | Property Name
 | indexOf | Returns the zero-based index value of the first occurence of the provided value | `#indexOf(#valueOf($.some.path), 'some string')` | Property Value
 | length | Returns the length of a string or array value | `#length($.some.path)` | Property Value
