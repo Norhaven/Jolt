@@ -1,6 +1,6 @@
 # Jolt
 
-![Logo](https://github.com/Norhaven/Jolt/blob/7672c4fefd2a809f59928d30511dbc4a8e8ce71b/JoltLogo.png)
+![Logo](https://raw.githubusercontent.com/Norhaven/Jolt/main/JoltLogo.png)
 
 Welcome! This is a JSON transformation language inspired by XSLT and the wonderful .Net JSON adaptation of it over at [JUST.Net](https://github.com/WorkMaze/JUST.net). This project provides an expression-based interpreter for the language and a highly extensible way of approaching the same problem, namely How To Transform JSON Into Different JSON.
 

@@ -11,7 +11,7 @@ namespace Jolt.Parsing
     public interface ITokenReader
     {
         /// <summary>
-        /// Determines whether the given Jolt expression starts with a method call or open parentheses.
+        /// Determines whether the given Jolt expression starts with a method call, an open parentheses, or a range variable.
         /// This will inform decisions about the viability of a particular expression.
         /// </summary>
         /// <param name="expression">The Jolt expression to inspect.</param>

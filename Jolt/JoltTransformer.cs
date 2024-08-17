@@ -60,7 +60,7 @@ namespace Jolt
                     
                     if (result.IsValuePendingEvaluation)
                     {
-                        // Property name evaluation has already happened now, send this back around for the value now.
+                        // Property name evaluation has already happened now, send this back around for handling the value.
 
                         var evaluationToken = new EvaluationToken(
                             result.NewPropertyName ?? result.OriginalPropertyName,
@@ -99,8 +99,8 @@ namespace Jolt
 
                     if (!_context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariable(transformerPropertyValue))
                     {
-                        // All transformable expressions need to be rooted in a method call or parenthesized expression otherwise
-                        // we may transform things that the user intended to be literal values.
+                        // All transformable expressions need to be rooted in a method call, parenthesized expression,
+                        // or a range variable otherwise we may transform things that the user intended to be literal values.
 
                         continue;
                     }

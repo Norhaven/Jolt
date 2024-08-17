@@ -8,8 +8,6 @@ namespace Jolt.Extensions
 {
     internal static class JsonExtensions
     {
-        public static bool AllElementsAreOfType<T>(this IJsonArray array) => array.Length > 0 && array.All(x => x.IsValue() && x.AsValue().IsTypeOf<T>());
-        
         public static bool IsValue(this IJsonToken token) => token.Type == JsonTokenType.Value;
         public static bool IsString(this IJsonToken token) => token.IsValue() && token.AsValue().IsTypeOf<string>();
         public static bool IsBoolean(this IJsonToken token) => token.IsValue() && token.AsValue().IsTypeOf<bool>();
