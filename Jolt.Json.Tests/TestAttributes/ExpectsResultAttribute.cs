@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Jolt.Json.Tests.TestAttributes;
 
+[AttributeUsage(AttributeTargets.Method)]
 internal class ExpectsResultAttribute : Attribute
 {
     public string PropertyName { get; }

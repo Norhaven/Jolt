@@ -26,12 +26,12 @@ public abstract class SmallTest(IJsonContext context) : Test(context)
 
         if (method is null)
         {
-            throw new ArgumentNullException(nameof(method), $"Unable to locate test method '{methodName}'");
+            throw new ArgumentNullException(nameof(methodName), $"Unable to locate test method '{methodName}'");
         }
 
         if (source is null || target is null)
         {
-            throw new ArgumentNullException(nameof(source), $"Either source or transformer is missing for test method '{methodName}'");
+            throw new ArgumentNullException(nameof(methodName), $"Either source or transformer is missing for test method '{methodName}'");
         }
 
         var reader = _testContext.JsonTokenReader;

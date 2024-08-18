@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Jolt.Library
 {
-    internal static class Registrar
+    internal class Registrar
     {
         public static IEnumerable<MethodSignature> GetStandardLibraryRegistrations()
         {
@@ -24,18 +24,18 @@ namespace Jolt.Library
                    select new MethodSignature(type.AssemblyQualifiedName, method.Name, attribute.Name, method.ReturnType, CallType.Static, true, attribute.IsValueGenerator, validity.Target.HasFlag(LibraryMethodTarget.PropertyName), validity.Target.HasFlag(LibraryMethodTarget.PropertyValue), parameters.ToArray());
         }
 
-        public static IEnumerable<MethodSignature> GetExternalMethodRegistrations(IEnumerable<MethodRegistration> registrations, object? methodContext = default)
+        public static IEnumerable<MethodSignature> GetExternalMethodRegistrations(IEnumerable<MethodRegistration> registrations, IMessageProvider messageProvider, object? methodContext = default)
         {
-            return registrations.Select(x => GetExternalMethodRegistration(x, methodContext));
+            return registrations.Select(x => GetExternalMethodRegistration(x, messageProvider, methodContext));
         }
 
-        public static MethodSignature GetExternalMethodRegistration(MethodRegistration registration, object? methodContext = default)
+        public static MethodSignature GetExternalMethodRegistration(MethodRegistration registration, IMessageProvider messageProvider, object? methodContext = default)
         {
             if (string.IsNullOrWhiteSpace(registration.FullyQualifiedTypeName))
             {
                 if (methodContext is null)
                 {
-                    throw Error.CreateResolutionErrorFrom(ExceptionCode.UnableToLocateInstanceMethod, default, registration.MethodName, registration.MethodName);
+                    throw messageProvider.CreateResolutionErrorFor<Registrar>(ExceptionCode.UnableToLocateInstanceMethod, default, registration.MethodName, registration.MethodName);
                 }
 
                 var type = methodContext.GetType();
@@ -43,7 +43,7 @@ namespace Jolt.Library
 
                 if (method is null)
                 {
-                    throw Error.CreateResolutionErrorFrom(ExceptionCode.UnableToLocateInstanceMethodWithProvidedMethodContext, type.FullName, registration.MethodName, registration.MethodName, type.FullName);
+                    throw messageProvider.CreateResolutionErrorFor<Registrar>(ExceptionCode.UnableToLocateInstanceMethodWithProvidedMethodContext, type.FullName, registration.MethodName, registration.MethodName, type.FullName);
                 }
 
                 var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false, false, false, null)).ToArray();
@@ -56,14 +56,14 @@ namespace Jolt.Library
 
                 if (type is null)
                 {
-                    throw Error.CreateResolutionErrorFrom(ExceptionCode.UnableToLocateTypeForStaticMethod, registration.FullyQualifiedTypeName, registration.MethodName, registration.FullyQualifiedTypeName, registration.MethodName);
+                    throw messageProvider.CreateResolutionErrorFor<Registrar>(ExceptionCode.UnableToLocateTypeForStaticMethod, registration.FullyQualifiedTypeName, registration.MethodName, registration.FullyQualifiedTypeName, registration.MethodName);
                 }
 
                 var method = type.GetMethod(registration.MethodName);
 
                 if (method is null)
                 {
-                    throw Error.CreateResolutionErrorFrom(ExceptionCode.UnableToLocateStaticMethodWithProvidedType, type.FullName, registration.MethodName, registration.MethodName, type.FullName);
+                    throw messageProvider.CreateResolutionErrorFor<Registrar>(ExceptionCode.UnableToLocateStaticMethodWithProvidedType, type.FullName, registration.MethodName, registration.MethodName, type.FullName);
                 }
 
                 var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false, false, false, null)).ToArray();

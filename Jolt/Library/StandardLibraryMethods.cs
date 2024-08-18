@@ -14,7 +14,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace Jolt.Library
 {
-    internal static class StandardLibraryMethods
+    internal class StandardLibraryMethods
     {
         [JoltLibraryMethod("valueOf")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyName | LibraryMethodTarget.PropertyValue)]
@@ -88,7 +88,7 @@ namespace Jolt.Library
             {
                 bool include => include,
                 IJsonValue value when value.IsBoolean() => value.ToTypeOf<bool>(),
-                _ => throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToCompleteIncludeIfLibraryCallDueToNonBooleanCondition, result)
+                _ => throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToCompleteIncludeIfLibraryCallDueToNonBooleanCondition, result)
             };
 
             if (!shouldInclude)
@@ -111,9 +111,9 @@ namespace Jolt.Library
         {
             var actualTokens = context.JsonContext.TokenReader.ReadToEnd(pathOrLiteral, context.Mode);
 
-            if (!context.JsonContext.ExpressionParser.TryParseExpression(actualTokens, context.JsonContext.ReferenceResolver, out var expression))
+            if (!context.JsonContext.ExpressionParser.TryParseExpression(actualTokens, context.JsonContext, out var expression))
             {
-                throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToParseEvalLibraryCallExpression, pathOrLiteral);
+                throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToParseEvalLibraryCallExpression, pathOrLiteral);
             }
 
             var evaluationContext = new EvaluationContext(
@@ -136,26 +136,26 @@ namespace Jolt.Library
 
             if (!token.Type.IsAnyOf(JsonTokenType.Array, JsonTokenType.Object))
             {
-                throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToPerformLoopLibraryCallOnNonLoopableToken, token.Type);
+                throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToPerformLoopLibraryCallOnNonLoopableToken, token.Type);
             }
 
             var closestViableSourceToken = enumeration.Source switch
             {                
                 string path => context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, path, JsonQueryMode.StartFromClosestMatch),
                 RangeVariable variable => variable.Value,
-                _ => throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToPerformLoopLibraryCallDueToInvalidParameter, enumeration.Source)
+                _ => throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToPerformLoopLibraryCallDueToInvalidParameter, enumeration.Source)
             };
 
             if (closestViableSourceToken?.Type.IsAnyOf(JsonTokenType.Array, JsonTokenType.Object) != true)
             {
-                throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToPerformLoopLibraryCallOnNonLoopableSourceToken, closestViableSourceToken?.Type);
+                throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToPerformLoopLibraryCallOnNonLoopableSourceToken, closestViableSourceToken?.Type);
             }
 
             var contentTemplate = token.Type switch
             { 
                 JsonTokenType.Array => token.AsArray().RemoveAt(0),
                 JsonTokenType.Object => token.AsObject().Copy(),
-                _ => throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToPerformLoopLibraryCallDueToMissingContentTemplate, token.Type)
+                _ => throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToPerformLoopLibraryCallDueToMissingContentTemplate, token.Type)
             };
 
             token.Clear();
@@ -238,7 +238,7 @@ namespace Jolt.Library
                 }
                 else
                 {
-                    throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToPerformLoopLibraryCallOnNonLoopableSourceToken, closestViableSourceToken.Type);
+                    throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToPerformLoopLibraryCallOnNonLoopableSourceToken, closestViableSourceToken.Type);
                 }
             }
 
@@ -290,7 +290,7 @@ namespace Jolt.Library
         [MethodIsValidOn(LibraryMethodTarget.PropertyName | LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Substring(object? value, Range range, EvaluationContext context)
         {   
-            string AsString(IJsonValue token) => token.AsValue().ToTypeOf<string>();
+            static string AsString(IJsonValue token) => token.AsValue().ToTypeOf<string>();
             
             var resolved = context.ResolveQueryPathIfPresent(value);
 
@@ -357,7 +357,7 @@ namespace Jolt.Library
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Contains(object? instance, object? value, EvaluationContext context)
         {
-            var resolved = context.ResolveQueryPathIfPresent(value);
+            var resolved = context.ResolveQueryPathIfPresent(instance);
 
             var contains = resolved switch
             {

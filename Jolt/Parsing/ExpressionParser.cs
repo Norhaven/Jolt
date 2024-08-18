@@ -17,21 +17,24 @@ namespace Jolt.Parsing
     {
         private sealed class ExpressionReader : TokenStream<ExpressionToken>
         {
-            public ExpressionReader(IEnumerable<ExpressionToken> tokens) 
+            private readonly IJsonContext _context;
+
+            public ExpressionReader(IEnumerable<ExpressionToken> tokens, IJsonContext context) 
                 : base(tokens)
             {
+                _context = context;
             }
 
             public bool ExpectAndConsume(ExpressionTokenCategory category)
             {
                 if (IsCompleted)
                 {
-                    throw Error.CreateParsingErrorFrom(ExceptionCode.ExpectedTokenButFoundEndOfExpression, category.GetDescription());
+                    throw _context.CreateParsingErrorFor<ExpressionReader>(ExceptionCode.ExpectedTokenButFoundEndOfExpression, category.GetDescription());
                 }
 
                 if (CurrentToken.Category != category)
                 {
-                    throw Error.CreateParsingErrorFrom(ExceptionCode.ExpectedTokenButFoundDifferentToken, category.GetDescription(), CurrentToken.Category.GetDescription());
+                    throw _context.CreateParsingErrorFor<ExpressionReader>(ExceptionCode.ExpectedTokenButFoundDifferentToken, category.GetDescription(), CurrentToken.Category.GetDescription());
                 }
 
                 return true;
@@ -41,34 +44,34 @@ namespace Jolt.Parsing
             {
                 if (IsCompleted)
                 {
-                    throw Error.CreateParsingErrorFrom(ExceptionCode.ExpectedTokenButFoundEndOfExpression, category.GetDescription());
+                    throw _context.CreateParsingErrorFor<ExpressionReader>(ExceptionCode.ExpectedTokenButFoundEndOfExpression, category.GetDescription());
                 }
 
                 return CurrentToken.Category == category;
             }
         }
 
-        public bool TryParseExpression(IEnumerable<ExpressionToken> tokens, IMethodReferenceResolver referenceResolver, out Expression? expression) => TryParseExpression(new ExpressionReader(tokens), referenceResolver, out expression);
+        public bool TryParseExpression(IEnumerable<ExpressionToken> tokens, IJsonContext context, out Expression? expression) => TryParseExpression(new ExpressionReader(tokens, context), context, out expression);
                
-        private bool TryParseExpression(ExpressionReader reader, IMethodReferenceResolver referenceResolver, out Expression expression)
+        private bool TryParseExpression(ExpressionReader reader, IJsonContext context, out Expression expression)
         {
             Expression ReadNextAtom(ExpressionReader reader)
             {
                 if (reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.OpenParenthesesGroup))
                 {
-                    if (!TryParseExpression(reader, referenceResolver, out var parenthesizedExpression))
+                    if (!TryParseExpression(reader, context, out var parenthesizedExpression))
                     {
-                        throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToParseParenthesizedExpressionAtPosition, reader.Position);
+                        throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToParseParenthesizedExpressionAtPosition, reader.Position);
                     }
 
                     if (!reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.CloseParenthesesGroup))
                     {
-                        throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToCloseParenthesizedExpressionAtPosition, reader.Position);
+                        throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToCloseParenthesizedExpressionAtPosition, reader.Position);
                     }
 
                     return parenthesizedExpression;
                 }
-                else if (TryParseMethod(reader, referenceResolver, out var method))
+                else if (TryParseMethod(reader, context, out var method))
                 {
                     return method;
                 }
@@ -76,7 +79,7 @@ namespace Jolt.Parsing
                 {
                     return path;
                 }
-                else if (TryParseRangeExpression(reader, out var range))
+                else if (TryParseRangeExpression(reader, context, out var range))
                 {
                     return range;
                 }
@@ -91,9 +94,9 @@ namespace Jolt.Parsing
                     {
                         reader.ConsumeCurrent();
 
-                        if (!TryParseExpression(reader, referenceResolver, out var bodyExpression))
+                        if (!TryParseExpression(reader, context, out var bodyExpression))
                         {
-                            throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToParseLambdaExpressionBodyAtPosition, reader.Position, reader.CurrentToken);
+                            throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToParseLambdaExpressionBodyAtPosition, reader.Position, reader.CurrentToken);
                         }
 
                         return new LambdaMethodExpression(rangeVariable, bodyExpression);
@@ -102,7 +105,7 @@ namespace Jolt.Parsing
                     {
                         if (!reader.TryConsumeUntilMatchOrEnd(x => x.Category != ExpressionTokenCategory.PropertyDereference, out var dereferenceChain))
                         {
-                            throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToParsePropertyDereferenceChain, reader.CurrentToken.Value);
+                            throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToParsePropertyDereferenceChain, reader.CurrentToken.Value);
                         }
 
                         return new PropertyDereferenceExpression(rangeVariable, dereferenceChain.Select(x => x.Value).ToArray());
@@ -111,9 +114,9 @@ namespace Jolt.Parsing
                     {
                         reader.ConsumeCurrent();
 
-                        if (!TryParseExpression(reader, referenceResolver, out var enumerationSource))
+                        if (!TryParseExpression(reader, context, out var enumerationSource))
                         {
-                            throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToParseEnumerationSourceForVariable, rangeVariable.Name);
+                            throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToParseEnumerationSourceForVariable, rangeVariable.Name);
                         }
 
                         return new EnumerateAsVariableExpression(rangeVariable, enumerationSource);
@@ -126,7 +129,7 @@ namespace Jolt.Parsing
                     return literal;
                 }
 
-                throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToParseExpressionStartingWithDescription, reader.CurrentToken.Category.GetDescription());
+                throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToParseExpressionStartingWithDescription, reader.CurrentToken.Category.GetDescription());
             }
 
             int GetOperatorPrecedence(Operator @operator)
@@ -205,7 +208,7 @@ namespace Jolt.Parsing
             return true;
         }
 
-        private bool TryParseRangeExpression(ExpressionReader reader, out RangeExpression? range)
+        private bool TryParseRangeExpression(ExpressionReader reader, IJsonContext context, out RangeExpression? range)
         {
             const string RangeDots = "..";
 
@@ -227,7 +230,7 @@ namespace Jolt.Parsing
 
             if (pieces.Length > 2)
             {
-                throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToUseMultipleRangeOperatorsWithinSameExpression);
+                throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToUseMultipleRangeOperatorsWithinSameExpression);
             }
 
             bool IsEndIndexerUsedAt(int index) => pieces[index].StartsWith(ExpressionToken.RangeEndIndexer);
@@ -242,9 +245,9 @@ namespace Jolt.Parsing
             var endIndex = value switch
             {
                 var x when x.EndsWith(RangeDots) => new Index(0, true),
-                var x when pieces.Length == 1 => ParseWithOptionalEndIndexerAt(0),
-                var x when pieces.Length == 2 => ParseWithOptionalEndIndexerAt(1),
-                _ => throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToParseRangeExpressionFormatIsInvalid, value)
+                var _ when pieces.Length == 1 => ParseWithOptionalEndIndexerAt(0),
+                var _ when pieces.Length == 2 => ParseWithOptionalEndIndexerAt(1),
+                _ => throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToParseRangeExpressionFormatIsInvalid, value)
             };
 
             range = new RangeExpression(startIndex, endIndex);
@@ -291,7 +294,7 @@ namespace Jolt.Parsing
             return isParseSuccessful;
         }
 
-        private bool TryParseMethod(ExpressionReader reader, IMethodReferenceResolver referenceResolver, out MethodCallExpression? methodCall)
+        private bool TryParseMethod(ExpressionReader reader, IJsonContext context, out MethodCallExpression? methodCall)
         {
             methodCall = default;
 
@@ -317,7 +320,7 @@ namespace Jolt.Parsing
             {
                 do
                 {
-                    if (!TryParseExpression(reader, referenceResolver, out var actualValue))
+                    if (!TryParseExpression(reader, context, out var actualValue))
                     {
                         return false;
                     }
@@ -337,11 +340,11 @@ namespace Jolt.Parsing
                 return false;
             }            
 
-            var methodSignature = referenceResolver.GetMethod(potentiallyQualifiedMethodName.Value);
+            var methodSignature = context.ReferenceResolver.GetMethod(potentiallyQualifiedMethodName.Value);
 
             if (methodSignature is null)
             {
-                throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToFindMethodImplementation, potentiallyQualifiedMethodName.Value);
+                throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToFindMethodImplementation, potentiallyQualifiedMethodName.Value);
             }
 
             if (reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.GeneratedNameIdentifier, out var generatedName))
@@ -354,9 +357,9 @@ namespace Jolt.Parsing
             }
             else if (reader.CurrentToken?.Category == ExpressionTokenCategory.StartOfPipedMethodCall)
             {
-                if (!TryParseMethod(reader, referenceResolver, out var pipedMethodCall))
+                if (!TryParseMethod(reader, context, out var pipedMethodCall))
                 {
-                    throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToCompleteParsingOfPipedMethodCall);
+                    throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToCompleteParsingOfPipedMethodCall);
                 }
 
                 // We're piping the initial method call results into the first argument of the target method,
@@ -368,9 +371,7 @@ namespace Jolt.Parsing
 
                 while(leftMostMethodCall.ParameterValues.Length > 0)
                 {
-                    var next = leftMostMethodCall.ParameterValues[0] as MethodCallExpression;
-
-                    if (next is null)
+                    if (!(leftMostMethodCall.ParameterValues[0] is MethodCallExpression next))
                     {
                         break;
                     }

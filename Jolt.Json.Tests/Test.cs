@@ -15,10 +15,11 @@ using System.Threading.Tasks;
 using Newtonsoft = Jolt.Json.Newtonsoft;
 using DotNet = Jolt.Json.DotNet;
 using Xunit.DependencyInjection;
+using Jolt.Exceptions;
 
 namespace Jolt.Json.Tests;
 
-public abstract class Test
+public abstract class Test(IJsonContext context)
 {
     protected static class Value
     {
@@ -112,83 +113,65 @@ public abstract class Test
         public const string Second = "second";
     }
 
-    protected readonly string _singleLevelDocument;
-    protected readonly string _multiLevelDocument;
-    protected readonly string _singleLevelLoopDocument;
-    protected readonly string _mathDocument;
-    protected readonly string _existenceDocument;
-    protected readonly string _conditionsDocument;
-    protected readonly string _pipedMethodsDocument;
-    protected readonly string _externalMethodsDocument;
-    protected readonly string _lambdasDocument;
+    protected readonly string _singleLevelDocument = ReadTestDocument("SingleLevelDocument");
+    protected readonly string _multiLevelDocument = ReadTestDocument("MultiLevelDocument");
+    protected readonly string _singleLevelLoopDocument = ReadTestDocument("SingleLevelLoopDocument");
+    protected readonly string _mathDocument = ReadTestDocument("MathDocument");
+    protected readonly string _existenceDocument = ReadTestDocument("ExistenceDocument");
+    protected readonly string _conditionsDocument = ReadTestDocument("ConditionsDocument");
+    protected readonly string _pipedMethodsDocument = ReadTestDocument("PipedMethodsDocument");
+    protected readonly string _externalMethodsDocument = ReadTestDocument("ExternalMethodsDocument");
+    protected readonly string _lambdasDocument = ReadTestDocument("LambdasDocument");
 
-    protected readonly string _singleLevelValueOf;
-    protected readonly string _multiLevelValueOf;
-    protected readonly string _singleLevelLoop;
-    protected readonly string _math;
-    protected readonly string _existence;
-    protected readonly string _conditions;
-    protected readonly string _pipedMethods;
-    protected readonly string _externalMethods;
-    protected readonly string _rangeVariables;
-    protected readonly string _lambdas;
+    protected readonly string _singleLevelValueOf = ReadTestTransformer("SingleLevelValueOf");
+    protected readonly string _multiLevelValueOf = ReadTestTransformer("MultiLevelValueOf");
+    protected readonly string _singleLevelLoop = ReadTestTransformer("SingleLevelLoop");
+    protected readonly string _math = ReadTestTransformer("Math");
+    protected readonly string _existence = ReadTestTransformer("Existence");
+    protected readonly string _conditions = ReadTestTransformer("Conditions");
+    protected readonly string _pipedMethods = ReadTestTransformer("PipedMethods");
+    protected readonly string _externalMethods = ReadTestTransformer("ExternalMethods");
+    protected readonly string _rangeVariables = ReadTestTransformer("RangeVariables");
+    protected readonly string _lambdas = ReadTestTransformer("Lambdas");
 
-    protected readonly IJsonContext _testContext;
+    protected readonly IJsonContext _testContext = context;
     protected readonly IJsonTransformer<IJsonContext> _transformer;
-
-    public Test(IJsonContext context)
-    {
-        _singleLevelDocument = ReadTestDocument("SingleLevelDocument");
-        _multiLevelDocument = ReadTestDocument("MultiLevelDocument");
-        _singleLevelLoopDocument = ReadTestDocument("SingleLevelLoopDocument");
-        _mathDocument = ReadTestDocument("MathDocument");
-        _existenceDocument = ReadTestDocument("ExistenceDocument");
-        _conditionsDocument = ReadTestDocument("ConditionsDocument");
-        _pipedMethodsDocument = ReadTestDocument("PipedMethodsDocument");
-        _externalMethodsDocument = ReadTestDocument("ExternalMethodsDocument");
-        _lambdasDocument = ReadTestDocument("LambdasDocument");
-
-        _singleLevelValueOf = ReadTestTransformer("SingleLevelValueOf");
-        _multiLevelValueOf = ReadTestTransformer("MultiLevelValueOf");
-        _singleLevelLoop = ReadTestTransformer("SingleLevelLoop");
-        _math = ReadTestTransformer("Math");
-        _existence = ReadTestTransformer("Existence");
-        _conditions = ReadTestTransformer("Conditions");
-        _pipedMethods = ReadTestTransformer("PipedMethods");
-        _externalMethods = ReadTestTransformer("ExternalMethods");
-        _rangeVariables = ReadTestTransformer("RangeVariables");
-        _lambdas = ReadTestTransformer("Lambdas");
-
-        _testContext = context;
-    }
 
     public class Startup
     {
-        public void ConfigureServices(IServiceCollection services)
+        public static void ConfigureServices(IServiceCollection services)
         {
             IJsonContext CreateNewtonsoftContext()
             {
+                var messageProvider = new MessageProvider(JoltOptions.Default);
+
                 return new JoltContext(
                     default,
                     new ExpressionParser(),
                     new ExpressionEvaluator(),
-                    new TokenReader(),
+                    new TokenReader(messageProvider),
                     new Newtonsoft.JsonTokenReader(),
                     new Newtonsoft.JsonPathQueryPathProvider(),
-                    new MethodReferenceResolver()
+                    new MethodReferenceResolver(messageProvider),
+                    messageProvider,
+                    new ErrorHandler(default)
                 );
             }
 
             IJsonContext CreateDotNetContext()
             {
+                var messageProvider = new MessageProvider(JoltOptions.Default);
+
                 return new JoltContext(
                     default,
                     new ExpressionParser(),
                     new ExpressionEvaluator(),
-                    new TokenReader(),
+                    new TokenReader(messageProvider),
                     new DotNet.JsonTokenReader(),
                     new DotNet.JsonPathQueryPathProvider(),
-                    new MethodReferenceResolver()
+                    new MethodReferenceResolver(messageProvider),
+                    messageProvider,
+                    new ErrorHandler(default)
                 );
             }
 
@@ -218,10 +201,10 @@ public abstract class Test
         return new JoltTransformer<IJsonContext>(context);
     }
 
-    protected string ReadTestDocument(string fileName) => ReadTestFile($"Documents.{fileName}");
-    protected string ReadTestTransformer(string fileName) => ReadTestFile($"Transformers.{fileName}");
+    protected static string ReadTestDocument(string fileName) => ReadTestFile($"Documents.{fileName}");
+    protected static string ReadTestTransformer(string fileName) => ReadTestFile($"Transformers.{fileName}");
 
-    protected string ReadTestFile(string fileName)
+    protected static string ReadTestFile(string fileName)
     {
         using var manifestStream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"Jolt.Json.Tests.TestFiles.{fileName}.json");
         using var reader = new StreamReader(manifestStream);

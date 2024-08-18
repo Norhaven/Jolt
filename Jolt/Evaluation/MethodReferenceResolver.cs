@@ -11,13 +11,15 @@ namespace Jolt.Evaluation
     public sealed class MethodReferenceResolver : IMethodReferenceResolver
     {
         private readonly MethodSignature[] _standardMethods;
-        private List<MethodSignature> _thirdPartyMethods = new List<MethodSignature>();
+        private readonly List<MethodSignature> _thirdPartyMethods = new List<MethodSignature>();
+        private readonly IMessageProvider _messageProvider;
         private ILookup<string, MethodSignature> _availableMethods;
 
-        public MethodReferenceResolver()
+        public MethodReferenceResolver(IMessageProvider messageProvider)
         {
             _standardMethods = Registrar.GetStandardLibraryRegistrations().ToArray();
             _availableMethods = _standardMethods.Concat(_thirdPartyMethods).ToLookup(x => x.Alias);
+            _messageProvider = messageProvider;
         }
 
         public void Clear()
@@ -33,7 +35,7 @@ namespace Jolt.Evaluation
                 return;
             }
 
-            var methods = Registrar.GetExternalMethodRegistrations(methodRegistrations?.ToArray() ?? Array.Empty<MethodRegistration>(), methodContext).ToArray();
+            var methods = Registrar.GetExternalMethodRegistrations(methodRegistrations?.ToArray() ?? Array.Empty<MethodRegistration>(), _messageProvider, methodContext).ToArray();
 
             _thirdPartyMethods.AddRange(methods);
             _availableMethods = _standardMethods.Concat(_thirdPartyMethods).ToLookup(x => x.Alias);
@@ -60,7 +62,7 @@ namespace Jolt.Evaluation
                 return systemMethod;
             }
 
-            throw Error.CreateExecutionErrorFrom(ExceptionCode.EncounteredMultipleNonSystemMethodsWithSameNameOrAlias, methodName);
+            throw _messageProvider.CreateErrorFor<MethodReferenceResolver>(MessageCategory.Execution, ExceptionCode.EncounteredMultipleNonSystemMethodsWithSameNameOrAlias, methodName);
         }
     }
 }

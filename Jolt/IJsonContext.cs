@@ -1,7 +1,9 @@
 ﻿using Jolt.Evaluation;
+using Jolt.Exceptions;
 using Jolt.Library;
 using Jolt.Parsing;
 using Jolt.Structure;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -54,6 +56,16 @@ namespace Jolt
         /// Maintains all method registrations in order to allow easier lookup of method signatures during evaluation. 
         /// </summary>
         IMethodReferenceResolver ReferenceResolver { get; }
+
+        /// <summary>
+        /// A provider for messages to the caller, such as errors or warnings.
+        /// </summary>
+        IMessageProvider MessageProvider { get; }
+
+        /// <summary>
+        /// A handler for any errors that may occur.
+        /// </summary>
+        IErrorHandler ErrorHandler { get; }
 
         /// <summary>
         /// An instance that will be used to invoke any external instance methods that have been registered and called from the transformer.

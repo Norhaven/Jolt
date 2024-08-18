@@ -92,7 +92,7 @@ namespace Jolt.Evaluation
                     { 
                         Operator.Equal => leftResult is null && rightResult is null,
                         Operator.NotEqual => !(leftResult is null && rightResult is null),
-                        _ => throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToEvaluateExpressionWithOperatorAndArguments, leftResult, binary.Operator, rightResult)
+                        _ => throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateExpressionWithOperatorAndArguments, leftResult, binary.Operator, rightResult)
                     };
                 }
 
@@ -109,7 +109,7 @@ namespace Jolt.Evaluation
                         Operator.LessThan => left.IsLessThan(right),
                         Operator.GreaterThanOrEquals => left.IsGreaterThan(right) || left.Equals(right),
                         Operator.LessThanOrEquals => left.IsLessThan(right) || left.Equals(right),
-                        _ => throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToEvaluateExpressionWithOperatorAndArguments, left, binary.Operator, right)
+                        _ => throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateExpressionWithOperatorAndArguments, left, binary.Operator, right)
                     };
                 }
                 else
@@ -118,7 +118,7 @@ namespace Jolt.Evaluation
                     { 
                         Operator.Equal => leftResult.Equals(rightResult),
                         Operator.NotEqual => !leftResult.Equals(rightResult),
-                        _ => throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToEvaluateExpressionWithOperatorAndArguments, leftResult, binary.Operator, rightResult)
+                        _ => throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateExpressionWithOperatorAndArguments, leftResult, binary.Operator, rightResult)
                     };
                 }
             }
@@ -126,12 +126,12 @@ namespace Jolt.Evaluation
             {
                 if (leftResult is null || rightResult is null)
                 {
-                    throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToEvaluateExpressionWithNullArgument, binary.Operator);
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateExpressionWithNullArgument, binary.Operator);
                 }
 
                 if (leftResult is bool || rightResult is bool)
                 {
-                    throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToEvaluateExpressionWithBooleanArgument, binary.Operator);
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateExpressionWithBooleanArgument, binary.Operator);
                 }
 
                 if (leftResult is string leftString && rightResult is string rightString)
@@ -141,7 +141,7 @@ namespace Jolt.Evaluation
                         return leftString + rightString;
                     }
 
-                    throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToEvaluateExpressionWithOnlyStrings, binary.Operator);
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateExpressionWithOnlyStrings, binary.Operator);
                 }
 
                 if (Numeric.IsSupported(leftResult))
@@ -159,7 +159,7 @@ namespace Jolt.Evaluation
                     };
                 }
 
-                throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToEvaluateExpressionWithMismatchedTypes, leftResult?.GetType(), binary.Operator, rightResult?.GetType());
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateExpressionWithMismatchedTypes, leftResult?.GetType(), binary.Operator, rightResult?.GetType());
             }
         }
 
@@ -215,14 +215,14 @@ namespace Jolt.Evaluation
                 {
                     if (i < dereference.PropertyPaths.Length - 1)
                     {
-                        throw Error.CreateExecutionErrorFrom(ExceptionCode.EncounteredValueInDereferenceChainButExpectedObject, property);
+                        throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.EncounteredValueInDereferenceChainButExpectedObject, property);
                     }
 
                     return value;
                 }
                 else
                 {
-                    throw Error.CreateExecutionErrorFrom(ExceptionCode.EncounteredNonObjectInDereferenceChainButExpectedObject, property);
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.EncounteredNonObjectInDereferenceChainButExpectedObject, property);
                 }
             }
 
@@ -240,7 +240,7 @@ namespace Jolt.Evaluation
             {
                 if (!long.TryParse(literal.Value, out var numericValue))
                 {
-                    throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToConvertValueToInteger, literal.Value);
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToConvertValueToInteger, literal.Value);
                 }
 
                 return numericValue;
@@ -250,7 +250,7 @@ namespace Jolt.Evaluation
             {
                 if (!double.TryParse(literal.Value, out var numericValue))
                 {
-                    throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToConvertValueToDecimal, literal.Value);
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToConvertValueToDecimal, literal.Value);
                 }
 
                 return numericValue;
@@ -260,25 +260,25 @@ namespace Jolt.Evaluation
             {
                 if (!bool.TryParse(literal.Value, out var booleanValue))
                 {
-                    throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToConvertValueToBoolean, literal.Value);
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToConvertValueToBoolean, literal.Value);
                 }
 
                 return booleanValue;
             }
 
-            throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToConvertToBestTypeForLiteralValue, literal.Value);
+            throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToConvertToBestTypeForLiteralValue, literal.Value);
         }
 
         private object? ExecuteMethodCall(MethodCallExpression call, EvaluationContext context)
         {
             if (context.Mode == EvaluationMode.PropertyName && !call.Signature.IsAllowedAsPropertyName)
             {
-                throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToUseMethodWithinPropertyName, call.Signature.Alias);
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMethodWithinPropertyName, call.Signature.Alias);
             }
 
             if (context.Mode == EvaluationMode.PropertyValue && !call.Signature.IsAllowedAsPropertyValue)
             {
-                throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToUseMethodWithinPropertyValue, call.Signature.Alias);
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMethodWithinPropertyValue, call.Signature.Alias);
             }
 
             var actualParameterValues = new List<object>();
@@ -344,11 +344,11 @@ namespace Jolt.Evaluation
             {
                 var nextMissingParameter = call.Signature.Parameters[actualParameterValues.Count - 1];
 
-                throw Error.CreateExecutionErrorFrom(ExceptionCode.MissingRequiredMethodParameter, call.Signature.Name, nextMissingParameter.Name, nextMissingParameter.Type);
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.MissingRequiredMethodParameter, call.Signature.Name, nextMissingParameter.Name, nextMissingParameter.Type);
             }
             else if (actualParameterValues.Count > call.Signature.Parameters.Length && !lastParameterIsVariadic)
             {
-                throw Error.CreateExecutionErrorFrom(ExceptionCode.MethodCallActualParameterCountExceedsFormalParameterCount, call.Signature.Name, call.Signature.Parameters.Length);
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.MethodCallActualParameterCountExceedsFormalParameterCount, call.Signature.Name, call.Signature.Parameters.Length);
             }
 
             var resultValue = InvokeMethod(call.Signature, actualParameterValues, context);
@@ -399,7 +399,7 @@ namespace Jolt.Evaluation
                 return resultValue;
             }
 
-            throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToApplyMethodResultsWithUnknownEvaluationMode, context.Mode);
+            throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToApplyMethodResultsWithUnknownEvaluationMode, context.Mode);
         }
 
         private static object? InvokeMethod(MethodSignature method, IEnumerable<object?> actualParameterValues, EvaluationContext context)
@@ -415,20 +415,20 @@ namespace Jolt.Evaluation
             {
                 if (context.JsonContext.MethodContext is null)
                 {
-                    throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToInvokeInstanceMethodWithoutMethodContext, method.Name);
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToInvokeInstanceMethodWithoutMethodContext, method.Name);
                 }
 
                 var methodInfo = context.JsonContext.MethodContext.GetType().GetMethod(method.Name, BindingFlags.Public | BindingFlags.Instance);
 
                 if (methodInfo is null)
                 {
-                    throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToLocateInstanceMethodWithProvidedMethodContext, method.Name, context.JsonContext.MethodContext.GetType().FullName);
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToLocateInstanceMethodWithProvidedMethodContext, method.Name, context.JsonContext.MethodContext.GetType().FullName);
                 }
 
                 return methodInfo.Invoke(context.JsonContext.MethodContext, actualParameterValues.ToArray());
             }
 
-            throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToInvokeMethodWithUnknownCallType, method.CallType);
+            throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToInvokeMethodWithUnknownCallType, method.CallType);
         }
     }
 }

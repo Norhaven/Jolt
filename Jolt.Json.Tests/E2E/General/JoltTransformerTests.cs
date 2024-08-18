@@ -17,13 +17,8 @@ using Xunit.DependencyInjection;
 
 namespace Jolt.Json.Tests.E2E.General;
 
-public abstract class JoltTransformerTests : Test
+public abstract class JoltTransformerTests(IJsonContext context) : Test(context)
 {
-    public JoltTransformerTests(IJsonContext context)
-        : base(context)
-    {
-    }
-
     [Fact]
     public void ValueOf_IsSuccessful_AtSingleLevelForNumericLiteral()
     {

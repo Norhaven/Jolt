@@ -6,12 +6,8 @@ using System.Threading.Tasks;
 
 namespace Jolt.Json.Tests.TestAttributes;
 
-internal class SourcePropertyIsAttribute : Attribute
+[AttributeUsage(AttributeTargets.Method)]
+internal class SourcePropertyIsAttribute(string name) : Attribute
 {
-    public string Name { get; }
-
-    public SourcePropertyIsAttribute(string name)
-    {
-        Name = name;
-    }
+    public string Name { get; } = name;
 }

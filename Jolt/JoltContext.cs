@@ -1,7 +1,9 @@
 ﻿using Jolt.Evaluation;
+using Jolt.Exceptions;
 using Jolt.Library;
 using Jolt.Parsing;
 using Jolt.Structure;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,15 +30,21 @@ namespace Jolt
 
         public IMethodReferenceResolver ReferenceResolver { get; }
 
+        public IMessageProvider MessageProvider { get; }
+
+        public IErrorHandler ErrorHandler { get; }
+
         public object? MethodContext { get; private set; }
 
-        public JoltContext(string jsonTransformer, 
-                           IExpressionParser expressionParser, 
-                           IExpressionEvaluator expressionEvaluator, 
-                           ITokenReader tokenReader, 
+        public JoltContext(string jsonTransformer,
+                           IExpressionParser expressionParser,
+                           IExpressionEvaluator expressionEvaluator,
+                           ITokenReader tokenReader,
                            IJsonTokenReader jsonTokenReader,
                            IQueryPathProvider queryPathProvider,
                            IMethodReferenceResolver referenceResolver,
+                           IMessageProvider messageProvider,
+                           IErrorHandler errorHandler,
                            object? methodContext = default)
         {
             JsonTransformer = jsonTransformer;
@@ -46,6 +54,8 @@ namespace Jolt
             JsonTokenReader = jsonTokenReader;
             QueryPathProvider = queryPathProvider;
             ReferenceResolver = referenceResolver;
+            MessageProvider = messageProvider;
+            ErrorHandler = errorHandler;
             MethodContext = methodContext;
         }
 

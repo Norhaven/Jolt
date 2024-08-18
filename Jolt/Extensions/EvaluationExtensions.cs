@@ -1,4 +1,5 @@
 ﻿using Jolt.Evaluation;
+using Jolt.Exceptions;
 using Jolt.Structure;
 using System;
 using System.Collections.Generic;
@@ -68,6 +69,11 @@ namespace Jolt.Extensions
             }
 
             return potentialPath;
+        }
+        
+        public static JoltException CreateExecutionErrorFor<T>(this EvaluationContext context, ExceptionCode exceptionCode, params object[] parameters)
+        {
+            return context.JsonContext.MessageProvider.CreateErrorFor<T>(MessageCategory.Execution, exceptionCode, parameters);
         }
     }
 }

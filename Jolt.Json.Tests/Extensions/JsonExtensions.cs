@@ -36,9 +36,9 @@ internal static class JsonExtensions
     {
         obj.Should().NotBeNull("because the object exists in the source document");
 
-        foreach(var value in values)
+        foreach(var (propertyName, expectedValue) in values)
         {
-            obj.PropertyValueFor<T>(value.PropertyName).Should().Be(value.ExpectedValue);
+            obj.PropertyValueFor<T>(propertyName).Should().Be(expectedValue);
         }
     }
 

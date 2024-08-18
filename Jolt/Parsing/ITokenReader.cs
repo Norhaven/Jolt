@@ -23,6 +23,7 @@ namespace Jolt.Parsing
         /// </summary>
         /// <param name="expression">The Jolt expression to read.</param>
         /// <param name="mode">The evaluation mode which will determine how a particular token is treated.</param>
+        /// <param name="context">The current JSON context that the reader will operate within.</param>
         /// <returns>The Jolt expression as a series of expression tokens or an empty sequence if none were present.</returns>
         IEnumerable<ExpressionToken> ReadToEnd(string expression, EvaluationMode mode);
     }

@@ -9,7 +9,7 @@ namespace Jolt.Json.Tests.TestMethods;
 
 internal class ExternalInstanceMethods
 {
-    private readonly StringBuilder _builder = new StringBuilder();
+    private readonly StringBuilder _builder = new();
 
     [JoltExternalMethod("appendString")]
     public string AppendString(string text)

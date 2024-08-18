@@ -31,8 +31,8 @@ namespace Jolt.Json.DotNet
 
             return token switch
             {
-                Nodes.JsonObject obj => new JsonObject(token),
-                Nodes.JsonArray array => new JsonArray(token),
+                Nodes.JsonObject _ => new JsonObject(token),
+                Nodes.JsonArray _ => new JsonArray(token),
                 Nodes.JsonValue value when value.GetValueKind() == JsonValueKind.String => new JsonValue(token),
                 Nodes.JsonValue value when value.GetValueKind() == JsonValueKind.Number => new JsonValue(token),
                 Nodes.JsonValue value when value.GetValueKind() == JsonValueKind.True => new JsonValue(token),

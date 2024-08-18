@@ -10,6 +10,13 @@ namespace Jolt.Parsing
 {
     public sealed class TokenReader : ITokenReader
     {
+        private readonly IMessageProvider _messageProvider;
+
+        public TokenReader(IMessageProvider messageProvider)
+        {
+            _messageProvider = messageProvider;
+        }
+
         public bool StartsWithMethodCallOrOpenParenthesesOrRangeVariable(string expression)
         {
             if (string.IsNullOrWhiteSpace(expression))
@@ -125,7 +132,7 @@ namespace Jolt.Parsing
                         {
                             if (mode == EvaluationMode.PropertyValue)
                             {
-                                throw Error.CreateParsingErrorFrom(ExceptionCode.ExpectedStartOfMethodCallButFoundDifferentTokenAtPosition, stream.CurrentToken, stream.Position);
+                                throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedStartOfMethodCallButFoundDifferentTokenAtPosition, stream.CurrentToken, stream.Position);
                             }
 
                             if (stream.CurrentToken == ExpressionToken.SingleQuote)
@@ -140,7 +147,7 @@ namespace Jolt.Parsing
                             }
                             else
                             {
-                                throw Error.CreateParsingErrorFrom(ExceptionCode.ExpectedStringLiteralPropertyNameButFoundDifferentToken, stream.CurrentToken);
+                                throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedStringLiteralPropertyNameButFoundDifferentToken, stream.CurrentToken);
                             }
                         }
                     }
@@ -170,7 +177,7 @@ namespace Jolt.Parsing
 
                         if (stream.CurrentToken != ExpressionToken.At)
                         {
-                            throw Error.CreateParsingErrorFrom(ExceptionCode.ExpectedRangeVariableAfterSemicolonButFoundTokenInstead, stream.CurrentToken);
+                            throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedRangeVariableAfterSemicolonButFoundTokenInstead, stream.CurrentToken);
                         }
 
                         yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot);
@@ -189,7 +196,7 @@ namespace Jolt.Parsing
 
                             if (token.Value != ExpressionToken.In)
                             {
-                                throw Error.CreateParsingErrorFrom(ExceptionCode.ExpectedInKeywordButFoundUnexpectedToken, token.Value);
+                                throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedInKeywordButFoundUnexpectedToken, token.Value);
                             }
 
                             yield return token;
@@ -239,7 +246,7 @@ namespace Jolt.Parsing
                     }
                     else
                     {
-                        throw Error.CreateParsingErrorFrom(ExceptionCode.ExpectedBooleanLiteralTokenButFoundUnknownToken, possibleBoolToken.Value);
+                        throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedBooleanLiteralTokenButFoundUnknownToken, possibleBoolToken.Value);
                     }
                 }
                 else if (stream.CurrentToken == ExpressionToken.Whitespace)
@@ -248,16 +255,9 @@ namespace Jolt.Parsing
                 }                
                 else
                 {
-                    throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToCategorizeTokenAtPosition, stream.CurrentToken, stream.Position);
+                    throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.UnableToCategorizeTokenAtPosition, stream.CurrentToken, stream.Position);
                 }
             }
-        }
-
-        private ExpressionToken TokenUntilEnd(TokenStream<char> stream, ExpressionTokenCategory category)
-        {
-            var tokens = stream.ConsumeUntilEnd();
-
-            return new ExpressionToken(new string(tokens), category);
         }
 
         private ExpressionToken TokenFromCurrent(TokenStream<char> stream, ExpressionTokenCategory category)
@@ -271,7 +271,7 @@ namespace Jolt.Parsing
             {
                 if (!stream.IsCompleted)
                 {
-                    throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToLocateExpectedCharactersInExpression);
+                    throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.UnableToLocateExpectedCharactersInExpression);
                 }
             }
 
@@ -286,7 +286,7 @@ namespace Jolt.Parsing
                 {
                     var expectedCharacters = string.Join(", ", tokens);
 
-                    throw Error.CreateParsingErrorFrom(ExceptionCode.UnableToLocateSpecificExpectedCharactersInExpression, expectedCharacters);
+                    throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.UnableToLocateSpecificExpectedCharactersInExpression, expectedCharacters);
                 }
             }
 

@@ -1,6 +1,8 @@
 ﻿using Jolt.Evaluation;
+using Jolt.Exceptions;
 using Jolt.Library;
 using Jolt.Parsing;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,10 +21,11 @@ namespace Jolt.Json.Newtonsoft
         /// <param name="jsonTransformer">The JSON transformer to use.</param>
         /// <param name="methodContext">The method context for any instance method registrations.</param>
         /// <param name="methodRegistrations">The external method registrations to include in this transformer.</param>
+        /// <param name="options">Options for controlling or enhancing the behavior of the transformer.</param>
         /// <returns>An instance of <see cref="IJsonTransformer{TContext}"/>.</returns>
-        public static IJsonTransformer<IJsonContext> DefaultWith(string jsonTransformer, object? methodContext, IEnumerable<MethodRegistration>? methodRegistrations = default)
+        public static IJsonTransformer<IJsonContext> DefaultWith(string jsonTransformer, object? methodContext, IEnumerable<MethodRegistration>? methodRegistrations = default, JoltOptions? options = default)
         {
-            return CreateTransformerWith(jsonTransformer, methodContext, methodRegistrations);
+            return CreateTransformerWith(jsonTransformer, methodContext, methodRegistrations, options);
         }
 
         /// <summary>
@@ -33,24 +36,31 @@ namespace Jolt.Json.Newtonsoft
         /// <typeparam name="TMethodContext">The method context type for any instance or static method registrations.</typeparam>
         /// <param name="jsonTransformer">The JSON transformer to use.</param>
         /// <param name="methodContext">The method context for any instance method registrations.</param>
+        /// <param name="options">Options for controlling or enhancing the behavior of the transformer.</param>
         /// <returns>An instance of <see cref="IJsonTransformer{TContext}"/>.</returns>
-        public static IJsonTransformer<IJsonContext> DefaultWith<TMethodContext>(string jsonTransformer, TMethodContext methodContext = default)
+        public static IJsonTransformer<IJsonContext> DefaultWith<TMethodContext>(string jsonTransformer, TMethodContext methodContext = default, JoltOptions? options = default)
         {
             var thirdPartyMethods = GetExternalMethodRegistrationsFrom<TMethodContext>();
 
-            return CreateTransformerWith(jsonTransformer, methodContext, thirdPartyMethods);
+            return CreateTransformerWith(jsonTransformer, methodContext, thirdPartyMethods, options);
         }
 
-        private static JoltJsonTransformer CreateTransformerWith(string jsonTransformer, object? methodContext, IEnumerable<MethodRegistration> methodRegistrations)
+        private static JoltJsonTransformer CreateTransformerWith(string jsonTransformer, object? methodContext, IEnumerable<MethodRegistration>? methodRegistrations, JoltOptions? options)
         {
+            options ??= JoltOptions.Default;
+
+            var messageProvider = new MessageProvider(options);
+
             var context = new JoltContext(
                 jsonTransformer,
                 new ExpressionParser(),
                 new ExpressionEvaluator(),
-                new TokenReader(),
+                new TokenReader(messageProvider),
                 new JsonTokenReader(),
                 new JsonPathQueryPathProvider(),
-                new MethodReferenceResolver(),
+                new MethodReferenceResolver(messageProvider),
+                messageProvider,
+                new ErrorHandler(options),
                 methodContext);
 
             context.RegisterAllMethods(methodRegistrations);

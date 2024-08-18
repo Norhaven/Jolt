@@ -6,16 +6,10 @@ using System.Threading.Tasks;
 
 namespace Jolt.Json.Tests.TestAttributes;
 
-internal class SourceHasAttribute : Attribute
+[AttributeUsage(AttributeTargets.Method)]
+internal class SourceHasAttribute(SourceValueType type, string name, object? value) : Attribute
 {
-    public string Name { get; }
-    public SourceValueType Type { get; }
-    public object? Value { get; }
-
-    public SourceHasAttribute(SourceValueType type, string name, object? value)
-    {
-        Name = name;
-        Type = type;
-        Value = value;
-    }
+    public string Name { get; } = name;
+    public SourceValueType Type { get; } = type;
+    public object? Value { get; } = value;
 }

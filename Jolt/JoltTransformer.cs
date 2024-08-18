@@ -43,71 +43,78 @@ namespace Jolt
 
             while (pendingNodes.HasTokens)
             {
-                var current = pendingNodes.GetNextToken();
-
-                // We need to check up front if the property name contains an expression and evaluate that first because
-                // some property name expressions will be responsible for generating their own values. Also, in some cases,
-                // we have already evaluated the name and need to continue to evaluate the property value portion instead of
-                // introducing cycles and evaluating the name again.
-
-                if (!current.IsPendingValueEvaluation && 
-                    _context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariable(current.PropertyName) &&
-                    (rangeVariables.Count == 0 || !rangeVariables.Peek().Any(x => x.Name == current.PropertyName)))
+                try
                 {
-                    var result = TransformExpression(current, current.PropertyName, EvaluationMode.PropertyName, closureSources, rangeVariables);
+                    var current = pendingNodes.GetNextToken();
 
-                    ApplyChangesToParent(current.ParentToken, result, rangeVariables);
-                    
-                    if (result.IsValuePendingEvaluation)
+                    // We need to check up front if the property name contains an expression and evaluate that first because
+                    // some property name expressions will be responsible for generating their own values. Also, in some cases,
+                    // we have already evaluated the name and need to continue to evaluate the property value portion instead of
+                    // introducing cycles and evaluating the name again.
+
+                    if (!current.IsPendingValueEvaluation &&
+                        _context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariable(current.PropertyName) &&
+                        (rangeVariables.Count == 0 || !rangeVariables.Peek().Any(x => x.Name == current.PropertyName)))
                     {
-                        // Property name evaluation has already happened now, send this back around for handling the value.
+                        var result = TransformExpression(current, current.PropertyName, EvaluationMode.PropertyName, closureSources, rangeVariables);
 
-                        var evaluationToken = new EvaluationToken(
-                            result.NewPropertyName ?? result.OriginalPropertyName,
-                            default,
-                            current.ParentToken,
-                            current.CurrentTransformerToken,
-                            current.CurrentSource,
-                            true,
-                            result.RangeVariable
-                        );
+                        ApplyChangesToParent(current.ParentToken, result, rangeVariables);
 
-                        // Evaluations further along in the document may depend on the results of evaluating
-                        // this property's value, especially in the case of setting a range variable, so push
-                        // it to the front of the line.
+                        if (result.IsValuePendingEvaluation)
+                        {
+                            // Property name evaluation has already happened now, send this back around for handling the value.
 
-                        pendingNodes.Push(evaluationToken);
+                            var evaluationToken = new EvaluationToken(
+                                result.NewPropertyName ?? result.OriginalPropertyName,
+                                default,
+                                current.ParentToken,
+                                current.CurrentTransformerToken,
+                                current.CurrentSource,
+                                true,
+                                result.RangeVariable
+                            );
+
+                            // Evaluations further along in the document may depend on the results of evaluating
+                            // this property's value, especially in the case of setting a range variable, so push
+                            // it to the front of the line.
+
+                            pendingNodes.Push(evaluationToken);
+                        }
+                    }
+                    else if (current.CurrentTransformerToken is IJsonObject obj)
+                    {
+                        foreach (var property in obj)
+                        {
+                            pendingNodes.Enqueue(new EvaluationToken(property.PropertyName, default, current.CurrentTransformerToken, property.Value, token.CurrentSource, parentRangeVariable: current.ParentRangeVariable));
+                        }
+                    }
+                    else if (current.CurrentTransformerToken is IJsonArray array)
+                    {
+                        foreach (var element in array)
+                        {
+                            pendingNodes.Enqueue(new EvaluationToken(current.PropertyName, default, current.CurrentTransformerToken, element, token.CurrentSource, parentRangeVariable: current.ParentRangeVariable));
+                        }
+                    }
+                    else if (current.CurrentTransformerToken is IJsonValue value && value.ValueType == JsonValueType.String)
+                    {
+                        var transformerPropertyValue = value.ToTypeOf<string>();
+
+                        if (!_context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariable(transformerPropertyValue))
+                        {
+                            // All transformable expressions need to be rooted in a method call, parenthesized expression,
+                            // or a range variable otherwise we may transform things that the user intended to be literal values.
+
+                            continue;
+                        }
+
+                        var result = TransformExpression(current, value.ToTypeOf<string>(), EvaluationMode.PropertyValue, closureSources, rangeVariables);
+
+                        ApplyChangesToParent(current.ParentToken, result, rangeVariables);
                     }
                 }
-                else if (current.CurrentTransformerToken is IJsonObject obj)
+                catch (Exception ex) when (_context.ErrorHandler.IsEnabled)
                 {
-                    foreach(var property in obj)
-                    {
-                        pendingNodes.Enqueue(new EvaluationToken(property.PropertyName, default, current.CurrentTransformerToken, property.Value, token.CurrentSource, parentRangeVariable: current.ParentRangeVariable));
-                    }
-                }
-                else if (current.CurrentTransformerToken is IJsonArray array)
-                {
-                    foreach(var element in array)
-                    {
-                        pendingNodes.Enqueue(new EvaluationToken(current.PropertyName, default, current.CurrentTransformerToken, element, token.CurrentSource, parentRangeVariable: current.ParentRangeVariable));
-                    }
-                }
-                else if (current.CurrentTransformerToken is IJsonValue value && value.ValueType == JsonValueType.String)
-                {
-                    var transformerPropertyValue = value.ToTypeOf<string>();
-
-                    if (!_context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariable(transformerPropertyValue))
-                    {
-                        // All transformable expressions need to be rooted in a method call, parenthesized expression,
-                        // or a range variable otherwise we may transform things that the user intended to be literal values.
-
-                        continue;
-                    }
-
-                    var result = TransformExpression(current, value.ToTypeOf<string>(), EvaluationMode.PropertyValue, closureSources, rangeVariables);
-
-                    ApplyChangesToParent(current.ParentToken, result, rangeVariables);
+                    _context.ErrorHandler.HandleFor<JoltTransformer<TContext>>(ex);
                 }
             }
 
@@ -118,7 +125,7 @@ namespace Jolt
         {
             var actualTokens = _context.TokenReader.ReadToEnd(expressionText, evaluationMode);
 
-            if (!_context.ExpressionParser.TryParseExpression(actualTokens, _context.ReferenceResolver, out var expression))
+            if (!_context.ExpressionParser.TryParseExpression(actualTokens, _context, out var expression))
             {
                 return new EvaluationResult(token.PropertyName, null, token.CurrentTransformerToken);
             }   
@@ -135,7 +142,7 @@ namespace Jolt
             return _context.ExpressionEvaluator.Evaluate(evaluationContext);
         }
 
-        private static void ApplyChangesToParent(IJsonToken parent, EvaluationResult result, Stack<IList<RangeVariable>> rangeVariables)
+        private void ApplyChangesToParent(IJsonToken parent, EvaluationResult result, Stack<IList<RangeVariable>> rangeVariables)
         {            
             void SetVariableIfPresent(IJsonObject json, string propertyName)
             {
@@ -166,7 +173,7 @@ namespace Jolt
                     {
                         if (result.TransformedToken is null)
                         {
-                            throw Error.CreateExecutionErrorFrom(ExceptionCode.ReferencedRangeVariableWithNoValue, result.RangeVariable.Name);
+                            throw _context.CreateExecutionErrorFor<JoltTransformer<TContext>>(ExceptionCode.ReferencedRangeVariableWithNoValue, result.RangeVariable.Name);
                         }
 
                         json.Remove(propertyName);
@@ -207,7 +214,7 @@ namespace Jolt
             }
             else
             {
-                throw Error.CreateExecutionErrorFrom(ExceptionCode.UnableToApplyChangesToUnsupportedParentToken, parent.Type);
+                throw _context.CreateExecutionErrorFor<JoltTransformer<TContext>>(ExceptionCode.UnableToApplyChangesToUnsupportedParentToken, parent.Type);
             }
         }
 
