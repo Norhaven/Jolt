@@ -77,6 +77,18 @@ namespace Jolt.Parsing
                 }
                 else if (TryParsePath(reader, out var path))
                 {
+                    if (reader.CurrentToken?.Category == ExpressionTokenCategory.As)
+                    {
+                        reader.ConsumeCurrent();
+
+                        if (!TryParseRangeVariable(reader, out var aliasVariable))
+                        {
+                            throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToParseVariableAlias);
+                        }
+
+                        return new VariableAliasExpression(path, aliasVariable);
+                    }
+
                     return path;
                 }
                 else if (TryParseRangeExpression(reader, context, out var range))
@@ -120,6 +132,17 @@ namespace Jolt.Parsing
                         }
 
                         return new EnumerateAsVariableExpression(rangeVariable, enumerationSource);
+                    }
+                    else if (reader.CurrentToken?.Category == ExpressionTokenCategory.As)
+                    {
+                        reader.ConsumeCurrent();
+
+                        if (!TryParseRangeVariable(reader, out var aliasVariable))
+                        {
+                            throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToParseVariableAlias);
+                        }
+
+                        return new VariableAliasExpression(rangeVariable, aliasVariable);
                     }
 
                     return rangeVariable;

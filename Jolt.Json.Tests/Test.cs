@@ -133,6 +133,7 @@ public abstract class Test(IJsonContext context)
     protected readonly string _externalMethods = ReadTestTransformer("ExternalMethods");
     protected readonly string _rangeVariables = ReadTestTransformer("RangeVariables");
     protected readonly string _lambdas = ReadTestTransformer("Lambdas");
+    protected readonly string _usingBlock = ReadTestTransformer("UsingBlock");
 
     protected readonly IJsonContext _testContext = context;
     protected readonly IJsonTransformer<IJsonContext> _transformer;

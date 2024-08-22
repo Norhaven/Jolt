@@ -56,7 +56,7 @@ namespace Jolt.Extensions
             return context.JsonContext.QueryPathProvider.IsQueryPath(path);
         }
 
-        public static object? ResolveQueryPathIfPresent(this EvaluationContext context, object potentialPath)
+        public static object? ResolveQueryPathIfPresent(this EvaluationContext context, object? potentialPath)
         {
             if (potentialPath is null)
             {

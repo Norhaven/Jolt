@@ -31,6 +31,8 @@ namespace Jolt.Exceptions
             [ExceptionCode.ExpectedInKeywordButFoundUnexpectedToken] = "Expected 'in' keyword but found '{0}'",
             [ExceptionCode.UnableToParseEnumerationSourceForVariable] = "Unable to parse enumeration source for variable '{0}'",
             [ExceptionCode.ExpectedRangeVariableAfterSemicolonButFoundTokenInstead] = "Expected range variable declaration after semicolon but found '{0}' instead",
+            [ExceptionCode.ExpectedAsKeywordButFoundUnexpectedToken] = "Expected 'as' keyword but found '{0}'",
+            [ExceptionCode.UnableToParseVariableAlias] = "Unable to parse variable alias",
 
             // Resolution
 

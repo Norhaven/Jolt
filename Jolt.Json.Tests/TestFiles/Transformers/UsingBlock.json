@@ -1,0 +1,10 @@
+﻿{
+  "#using($.exampleBaseProperty as @x)->@tempResult": [
+    "#addAt(@x.third.deep.value, 3)",
+    "#removeAt(@x.first)"
+  ],
+  "#using(@tempResult as @x)->'Result'": [
+    "#addAt(@x.fourth.id, 4 * @x.third.deep.value)",
+    "#removeAt(@x.second.value)"
+  ]
+}

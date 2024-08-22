@@ -51,6 +51,10 @@ namespace Jolt.Exceptions
         UnableToParseEnumerationSourceForVariable,
         [Description("JLT120")]
         ExpectedRangeVariableAfterSemicolonButFoundTokenInstead,
+        [Description("JLT121")]
+        ExpectedAsKeywordButFoundUnexpectedToken,
+        [Description("JLT122")]
+        UnableToParseVariableAlias,
 
         // Resolution
 

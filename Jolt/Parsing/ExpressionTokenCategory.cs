@@ -64,6 +64,8 @@ namespace Jolt.Parsing
         [Description("a property dereference")]
         PropertyDereference,
         [Description("the 'in' keyword")]
-        In
+        In,
+        [Description("the 'as' keyword")]
+        As
     }
 }

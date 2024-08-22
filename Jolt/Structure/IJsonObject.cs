@@ -22,5 +22,20 @@ namespace Jolt.Structure
         /// <param name="propertyName">The property name to remove.</param>
         /// <returns>An instance of <see cref="IJsonToken"/> which is the removed JSON structure if present, null otherwise.</returns>
         IJsonToken? Remove(string propertyName);
+
+        /// <summary>
+        /// Removes a property by path from this JSON object.
+        /// </summary>
+        /// <param name="path">The property path to remove.</param>
+        /// <returns>An instance of <see cref="IJsonToken"/> which is the removed JSON structure, if present, null otherwise.</returns>
+        IJsonToken? RemoveAtPath(string path);
+
+        /// <summary>
+        /// Adds a property by path to this JSON object.
+        /// </summary>
+        /// <param name="path">The property path to add the value to.</param>
+        /// <param name="value">The value to add.</param>
+        /// <returns>An instance of <see cref="IJsonToken"/> which is the added JSON structure, if present, null otherwise.</returns>
+        IJsonToken? AddAtPath(string path, IJsonToken? value);
     }
 }

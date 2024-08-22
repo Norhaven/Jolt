@@ -617,6 +617,167 @@ namespace Jolt.Library
             };
 
             return context.CreateTokenFrom(empty);
+        }        
+
+        [JoltLibraryMethod("toInteger")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? ToInteger(object? value, EvaluationContext context)
+        {
+            var resolved = context.ResolveQueryPathIfPresent(value);
+
+            return ConvertToType<long>(resolved, context);
+        }
+
+        [JoltLibraryMethod("toString")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? ToString(object? value, EvaluationContext context)
+        {
+            var resolved = context.ResolveQueryPathIfPresent(value);
+
+            var convertedValue = resolved?.ToString();
+            
+            return context.CreateTokenFrom(convertedValue);
+        }
+
+        [JoltLibraryMethod("toDecimal")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? ToDecimal(object? value, EvaluationContext context)
+        {
+            var resolved = context.ResolveQueryPathIfPresent(value);
+
+            return ConvertToType<double>(resolved, context);
+        }
+
+        [JoltLibraryMethod("toBoolean")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? ToBool(object? value, EvaluationContext context)
+        {
+            var resolved = context.ResolveQueryPathIfPresent(value);
+
+            return ConvertToType<bool>(resolved, context);
+        }
+
+        [JoltLibraryMethod("removeAt")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue | LibraryMethodTarget.StatementBlock)]
+        public static IJsonToken? RemoveAt(DereferencedPath path, EvaluationContext context)
+        {
+            if (path.MissingPaths.Length > 0)
+            {
+                throw new Exception();
+            }
+
+            var token = path.ObtainableToken;
+
+            if (token.Parent is IJsonObject obj)
+            {
+                obj.Remove(token.PropertyName);
+            }
+            else if (token.Parent is IJsonProperty property)
+            {
+                ((IJsonObject)property.Parent).Remove(token.PropertyName);
+            }
+            else
+            {
+                throw new Exception();
+            }
+
+            return token;
+        }
+
+        [JoltLibraryMethod("addAt")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue | LibraryMethodTarget.StatementBlock)]
+        public static IJsonToken? AddAt(DereferencedPath path, object? newValue, EvaluationContext context)
+        {
+            var token = path.ObtainableToken;
+
+            var actualNewValue = newValue switch
+            {
+                DereferencedPath pathValue when pathValue.MissingPaths.Length == 0 => pathValue.ObtainableToken,
+                DereferencedPath pathValue => throw new Exception(),
+                string pathValue => context.ResolveQueryPathIfPresent(pathValue) as IJsonToken,
+                object obj => context.CreateTokenFrom(obj),
+                null => context.CreateTokenFrom(null)
+            };
+
+            var current = token as IJsonObject;
+
+            if (current is null)
+            {
+                throw new Exception();
+            }
+
+            var missingPath = string.Join('.', path.MissingPaths);
+
+            current.AddAtPath(missingPath, actualNewValue);
+
+            return token;
+        }
+
+        [JoltLibraryMethod("using", isValueGenerator: true)]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyName)]
+        public static IJsonToken? Using(VariableAlias variable, EvaluationContext context)
+        {
+            var token = context.Token.CurrentTransformerToken;
+
+            if (!token.Type.IsAnyOf(JsonTokenType.Array))
+            {
+                throw new Exception();// context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToPerformUsingLibraryCallOnNonArrayToken, token.Type);
+            }
+
+            var closestViableSourceToken = variable.Source switch
+            {
+                string path => context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, path, JsonQueryMode.StartFromRoot),
+                RangeVariable rangeVariable => rangeVariable.Value,
+                _ => throw new Exception() //context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToPerformUsingLibraryCallDueToInvalidParameter, variable.Source)
+            };
+
+            if (closestViableSourceToken?.Type.IsAnyOf(JsonTokenType.Object) != true)
+            {
+                throw new Exception();// context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToPerformUsingLibraryCallOnObjectNonArrayToken, closestViableSourceToken?.Type);
+            }
+
+            var statements = token switch
+            {
+                IJsonArray array => array.Copy().AsArray(),
+                _ => throw new ArgumentOutOfRangeException(nameof(variable), $"Unable to locate array containing statements for 'using' block")
+            };
+
+            token.Clear();
+
+            if (context.RangeVariables.Count == 0)
+            {
+                // No variable scopes currently exist, so we just need to create one.
+
+                context.RangeVariables.Push(new List<RangeVariable>());
+            }
+            else
+            {
+                // All variables in the outer scope are still accessible in the new scope but
+                // if they happen to add more during the loop we can just drop the layer once we're
+                // done and call it good.
+
+                context.RangeVariables.Push(context.RangeVariables.Peek().Select(x => x).ToList());
+            }
+
+            var loopVariable = new RangeVariable(variable.Variable.Name, closestViableSourceToken.Copy());
+
+            context.RangeVariables.Peek().Add(loopVariable);
+
+            try
+            {
+                foreach (var statement in statements)
+                {
+                    var currentEvaluationToken = new EvaluationToken(context.Token.PropertyName, context.Token.ResolvedPropertyName, token, statement, default, true, isWithinStatementBlock: true);
+
+                    context.Transform(currentEvaluationToken, context.ClosureSources, context.RangeVariables);
+                }
+
+                return loopVariable.Value;
+            }
+            finally
+            {
+                context.RangeVariables.Pop();
+            }
         }
 
         private static IJsonToken? ExecuteLambdaBody(Expression lambdaBodyExpression, EvaluationContext context)
@@ -708,7 +869,7 @@ namespace Jolt.Library
 
         private static IEnumerable<IJsonToken> Where<T>(IEnumerable<T> sequence, LambdaMethod lambda, Func<Expression, IJsonToken> isMatch, EvaluationContext context)
         {
-            return ProjectInto(sequence, lambda, x => isMatch(x).ToTypeOf<bool>(), x => x, context);            
+            return ProjectInto(sequence, lambda, x => isMatch(x).ToTypeOf<bool>(), x => x, context);
         }
 
         private static IJsonToken Any<T>(IEnumerable<T> sequence, LambdaMethod lambda, Func<Expression, IJsonToken> isMatch, EvaluationContext context)
@@ -717,45 +878,6 @@ namespace Jolt.Library
 
             return context.CreateTokenFrom(isAny);
         }
-
-        [JoltLibraryMethod("toInteger")]
-        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? ToInteger(object? value, EvaluationContext context)
-        {
-            var resolved = context.ResolveQueryPathIfPresent(value);
-
-            return ConvertToType<long>(resolved, context);
-        }
-
-        [JoltLibraryMethod("toString")]
-        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? ToString(object? value, EvaluationContext context)
-        {
-            var resolved = context.ResolveQueryPathIfPresent(value);
-
-            var convertedValue = resolved?.ToString();
-            
-            return context.CreateTokenFrom(convertedValue);
-        }
-
-        [JoltLibraryMethod("toDecimal")]
-        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? ToDecimal(object? value, EvaluationContext context)
-        {
-            var resolved = context.ResolveQueryPathIfPresent(value);
-
-            return ConvertToType<double>(resolved, context);
-        }
-
-        [JoltLibraryMethod("toBoolean")]
-        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? ToBool(object? value, EvaluationContext context)
-        {
-            var resolved = context.ResolveQueryPathIfPresent(value);
-
-            return ConvertToType<bool>(resolved, context);
-        }
-
         private static IJsonToken? AsIntegerOrFloatingPoint(object? value, Func<IEnumerable<long>, long?> asInt64, Func<IEnumerable<double>, double> asDecimal, EvaluationContext context)
         {
             var resolved = context.ResolveQueryPathIfPresent(value);

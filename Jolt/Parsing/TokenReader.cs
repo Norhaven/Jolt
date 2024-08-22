@@ -212,6 +212,17 @@ namespace Jolt.Parsing
                         }
                     }
                 }
+                else if (stream.CurrentToken == ExpressionToken.LetterA)
+                {
+                    var token = TokenUntilMatchedWith(stream, ExpressionTokenCategory.As, ExpressionToken.Whitespace);
+
+                    if (token.Value != ExpressionToken.As)
+                    {
+                        throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedAsKeywordButFoundUnexpectedToken, token.Value);
+                    }
+
+                    yield return token;
+                }
                 else if (stream.CurrentToken == ExpressionToken.Colon)
                 {
                     yield return TokenFromCurrent(stream, ExpressionTokenCategory.LambdaSeparator);

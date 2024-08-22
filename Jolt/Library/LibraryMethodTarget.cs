@@ -12,6 +12,7 @@ namespace Jolt.Library
     {
         None = 0,
         PropertyName = 1 << 0,
-        PropertyValue = 1 << 1
+        PropertyValue = 1 << 1,
+        StatementBlock = 1 << 2,
     }
 }

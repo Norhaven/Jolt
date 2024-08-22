@@ -15,6 +15,11 @@ namespace Jolt.Structure
         IJsonToken? Parent { get; }
 
         /// <summary>
+        /// Gets the name of the parent property that this token is stored within.
+        /// </summary>
+        string? PropertyName { get; }
+
+        /// <summary>
         /// Gets the JSON type of this structure.
         /// </summary>
         JsonTokenType Type { get; }

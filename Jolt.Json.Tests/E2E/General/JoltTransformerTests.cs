@@ -245,10 +245,19 @@ public abstract class JoltTransformerTests(IJsonContext context) : Test(context)
     {
         var json = ExecuteTestFor(_lambdas, _lambdasDocument);
 
-
         json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
 
+        json["Any"].ToTypeOf<bool>().Should().BeTrue("because there is at least one property that matches the query");
+        json["Filtered"].AsArray().ShouldContainProperties((0, "arrayElementId", 1));
+        json["Selected"].AsArray().ShouldContain(1, 2);
+    }
 
+    [Fact]
+    public void UsingBlock_IsSuccessful_WithDeclarationAndUsageIncludingFromRangeVariables()
+    {
+        var json = ExecuteTestFor(_usingBlock, _singleLevelLoopDocument);
+
+        json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
     }
 
     private void ValidateLiteralIsTransformed<T>(string transformerJson, string documentJson, string targetProperty, T targetValue)

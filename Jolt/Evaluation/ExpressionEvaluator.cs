@@ -35,6 +35,11 @@ namespace Jolt.Evaluation
                 return new EvaluationResult(context.Token.PropertyName, default, range.Value, isValuePendingEvaluation, range);
             }
 
+            if (result is DereferencedPath path)
+            {
+                return new EvaluationResult(context.Token.PropertyName, default, path.ObtainableToken);
+            }
+
             return new EvaluationResult(context.Token.PropertyName, default, context.JsonContext.JsonTokenReader.CreateTokenFrom(result));
         }
 
@@ -46,6 +51,7 @@ namespace Jolt.Evaluation
                 RangeVariableExpression range => UnwrapRangeVariable(range, context),
                 PropertyDereferenceExpression dereference => UnwrapDereferenceChain(dereference, context),
                 EnumerateAsVariableExpression enumerate => UnwrapEnumeration(enumerate, context),
+                VariableAliasExpression variable => UnwrapVariableAlias(variable, context),
                 LiteralExpression literal => UnwrapLiteralValue(literal, context),
                 PathExpression path => ExtractPath(path, context),
                 MethodCallExpression call => ExecuteMethodCall(call, context),
@@ -69,10 +75,36 @@ namespace Jolt.Evaluation
             return new Enumeration(variable, source, indexVariable);
         }
 
+        private object? UnwrapVariableAlias(VariableAliasExpression expression, EvaluationContext context)
+        {
+            var source = expression.IsSourceFromPath ? ExtractPath(expression.SourcePath, context) : UnwrapRangeVariable(expression.SourceVariable, context);
+            var aliasVariable = UnwrapRangeVariable(expression.AliasVariable, context);
+
+            return new VariableAlias(source, aliasVariable);
+        }
+
         private object? EvaluateBinaryExpression(BinaryExpression binary, EvaluationContext context)
         {
+            object? UnpackAsDereferencedPathIfPresent(object? potentialPath)
+            {
+                if (potentialPath is DereferencedPath path)
+                {
+                    if (path.MissingPaths.Any())
+                    {
+                        throw new Exception();
+                    }
+
+                    return path.ObtainableToken.ToTypeOf<object>();
+                }
+
+                return potentialPath;
+            }
+
             var leftResult = EvaluateExpression(binary.Left, context).UnwrapWith(context.JsonContext.JsonTokenReader);
             var rightResult = EvaluateExpression(binary.Right, context).UnwrapWith(context.JsonContext.JsonTokenReader);
+
+            leftResult = UnpackAsDereferencedPathIfPresent(leftResult);
+            rightResult = UnpackAsDereferencedPathIfPresent(rightResult);
 
             if (leftResult is RangeVariable leftResultVariable)
             {
@@ -197,7 +229,7 @@ namespace Jolt.Evaluation
             return existingVariable;
         }
 
-        private object? UnwrapDereferenceChain(PropertyDereferenceExpression dereference, EvaluationContext context)
+        private DereferencedPath UnwrapDereferenceChain(PropertyDereferenceExpression dereference, EvaluationContext context)
         {
             var rangeVariable = EvaluateExpression(dereference.Variable, context) as RangeVariable;
 
@@ -209,6 +241,13 @@ namespace Jolt.Evaluation
 
                 if (currentProperty is IJsonObject json)
                 {
+                    var node = json[property];
+
+                    if (node is null && context.Token.IsWithinStatementBlock)
+                    {
+                        return new DereferencedPath(json, dereference.PropertyPaths[i..]);
+                    }
+
                     currentProperty = json[property];
                 }
                 else if (currentProperty is IJsonValue value)
@@ -218,7 +257,7 @@ namespace Jolt.Evaluation
                         throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.EncounteredValueInDereferenceChainButExpectedObject, property);
                     }
 
-                    return value;
+                    return new DereferencedPath(value);
                 }
                 else
                 {
@@ -226,7 +265,7 @@ namespace Jolt.Evaluation
                 }
             }
 
-            return currentProperty;
+            return new DereferencedPath(currentProperty);
         }
 
         private object UnwrapLiteralValue(LiteralExpression literal, EvaluationContext context)

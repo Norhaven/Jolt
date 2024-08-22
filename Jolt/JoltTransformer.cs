@@ -43,10 +43,10 @@ namespace Jolt
 
             while (pendingNodes.HasTokens)
             {
+                var current = pendingNodes.GetNextToken();
+
                 try
                 {
-                    var current = pendingNodes.GetNextToken();
-
                     // We need to check up front if the property name contains an expression and evaluate that first because
                     // some property name expressions will be responsible for generating their own values. Also, in some cases,
                     // we have already evaluated the name and need to continue to evaluate the property value portion instead of
@@ -58,7 +58,7 @@ namespace Jolt
                     {
                         var result = TransformExpression(current, current.PropertyName, EvaluationMode.PropertyName, closureSources, rangeVariables);
 
-                        ApplyChangesToParent(current.ParentToken, result, rangeVariables);
+                        ApplyChangesToParent(current.ParentToken, result, rangeVariables, current.IsWithinStatementBlock);
 
                         if (result.IsValuePendingEvaluation)
                         {
@@ -109,11 +109,28 @@ namespace Jolt
 
                         var result = TransformExpression(current, value.ToTypeOf<string>(), EvaluationMode.PropertyValue, closureSources, rangeVariables);
 
-                        ApplyChangesToParent(current.ParentToken, result, rangeVariables);
+                        ApplyChangesToParent(current.ParentToken, result, rangeVariables, current.IsWithinStatementBlock);
                     }
                 }
                 catch (Exception ex) when (_context.ErrorHandler.IsEnabled)
                 {
+                    // When the error handler is enabled that means we're not in strict mode anymore and catching
+                    // this exception indicates that something happened on either the property name or its value
+                    // that prevented it from completing. If possible, we'll fall back to the default value or
+                    // just remove the node entirely so it's not cluttering the transformed JSON.
+
+                    if (current?.ParentToken is IJsonObject obj)
+                    {
+                        if (current.IsPendingValueEvaluation)
+                        {
+                            obj[current.PropertyName] = default;
+                        }
+                        else
+                        {
+                            obj.Remove(current.PropertyName);
+                        }
+                    }
+
                     _context.ErrorHandler.HandleFor<JoltTransformer<TContext>>(ex);
                 }
             }
@@ -142,9 +159,9 @@ namespace Jolt
             return _context.ExpressionEvaluator.Evaluate(evaluationContext);
         }
 
-        private void ApplyChangesToParent(IJsonToken parent, EvaluationResult result, Stack<IList<RangeVariable>> rangeVariables)
+        private void ApplyChangesToParent(IJsonToken parent, EvaluationResult result, Stack<IList<RangeVariable>> rangeVariables, bool isWithinStatementBlock)
         {            
-            void SetVariableIfPresent(IJsonObject json, string propertyName)
+            void SetVariableIfPresent(IJsonObject? json, string propertyName)
             {
                 if (!rangeVariables.TryPeek(out var variables))
                 {
@@ -156,7 +173,7 @@ namespace Jolt
                 {
                     if (result.TransformedToken != null)
                     {
-                        json.Remove(propertyName);
+                        json?.Remove(propertyName);
                         result.RangeVariable.Value = result.TransformedToken;
                     }
 
@@ -176,7 +193,7 @@ namespace Jolt
                             throw _context.CreateExecutionErrorFor<JoltTransformer<TContext>>(ExceptionCode.ReferencedRangeVariableWithNoValue, result.RangeVariable.Name);
                         }
 
-                        json.Remove(propertyName);
+                        json?.Remove(propertyName);
                         variables[i] = new RangeVariable(variable.Name, result.TransformedToken);      
 
                         return;
@@ -207,9 +224,12 @@ namespace Jolt
             }
             else if (parent is IJsonArray array)
             {
-                if (result.TransformedToken != null)
+                // Within a statement block, all transformation work will be done on a variable and
+                // won't need to be merged until it all collects at the end, so we're skipping that case.
+
+                if (result.TransformedToken != null && !isWithinStatementBlock)
                 {
-                    array.Add(result.TransformedToken);
+                    array.Add(result.TransformedToken);                 
                 }
             }
             else

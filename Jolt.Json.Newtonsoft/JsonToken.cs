@@ -40,7 +40,11 @@ namespace Jolt.Json.Newtonsoft
         protected readonly JToken? _token;
 
         public IJsonToken? Parent => FromObject(_token?.Parent);
+        public string? PropertyName => _token?.Path.Split('.')[^1];
+
         public JsonTokenType Type { get; }
+
+        public JToken UnderlyingNode => _token;
 
         public JsonToken(JToken? token)
         {

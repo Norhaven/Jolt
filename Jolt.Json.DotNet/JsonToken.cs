@@ -45,6 +45,8 @@ namespace Jolt.Json.DotNet
         protected readonly Nodes.JsonNode? _token;
 
         public IJsonToken? Parent => FromObject(_token?.Parent);
+        public string? PropertyName => _token?.GetPath().Split('.')[^1];
+
         public JsonTokenType Type { get; }
 
         public Nodes.JsonNode? UnderlyingNode => _token;

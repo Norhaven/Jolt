@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 
 namespace Jolt.Json.Newtonsoft
 {
@@ -14,7 +15,15 @@ namespace Jolt.Json.Newtonsoft
 
         public IJsonToken? this[string propertyName] 
         {
-            get => _properties[propertyName];
+            get
+            {
+                if (_properties.TryGetValue(propertyName, out var token))
+                {
+                    return token;
+                }
+
+                return default;
+            }
             set
             {
                 _properties[propertyName] = value;
@@ -39,6 +48,74 @@ namespace Jolt.Json.Newtonsoft
             ((JObject)_token).Remove(propertyName);
 
             return propertyToken;
+        }
+
+        public IJsonToken? RemoveAtPath(string path)
+        {
+            var nodePendingRemoval = SelectTokenAtPath(path);
+
+            if (nodePendingRemoval is null)
+            {
+                return default;
+            }
+
+            var nodeParent = nodePendingRemoval.Parent;
+
+            if (nodeParent is IJsonObject obj)
+            {
+                var property = obj.First(x => x.Value == nodePendingRemoval).PropertyName;
+
+                return obj.Remove(property);
+            }
+
+            return default;
+        }
+
+        public IJsonToken? AddAtPath(string path, IJsonToken? value)
+        {
+            var pathParts = path.Split('.');
+            var parentPath = string.Join('.', pathParts[..^1]);
+            var propertyName = pathParts[^1];
+
+            var parent = SelectTokenAtPath(parentPath);
+
+            if (parent is null)
+            {
+                var current = _token;
+
+                var underlyingValue = value switch
+                {
+                    JsonToken token => token.UnderlyingNode,
+                    _ => throw new Exception()
+                };
+
+                for (var i = 0; i < pathParts.Length; i++)
+                {
+                    var property = pathParts[i];
+                    var isFinalProperty = i == pathParts.Length - 1;
+
+                    var newObject = isFinalProperty ? underlyingValue : new JObject();
+
+                    current[property] = newObject;
+
+                    if (isFinalProperty)
+                    {
+                        return this;
+                    }
+                    else
+                    {
+                        current = newObject;
+                    }
+                }
+            }
+
+            if (parent is IJsonObject obj)
+            {
+                obj[propertyName] = value;
+                return value;
+            }
+
+            return default;
         }
 
         public IEnumerator<IJsonProperty> GetEnumerator() => ((JObject)_token).Properties().Select(x => (IJsonProperty)FromObject(x)).GetEnumerator();
