@@ -94,7 +94,7 @@ namespace Jolt.Json.DotNet
                 var underlyingValue = value switch
                 {
                     JsonToken token => token.UnderlyingNode,
-                    _ => throw new Exception()
+                    _ => throw new ArgumentOutOfRangeException(nameof(path), $"Encountered non-JSON node at path '{path}'")
                 };
 
                 for (var i = 0; i < pathParts.Length; i++)

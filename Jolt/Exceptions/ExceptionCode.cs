@@ -122,6 +122,13 @@ namespace Jolt.Exceptions
         [Description("JLT528")]
         EncounteredValueInDereferenceChainButExpectedObject,
         [Description("JLT529")]
-        EncounteredNonObjectInDereferenceChainButExpectedObject
+        EncounteredNonObjectInDereferenceChainButExpectedObject,
+        [Description("JLT530")]
+        AttemptedToDereferenceMissingPath,
+        UnableToRemoveNodeFromNonObjectParent,
+        UnableToSetPropertyOnNonObjectReference,
+        UnableToPerformUsingLibraryCallOnNonArrayToken,
+        UnableToPerformUsingLibraryCallDueToInvalidParameter,
+        UnableToPerformUsingLibraryCallOnNonObjectToken
     }
 }

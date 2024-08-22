@@ -71,7 +71,13 @@ namespace Jolt.Exceptions
             [ExceptionCode.ExpectedLambdaResultToBeBooleanButFoundDifferentToken] = "Expected lambda result to be a boolean value but found '{0}' instead",
             [ExceptionCode.UnableToParsePropertyDereferenceChain] = "Unable to parse property dereference chain, found value '{0}'",
             [ExceptionCode.EncounteredValueInDereferenceChainButExpectedObject] = "Encountered value in dereference chain for property '{0}' but expected object",
-            [ExceptionCode.EncounteredNonObjectInDereferenceChainButExpectedObject] = "Encountered non-object in dereference chain for property '{0}' but expected object"
+            [ExceptionCode.EncounteredNonObjectInDereferenceChainButExpectedObject] = "Encountered non-object in dereference chain for property '{0}' but expected object",
+            [ExceptionCode.AttemptedToDereferenceMissingPath] = "Attempted to dereference missing path '{0}' on property '{1}'",
+            [ExceptionCode.UnableToRemoveNodeFromNonObjectParent] = "Unable to remove JSON node from non-object parent '{0}'",
+            [ExceptionCode.UnableToSetPropertyOnNonObjectReference] = "Unable to set property '{0}' on non-object reference",
+            [ExceptionCode.UnableToPerformUsingLibraryCallOnNonArrayToken] = "Unable to perform #using() call with non-array type '{0}'",
+            [ExceptionCode.UnableToPerformUsingLibraryCallDueToInvalidParameter] = "Unable to perform #using() call on a source '{0}' that is neither a path or a variable",
+            [ExceptionCode.UnableToPerformUsingLibraryCallOnNonObjectToken] = "Unable to perform #using() call on non-object reference of type '{0}'"
 
         };
 

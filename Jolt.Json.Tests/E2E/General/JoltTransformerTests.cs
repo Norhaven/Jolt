@@ -258,6 +258,17 @@ public abstract class JoltTransformerTests(IJsonContext context) : Test(context)
         var json = ExecuteTestFor(_usingBlock, _singleLevelLoopDocument);
 
         json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
+
+        var obj = json[TargetProperty.Result].AsObject();
+
+        obj.Should().NotBeNull("because a valid object was assigned in the transformer");
+        obj[TargetProperty.First].Should().BeNull("because the property was removed in the transformer");
+        obj[TargetProperty.Second].AsObject().PropertyValueFor<object>(SourceProperty.Value).Should().BeNull("because the value was removed in the source document");
+
+        obj.SelectTokenAtPath("$.third.deep.value").ToTypeOf<int>().Should().Be(3, "because that's the value assigned in the transformer");
+        obj.SelectTokenAtPath("$.fourth.id").ToTypeOf<int>().Should().Be(12, "because that's the result of the equation in the transformer");
+
+
     }
 
     private void ValidateLiteralIsTransformed<T>(string transformerJson, string documentJson, string targetProperty, T targetValue)

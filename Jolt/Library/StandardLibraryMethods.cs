@@ -663,7 +663,8 @@ namespace Jolt.Library
         {
             if (path.MissingPaths.Length > 0)
             {
-                throw new Exception();
+                var missing = string.Join('.', path.MissingPaths);
+                throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.AttemptedToDereferenceMissingPath, missing, path.ObtainableToken.PropertyName);
             }
 
             var token = path.ObtainableToken;
@@ -678,22 +679,22 @@ namespace Jolt.Library
             }
             else
             {
-                throw new Exception();
+                throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToRemoveNodeFromNonObjectParent, token.PropertyName);
             }
 
             return token;
         }
 
-        [JoltLibraryMethod("addAt")]
+        [JoltLibraryMethod("setAt")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue | LibraryMethodTarget.StatementBlock)]
-        public static IJsonToken? AddAt(DereferencedPath path, object? newValue, EvaluationContext context)
+        public static IJsonToken? SetAt(DereferencedPath path, object? newValue, EvaluationContext context)
         {
             var token = path.ObtainableToken;
 
             var actualNewValue = newValue switch
             {
                 DereferencedPath pathValue when pathValue.MissingPaths.Length == 0 => pathValue.ObtainableToken,
-                DereferencedPath pathValue => throw new Exception(),
+                DereferencedPath pathValue => throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.AttemptedToDereferenceMissingPath, string.Join('.', pathValue.MissingPaths), pathValue.ObtainableToken.PropertyName),
                 string pathValue => context.ResolveQueryPathIfPresent(pathValue) as IJsonToken,
                 object obj => context.CreateTokenFrom(obj),
                 null => context.CreateTokenFrom(null)
@@ -703,7 +704,7 @@ namespace Jolt.Library
 
             if (current is null)
             {
-                throw new Exception();
+                throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToSetPropertyOnNonObjectReference, token.PropertyName);
             }
 
             var missingPath = string.Join('.', path.MissingPaths);
@@ -721,19 +722,19 @@ namespace Jolt.Library
 
             if (!token.Type.IsAnyOf(JsonTokenType.Array))
             {
-                throw new Exception();// context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToPerformUsingLibraryCallOnNonArrayToken, token.Type);
+                throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToPerformUsingLibraryCallOnNonArrayToken, token.Type);
             }
 
             var closestViableSourceToken = variable.Source switch
             {
                 string path => context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, path, JsonQueryMode.StartFromRoot),
                 RangeVariable rangeVariable => rangeVariable.Value,
-                _ => throw new Exception() //context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToPerformUsingLibraryCallDueToInvalidParameter, variable.Source)
+                _ => throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToPerformUsingLibraryCallDueToInvalidParameter, variable.Source)
             };
 
-            if (closestViableSourceToken?.Type.IsAnyOf(JsonTokenType.Object) != true)
+            if (closestViableSourceToken?.Type != JsonTokenType.Object)
             {
-                throw new Exception();// context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToPerformUsingLibraryCallOnObjectNonArrayToken, closestViableSourceToken?.Type);
+                throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToPerformUsingLibraryCallOnNonObjectToken, closestViableSourceToken?.Type);
             }
 
             var statements = token switch

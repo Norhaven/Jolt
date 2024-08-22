@@ -91,7 +91,9 @@ namespace Jolt.Evaluation
                 {
                     if (path.MissingPaths.Any())
                     {
-                        throw new Exception();
+                        var missing = string.Join('.', path.MissingPaths);
+
+                        throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.AttemptedToDereferenceMissingPath, missing, path.ObtainableToken.PropertyName);
                     }
 
                     return path.ObtainableToken.ToTypeOf<object>();
