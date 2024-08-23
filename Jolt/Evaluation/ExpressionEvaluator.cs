@@ -16,7 +16,7 @@ namespace Jolt.Evaluation
     {
         public EvaluationResult Evaluate(EvaluationContext context)
         {
-            var result = EvaluateExpression(context.Expression, context);
+            var result = EvaluateExpression(context.Expression, context, isRootExpression: true);
 
             if (result is EvaluationResult evaluationResult)
             {
@@ -43,7 +43,7 @@ namespace Jolt.Evaluation
             return new EvaluationResult(context.Token.PropertyName, default, context.JsonContext.JsonTokenReader.CreateTokenFrom(result));
         }
 
-        private object? EvaluateExpression(Expression expression, EvaluationContext context) 
+        private object? EvaluateExpression(Expression expression, EvaluationContext context, bool isRootExpression = false)
         {
             return expression switch
             {
@@ -54,7 +54,7 @@ namespace Jolt.Evaluation
                 VariableAliasExpression variable => UnwrapVariableAlias(variable, context),
                 LiteralExpression literal => UnwrapLiteralValue(literal, context),
                 PathExpression path => ExtractPath(path, context),
-                MethodCallExpression call => ExecuteMethodCall(call, context),
+                MethodCallExpression call => ExecuteMethodCall(call, context, isRootExpression),
                 BinaryExpression binary => EvaluateBinaryExpression(binary, context),
                 LambdaMethodExpression lambda => EvaluateLambdaExpression(lambda, context),
                 _ => default
@@ -310,7 +310,7 @@ namespace Jolt.Evaluation
             throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToConvertToBestTypeForLiteralValue, literal.Value);
         }
 
-        private object? ExecuteMethodCall(MethodCallExpression call, EvaluationContext context)
+        private object? ExecuteMethodCall(MethodCallExpression call, EvaluationContext context, bool isRootExpression)
         {
             if (context.Mode == EvaluationMode.PropertyName && !call.Signature.IsAllowedAsPropertyName)
             {
@@ -320,6 +320,21 @@ namespace Jolt.Evaluation
             if (context.Mode == EvaluationMode.PropertyValue && !call.Signature.IsAllowedAsPropertyValue)
             {
                 throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMethodWithinPropertyValue, call.Signature.Alias);
+            }
+
+            if (isRootExpression && context.Mode == EvaluationMode.PropertyValue && context.Token.IsWithinStatementBlock && !call.Signature.IsAllowedAsStatement)
+            {
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMethodWithinStatementBlock, call.Signature.Alias);
+            }
+
+            if (!isRootExpression && context.Token.IsWithinStatementBlock && call.Signature.IsAllowedAsStatement)
+            {
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMethodWithinNonRootStatementBlock, call.Signature.Alias);
+            }
+
+            if (!context.Token.IsWithinStatementBlock && call.Signature.IsAllowedAsStatement)
+            {
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMethodOutsideOfStatementBlock, call.Signature.Alias);
             }
 
             var actualParameterValues = new List<object>();

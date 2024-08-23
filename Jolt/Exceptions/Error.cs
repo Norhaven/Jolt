@@ -77,7 +77,10 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToSetPropertyOnNonObjectReference] = "Unable to set property '{0}' on non-object reference",
             [ExceptionCode.UnableToPerformUsingLibraryCallOnNonArrayToken] = "Unable to perform #using() call with non-array type '{0}'",
             [ExceptionCode.UnableToPerformUsingLibraryCallDueToInvalidParameter] = "Unable to perform #using() call on a source '{0}' that is neither a path or a variable",
-            [ExceptionCode.UnableToPerformUsingLibraryCallOnNonObjectToken] = "Unable to perform #using() call on non-object reference of type '{0}'"
+            [ExceptionCode.UnableToPerformUsingLibraryCallOnNonObjectToken] = "Unable to perform #using() call on non-object reference of type '{0}'",
+            [ExceptionCode.UnableToUseMethodWithinStatementBlock] = "Unable to use method '{0}' as a statement within a 'using' block",
+            [ExceptionCode.UnableToUseMethodOutsideOfStatementBlock] = "Unable to use method '{0}' outside of a 'using' block",
+            [ExceptionCode.UnableToUseMethodWithinNonRootStatementBlock] = "Unable to use method statement '{0}' as a non-root expression"
 
         };
 

@@ -125,10 +125,21 @@ namespace Jolt.Exceptions
         EncounteredNonObjectInDereferenceChainButExpectedObject,
         [Description("JLT530")]
         AttemptedToDereferenceMissingPath,
+        [Description("JLT531")]
         UnableToRemoveNodeFromNonObjectParent,
+        [Description("JLT532")]
         UnableToSetPropertyOnNonObjectReference,
+        [Description("JLT533")]
         UnableToPerformUsingLibraryCallOnNonArrayToken,
+        [Description("JLT534")]
         UnableToPerformUsingLibraryCallDueToInvalidParameter,
-        UnableToPerformUsingLibraryCallOnNonObjectToken
+        [Description("JLT535")]
+        UnableToPerformUsingLibraryCallOnNonObjectToken,
+        [Description("JLT536")]
+        UnableToUseMethodWithinStatementBlock,
+        [Description("JLT537")]
+        UnableToUseMethodOutsideOfStatementBlock,
+        [Description("JLT538")]
+        UnableToUseMethodWithinNonRootStatementBlock
     }
 }
