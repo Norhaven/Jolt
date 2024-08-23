@@ -661,6 +661,14 @@ namespace Jolt.Library
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue | LibraryMethodTarget.StatementBlock)]
         public static IJsonToken? RemoveAt(DereferencedPath path, EvaluationContext context)
         {
+            // Ensure that non-scoped variables outside of the 'using' block aren't able to be
+            // modified just because we're in statement mode for some other use.
+
+            if (!context.RangeVariables.Peek().Contains(path.SourceVariable))
+            {
+                throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.AttemptedToIndirectlyModifyVariableWithinUsingBlock, path.SourceVariable.Name);
+            }
+
             if (path.MissingPaths.Length > 0)
             {
                 var missing = string.Join('.', path.MissingPaths);
@@ -689,6 +697,14 @@ namespace Jolt.Library
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue | LibraryMethodTarget.StatementBlock)]
         public static IJsonToken? SetAt(DereferencedPath path, object? newValue, EvaluationContext context)
         {
+            // Ensure that non-scoped variables outside of the 'using' block aren't able to be
+            // modified just because we're in statement mode for some other use.
+
+            if (!context.RangeVariables.Peek().Contains(path.SourceVariable))
+            {
+                throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.AttemptedToIndirectlyModifyVariableWithinUsingBlock, path.SourceVariable.Name);
+            }
+
             var token = path.ObtainableToken;
 
             var actualNewValue = newValue switch

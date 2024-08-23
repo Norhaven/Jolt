@@ -247,7 +247,7 @@ namespace Jolt.Evaluation
 
                     if (node is null && context.Token.IsWithinStatementBlock)
                     {
-                        return new DereferencedPath(json, dereference.PropertyPaths[i..]);
+                        return new DereferencedPath(rangeVariable, json, dereference.PropertyPaths[i..]);
                     }
 
                     currentProperty = json[property];
@@ -259,7 +259,7 @@ namespace Jolt.Evaluation
                         throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.EncounteredValueInDereferenceChainButExpectedObject, property);
                     }
 
-                    return new DereferencedPath(value);
+                    return new DereferencedPath(rangeVariable, value);
                 }
                 else
                 {
@@ -267,7 +267,7 @@ namespace Jolt.Evaluation
                 }
             }
 
-            return new DereferencedPath(currentProperty);
+            return new DereferencedPath(rangeVariable, currentProperty);
         }
 
         private object UnwrapLiteralValue(LiteralExpression literal, EvaluationContext context)

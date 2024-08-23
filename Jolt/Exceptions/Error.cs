@@ -80,8 +80,8 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToPerformUsingLibraryCallOnNonObjectToken] = "Unable to perform #using() call on non-object reference of type '{0}'",
             [ExceptionCode.UnableToUseMethodWithinStatementBlock] = "Unable to use method '{0}' as a statement within a 'using' block",
             [ExceptionCode.UnableToUseMethodOutsideOfStatementBlock] = "Unable to use method '{0}' outside of a 'using' block",
-            [ExceptionCode.UnableToUseMethodWithinNonRootStatementBlock] = "Unable to use method statement '{0}' as a non-root expression"
-
+            [ExceptionCode.UnableToUseMethodWithinNonRootStatementBlock] = "Unable to use method statement '{0}' as a non-root expression",
+            [ExceptionCode.AttemptedToIndirectlyModifyVariableWithinUsingBlock] = "Attempted to indirectly modify variable '{0}' within a using block not scoped to it"
         };
 
         public static JoltException CreateParsingErrorFrom(ExceptionCode code, params object[] parameters) => BuildExceptionFrom(code, parameters, x => new JoltParsingException(code, x));

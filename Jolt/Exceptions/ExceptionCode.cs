@@ -140,6 +140,8 @@ namespace Jolt.Exceptions
         [Description("JLT537")]
         UnableToUseMethodOutsideOfStatementBlock,
         [Description("JLT538")]
-        UnableToUseMethodWithinNonRootStatementBlock
+        UnableToUseMethodWithinNonRootStatementBlock,
+        [Description("JLT539")]
+        AttemptedToIndirectlyModifyVariableWithinUsingBlock
     }
 }
