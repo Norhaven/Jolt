@@ -198,6 +198,8 @@ You can also declare variables within the content template of a loop, but they o
 ```
 In the resulting JSON output, the `finalResult` property will be populated by the array loop but the `invalidValue` property will be null due to accessing a variable which has already been destroyed.
 
+### Range Variables: Lambda Expressions
+
 There are also another use for range variables, namely in lambda expressions. Several methods in the library will take a lambda in order to better filter and/or refine the JSON data, used in the form of declaring a range variable and a body expression separated by a colon `:`. The variable's lifetime is scoped to the lambda body and will not be accessible outside of it. Let's take a quick look at the methods which allow this usage.
 ```json
 {
@@ -238,6 +240,60 @@ Using the previous transform, the output would look like:
         }
     ],
     "projectedData": [ 5, 30 ]
+}
+```
+
+### Range Variables: Using blocks and statements
+
+A final use for range variables are in the case where you have a path or variable that needs direct modification to include, modify, or exclude specific JSON nodes. For example, you might not know the entire shape of the incoming JSON document but you know that it needs to stay the same except for a few changes, or perhaps you might want to replicate a few parts of the source document within the transformer output with some changes. This would mean that you can't necessarily stand up an entire transformer that manually contains every node ahead of time. Let's take a look at a way you could approach this using the following source JSON.
+```json
+{
+    "some": {
+        "integerArray": [ 1, 2, 6, 10 ],
+        "complexObject": {            
+            "some": {
+                "path": 5
+            }
+        }
+    }
+}
+```
+In this example, let's create a transformer that will take the properties from the `some` node, remove the `integerArray` property, add a property to the `complexObject` object, and change the value of the `path` property.
+```json
+{
+    "#using($.some as @x)->'result'": [
+        "#removeAt(@x.integerArray)",
+        "#setAt(@x.complexObject.new.value, 3)",
+        "#setAt(@x.complexObject.some.path, 20)"
+    ]
+}
+```
+This would output the following JSON:
+```json
+{
+    "result": {
+        "complexObject": {
+            "new": {
+                "value": 3
+            },
+            "some": {
+                "path": 20
+            }
+        }
+    }
+}
+```
+It's worth noting that statements are only allowed within a `using` block and must operate on the scoped range variable specified there. You may also notice that the `#setAt()` call was allowed to take a path that did not actually exist at the time of use. This is because that particular method will take care of creating the missing pieces of the JSON hierarchy for you if they don't currently exist.
+
+Lastly, you can take advantage of pre-processing variables with a `using` block much the same way as a `foreach` loop does by assigning the output to a variable instead of a named property, which can be used either in a subsequent `using` block or other valid variable uses.
+```json
+{
+    "#using($.some.path as @x)->@tempResult": [
+        "#removeAt(@x.integerArray)"
+    ],
+    "#using(@tempResult as @x)->'actualResult'": [
+        "#setAt(@x.some.path, 'text')"
+    ]
 }
 ```
 
@@ -282,6 +338,8 @@ This package comes with quite a few methods built into it to get you started, al
 | any | Returns true if the value is an array or string with contents, false otherwise | `#any($.some.path)` | Property Value
 | where | Returns an array of objects that match a predicate | `#where($.some.path, @x: @x.other.path > 2)` | Property Value
 | select | Returns an array of objects that are the result of a projection | `#select($.some.path, @x: @x.other.path)` | Property Value
+| removeAt | Removes a JSON node from the provided variable-based path | `#removeAt(@x.some.path)` | Statement
+| setAt | Adds or modifies a JSON node specified with the provided variable-based path | `#setAt(@x.some.path, 5)` | Statement
 
 # Alternate External Method Registrations
 
