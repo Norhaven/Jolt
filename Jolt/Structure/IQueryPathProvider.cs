@@ -23,7 +23,7 @@ namespace Jolt.Structure
         /// <param name="path">The JSON query path.</param>
         /// <param name="queryMode">The JSON query mode.</param>
         /// <returns>An instance of <see cref="IJsonToken"/> if the query resulted in a valid JSON structure, null otherwise.</returns>
-        IJsonToken? SelectNodeAtPath(Stack<IJsonToken> closureSources, string path, JsonQueryMode queryMode);
+        IJsonToken? SelectNodeAtPath(IEnumerable<IJsonToken> closureSources, string path, JsonQueryMode queryMode);
 
         /// <summary>
         /// Gets the root JSON structure from a series of potentially applicable JSON structures based on the mode provided.
@@ -31,6 +31,6 @@ namespace Jolt.Structure
         /// <param name="closureSources">The potentially applicable JSON structures to query.</param>
         /// <param name="queryMode">The JSON query mode.</param>
         /// <returns>An instance of <see cref="IJsonToken"/> if the query resulted in a valid JSON structure, null otherwise.</returns>
-        IJsonToken? GetRootNodeFrom(Stack<IJsonToken> closureSources, JsonQueryMode queryMode);
+        IJsonToken? GetRootNodeFrom(IEnumerable<IJsonToken> closureSources, JsonQueryMode queryMode);
     }
 }

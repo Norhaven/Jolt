@@ -32,10 +32,10 @@ namespace Jolt
             var transformedJson = _context.JsonTokenReader.Read(_context.JsonTransformer);
             var transformation = new EvaluationToken(default, default, default, transformedJson);
 
-            return TransformToken(transformation, new Stack<IJsonToken>(new[] { source }), new Stack<IList<RangeVariable>>())?.ToString();
+            return TransformToken(transformation, EvaluationScope.Empty.CreateClosureOver(source))?.ToString();
         }
 
-        private IJsonToken? TransformToken(EvaluationToken token, Stack<IJsonToken> closureSources, Stack<IList<RangeVariable>> rangeVariables)
+        private IJsonToken? TransformToken(EvaluationToken token, IEvaluationScope scope)
         {
             var pendingNodes = new EvaluationTokenLayerReader();
 
@@ -54,11 +54,11 @@ namespace Jolt
 
                     if (!current.IsPendingValueEvaluation &&
                         _context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariable(current.PropertyName) &&
-                        (rangeVariables.Count == 0 || !rangeVariables.Peek().Any(x => x.Name == current.PropertyName)))
+                        (scope.VariableCount == 0 || !scope.TryGetVariable(current.PropertyName, out var _)))
                     {
-                        var result = TransformExpression(current, current.PropertyName, EvaluationMode.PropertyName, closureSources, rangeVariables);
+                        var result = TransformExpression(current, current.PropertyName, EvaluationMode.PropertyName, scope);
 
-                        ApplyChangesToParent(current.ParentToken, result, rangeVariables, current.IsWithinStatementBlock);
+                        ApplyChangesToParent(current.ParentToken, result, scope, current.IsWithinStatementBlock);
 
                         if (result.IsValuePendingEvaluation)
                         {
@@ -107,9 +107,9 @@ namespace Jolt
                             continue;
                         }
 
-                        var result = TransformExpression(current, value.ToTypeOf<string>(), EvaluationMode.PropertyValue, closureSources, rangeVariables);
+                        var result = TransformExpression(current, value.ToTypeOf<string>(), EvaluationMode.PropertyValue, scope);
 
-                        ApplyChangesToParent(current.ParentToken, result, rangeVariables, current.IsWithinStatementBlock);
+                        ApplyChangesToParent(current.ParentToken, result, scope, current.IsWithinStatementBlock);
                     }
                 }
                 catch (Exception ex) when (_context.ErrorHandler.IsEnabled)
@@ -138,7 +138,7 @@ namespace Jolt
             return token.CurrentTransformerToken;
         }
 
-        private EvaluationResult? TransformExpression(EvaluationToken token, string expressionText, EvaluationMode evaluationMode, Stack<IJsonToken> closureSources, Stack<IList<RangeVariable>> rangeVariables)
+        private EvaluationResult? TransformExpression(EvaluationToken token, string expressionText, EvaluationMode evaluationMode, IEvaluationScope scope)
         {
             var actualTokens = _context.TokenReader.ReadToEnd(expressionText, evaluationMode);
 
@@ -152,24 +152,17 @@ namespace Jolt
                 expression, 
                 _context,
                 token,
-                closureSources,
-                rangeVariables,
+                scope,
                 TransformToken);
 
             return _context.ExpressionEvaluator.Evaluate(evaluationContext);
         }
 
-        private void ApplyChangesToParent(IJsonToken parent, EvaluationResult result, Stack<IList<RangeVariable>> rangeVariables, bool isWithinStatementBlock)
+        private void ApplyChangesToParent(IJsonToken parent, EvaluationResult result, IEvaluationScope scope, bool isWithinStatementBlock)
         {            
             void SetVariableIfPresent(IJsonObject? json, string propertyName)
             {
-                if (!rangeVariables.TryPeek(out var variables))
-                {
-                    variables = new List<RangeVariable>();
-                    rangeVariables.Push(variables);
-                }
-
-                if (result.RangeVariable != null && (variables.Count == 0 || !variables.Any(x => x.Name == result.RangeVariable.Name)))
+                if (result.RangeVariable != null && (scope.VariableCount == 0 || !scope.TryGetVariable(result.RangeVariable.Name, out var _)))
                 {
                     if (result.TransformedToken != null)
                     {
@@ -177,27 +170,22 @@ namespace Jolt
                         result.RangeVariable.Value = result.TransformedToken;
                     }
 
-                    variables.Add(result.RangeVariable);                    
+                    scope.AddOrUpdateVariable(result.RangeVariable, forceApplyToCurrent: true);                    
 
                     return;
                 }
 
-                for (var i = 0; i < variables.Count; i++)
+                if (scope.TryGetVariable(propertyName, out var variable))
                 {
-                    var variable = variables[i];
-
-                    if (variable.Name == propertyName)
+                    if (result.TransformedToken is null)
                     {
-                        if (result.TransformedToken is null)
-                        {
-                            throw _context.CreateExecutionErrorFor<JoltTransformer<TContext>>(ExceptionCode.ReferencedRangeVariableWithNoValue, result.RangeVariable.Name);
-                        }
-
-                        json?.Remove(propertyName);
-                        variables[i] = new RangeVariable(variable.Name, result.TransformedToken);      
-
-                        return;
+                        throw _context.CreateExecutionErrorFor<JoltTransformer<TContext>>(ExceptionCode.ReferencedRangeVariableWithNoValue, result.RangeVariable.Name);
                     }
+
+                    json?.Remove(propertyName);
+                    var updatedVariable = new RangeVariable(variable.Name, result.TransformedToken);
+
+                    scope.AddOrUpdateVariable(updatedVariable, forceApplyToCurrent: true);
                 }
             }
 

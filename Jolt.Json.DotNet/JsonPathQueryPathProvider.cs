@@ -20,7 +20,7 @@ namespace Jolt.Json.DotNet
             return path?.StartsWith("$") == true;
         }
 
-        public override IJsonToken? SelectNodeAtPath(Stack<IJsonToken> source, string queryPath, JsonQueryMode queryMode)
+        public override IJsonToken? SelectNodeAtPath(IEnumerable<IJsonToken> source, string queryPath, JsonQueryMode queryMode)
         {
             if (queryMode == JsonQueryMode.StartFromRoot)
             {
@@ -28,7 +28,7 @@ namespace Jolt.Json.DotNet
                 return root.SelectTokenAtPath(queryPath);
             }
 
-            var validQuerySources = new Stack<IJsonToken>(source.Reverse());
+            var validQuerySources = new Stack<IJsonToken>(source);
 
             while (validQuerySources.Count > 0)
             {

@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Jolt.Json.Newtonsoft
@@ -17,12 +18,12 @@ namespace Jolt.Json.Newtonsoft
             return path?.StartsWith("$") == true;
         }
 
-        public override IJsonToken? SelectNodeAtPath(Stack<IJsonToken> source, string queryPath, JsonQueryMode queryMode)
+        public override IJsonToken? SelectNodeAtPath(IEnumerable<IJsonToken> source, string queryPath, JsonQueryMode queryMode)
         {
             var queryToken = queryMode switch
             {
                 JsonQueryMode.StartFromRoot => GetRootNodeFrom(source, queryMode),
-                JsonQueryMode.StartFromClosestMatch => source.Peek(),
+                JsonQueryMode.StartFromClosestMatch => source.LastOrDefault(),
                 _ => throw new ArgumentOutOfRangeException(nameof(queryPath), $"Unable to select JSON node, found unsupported query mode '{queryMode}'")
             };
 

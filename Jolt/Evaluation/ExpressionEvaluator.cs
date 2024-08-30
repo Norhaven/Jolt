@@ -216,19 +216,12 @@ namespace Jolt.Evaluation
 
         private RangeVariable UnwrapRangeVariable(RangeVariableExpression range, EvaluationContext context)
         {
-            if (!context.RangeVariables.TryPeek(out var variables))
+            if (!context.Scope.TryGetVariable(range.Name, out var variable))
             {
                 return new RangeVariable(range.Name);
             }
 
-            var existingVariable = variables.FirstOrDefault(x => x.Name == range.Name);
-
-            if (existingVariable is null)
-            {
-                return new RangeVariable(range.Name);
-            }
-
-            return existingVariable;
+            return variable;
         }
 
         private DereferencedPath UnwrapDereferenceChain(PropertyDereferenceExpression dereference, EvaluationContext context)

@@ -65,7 +65,7 @@ namespace Jolt.Extensions
 
             if (potentialPath is string value && context.IsQueryPath(value))
             {
-                return context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, value, JsonQueryMode.StartFromRoot);
+                return context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, value, JsonQueryMode.StartFromRoot);
             }
 
             return potentialPath;

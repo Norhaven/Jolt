@@ -22,7 +22,7 @@ namespace Jolt.Library
         {
             // ValueOf will always start a search from the root, other similar methods may search differently.
 
-            return context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, path, JsonQueryMode.StartFromRoot);
+            return context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, path, JsonQueryMode.StartFromRoot);
         }
 
         [JoltLibraryMethod("exists")]
@@ -40,7 +40,7 @@ namespace Jolt.Library
 
             if (pathOrValue is string path && context.JsonContext.QueryPathProvider.IsQueryPath(path))
             {
-                var tokenValue = context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, path, JsonQueryMode.StartFromRoot);
+                var tokenValue = context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, path, JsonQueryMode.StartFromRoot);
 
                 var tokenExists = tokenValue != null && tokenValue.Type != JsonTokenType.Null;
 
@@ -70,8 +70,7 @@ namespace Jolt.Library
                 expression,
                 context.JsonContext,
                 context.Token,
-                context.ClosureSources,
-                context.RangeVariables,
+                context.Scope,
                 context.Transform
             );
 
@@ -102,7 +101,7 @@ namespace Jolt.Library
 
             var evaluationToken = new EvaluationToken(propertyName, default, includedJson.Parent, includedJson, currentSource);
 
-            return context.Transform(evaluationToken, context.ClosureSources, context.RangeVariables);
+            return context.Transform(evaluationToken, context.Scope);
         }
 
         [JoltLibraryMethod("eval")]
@@ -121,8 +120,7 @@ namespace Jolt.Library
                 expression,
                 context.JsonContext,
                 context.Token,
-                context.ClosureSources,
-                context.RangeVariables,
+                context.Scope,
                 context.Transform);
 
             return context.JsonContext.ExpressionEvaluator.Evaluate(evaluationContext);
@@ -141,7 +139,7 @@ namespace Jolt.Library
 
             var closestViableSourceToken = enumeration.Source switch
             {                
-                string path => context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, path, JsonQueryMode.StartFromClosestMatch),
+                string path => context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, path, JsonQueryMode.StartFromClosestMatch),
                 RangeVariable variable => variable.Value,
                 _ => throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToPerformLoopLibraryCallDueToInvalidParameter, enumeration.Source)
             };
@@ -184,38 +182,26 @@ namespace Jolt.Library
                     // the loop variable can only be accessed during the loop and so that any range variables
                     // added in the loop have those same rules apply to them as well.
 
-                    context.ClosureSources.Push(closureSource);
-
-                    if (context.RangeVariables.Count == 0)
-                    {
-                        // No variable scopes currently exist, so we just need to create one.
-
-                        context.RangeVariables.Push(new List<RangeVariable>());
-                    }
-                    else
-                    {
-                        // All variables in the outer scope are still accessible in the new scope but
-                        // if they happen to add more during the loop we can just drop the layer once we're
-                        // done and call it good.
-
-                        context.RangeVariables.Push(context.RangeVariables.Peek().Select(x => x).ToList());
-                    }
+                    context.Scope.CreateClosureOver(closureSource);
 
                     var loopVariable = new RangeVariable(enumeration.Variable.Name, closureSource);
 
-                    context.RangeVariables.Peek().Add(loopVariable);
+                    context.Scope.AddOrUpdateVariable(loopVariable);
 
                     if (enumeration.IndexVariable != null)
                     {
                         var indexVariable = new RangeVariable(enumeration.IndexVariable.Name, context.CreateTokenFrom(index));
 
-                        context.RangeVariables.Peek().Add(indexVariable);
+                        // We want to force both variables to be a part of the same scope layer so we can just
+                        // drop both at once when we're done and not have to worry about multiple layers,
+
+                        context.Scope.AddOrUpdateVariable(indexVariable, forceApplyToCurrent: true);
                     }
 
-                    var transformedToken = context.Transform(templateEvaluationToken, context.ClosureSources, context.RangeVariables);
+                    var transformedToken = context.Transform(templateEvaluationToken, context.Scope);
 
-                    context.ClosureSources.Pop();
-                    context.RangeVariables.Pop();
+                    context.Scope.RemoveCurrentClosure();
+                    context.Scope.RemoveCurrentVariables();
 
                     index++;
 
@@ -664,7 +650,7 @@ namespace Jolt.Library
             // Ensure that non-scoped variables outside of the 'using' block aren't able to be
             // modified just because we're in statement mode for some other use.
 
-            if (!context.RangeVariables.Peek().Contains(path.SourceVariable))
+            if (!context.Scope.ContainsVariable(path.SourceVariable.Name))
             {
                 throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.AttemptedToIndirectlyModifyVariableWithinUsingBlock, path.SourceVariable.Name);
             }
@@ -700,7 +686,7 @@ namespace Jolt.Library
             // Ensure that non-scoped variables outside of the 'using' block aren't able to be
             // modified just because we're in statement mode for some other use.
 
-            if (!context.RangeVariables.Peek().Contains(path.SourceVariable))
+            if (!context.Scope.ContainsVariable(path.SourceVariable.Name))
             {
                 throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.AttemptedToIndirectlyModifyVariableWithinUsingBlock, path.SourceVariable.Name);
             }
@@ -743,7 +729,7 @@ namespace Jolt.Library
 
             var closestViableSourceToken = variable.Source switch
             {
-                string path => context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.ClosureSources, path, JsonQueryMode.StartFromRoot),
+                string path => context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, path, JsonQueryMode.StartFromRoot),
                 RangeVariable rangeVariable => rangeVariable.Value,
                 _ => throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToPerformUsingLibraryCallDueToInvalidParameter, variable.Source)
             };
@@ -761,24 +747,9 @@ namespace Jolt.Library
 
             token.Clear();
 
-            if (context.RangeVariables.Count == 0)
-            {
-                // No variable scopes currently exist, so we just need to create one.
-
-                context.RangeVariables.Push(new List<RangeVariable>());
-            }
-            else
-            {
-                // All variables in the outer scope are still accessible in the new scope but
-                // if they happen to add more during the loop we can just drop the layer once we're
-                // done and call it good.
-
-                context.RangeVariables.Push(context.RangeVariables.Peek().Select(x => x).ToList());
-            }
-
             var loopVariable = new RangeVariable(variable.Variable.Name, closestViableSourceToken.Copy());
 
-            context.RangeVariables.Peek().Add(loopVariable);
+            context.Scope.AddOrUpdateVariable(loopVariable);
 
             try
             {
@@ -786,14 +757,14 @@ namespace Jolt.Library
                 {
                     var currentEvaluationToken = new EvaluationToken(context.Token.PropertyName, context.Token.ResolvedPropertyName, token, statement, default, true, isWithinStatementBlock: true);
 
-                    context.Transform(currentEvaluationToken, context.ClosureSources, context.RangeVariables);
+                    context.Transform(currentEvaluationToken, context.Scope);
                 }
 
                 return loopVariable.Value;
             }
             finally
             {
-                context.RangeVariables.Pop();
+                context.Scope.RemoveCurrentVariables();
             }
         }
 
@@ -804,8 +775,7 @@ namespace Jolt.Library
                 lambdaBodyExpression,
                 context.JsonContext,
                 context.Token,
-                context.ClosureSources,
-                context.RangeVariables,
+                context.Scope,
                 context.Transform);
 
             var result = context.JsonContext.ExpressionEvaluator.Evaluate(evaluationContext);
@@ -844,22 +814,7 @@ namespace Jolt.Library
                 var itemToken = context.CreateTokenFrom(item);
                 var loopVariable = new RangeVariable(lambda.Variable.Name, itemToken);
 
-                if (context.RangeVariables.Count == 0)
-                {
-                    // No variable scopes currently exist, so we just need to create one.
-
-                    context.RangeVariables.Push(new List<RangeVariable>());
-                }
-                else
-                {
-                    // All variables in the outer scope are still accessible in the new scope but
-                    // if they happen to add more during the loop we can just drop the layer once we're
-                    // done and call it good.
-
-                    context.RangeVariables.Push(context.RangeVariables.Peek().Select(x => x).ToList());
-                }
-
-                context.RangeVariables.Peek().Add(loopVariable);
+                context.Scope.AddOrUpdateVariable(loopVariable);
 
                 try
                 {
@@ -874,7 +829,7 @@ namespace Jolt.Library
                 }
                 finally
                 {
-                    context.RangeVariables.Pop();
+                    context.Scope.RemoveCurrentVariables();
                 }
             }
         }
