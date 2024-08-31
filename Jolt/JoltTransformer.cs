@@ -145,7 +145,7 @@ namespace Jolt
             if (!_context.ExpressionParser.TryParseExpression(actualTokens, _context, out var expression))
             {
                 return new EvaluationResult(token.PropertyName, null, token.CurrentTransformerToken);
-            }   
+            }
 
             var evaluationContext = new EvaluationContext(
                 evaluationMode, 
@@ -170,7 +170,7 @@ namespace Jolt
                         result.RangeVariable.Value = result.TransformedToken;
                     }
 
-                    scope.AddOrUpdateVariable(result.RangeVariable, forceApplyToCurrent: true);                    
+                    scope.AddOrUpdateVariable(result.RangeVariable, forceApplyToCurrentLayer: true);                    
 
                     return;
                 }
@@ -185,7 +185,7 @@ namespace Jolt
                     json?.Remove(propertyName);
                     var updatedVariable = new RangeVariable(variable.Name, result.TransformedToken);
 
-                    scope.AddOrUpdateVariable(updatedVariable, forceApplyToCurrent: true);
+                    scope.AddOrUpdateVariable(updatedVariable, forceApplyToCurrentLayer: true);
                 }
             }
 

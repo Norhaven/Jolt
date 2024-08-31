@@ -20,5 +20,22 @@ namespace Jolt.Extensions
 
             return false;
         }
+
+        public static int? IndexOf<T>(this IEnumerable<T> sequence, Func<T, bool> isMatch)
+        {
+            var index = 0;
+
+            foreach (var value in sequence)
+            {
+                if (isMatch(value))
+                {
+                    return index;
+                }
+
+                index++;
+            }
+
+            return default;
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Jolt.Structure;
+﻿using Jolt.Extensions;
+using Jolt.Structure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,6 @@ namespace Jolt.Evaluation
         private readonly Stack<IList<RangeVariable>> _variables;
 
         public IEnumerable<IJsonToken> AvailableClosures => _closures.Reverse();
-        public IEnumerable<RangeVariable> AvailableVariables => _variables.Peek();
         public int VariableCount => _variables.Count == 0 ? 0 : _variables.Peek().Count;
 
         public EvaluationScope(Stack<IJsonToken> closures, Stack<IList<RangeVariable>> variables)
@@ -25,13 +25,24 @@ namespace Jolt.Evaluation
 
         public bool TryGetVariable(string variableName, out RangeVariable? variable)
         {
+            variable = default;
+
             if (_variables.Count == 0)
             {
-                variable = default;
                 return false;
             }
 
-            variable = _variables.Peek().FirstOrDefault(x => x.Name == variableName);
+            var currentLayers = new Stack<IList<RangeVariable>>(_variables);
+
+            while (currentLayers.TryPop(out var current))
+            {
+                variable = current.FirstOrDefault(x => x.Name == variableName);
+
+                if (variable != null)
+                {
+                    break;
+                }
+            }
 
             return variable != null;
         }
@@ -43,7 +54,7 @@ namespace Jolt.Evaluation
             return this;
         }
 
-        public IEvaluationScope AddOrUpdateVariable(RangeVariable variable, bool forceApplyToCurrent = false)
+        public IEvaluationScope AddOrUpdateVariable(RangeVariable variable, bool forceApplyToCurrentLayer = false)
         {
             if (_variables.Count == 0)
             {
@@ -51,27 +62,30 @@ namespace Jolt.Evaluation
 
                 _variables.Push(new List<RangeVariable>());
             }
-            else if (!forceApplyToCurrent)
-            {
-                // All variables in the outer scope are still accessible in the new scope but
-                // if they happen to add more we can just drop the layer once we're
-                // done and call it good.
+            
+            var currentLayers = new Stack<IList<RangeVariable>>(_variables);
 
-                _variables.Push(_variables.Peek().Select(x => x).ToList());
+            while (currentLayers.TryPop(out var current))
+            {
+                var existingIndex = current.IndexOf(x => x.Name == variable.Name);
+
+                if (existingIndex is null)
+                {
+                    continue;
+                }
+
+                current[existingIndex.Value] = variable;
+
+                return this;
             }
 
-            var current = _variables.Peek();
-
-            for (var i = 0; i < current.Count; i++)
+            if (!forceApplyToCurrentLayer)
             {
-                var currentVariable = current[i];
+                // All variables in the outer scope are still accessible in the new scope but
+                // if they happen to exit the current scope we can just drop the layer once we're
+                // done and call it good.
 
-                if (currentVariable.Name == variable.Name)
-                {
-                    current[i] = variable;
-
-                    return this;
-                }
+                _variables.Push(new List<RangeVariable>());
             }
 
             _variables.Peek().Add(variable);
@@ -88,7 +102,7 @@ namespace Jolt.Evaluation
             return this;
         }
 
-        public IEvaluationScope RemoveCurrentVariables()
+        public IEvaluationScope RemoveCurrentVariablesLayer()
         {
             _variables.Pop();
 

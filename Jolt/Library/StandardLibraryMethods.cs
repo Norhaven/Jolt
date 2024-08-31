@@ -193,15 +193,15 @@ namespace Jolt.Library
                         var indexVariable = new RangeVariable(enumeration.IndexVariable.Name, context.CreateTokenFrom(index));
 
                         // We want to force both variables to be a part of the same scope layer so we can just
-                        // drop both at once when we're done and not have to worry about multiple layers,
+                        // drop both at once when we're done and not have to worry about logic for multiple layers.
 
-                        context.Scope.AddOrUpdateVariable(indexVariable, forceApplyToCurrent: true);
+                        context.Scope.AddOrUpdateVariable(indexVariable, forceApplyToCurrentLayer: true);
                     }
 
                     var transformedToken = context.Transform(templateEvaluationToken, context.Scope);
 
                     context.Scope.RemoveCurrentClosure();
-                    context.Scope.RemoveCurrentVariables();
+                    context.Scope.RemoveCurrentVariablesLayer();
 
                     index++;
 
@@ -764,7 +764,7 @@ namespace Jolt.Library
             }
             finally
             {
-                context.Scope.RemoveCurrentVariables();
+                context.Scope.RemoveCurrentVariablesLayer();
             }
         }
 
@@ -829,7 +829,7 @@ namespace Jolt.Library
                 }
                 finally
                 {
-                    context.Scope.RemoveCurrentVariables();
+                    context.Scope.RemoveCurrentVariablesLayer();
                 }
             }
         }
