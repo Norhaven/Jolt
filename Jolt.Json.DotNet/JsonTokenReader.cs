@@ -40,7 +40,10 @@ namespace Jolt.Json.DotNet
                 {
                     foreach (var property in json)
                     {
-                        obj[property.PropertyName] = Nodes.JsonNode.Parse(property.Value.ToString());
+                        if (property.Value is JsonToken propertyToken)
+                        {
+                            obj[property.PropertyName] = propertyToken.UnderlyingNode.DeepClone();
+                        }
                     }
                 }
                 else if (token is IJsonProperty property)

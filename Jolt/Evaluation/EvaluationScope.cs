@@ -15,7 +15,6 @@ namespace Jolt.Evaluation
         private readonly Stack<IList<RangeVariable>> _variables;
 
         public IEnumerable<IJsonToken> AvailableClosures => _closures.Reverse();
-        public int VariableCount => _variables.Count == 0 ? 0 : _variables.Peek().Count;
 
         public EvaluationScope(Stack<IJsonToken> closures, Stack<IList<RangeVariable>> variables)
         {
@@ -93,7 +92,15 @@ namespace Jolt.Evaluation
             return this;
         }
 
-        public bool ContainsVariable(string variableName) => _variables.Peek().Any(x => x.Name == variableName);
+        public bool ContainsVariable(string variableName, bool onlyCheckTopLayer = false)
+        {
+            if (_variables.Count == 0)
+            {
+                return false;
+            }
+
+            return onlyCheckTopLayer? _variables.Peek().Any(x => x.Name == variableName) : TryGetVariable(variableName, out var _);
+        }
 
         public IEvaluationScope RemoveCurrentClosure()
         {

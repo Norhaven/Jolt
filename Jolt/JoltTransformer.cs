@@ -54,7 +54,7 @@ namespace Jolt
 
                     if (!current.IsPendingValueEvaluation &&
                         _context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariable(current.PropertyName) &&
-                        (scope.VariableCount == 0 || !scope.TryGetVariable(current.PropertyName, out var _)))
+                        !scope.TryGetVariable(current.PropertyName, out var _))
                     {
                         var result = TransformExpression(current, current.PropertyName, EvaluationMode.PropertyName, scope);
 
@@ -162,7 +162,7 @@ namespace Jolt
         {            
             void SetVariableIfPresent(IJsonObject? json, string propertyName)
             {
-                if (result.RangeVariable != null && (scope.VariableCount == 0 || !scope.TryGetVariable(result.RangeVariable.Name, out var _)))
+                if (result.RangeVariable != null && !scope.TryGetVariable(result.RangeVariable.Name, out var _))
                 {
                     if (result.TransformedToken != null)
                     {

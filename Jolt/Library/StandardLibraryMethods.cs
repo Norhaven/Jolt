@@ -231,11 +231,11 @@ namespace Jolt.Library
             return EnumerateClosestSourceToken();
         }
         
-        [JoltLibraryMethod("loopProperty")]
+        [JoltLibraryMethod("nameOf")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyName)]
-        public static IJsonToken? LoopProperty(EvaluationContext context)
+        public static IJsonToken? NameOf(RangeVariable variable, EvaluationContext context)
         {
-            return context.Token.CurrentSource.Property;
+            return context.CreateTokenFrom(variable.Value?.PropertyName);
         }
 
         [JoltLibraryMethod("indexOf")]
@@ -650,7 +650,7 @@ namespace Jolt.Library
             // Ensure that non-scoped variables outside of the 'using' block aren't able to be
             // modified just because we're in statement mode for some other use.
 
-            if (!context.Scope.ContainsVariable(path.SourceVariable.Name))
+            if (!context.Scope.ContainsVariable(path.SourceVariable.Name, onlyCheckTopLayer: true))
             {
                 throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.AttemptedToIndirectlyModifyVariableWithinUsingBlock, path.SourceVariable.Name);
             }
@@ -686,7 +686,7 @@ namespace Jolt.Library
             // Ensure that non-scoped variables outside of the 'using' block aren't able to be
             // modified just because we're in statement mode for some other use.
 
-            if (!context.Scope.ContainsVariable(path.SourceVariable.Name))
+            if (!context.Scope.ContainsVariable(path.SourceVariable.Name, onlyCheckTopLayer: true))
             {
                 throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.AttemptedToIndirectlyModifyVariableWithinUsingBlock, path.SourceVariable.Name);
             }

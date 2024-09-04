@@ -434,14 +434,23 @@ namespace Jolt.Evaluation
                 // the transformer follows up with evaluating the value as well and doesn't just assume that
                 // it's already happened.
 
-                if (!call.Signature.IsValueGenerator && resultValue is IJsonProperty property)
+                if (call.Signature.IsValueGenerator)
                 {
-                    return new EvaluationResult(context.Token.PropertyName, property.PropertyName, context.Token.CurrentTransformerToken, true);
+                    return new EvaluationResult(context.Token.PropertyName, context.Token.ResolvedPropertyName, (IJsonToken)resultValue, rangeVariable: context.Token.ParentRangeVariable ?? call.GeneratedVariable);
                 }
 
-                var resolvedPropertyName = call.Signature.IsValueGenerator ? context.Token.ResolvedPropertyName : ((IJsonProperty)context.Token.CurrentSource.Property)?.PropertyName;
+                // We already know that we need to also evaluate the value in addition to the property,
+                // but since we're on the property name side we need to figure out what the new name of this
+                // property is going to be and send that back out with the result so it gets named appropriately.
 
-                return new EvaluationResult(context.Token.PropertyName, resolvedPropertyName, (IJsonToken)resultValue, rangeVariable: context.Token.ParentRangeVariable ?? call.GeneratedVariable); 
+                var resolvedPropertyName = resultValue switch
+                {
+                    IJsonProperty property => property.PropertyName,
+                    IJsonValue value => value.ToTypeOf<string>(),
+                    _ => throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToResolveNewPropertyNameForUnsupportedResultOfType, resultValue?.GetType())
+                };
+
+                return new EvaluationResult(context.Token.PropertyName, resolvedPropertyName, context.Token.CurrentTransformerToken, isValuePendingEvaluation: true);
             }
             else if (context.Mode == EvaluationMode.PropertyValue)
             {

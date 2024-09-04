@@ -142,6 +142,8 @@ namespace Jolt.Exceptions
         [Description("JLT538")]
         UnableToUseMethodWithinNonRootStatementBlock,
         [Description("JLT539")]
-        AttemptedToIndirectlyModifyVariableWithinUsingBlock
+        AttemptedToIndirectlyModifyVariableWithinUsingBlock,
+        [Description("JLT540")]
+        UnableToResolveNewPropertyNameForUnsupportedResultOfType
     }
 }

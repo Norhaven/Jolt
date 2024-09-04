@@ -11,11 +11,6 @@ namespace Jolt.Evaluation
     public interface IEvaluationScope
     {
         /// <summary>
-        /// Gets the number of range variables in scope.
-        /// </summary>
-        int VariableCount { get; }
-
-        /// <summary>
         /// Gets a series of currently available source document closures in closest to farthest order.
         /// </summary>
         IEnumerable<IJsonToken> AvailableClosures { get; }
@@ -25,7 +20,7 @@ namespace Jolt.Evaluation
         /// </summary>
         /// <param name="variableName">The name of the variable to look for.</param>
         /// <returns>True if the variable is present, false otherwise.</returns>
-        bool ContainsVariable(string variableName);
+        bool ContainsVariable(string variableName, bool onlyCheckTopLayer = false);
 
         /// <summary>
         /// Tries to get a currently available variable by name.

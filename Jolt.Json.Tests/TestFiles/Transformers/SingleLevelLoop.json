@@ -7,11 +7,11 @@
     }
   ],
   "#foreach(@x in $.exampleBaseProperty)->'Object'": {
-    "#loopProperty()": "@x.value"
+    "#nameOf(@x)": "@x.value"
   },
   "#foreach(@x in $.exampleBaseProperty)->'ArrayFromObject'": [
     {
-      "#loopProperty()": "@x.value"
+      "#nameOf(@x)": "@x.value"
     }
   ],
   "#foreach(@x in $.array)->'ObjectFromArray'": {
