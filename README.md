@@ -245,7 +245,7 @@ Using the previous transform, the output would look like:
 
 ### Range Variables: Using blocks and statements
 
-A final use for range variables are in the case where you have a path or variable that needs direct modification to include, modify, or exclude specific JSON nodes. For example, you might not know the entire shape of the incoming JSON document but you know that it needs to stay the same except for a few changes, or perhaps you might want to replicate a few parts of the source document within the transformer output with some changes. This would mean that you can't necessarily stand up an entire transformer that manually contains every node ahead of time. Let's take a look at a way you could approach this using the following source JSON.
+A final use for range variables is in the case where you have a path or variable that needs direct modification to include, modify, or exclude specific JSON nodes. For example, you might not know the entire shape of the incoming JSON document but you know that it needs to stay the same except for a few changes, or perhaps you might want to replicate a few parts of the source document within the transformer output along with some tweaks to its data and/or structure. This would mean that you can't necessarily stand up an entire transformer that manually contains every node ahead of time. Let's take a look at a way you could approach this using the following source JSON.
 ```json
 {
     "some": {
