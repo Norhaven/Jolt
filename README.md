@@ -309,7 +309,7 @@ This package comes with quite a few methods built into it to get you started, al
 | includeIf | Takes a path or boolean condition and will evaluate and include the property's object if true, returning null otherwise | `"#includeIf($.some.path)->'someName'": { "nestedValue": "#valueOf($.other.path)" }` | Property Name
 | eval | Evaluates an arbitrary expression, either from a path or literal value, and returns the result | `#eval('1 + 2 = 3')` | Property Name/Value
 | foreach | Evaluates a path and loops over the array elements or object properties it finds there to create its property values, naming the property as the string literal referred to by the arrow | `"#foreach(@x in $.some.path)->'result'": [ { "templateValue": "#valueOf($.other.path)" } ]` | Property Name
-| loopProperty | Returns the name of the property being evaluated by the loop's current iteration | `"#loopProperty()": "#valueOf($.some.path)"` | Property Name
+| nameOf | Returns the name of the property being evaluated by the provided loop variable | `"#nameOf(@x)": "#valueOf($.some.path)"` | Property Name
 | indexOf | Returns the zero-based index value of the first occurrence of the provided value | `#indexOf(#valueOf($.some.path), 'some string')` | Property Value
 | length | Returns the length of a string or array value | `#length($.some.path)` | Property Value
 | substring | Returns the string value that falls within the provided range in a given string | `#substring(1..2)` | Property Value
