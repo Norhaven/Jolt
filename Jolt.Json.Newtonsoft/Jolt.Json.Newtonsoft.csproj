@@ -10,7 +10,7 @@
     <RepositoryUrl>https://github.com/Norhaven/Jolt</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>JoltLogo.png</PackageIcon>
-    <Version>1.2.0</Version>
+    <Version>1.3.0</Version>
     <PackageTags>json;xslt;transformation;transform</PackageTags>
   </PropertyGroup>
 
