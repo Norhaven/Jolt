@@ -16,5 +16,14 @@
   ],
   "#foreach(@x in $.array)->'ObjectFromArray'": {
     "Result": "@x.arrayElementId"
+  },
+  "#foreach(@x in $.exampleBaseProperty)->'RootObject'": {
+    "#foreach(@y in @x.testArray)->@temp": [
+        {
+          "#nameOf(@x)": "@y.text",
+          "#nameOf(@y)": "@x.value"
+        }
+      ],
+      "#nameOf(@x)": "@temp"
   }
 }

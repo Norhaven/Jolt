@@ -10,10 +10,12 @@
 	],
 	"exampleBaseProperty": {
 		"first": {
-			"value": 1
+			"value": 1,
+			"testArray": [ 1, 2, 3 ]
 		},
 		"second": {
-			"value": 2
+			"value": 2,
+			"testArray": [ "test1", "test2", "test3" ]
 		}
 	}
 }

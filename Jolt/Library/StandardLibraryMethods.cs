@@ -141,6 +141,8 @@ namespace Jolt.Library
             {                
                 string path => context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, path, JsonQueryMode.StartFromClosestMatch),
                 RangeVariable variable => variable.Value,
+                DereferencedPath path when path.MissingPaths.Any() => throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.AttemptedToDereferenceMissingPath, string.Join('.', path.MissingPaths), path.ObtainableToken.PropertyName),
+                DereferencedPath path => path.ObtainableToken,
                 _ => throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToPerformLoopLibraryCallDueToInvalidParameter, enumeration.Source)
             };
 

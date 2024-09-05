@@ -56,7 +56,7 @@ public abstract class JoltTransformerTests(IJsonContext context) : Test(context)
     [Fact]
     public void Loop_IsSuccessful_AtSingleLevelForMultiElements()
     {
-        var json = ExecuteTestFor(_singleLevelLoop, _singleLevelLoopDocument);
+        var json = ExecuteTestFor(_loops, _loopDocument);
 
         var nestedJson = (IJsonArray)json[TargetProperty.Array];
 
@@ -92,6 +92,40 @@ public abstract class JoltTransformerTests(IJsonContext context) : Test(context)
         objectFromArray.Should().NotBeNull("because an object should have been created due to the existence of the source array with elements");
 
         objectFromArray.PropertyValueFor<int>(TargetProperty.Result).Should().Be(2, "because the last element of the array contained that value in its property");
+
+        var rootObject = (IJsonObject)json[TargetProperty.RootObject];
+
+        rootObject.Should().NotBeNull("because the transformer looped over properties to build up a new object");
+
+        var firstNestedArray = rootObject[TargetProperty.First].AsArray();
+        var secondNestedArray = rootObject[TargetProperty.Second].AsArray();
+
+        firstNestedArray.Should().NotBeNull("because this is the name of the first property in the loop iteration");
+        secondNestedArray.Should().NotBeNull("because this is the name of the second property in the loop iteration");
+
+        firstNestedArray.ShouldContainProperties(
+            (0, "first", 1),
+            (1, "first", 2),
+            (2, "first", 3)
+        );
+
+        firstNestedArray.ShouldContainProperties(
+            (0, "testArray[0]", 1),
+            (1, "testArray[1]", 1),
+            (2, "testArray[2]", 1)
+        );
+
+        secondNestedArray.ShouldContainProperties(
+            (0, "second", "test1"),
+            (1, "second", "test2"),
+            (2, "second", "test3")
+        );
+
+        secondNestedArray.ShouldContainProperties(
+            (0, "testArray[0]", 2),
+            (1, "testArray[1]", 2),
+            (2, "testArray[2]", 2)
+        );
     }
 
     [Fact]
@@ -228,7 +262,7 @@ public abstract class JoltTransformerTests(IJsonContext context) : Test(context)
     [Fact]
     public void RangeVariables_AreSuccessful_WithDeclarationAndUsage()
     {
-        var json = ExecuteTestFor(_rangeVariables, _singleLevelLoopDocument);
+        var json = ExecuteTestFor(_rangeVariables, _loopDocument);
 
         json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
 
@@ -255,7 +289,7 @@ public abstract class JoltTransformerTests(IJsonContext context) : Test(context)
     [Fact]
     public void UsingBlock_IsSuccessful_WithDeclarationAndUsageIncludingFromRangeVariables()
     {
-        var json = ExecuteTestFor(_usingBlock, _singleLevelLoopDocument);
+        var json = ExecuteTestFor(_usingBlock, _loopDocument);
 
         json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
 

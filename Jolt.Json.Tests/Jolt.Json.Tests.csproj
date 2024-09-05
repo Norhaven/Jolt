@@ -49,8 +49,8 @@
     <EmbeddedResource Include="TestFiles\Transformers\Math.json" />
     <EmbeddedResource Include="TestFiles\Transformers\MultiLevelValueOf.json" />
     <EmbeddedResource Include="TestFiles\Documents\SingleLevelDocument.json" />
-    <EmbeddedResource Include="TestFiles\Documents\SingleLevelLoopDocument.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\SingleLevelLoop.json" />
+    <EmbeddedResource Include="TestFiles\Documents\LoopDocument.json" />
+    <EmbeddedResource Include="TestFiles\Transformers\Loops.json" />
     <EmbeddedResource Include="TestFiles\Transformers\RangeVariables.json" />
     <EmbeddedResource Include="TestFiles\Transformers\UsingBlock.json" />
     <EmbeddedResource Include="TestFiles\Transformers\SingleLevelValueOf.json" />

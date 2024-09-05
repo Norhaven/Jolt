@@ -97,6 +97,7 @@ public abstract class Test(IJsonContext context)
         public const string AppendedVariadic = "AppendedVariadic";
         public const string ObjectFromArray = "ObjectFromArray";
         public const string ArrayFromObject = "ArrayFromObject";
+        public const string RootObject = "RootObject";
         public const string Group = "Group";
         public const string Order = "Order";
         public const string Order1 = "Order1";
@@ -115,7 +116,7 @@ public abstract class Test(IJsonContext context)
 
     protected readonly string _singleLevelDocument = ReadTestDocument("SingleLevelDocument");
     protected readonly string _multiLevelDocument = ReadTestDocument("MultiLevelDocument");
-    protected readonly string _singleLevelLoopDocument = ReadTestDocument("SingleLevelLoopDocument");
+    protected readonly string _loopDocument = ReadTestDocument("LoopDocument");
     protected readonly string _mathDocument = ReadTestDocument("MathDocument");
     protected readonly string _existenceDocument = ReadTestDocument("ExistenceDocument");
     protected readonly string _conditionsDocument = ReadTestDocument("ConditionsDocument");
@@ -125,7 +126,7 @@ public abstract class Test(IJsonContext context)
 
     protected readonly string _singleLevelValueOf = ReadTestTransformer("SingleLevelValueOf");
     protected readonly string _multiLevelValueOf = ReadTestTransformer("MultiLevelValueOf");
-    protected readonly string _singleLevelLoop = ReadTestTransformer("SingleLevelLoop");
+    protected readonly string _loops = ReadTestTransformer("Loops");
     protected readonly string _math = ReadTestTransformer("Math");
     protected readonly string _existence = ReadTestTransformer("Existence");
     protected readonly string _conditions = ReadTestTransformer("Conditions");
