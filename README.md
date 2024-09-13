@@ -1,4 +1,4 @@
-# Jolt
+# Jolt Language
 
 ![Logo](https://raw.githubusercontent.com/Norhaven/Jolt/main/JoltLogo.png)
 
