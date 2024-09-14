@@ -7,7 +7,7 @@ Welcome! This is an imperative JSON transformation language inspired by XSLT and
 There are two `.Net Standard 2.1` packages available: `Jolt.Json.Newtonsoft` and `Jolt.Json.DotNet`. These use `Newtonsoft` or `System.Text.Json` functionality, respectively.
 
 ### Disambiguation
-Were you looking for the much older and unrelated .Net port of the Java JSON transformation library (also called Jolt) instead? [That's over here!](https://github.com/blushingpenguin/Jolt.Net)
+Were you looking for the much older and unrelated .Net port of the Java JSON transformation library (by coincidence, also called Jolt) instead? [That's over here!](https://github.com/blushingpenguin/Jolt.Net)
 
 ## Build/Release Status
 
