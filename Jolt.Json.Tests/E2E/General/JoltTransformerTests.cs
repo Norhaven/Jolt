@@ -85,7 +85,7 @@ public abstract class JoltTransformerTests(IJsonContext context) : Test(context)
         arrayFromObject.Should().NotBeNull("because an array should have been created due to the existence of the source object");
 
         arrayFromObject[0].AsObject()[TargetProperty.First].ToString().Should().Be("1", "because that is the value of the first property in the source object");
-        arrayFromObject[1].AsObject()[TargetProperty.Second].ToString().Should().Be("2", "because that is the value of the first property in the source object");
+        arrayFromObject[1].AsObject()[TargetProperty.Second].ToString().Should().Be("2", "because that is the value of the second property in the source object");
 
         var objectFromArray = (IJsonObject)json[TargetProperty.ObjectFromArray];
 

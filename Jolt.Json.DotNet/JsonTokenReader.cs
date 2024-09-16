@@ -69,7 +69,7 @@ namespace Jolt.Json.DotNet
             {
                 return token;
             }
-            else if (value is IEnumerable<IGrouping<string?, IJsonToken>> grouping)
+            else if (value is IEnumerable<IGrouping<object, IJsonToken>> grouping)
             {
                 var grouped = new List<Nodes.JsonNode>();
 
@@ -77,7 +77,7 @@ namespace Jolt.Json.DotNet
                 {
                     var json = new Nodes.JsonObject
                     { 
-                        ["key"] = group.Key,
+                        ["key"] = Nodes.JsonValue.Create(group.Key),
                         ["results"] = new Nodes.JsonArray(group.Select(x => Nodes.JsonNode.Parse(x.ToString())).ToArray())
                     };
 

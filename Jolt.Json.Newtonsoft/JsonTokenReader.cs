@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 
 namespace Jolt.Json.Newtonsoft
 {
@@ -65,7 +66,7 @@ namespace Jolt.Json.Newtonsoft
             {
                 return token;
             }
-            else if (value is IEnumerable<IGrouping<string?, IJsonToken>> grouping)
+            else if (value is IEnumerable<IGrouping<object, IJsonToken>> grouping)
             {
                 var grouped = new List<JToken>();
 
@@ -73,7 +74,7 @@ namespace Jolt.Json.Newtonsoft
                 {
                     var json = new JObject
                     { 
-                        ["key"] = group.Key,
+                        ["key"] = JToken.FromObject(group.Key),
                         ["results"] = new JArray(group.Select(x => JToken.Parse(x.ToString())))
                     };
 

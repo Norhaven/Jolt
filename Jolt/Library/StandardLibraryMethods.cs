@@ -294,14 +294,14 @@ namespace Jolt.Library
 
         [JoltLibraryMethod("groupBy")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? GroupBy(object? value, string propertyName, EvaluationContext context)
+        public static IJsonToken? GroupBy(object? value, LambdaMethod keySelectorLambda, EvaluationContext context)
         {
             var resolved = context.ResolveQueryPathIfPresent(value);
 
             var grouping = resolved switch
             {
-                IJsonArray array => array.GroupBy(x => ((IJsonObject)x)[propertyName]?.ToString()),
-                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to group by '{propertyName}' for unsupported object type '{value?.GetType()}'")
+                IJsonArray array => array.GroupBy(x => ProjectAs(x, keySelectorLambda, context)?.ToTypeOf<object>()),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to perform a group by using unsupported object type '{value?.GetType()}'")
             };
 
             return context.CreateTokenFrom(grouping);
@@ -309,7 +309,7 @@ namespace Jolt.Library
 
         [JoltLibraryMethod("orderBy")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? OrderBy(object? value, [OptionalParameter(null)] string? propertyName, EvaluationContext context)
+        public static IJsonToken? OrderBy(object? value, [OptionalParameter(null)] LambdaMethod? lambda, EvaluationContext context)
         {
             var resolved = context.ResolveQueryPathIfPresent(value);
 
@@ -317,8 +317,8 @@ namespace Jolt.Library
             {
                 IJsonArray array when array.ContainsOnlyNumbers() && array.ContainsAtLeastOneDecimal() => array.OrderBy(x => x.ToTypeOf<double>()),
                 IJsonArray array when array.ContainsOnlyNumbers() => array.OrderBy(x => x.ToTypeOf<long>()),
-                IJsonArray array => array.OrderBy(x => ((IJsonObject)x)[propertyName]?.ToString()),
-                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to order by '{propertyName}' for unsupported object type '{value?.GetType()}'")
+                IJsonArray array => array.OrderBy(x => ProjectAs(x, lambda, context)?.ToTypeOf<object>()),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to perform an order by using unsupported object type '{value?.GetType()}'")
             };
 
             return context.CreateTokenFrom(grouping);
@@ -326,7 +326,7 @@ namespace Jolt.Library
 
         [JoltLibraryMethod("orderByDesc")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? OrderByDescending(object? value, [OptionalParameter(null)] string? propertyName, EvaluationContext context)
+        public static IJsonToken? OrderByDescending(object? value, [OptionalParameter(null)] LambdaMethod? lambda, EvaluationContext context)
         {
             var resolved = context.ResolveQueryPathIfPresent(value);
 
@@ -334,8 +334,8 @@ namespace Jolt.Library
             {
                 IJsonArray array when array.ContainsOnlyNumbers() && array.ContainsAtLeastOneDecimal() => array.OrderByDescending(x => x.ToTypeOf<double>()),
                 IJsonArray array when array.ContainsOnlyNumbers() => array.OrderByDescending(x => x.ToTypeOf<long>()),
-                IJsonArray array => array.OrderByDescending(x => ((IJsonObject)x)[propertyName]?.ToString()),
-                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to group by '{propertyName}' for unsupported object type '{value?.GetType()}'")
+                IJsonArray array => array.OrderByDescending(x => ProjectAs(x, lambda, context)?.ToTypeOf<object>()),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to perform an order by using unsupported object type '{value?.GetType()}'")
             };
 
             return context.CreateTokenFrom(grouping);
@@ -645,6 +645,55 @@ namespace Jolt.Library
             return ConvertToType<bool>(resolved, context);
         }
 
+        //[JoltLibraryMethod("summaryWith")]
+        //[MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        //public static IJsonToken? SummaryWith(object? value, [VariadicEvaluation] object[]? additionalPaths, EvaluationContext context)
+        //{
+        //    IJsonToken? CreateSummaryFor(IJsonToken? token)
+        //    {
+        //        foreach(var value in additionalPaths ?? Enumerable.Empty<object>())
+        //        {
+        //            // TODO: Add path to token
+        //            token = 
+        //        }
+        //    }
+
+        //    if (value is null)
+        //    {
+        //        return context.CreateTokenFrom(false);
+        //    }
+
+        //    var resolved = context.ResolveQueryPathIfPresent(value);
+        //    var resultToken = context.CreateTokenFrom(resolved);
+
+        //    if (additionalPaths is null || !additionalPaths.Any())
+        //    {
+        //        return resultToken;
+        //    }
+
+        //    resultToken = resultToken switch
+        //    {
+        //        IJsonArray array => context.CreateArrayFrom(array.Select(x => CreateSummaryFor(x)).ToArray()),
+        //    };
+
+        //    foreach (var additionalValue in additionalValues ?? Enumerable.Empty<object>())
+        //    {
+        //        var resolvedValue = context.ResolveQueryPathIfPresent(additionalValue);
+
+        //        resultToken = (resultToken, resolvedValue) switch
+        //        {
+        //            (IJsonArray first, IJsonArray second) => context.CreateArrayFrom(first.Concat(second).ToArray()),
+        //            (IJsonObject first, IJsonObject second) => context.CreateObjectFrom(first.Concat(second).ToArray()),
+        //            (IEnumerable<object> first, IEnumerable<object> second) => context.CreateTokenFrom(first.Concat(second).ToArray()),
+        //            (IJsonValue first, string second) when first.IsString() => context.CreateTokenFrom($"{first.ToTypeOf<string>()}{second}"),
+        //            (IJsonValue first, IJsonValue second) when first.IsString() && second.IsString() => context.CreateTokenFrom($"{first}{second}"),
+        //            _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to append with unsupported object types '{value?.GetType()}' and '{resolvedValue?.GetType()}'")
+        //        };
+        //    }
+
+        //    return resultToken;
+        //}
+
         [JoltLibraryMethod("removeAt")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue | LibraryMethodTarget.StatementBlock)]
         public static IJsonToken? RemoveAt(DereferencedPath path, EvaluationContext context)
@@ -824,15 +873,28 @@ namespace Jolt.Library
                     {
                         yield return createProjection(itemToken);
                     }
-                    else
-                    {
-                        //throw Error.CreateExecutionErrorFrom(ExceptionCode.ExpectedLambdaResultToBeBooleanButFoundDifferentToken, matchResult);
-                    }
                 }
                 finally
                 {
                     context.Scope.RemoveCurrentVariablesLayer();
                 }
+            }
+        }
+
+        private static IJsonToken? ProjectAs<T>(T value, LambdaMethod lambda, EvaluationContext context)
+        {
+            var itemToken = context.CreateTokenFrom(value);
+            var loopVariable = new RangeVariable(lambda.Variable.Name, itemToken);
+
+            context.Scope.AddOrUpdateVariable(loopVariable);
+
+            try
+            {
+                return ExecuteLambdaBody(lambda.Body, context);
+            }
+            finally
+            {
+                context.Scope.RemoveCurrentVariablesLayer();
             }
         }
 
