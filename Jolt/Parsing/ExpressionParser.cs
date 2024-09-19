@@ -391,6 +391,7 @@ namespace Jolt.Parsing
                 methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), default);
 
                 var leftMostMethodCall = pipedMethodCall;
+                MethodCallExpression? previousCall = default;
 
                 while(leftMostMethodCall.ParameterValues.Length > 0)
                 {
@@ -399,12 +400,23 @@ namespace Jolt.Parsing
                         break;
                     }
 
+                    previousCall = leftMostMethodCall;
                     leftMostMethodCall = next;
                 }
 
                 var updatedParameters = new[] { methodCall }.Concat(leftMostMethodCall.ParameterValues);
 
-                methodCall = leftMostMethodCall.WithParameters(updatedParameters);                
+                var updatedCall = leftMostMethodCall.WithParameters(updatedParameters);
+
+                if (previousCall is null)
+                {
+                    methodCall = updatedCall;
+                }
+                else
+                {
+                    previousCall.ParameterValues[0] = updatedCall;
+                    methodCall = pipedMethodCall;
+                }
             }
             else
             {

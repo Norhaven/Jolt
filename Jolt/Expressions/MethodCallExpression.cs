@@ -2,11 +2,13 @@
 using Jolt.Parsing;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 namespace Jolt.Expressions
 {
+    [DebuggerDisplay("{Signature.Alias}({ParameterValues.Length})")]
     public sealed class MethodCallExpression : Expression
     {
         public MethodSignature Signature { get; }

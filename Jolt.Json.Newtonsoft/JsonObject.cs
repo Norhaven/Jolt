@@ -118,6 +118,8 @@ namespace Jolt.Json.Newtonsoft
             return default;
         }
 
+        public bool HasProperty(string propertyName) => _properties.ContainsKey(propertyName);
+
         public IEnumerator<IJsonProperty> GetEnumerator() => ((JObject)_token).Properties().Select(x => (IJsonProperty)FromObject(x)).GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

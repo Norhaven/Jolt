@@ -28,6 +28,7 @@
   "AppendedArray": "#valueOf($.stringArray)->#append($.stringArray)",
   "AppendedObject": "#valueOf($.firstObject)->#append($.secondObject)",
   "Group": "#valueOf($.groupableArray)->#groupBy(@x: @x.type)",
+  "Summary": "#valueOf($.groupableArray)->#groupBy(@x: @x.type)->#summarizeWith(@seq: #sum(@seq, @x: @x.subObject.integerLiteral))",
   "Order": "#valueOf($.groupableArray)->#orderBy(@x: @x.type)",
   "Order1": "#valueOf($.orderableArray)->#orderBy()",
   "OrderDesc": "#valueOf($.groupableArray)->#orderByDesc(@x: @x.type)",

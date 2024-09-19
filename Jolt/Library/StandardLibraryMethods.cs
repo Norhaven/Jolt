@@ -381,31 +381,70 @@ namespace Jolt.Library
 
         [JoltLibraryMethod("max")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? Maximum(object? value, EvaluationContext context)
+        public static IJsonToken? Maximum(object? value, [OptionalParameter(default)] LambdaMethod? lambda, EvaluationContext context)
         {
+            if (value is RangeVariable variable)
+            {
+                value = variable.Value;
+
+                if (lambda != null)
+                {
+                    value = Select(value, lambda, context);
+                }
+            }
+
             return AsIntegerOrFloatingPoint(value, x => x.Max(), x => x.Max(), context);
         }
 
         [JoltLibraryMethod("min")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? Minimum(object? value, EvaluationContext context)
+        public static IJsonToken? Minimum(object? value, [OptionalParameter(default)] LambdaMethod? lambda, EvaluationContext context)
         {
+            if (value is RangeVariable variable)
+            {
+                value = variable.Value;
+
+                if (lambda != null)
+                {
+                    value = Select(value, lambda, context);
+                }
+            }
+
             return AsIntegerOrFloatingPoint(value, x => x.Min(), x => x.Min(), context);
         }
 
         [JoltLibraryMethod("sum")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? Sum(object? value, EvaluationContext context)
+        public static IJsonToken? Sum(object? value, [OptionalParameter(default)] LambdaMethod? lambda, EvaluationContext context)
         {
+            if (value is RangeVariable variable)
+            {
+                value = variable.Value;
+
+                if (lambda != null)
+                {
+                    value = Select(value, lambda, context);
+                }
+            }
+            
             return AsIntegerOrFloatingPoint(value, x => x.Sum(), x => x.Sum(), context);
         }
 
         [JoltLibraryMethod("average")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? Average(object? value, EvaluationContext context)
+        public static IJsonToken? Average(object? value, [OptionalParameter(default)] LambdaMethod? lambda, EvaluationContext context)
         {
             var resolved = context.ResolveQueryPathIfPresent(value);
 
+            if (value is RangeVariable variable)
+            {
+                value = variable.Value;
+
+                if (lambda != null)
+                {
+                    value = Select(value, lambda, context);
+                }
+            }
 
             object? average = resolved switch
             {
@@ -413,7 +452,7 @@ namespace Jolt.Library
                 IEnumerable<decimal> decimals => decimals.Average(),
                 IEnumerable<double> doubles => doubles.Average(),
                 IJsonArray array when array.ContainsAtLeastOneDecimal() => array.AsSequenceOf<double>().Average(),
-                IJsonArray array when array.ContainsOnlyIntegers() => array.AsSequenceOf<double>().Average(),
+                IJsonArray array when array.ContainsOnlyIntegers() => array.AsSequenceOf<long>().Average(),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get average for unsupported object type '{value?.GetType()}'")
             };
 
@@ -645,54 +684,53 @@ namespace Jolt.Library
             return ConvertToType<bool>(resolved, context);
         }
 
-        //[JoltLibraryMethod("summaryWith")]
-        //[MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        //public static IJsonToken? SummaryWith(object? value, [VariadicEvaluation] object[]? additionalPaths, EvaluationContext context)
-        //{
-        //    IJsonToken? CreateSummaryFor(IJsonToken? token)
-        //    {
-        //        foreach(var value in additionalPaths ?? Enumerable.Empty<object>())
-        //        {
-        //            // TODO: Add path to token
-        //            token = 
-        //        }
-        //    }
+        [JoltLibraryMethod("summarizeWith")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? SummarizeWith(object? value, LambdaMethod lambda, EvaluationContext context)
+        {
+            (object Key, IJsonArray? Results) ConvertToGroup(IJsonToken? groupToken)
+            {
+                var keyToken = groupToken?.AsObject()["key"];
+                var resultsToken = groupToken?.AsObject()["results"].AsArray();
 
-        //    if (value is null)
-        //    {
-        //        return context.CreateTokenFrom(false);
-        //    }
+                if (keyToken is null || resultsToken is null)
+                {
+                    return (default, context.CreateArrayFrom(Array.Empty<IJsonToken>()).AsArray());
+                }
 
-        //    var resolved = context.ResolveQueryPathIfPresent(value);
-        //    var resultToken = context.CreateTokenFrom(resolved);
+                return (keyToken.ToTypeOf<object>(), resultsToken);
+            }
 
-        //    if (additionalPaths is null || !additionalPaths.Any())
-        //    {
-        //        return resultToken;
-        //    }
+            IEnumerable<IJsonToken> CreateSummaryFor(IJsonArray array)
+            {
+                foreach(var group in array.Select(x => ConvertToGroup(x)))
+                {
+                    var token = context.CreateTokenFrom(new object()).AsObject();
 
-        //    resultToken = resultToken switch
-        //    {
-        //        IJsonArray array => context.CreateArrayFrom(array.Select(x => CreateSummaryFor(x)).ToArray()),
-        //    };
+                    var result = ProjectAs(group.Results, lambda, context);
 
-        //    foreach (var additionalValue in additionalValues ?? Enumerable.Empty<object>())
-        //    {
-        //        var resolvedValue = context.ResolveQueryPathIfPresent(additionalValue);
+                    token[group.Key?.ToString()] = result;
 
-        //        resultToken = (resultToken, resolvedValue) switch
-        //        {
-        //            (IJsonArray first, IJsonArray second) => context.CreateArrayFrom(first.Concat(second).ToArray()),
-        //            (IJsonObject first, IJsonObject second) => context.CreateObjectFrom(first.Concat(second).ToArray()),
-        //            (IEnumerable<object> first, IEnumerable<object> second) => context.CreateTokenFrom(first.Concat(second).ToArray()),
-        //            (IJsonValue first, string second) when first.IsString() => context.CreateTokenFrom($"{first.ToTypeOf<string>()}{second}"),
-        //            (IJsonValue first, IJsonValue second) when first.IsString() && second.IsString() => context.CreateTokenFrom($"{first}{second}"),
-        //            _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to append with unsupported object types '{value?.GetType()}' and '{resolvedValue?.GetType()}'")
-        //        };
-        //    }
+                    yield return token;
+                }
+            }
 
-        //    return resultToken;
-        //}
+            if (value is null)
+            {
+                return context.CreateTokenFrom(false);
+            }
+
+            var resolved = context.ResolveQueryPathIfPresent(value);
+            var resultToken = context.CreateTokenFrom(resolved);
+
+            resultToken = resultToken switch
+            {
+                IJsonArray array when array.IsGroup() => context.CreateArrayFrom(CreateSummaryFor(array).ToArray()),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to summarize with non-group type '{value.GetType()}'")
+            };
+
+            return resultToken;
+        }
 
         [JoltLibraryMethod("removeAt")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue | LibraryMethodTarget.StatementBlock)]

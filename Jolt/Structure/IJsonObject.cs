@@ -37,5 +37,12 @@ namespace Jolt.Structure
         /// <param name="value">The value to add.</param>
         /// <returns>An instance of <see cref="IJsonToken"/> which is the added JSON structure, if present, null otherwise.</returns>
         IJsonToken? AddAtPath(string path, IJsonToken? value);
+
+        /// <summary>
+        /// Determines whether the object contains a property with the given name.
+        /// </summary>
+        /// <param name="propertyName">The property name to check for.</param>
+        /// <returns>True if the property exists, false otherwise.</returns>
+        bool HasProperty(string propertyName);
     }
 }

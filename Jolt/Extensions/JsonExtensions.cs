@@ -12,6 +12,7 @@ namespace Jolt.Extensions
         public static bool IsString(this IJsonToken token) => token.IsValue() && token.AsValue().IsTypeOf<string>();
         public static bool IsBoolean(this IJsonToken token) => token.IsValue() && token.AsValue().IsTypeOf<bool>();
         public static bool IsTypeOf<T>(this IJsonValue value) => value.IsObject<T>();
+        public static bool IsGroup(this IJsonArray array) => array.All(x => x.AsObject().HasProperty("key") && x.AsObject().HasProperty("results"));
 
         public static bool ContainsOnly(this IJsonArray array, JsonArrayElementType elementType)
         {
@@ -40,7 +41,7 @@ namespace Jolt.Extensions
                 IEnumerable<int> integers => integers.Cast<T>(),
                 IEnumerable<decimal> decimals => decimals.Cast<T>(),
                 IEnumerable<double> doubles => doubles.Cast<T>(),
-                IJsonArray array => array.Select(x => x.AsValue().ToTypeOf<T>()),
+                IJsonArray array => array.Select(x => (T)Convert.ChangeType(x.AsValue().ToTypeOf<object>(), typeof(T))),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to convert to sequence for unsupported object type '{value?.GetType()}'")
             };
         }        

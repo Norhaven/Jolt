@@ -99,17 +99,26 @@ namespace Jolt.Json.DotNet
                     return JsonSerializer.Deserialize<T>(_token.ToJsonString());
                 }
 
-                object? value = ((JsonElement)_token.GetValue<object>()) switch
+                var value = _token.GetValue<object?>();
+
+                if (value is JsonElement element)
                 {
-                    var x when x.ValueKind == JsonValueKind.String => x.GetString(),
-                    var x when x.ValueKind == JsonValueKind.Number => x.GetDecimal(),
-                    var x when x.ValueKind == JsonValueKind.True => x.GetBoolean(),
-                    var x when x.ValueKind == JsonValueKind.False => x.GetBoolean(),
-                    var x when x.ValueKind == JsonValueKind.Null => null,
-                    var x when x.ValueKind == JsonValueKind.Array => JsonSerializer.Deserialize<T[]>(_token),
-                    var x when x.ValueKind == JsonValueKind.Object => JsonSerializer.Deserialize<T>(_token),
-                    _ => throw new ArgumentOutOfRangeException($"Unable to get JSON value as a System.Object class")
-                };
+                    value = ((JsonElement)_token.GetValue<object>()) switch
+                    {
+                        var x when x.ValueKind == JsonValueKind.String => x.GetString(),
+                        var x when x.ValueKind == JsonValueKind.Number => x.GetDecimal(),
+                        var x when x.ValueKind == JsonValueKind.True => x.GetBoolean(),
+                        var x when x.ValueKind == JsonValueKind.False => x.GetBoolean(),
+                        var x when x.ValueKind == JsonValueKind.Null => null,
+                        var x when x.ValueKind == JsonValueKind.Array => JsonSerializer.Deserialize<T[]>(_token),
+                        var x when x.ValueKind == JsonValueKind.Object => JsonSerializer.Deserialize<T>(_token),
+                        _ => throw new ArgumentOutOfRangeException($"Unable to get JSON value as a System.Object class")
+                    };
+                }
+                else
+                {
+                    return _token.GetValue<T>();
+                }
 
                 return (T)value;
             }

@@ -99,6 +99,7 @@ public abstract class Test(IJsonContext context)
         public const string ArrayFromObject = "ArrayFromObject";
         public const string RootObject = "RootObject";
         public const string Group = "Group";
+        public const string Summary = "Summary";
         public const string Order = "Order";
         public const string Order1 = "Order1";
         public const string OrderDesc = "OrderDesc";

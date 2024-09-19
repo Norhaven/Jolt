@@ -19,15 +19,24 @@
   "groupableArray": [
     {
       "type": "one",
-      "value": "1"
+      "value": "1",
+      "subObject": {
+        "integerLiteral": 2
+      }
     },
     {
       "type": "one",
-      "value": "3"
+      "value": "3",
+      "subObject": {
+        "integerLiteral": 4
+      }
     },
     {
       "type": "two",
-      "value": "2"
+      "value": "2",
+      "subObject": {
+        "integerLiteral": 2
+      }
     }
   ]
 }

@@ -228,6 +228,7 @@ public abstract class JoltTransformerTests(IJsonContext context) : Test(context)
         json[TargetProperty.AppendedArray].AsArray().ShouldContain("one", "two", "three", "one", "two", "three");
         json[TargetProperty.AppendedObject].AsObject().ShouldContainProperties(("first", 1), ("second", 2));
         json[TargetProperty.Group].AsArray().ShouldContainProperties((0, "key", "one"), (1, "key", "two"));
+        json[TargetProperty.Summary].AsArray().ShouldContainProperties((0, "one", 6), (1, "two", 2));
         json[TargetProperty.Order].AsArray().ShouldContainProperties((0, "type", "one"), (1, "type", "one"), (2, "type", "two"));
         json[TargetProperty.Order1].AsArray().ShouldContain(1, 2, 3);
         json[TargetProperty.OrderDesc].AsArray().ShouldContainProperties((0, "type", "two"), (1, "type", "one"), (2, "type", "one"));
