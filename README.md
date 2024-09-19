@@ -316,9 +316,9 @@ This package comes with quite a few methods built into it to get you started, al
 | indexOf | Returns the zero-based index value of the first occurrence of the provided value | `#indexOf(#valueOf($.some.path), 'some string')` | Property Value
 | length | Returns the length of a string or array value | `#length($.some.path)` | Property Value
 | substring | Returns the string value that falls within the provided range in a given string | `#substring(1..2)` | Property Value
-| groupBy | Returns a JSON object that represents the grouping of an array's contents by its individual property values | `#groupBy($.some.path, 'propertyName')` | Property Value
-| orderBy | Returns an array in ascending order as determined by its individual property values | `#orderBy($.some.path, 'propertyName')` | Property Value
-| orderByDesc | Returns an array in descending order as determined by its individual property values | `#orderByDesc($.some.path, 'propertyName')` | Property Value
+| groupBy | Returns a JSON object that represents the grouping of an array's contents by its individual property values | `#groupBy($.some.path, @x: @x.propertyName)` | Property Value
+| orderBy | Returns an array in ascending order as determined by its individual property values | `#orderBy($.some.path, @x: @x.propertyName)` | Property Value
+| orderByDesc | Returns an array in descending order as determined by its individual property values | `#orderByDesc($.some.path, @x: @x.propertyName)` | Property Value
 | contains | Returns true when an array or string contains the provided value | `#contains($.some.path, 'some string')` | Property Value
 | roundTo | Returns the value of a provided number rounded to the specified decimal places | `#roundTo($.some.path, 2)` | Property Value
 | max | Returns the maximum value found within an array of numbers | `#max($.some.path)` | Property Value
