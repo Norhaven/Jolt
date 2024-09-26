@@ -16,10 +16,10 @@ namespace Jolt.Json.DotNet
             set => _token.ReplaceWith(value.ToTypeOf<Nodes.JsonNode>());
         }
 
-        public JsonProperty(Nodes.JsonNode? token)
+        public JsonProperty(Nodes.JsonNode? token, string propertyName)
             : base(token)
         {
-            PropertyName = token.GetPropertyName();
+            PropertyName = propertyName;
         }
 
         public override void Clear()

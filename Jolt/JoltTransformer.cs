@@ -164,11 +164,12 @@ namespace Jolt
             {
                 if (result.RangeVariable != null && !scope.TryGetVariable(result.RangeVariable.Name, out var _))
                 {
-                    if (result.TransformedToken != null)
+                    if (result.RangeVariable.Name == propertyName)
                     {
                         json?.Remove(propertyName);
-                        result.RangeVariable.Value = result.TransformedToken;
                     }
+                    
+                    result.RangeVariable.Value = result.TransformedToken;
 
                     scope.AddOrUpdateVariable(result.RangeVariable, forceApplyToCurrentLayer: true);                    
 

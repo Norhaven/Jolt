@@ -21,6 +21,25 @@
           }
         },
         {
+          "name": "Range variable set to null and read verbatim",
+          "transformer": {
+            "@x": null,
+            "value": "@x"
+          },
+          "result": {
+            "value": null
+          }
+        },
+        {
+          "name": "Range variable read without being set results null value",
+          "transformer": {
+            "value": "@x"
+          },
+          "result": {
+            "value": null
+          }
+        },
+        {
           "name": "The valueOf call returns null when a path pointing to nothing is used",
           "transformer": {
             "value": "#valueOf($.missing)"

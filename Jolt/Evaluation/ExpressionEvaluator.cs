@@ -36,7 +36,8 @@ namespace Jolt.Evaluation
                 // variables with literal values as well as expression results.
 
                 var isValuePendingEvaluation = context.Mode == EvaluationMode.PropertyName && range.Value is null;
-                var actualTransformerToken = range.Value ?? context.Token.CurrentTransformerToken;
+
+                var actualTransformerToken = isValuePendingEvaluation ? context.Token.CurrentTransformerToken : range.Value;
 
                 return new EvaluationResult(context.Token.PropertyName, default, actualTransformerToken, isValuePendingEvaluation, range);
             }

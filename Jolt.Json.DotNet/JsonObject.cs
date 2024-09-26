@@ -128,7 +128,7 @@ namespace Jolt.Json.DotNet
 
         public bool HasProperty(string propertyName) => _properties.ContainsKey(propertyName);
 
-        public IEnumerator<IJsonProperty> GetEnumerator() => ((Nodes.JsonObject)_token).Select(x => new JsonProperty(x.Value)).GetEnumerator();
+        public IEnumerator<IJsonProperty> GetEnumerator() => ((Nodes.JsonObject)_token).Select(x => new JsonProperty(x.Value, x.Value?.GetPropertyName() ?? x.Key)).GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
