@@ -178,12 +178,8 @@ namespace Jolt
 
                 if (scope.TryGetVariable(propertyName, out var variable))
                 {
-                    if (result.TransformedToken is null)
-                    {
-                        throw _context.CreateExecutionErrorFor<JoltTransformer<TContext>>(ExceptionCode.ReferencedRangeVariableWithNoValue, variable.Name);
-                    }
-
                     json?.Remove(propertyName);
+
                     var updatedVariable = new RangeVariable(variable.Name, result.TransformedToken);
 
                     scope.AddOrUpdateVariable(updatedVariable, forceApplyToCurrentLayer: true);

@@ -131,8 +131,8 @@ namespace Jolt.Evaluation
                 {
                     return binary.Operator switch
                     { 
-                        Operator.Equal => leftResult is null && rightResult is null,
-                        Operator.NotEqual => !(leftResult is null && rightResult is null),
+                        Operator.Equals => leftResult is null && rightResult is null,
+                        Operator.NotEquals => !(leftResult is null && rightResult is null),
                         _ => throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateExpressionWithOperatorAndArguments, leftResult, binary.Operator, rightResult)
                     };
                 }
@@ -144,8 +144,8 @@ namespace Jolt.Evaluation
 
                     return binary.Operator switch
                     {
-                        Operator.Equal => left.Equals(right),
-                        Operator.NotEqual => !left.Equals(right),
+                        Operator.Equals => left.Equals(right),
+                        Operator.NotEquals => !left.Equals(right),
                         Operator.GreaterThan => left.IsGreaterThan(right),
                         Operator.LessThan => left.IsLessThan(right),
                         Operator.GreaterThanOrEquals => left.IsGreaterThan(right) || left.Equals(right),
@@ -157,8 +157,8 @@ namespace Jolt.Evaluation
                 {
                     return binary.Operator switch
                     { 
-                        Operator.Equal => leftResult.Equals(rightResult),
-                        Operator.NotEqual => !leftResult.Equals(rightResult),
+                        Operator.Equals => leftResult.Equals(rightResult),
+                        Operator.NotEquals => !leftResult.Equals(rightResult),
                         _ => throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateExpressionWithOperatorAndArguments, leftResult, binary.Operator, rightResult)
                     };
                 }

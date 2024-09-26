@@ -7,11 +7,57 @@
   },
   "testGroups": [
     {
+      "name": "Math expressions",
+      "source": {
+        "one": 1,
+        "two": 2,
+        "three": 3
+      },
+      "tests": [
+        {
+          "name": "Addition with valueOf() produces correct result",
+          "transformer": {
+            "value": "#valueOf($.one) + #valueOf($.two) + #valueOf($.three)"
+          },
+          "result": {
+            "value": 6
+          }
+        },
+        {
+          "name": "Multiplication with valueOf() produces correct result",
+          "transformer": {
+            "value": "#valueOf($.one) * #valueOf($.two) * #valueOf($.three)"
+          },
+          "result": {
+            "value": 6
+          }
+        },
+        {
+          "name": "Subtraction with valueOf() produces correct result",
+          "transformer": {
+            "value": "#valueOf($.one) - #valueOf($.two) - #valueOf($.three)"
+          },
+          "result": {
+            "value": -4
+          }
+        },
+        {
+          "name": "Subtraction with valueOf() produces correct result",
+          "transformer": {
+            "value": "#valueOf($.one) / #valueOf($.two) / #valueOf($.three)"
+          },
+          "result": {
+            "value": 0.16666666666666666
+          }
+        }
+      ]
+    },
+    {
       "name": "Operations on an empty source document",
       "source": {},
       "tests": [
         {
-          "name": "Range variable set to empty string and read verbatim",
+          "name": "Range variable set to empty string and read verbatim results in an empty string value",
           "transformer": {
             "@x": "",
             "value": "@x"
@@ -21,7 +67,17 @@
           }
         },
         {
-          "name": "Range variable set to null and read verbatim",
+          "name": "Range variable set to null and read verbatim results in a null value",
+          "transformer": {
+            "@x": "#valueOf($.missing)",
+            "value": "@x"
+          },
+          "result": {
+            "value": null
+          }
+        },
+        {
+          "name": "Range variable indirectly set to null and read verbatim results in a null value",
           "transformer": {
             "@x": null,
             "value": "@x"
@@ -31,7 +87,7 @@
           }
         },
         {
-          "name": "Range variable read without being set results null value",
+          "name": "Range variable read without being set results in a null value",
           "transformer": {
             "value": "@x"
           },

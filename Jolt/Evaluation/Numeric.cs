@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Jolt.Expressions;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -8,7 +9,7 @@ namespace Jolt.Evaluation
     {
         private static readonly ISet<Type> _numericTypes = new HashSet<Type>
         {
-            typeof(byte), typeof(short), typeof(int), typeof(long), typeof(float), typeof(double), typeof(decimal)
+            typeof(byte), typeof(sbyte), typeof(short), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal)
         };
 
         public static bool IsSupported(object? value)
@@ -37,46 +38,50 @@ namespace Jolt.Evaluation
 
         public object? Add(object? value)
         {
-            return PerformOperationWith(value, "+", (left, right) => left + right, (left, right) => left + right);
+            return PerformOperationWith(value, Operator.Addition, (left, right) => left + right, (left, right) => left + right);
         }
 
         public object? Divide(object? value)
         {
-            return PerformOperationWith(value, "/", (left, right) => left / right, (left, right) => left / right);
+            return PerformOperationWith(value, Operator.Division, (left, right) => left / right, (left, right) => left / right);
         }
 
-        public bool IsGreaterThan(object? value) => (bool)PerformOperationWith(value, ">", (left, right) => left.CompareTo(right) > 0, (left, right) => left.CompareTo(right) > 0);
+        public bool IsGreaterThan(object? value) => (bool)PerformOperationWith(value, Operator.GreaterThan, (left, right) => left.CompareTo(right) > 0, (left, right) => left.CompareTo(right) > 0);
 
-        public bool IsLessThan(object? value) => (bool)PerformOperationWith(value, "<", (left, right) => left.CompareTo(right) < 0, (left, right) => left.CompareTo(right) < 0);
+        public bool IsLessThan(object? value) => (bool)PerformOperationWith(value, Operator.LessThan, (left, right) => left.CompareTo(right) < 0, (left, right) => left.CompareTo(right) < 0);
 
-        public override bool Equals(object obj) => (bool)PerformOperationWith(obj, "=", (left, right) => left == right, (left, right) => left == right);
+        public override bool Equals(object obj) => (bool)PerformOperationWith(obj, Operator.Equals, (left, right) => left == right, (left, right) => left == right);
 
         public override int GetHashCode() => _value.GetHashCode();
 
         public object? Multiply(object? value)
         {
-            return PerformOperationWith(value, "*", (left, right) => left * right, (left, right) => left * right);
+            return PerformOperationWith(value, Operator.Multiplication, (left, right) => left * right, (left, right) => left * right);
         }
 
         public object? Subtract(object? value)
         {
-            return PerformOperationWith(value, "-", (left, right) => left - right, (left, right) => left - right);
+            return PerformOperationWith(value, Operator.Subtraction, (left, right) => left - right, (left, right) => left - right);
         }
 
-        private object? PerformOperationWith(object? value, string operation, Func<long, long, object> useIntegers, Func<double, double, object> useFloatingPoints)
+        private object? PerformOperationWith(object? value, Operator operation, Func<long, long, object> useIntegers, Func<double, double, object> useFloatingPoints)
         {
             value = UnwrapNumericIfPresent(value);
             
             // Handle the cases where we may have a non-whole number in the mix first, when that
             // happens we need to lift whatever the other one happens to be for the operation.
-            // Internally we're assuming decimal or long for every numeric literal but the user may
-            // have additional types coming into the expressions from their external methods and
+            // Internally we're assuming double or long for every numeric literal but the user may
+            // also have additional types coming into the expressions from their external methods and
             // we need to handle those appropriately too. Note that we're currently not splitting out
-            // the decimal operations from float/double so there may be a few slight rounding errors using that type.
+            // the decimal operations from float/double so there may be a few slight rounding errors
+            // using that type. We're also requiring that division use doubles in all cases because
+            // when both operands are non-floating point types then the result will be truncated
+            // and not be an accurate representation of the true value.
 
             if (_value is double || value is double || 
                 _value is float || value is float ||
-                _value is decimal || value is decimal)
+                _value is decimal || value is decimal ||
+                operation == Operator.Division)
             {
                 return useFloatingPoints(_value.ConvertTo<double>(), value.ConvertTo<double>());
             }

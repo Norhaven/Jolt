@@ -159,8 +159,8 @@ namespace Jolt.Parsing
             {
                 return @operator switch
                 {
-                    Operator.Equal => 0,
-                    Operator.NotEqual => 0,
+                    Operator.Equals => 0,
+                    Operator.NotEquals => 0,
                     Operator.LessThan => 0,
                     Operator.GreaterThan => 0,
                     Operator.LessThanOrEquals => 0,
@@ -210,7 +210,7 @@ namespace Jolt.Parsing
             {
                 return token?.Category switch
                 {
-                    ExpressionTokenCategory.EqualComparison => Operator.Equal,
+                    ExpressionTokenCategory.EqualComparison => Operator.Equals,
                     ExpressionTokenCategory.GreaterThanComparison => Operator.GreaterThan,
                     ExpressionTokenCategory.LessThanComparison => Operator.LessThan,
                     ExpressionTokenCategory.GreaterThanOrEqualComparison => Operator.GreaterThanOrEquals,
@@ -219,7 +219,7 @@ namespace Jolt.Parsing
                     ExpressionTokenCategory.Subtraction => Operator.Subtraction,
                     ExpressionTokenCategory.Multiplication => Operator.Multiplication,
                     ExpressionTokenCategory.Division => Operator.Division,
-                    ExpressionTokenCategory.NotEqualComparison => Operator.NotEqual,
+                    ExpressionTokenCategory.NotEqualComparison => Operator.NotEquals,
                     _ => Operator.Unknown
                 };
             }

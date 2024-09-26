@@ -66,7 +66,6 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToPerformLoopLibraryCallOnNonLoopableSourceToken] = "Unable to loop over non-enumerable source token of type '{0}'",
             [ExceptionCode.UnableToPerformLoopLibraryCallDueToMissingContentTemplate] = "Unable to locate loop content template for unsupported token type '{0}'",
             [ExceptionCode.MethodCallActualParameterCountExceedsFormalParameterCount] = "The number of parameters passed to method '{0}' exceed the allowed amount of '{1}'",
-            [ExceptionCode.ReferencedRangeVariableWithNoValue] = "Referenced range variable '{0}' which had a null value",
             [ExceptionCode.UnableToPerformLoopLibraryCallDueToInvalidParameter] = "Unable to loop on value '{0}' which is not a path or a variable reference",
             [ExceptionCode.ExpectedLambdaResultToBeBooleanButFoundDifferentToken] = "Expected lambda result to be a boolean value but found '{0}' instead",
             [ExceptionCode.UnableToParsePropertyDereferenceChain] = "Unable to parse property dereference chain, found value '{0}'",

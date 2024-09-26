@@ -12,8 +12,8 @@ namespace Jolt.Expressions
         public Operator Operator { get; }
 
         public bool IsComparison => Operator.IsAnyOf(
-            Operator.Equal, 
-            Operator.NotEqual, 
+            Operator.Equals, 
+            Operator.NotEquals, 
             Operator.GreaterThan, 
             Operator.LessThan, 
             Operator.GreaterThanOrEquals, 

@@ -113,8 +113,8 @@ namespace Jolt.Exceptions
         UnableToPerformLoopLibraryCallDueToMissingContentTemplate,
         [Description("JLT524")]
         MethodCallActualParameterCountExceedsFormalParameterCount,
-        [Description("JLT525")]
-        ReferencedRangeVariableWithNoValue,
+        //[Description("JLT525")]
+        //ReferencedRangeVariableWithNoValue,
         [Description("JLT526")]
         UnableToPerformLoopLibraryCallDueToInvalidParameter,
         [Description("JLT527")]

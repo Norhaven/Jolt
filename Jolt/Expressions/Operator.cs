@@ -7,8 +7,8 @@ namespace Jolt.Expressions
     public enum Operator
     {
         Unknown = 0,
-        Equal,
-        NotEqual,
+        Equals,
+        NotEquals,
         LessThan,
         GreaterThan,
         LessThanOrEquals,
