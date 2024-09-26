@@ -83,7 +83,24 @@ namespace Jolt.Evaluation
                 _value is decimal || value is decimal ||
                 operation == Operator.Division)
             {
-                return useFloatingPoints(_value.ConvertTo<double>(), value.ConvertTo<double>());
+                var result = useFloatingPoints(_value.ConvertTo<double>(), value.ConvertTo<double>());
+
+                if (result is double d)
+                {
+                    // Depending on whether you use Newtonsoft or System.Text.Json it will represent the
+                    // output in the result as a number in the resulting JSON with or without the decimal point
+                    // and trailing zero. We need to ensure that the result is consistent for both cases
+                    // so we're checking for a whole number and truncating if that's the case.
+
+                    var isWholeNumber = Math.Abs(d % 1) <= (double.Epsilon * 100);
+
+                    if (isWholeNumber)
+                    {
+                        return (long)d;
+                    }
+                }
+
+                return result;
             }
 
             if (OperatorEvaluator.CanBothConvertTo<long>(_value, value))
