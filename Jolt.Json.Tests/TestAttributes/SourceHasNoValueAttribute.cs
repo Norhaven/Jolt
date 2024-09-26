@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Jolt.Json.Tests.TestAttributes;
 
-internal class SourceHasNoValueAttribute : SourceHasAttribute
+/// <summary>
+/// Sets a null JSON property value in the source document by name (if applicable).
+/// </summary>
+internal class SourceHasNoValueAttribute() : SourceHasAttribute(SourceValueType.Unknown, Default.Value, default)
 {
-    public SourceHasNoValueAttribute() : base(SourceValueType.Unknown, Default.Value, default)
-    {
-    }
 }

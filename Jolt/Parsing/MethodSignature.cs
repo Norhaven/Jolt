@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace Jolt.Parsing
 {
+    [DebuggerDisplay("{Name}({Parameters.Count})")]
     public sealed class MethodSignature
     {
         public string AssemblyQualifiedTypeName { get; }

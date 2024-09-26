@@ -39,5 +39,12 @@ namespace Jolt.Json.DotNet
         {
             ((Nodes.JsonValue)_token).ReplaceWith<string>(default);
         }
+
+        // JSON values are a special case where we can't just write the token itself with ToJsonString()
+        // because it will leave in the double quotes around a string value, so we're handling
+        // that case for values by default by using the token's ToString() method instead which has a
+        // special case built into it for that.
+
+        public override string ToString() => _token?.ToString();
     }
 }

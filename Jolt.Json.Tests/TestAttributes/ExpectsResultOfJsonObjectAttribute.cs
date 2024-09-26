@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Jolt.Json.Tests.TestAttributes;
 
+/// <summary>
+/// Creates the expectation that the specified JSON object will be returned as the result.
+/// </summary>
 internal class ExpectsResultOfJsonObjectAttribute : ExpectsResultAttribute
 {
     public ExpectsResultOfJsonObjectAttribute(string? value)

@@ -179,7 +179,7 @@ namespace Jolt
                 {
                     if (result.TransformedToken is null)
                     {
-                        throw _context.CreateExecutionErrorFor<JoltTransformer<TContext>>(ExceptionCode.ReferencedRangeVariableWithNoValue, result.RangeVariable.Name);
+                        throw _context.CreateExecutionErrorFor<JoltTransformer<TContext>>(ExceptionCode.ReferencedRangeVariableWithNoValue, variable.Name);
                     }
 
                     json?.Remove(propertyName);

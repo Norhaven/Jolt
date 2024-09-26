@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Jolt.Json.Tests.TestAttributes;
 
+/// <summary>
+/// Sets a boolean JSON property value in the source document by name (if applicable).
+/// </summary>
 internal class SourceHasBooleanAttribute : SourceHasAttribute
 {
     public SourceHasBooleanAttribute(object? value) : base(SourceValueType.BooleanLiteral, Default.Value, value)

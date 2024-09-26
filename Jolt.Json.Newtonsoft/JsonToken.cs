@@ -86,9 +86,17 @@ namespace Jolt.Json.Newtonsoft
             return FromObject(copiedToken);
         }
 
-        public T ToTypeOf<T>() => _token.ToObject<T>();
+        public T ToTypeOf<T>()
+        {
+            if (typeof(T) == typeof(string))
+            {
+                return (T)(object)_token.ToString();
+            }
 
-        public override string ToString() => _token?.ToString();
+            return _token.ToObject<T>();
+        }
+
+        public override string ToString() => _token?.ToString(Formatting.None);
 
         public override bool Equals(object obj)
         {

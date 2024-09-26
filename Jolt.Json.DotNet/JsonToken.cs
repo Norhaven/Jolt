@@ -130,7 +130,7 @@ namespace Jolt.Json.DotNet
             return _token.GetValue<T>();
         }
 
-        public override string ToString() => _token?.ToString();
+        public override string ToString() => _token?.ToJsonString(new JsonSerializerOptions { WriteIndented = false });
 
         private Nodes.JsonNode? SelectToken(string path)
         {

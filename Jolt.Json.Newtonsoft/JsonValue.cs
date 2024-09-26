@@ -38,5 +38,11 @@ namespace Jolt.Json.Newtonsoft
         {
             ((JValue)_token).Value = default;
         }
+
+        // JSON values are a special case where we can't just write the token itself to a string
+        // because it will leave in the double quotes around a string value, so we're handling
+        // that case for values by default.
+
+        public override string ToString() => _token?.Value<string>();
     }
 }

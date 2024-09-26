@@ -159,8 +159,8 @@ namespace Jolt.Parsing
                 else if (stream.CurrentToken == ExpressionToken.Hash)
                 {
                     yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfMethodCall);
-                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.Identifier, ExpressionToken.OpenParentheses);
-                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfMethodParameters);
+                    yield return TokenUntilNotMatchedWith(stream, ExpressionTokenCategory.Identifier, x => char.IsLetterOrDigit(x));
+                    yield return TokenUntilNotMatchedWith(stream, ExpressionTokenCategory.StartOfMethodParameters, x => x == ExpressionToken.OpenParentheses);
                 }                
                 else if (stream.CurrentToken == ExpressionToken.At)
                 {

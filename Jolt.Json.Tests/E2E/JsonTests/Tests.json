@@ -1,0 +1,78 @@
+﻿{
+  "possibleExceptionCodes": {
+    "missingParameter": "MissingRequiredMethodParameter",
+    "tooManyParameters": "MethodCallActualParameterCountExceedsFormalParameterCount",
+    "missingTokenAtEnd": "ExpectedTokenButFoundEndOfExpression",
+    "missingExpectedToken": "UnableToLocateExpectedCharactersInExpression"
+  },
+  "testGroups": [
+    {
+      "name": "Operations on an empty source document",
+      "source": {},
+      "tests": [
+        {
+          "name": "Range variable set to empty string and read verbatim",
+          "transformer": {
+            "@x": "",
+            "value": "@x"
+          },
+          "result": {
+            "value": ""
+          }
+        },
+        {
+          "name": "The valueOf call returns null when a path pointing to nothing is used",
+          "transformer": {
+            "value": "#valueOf($.missing)"
+          },
+          "result": {
+            "value": null
+          }
+        },
+        {
+          "name": "Missing initial hash sign for method will result in using the literal value",
+          "transformer": {
+            "value": "valueOf($.missing)"
+          },
+          "result": {
+            "value": "valueOf($.missing)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Incorrect method signatures that provoke errors",
+      "source": {},
+      "tests": [
+        {
+          "name": "Single parameter required but zero were provided",
+          "transformer": {
+            "value": "#valueOf()"
+          },
+          "exceptionCode": "missingParameter"
+        },
+        {
+          "name": "Too many parameters provided for non-variadic method",
+          "transformer": {
+            "value": "#valueOf($.missing, $.extra)"
+          },
+          "exceptionCode": "tooManyParameters"
+        },
+        {
+          "name": "Closing parenthesis is missing",
+          "transformer": {
+            "value": "#valueOf($.missing"
+          },
+          "exceptionCode": "missingTokenAtEnd"
+        },
+        {
+          "name": "Opening parenthesis is missing",
+          "transformer": {
+            "value": "#valueOf$.missing)"
+          },
+          "exceptionCode": "missingExpectedToken"
+        }
+      ]
+    }
+  ]
+}

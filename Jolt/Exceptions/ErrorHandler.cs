@@ -11,9 +11,9 @@ namespace Jolt.Exceptions
 
         public bool IsEnabled => _options.ErrorMode != JoltErrorMode.Strict;
 
-        public ErrorHandler(JoltOptions options)
+        public ErrorHandler(JoltOptions? options)
         {
-            _options = options;
+            _options = options ?? JoltOptions.Default;
         }
 
         public void HandleFor<T>(Exception exception)

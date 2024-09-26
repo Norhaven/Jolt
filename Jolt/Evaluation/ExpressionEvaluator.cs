@@ -30,9 +30,15 @@ namespace Jolt.Evaluation
 
             if (result is RangeVariable range)
             {
-                var isValuePendingEvaluation = context.Mode == EvaluationMode.PropertyName && range.Value is null;
+                // When the variable already has a value that means that we're just directly using whatever variable
+                // we have as the result of the property value evaluation and that should take precedence over any
+                // existing transformer token. Otherwise, fall back to using the literal value to allow for setting
+                // variables with literal values as well as expression results.
 
-                return new EvaluationResult(context.Token.PropertyName, default, range.Value, isValuePendingEvaluation, range);
+                var isValuePendingEvaluation = context.Mode == EvaluationMode.PropertyName && range.Value is null;
+                var actualTransformerToken = range.Value ?? context.Token.CurrentTransformerToken;
+
+                return new EvaluationResult(context.Token.PropertyName, default, actualTransformerToken, isValuePendingEvaluation, range);
             }
 
             if (result is DereferencedPath path)

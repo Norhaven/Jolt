@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Jolt.Json.Tests.TestAttributes;
 
+/// <summary>
+/// Represents the available types that a source value could be.
+/// </summary>
 internal enum SourceValueType
 {
     Unknown,

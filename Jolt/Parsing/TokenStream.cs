@@ -88,6 +88,11 @@ namespace Jolt.Parsing
                 return false;
             }
 
+            if (isMatch(_enumerator.Current))
+            {
+                return false;
+            }
+
             var collectedTokens = new List<T>
             {
                 _enumerator.Current,
