@@ -224,9 +224,32 @@ namespace Jolt.Parsing
                 };
             }
 
+            int GetComparisonOperatorCount(Expression expression)
+            {
+                if (expression is BinaryExpression binary)
+                {
+                    var leftCount = GetComparisonOperatorCount(binary.Left);
+                    var rightCount = GetComparisonOperatorCount(binary.Right);
+
+                    var isComparisonOperator = binary.Operator.IsAnyOf(Operator.NotEquals, Operator.Equals, Operator.LessThan, Operator.GreaterThan, Operator.LessThanOrEquals, Operator.GreaterThanOrEquals);
+                    var comparisonCount = isComparisonOperator ? 1 : 0;
+
+                    return comparisonCount + leftCount + rightCount;
+                }
+
+                return 0;
+            }
+
             var leftExpression = ReadNextAtom(reader);
 
             expression = ParsePrecedenceExpression(reader, leftExpression, 0);
+
+            var comparisonOperatorCount = GetComparisonOperatorCount(expression);
+
+            if (comparisonOperatorCount > 1)
+            {
+                throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.ExpectedZeroOrOneComparisonSymbolsInExpressionButFoundMoreThanOne, comparisonOperatorCount);
+            }
 
             return true;
         }

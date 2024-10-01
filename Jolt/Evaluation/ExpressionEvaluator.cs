@@ -469,31 +469,38 @@ namespace Jolt.Evaluation
 
         private static object? InvokeMethod(MethodSignature method, IEnumerable<object?> actualParameterValues, EvaluationContext context)
         {
-            if (method.CallType == CallType.Static)
+            try
             {
-                var type = Type.GetType(method.AssemblyQualifiedTypeName);
-                var methodInfo = type.GetMethod(method.Name, BindingFlags.Public | BindingFlags.Static);
-
-                return methodInfo.Invoke(null, actualParameterValues.ToArray());
-            }
-            else if (method.CallType == CallType.Instance)
-            {
-                if (context.JsonContext.MethodContext is null)
+                if (method.CallType == CallType.Static)
                 {
-                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToInvokeInstanceMethodWithoutMethodContext, method.Name);
+                    var type = Type.GetType(method.AssemblyQualifiedTypeName);
+                    var methodInfo = type.GetMethod(method.Name, BindingFlags.Public | BindingFlags.Static);
+
+                    return methodInfo.Invoke(null, actualParameterValues.ToArray());
+                }
+                else if (method.CallType == CallType.Instance)
+                {
+                    if (context.JsonContext.MethodContext is null)
+                    {
+                        throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToInvokeInstanceMethodWithoutMethodContext, method.Name);
+                    }
+
+                    var methodInfo = context.JsonContext.MethodContext.GetType().GetMethod(method.Name, BindingFlags.Public | BindingFlags.Instance);
+
+                    if (methodInfo is null)
+                    {
+                        throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToLocateInstanceMethodWithProvidedMethodContext, method.Name, context.JsonContext.MethodContext.GetType().FullName);
+                    }
+
+                    return methodInfo.Invoke(context.JsonContext.MethodContext, actualParameterValues.ToArray());
                 }
 
-                var methodInfo = context.JsonContext.MethodContext.GetType().GetMethod(method.Name, BindingFlags.Public | BindingFlags.Instance);
-
-                if (methodInfo is null)
-                {
-                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToLocateInstanceMethodWithProvidedMethodContext, method.Name, context.JsonContext.MethodContext.GetType().FullName);
-                }
-
-                return methodInfo.Invoke(context.JsonContext.MethodContext, actualParameterValues.ToArray());
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToInvokeMethodWithUnknownCallType, method.CallType);
             }
-
-            throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToInvokeMethodWithUnknownCallType, method.CallType);
+            catch (TargetInvocationException ex) when (ex.InnerException is JoltException jex)
+            {
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.ExternalMethodInvocationCausedAnException, jex, method.Name);
+            }
         }
     }
 }

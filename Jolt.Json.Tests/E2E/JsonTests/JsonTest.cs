@@ -16,12 +16,27 @@ public abstract class JsonTest(IJsonContext context): Test(context)
 {
     public sealed record TestFile(JsonNode PossibleExceptionCodes, TestGroup[] TestGroups);
     public sealed record TestGroup(string Name, JsonNode Source, EndToEndTest[] Tests);
-    public sealed record EndToEndTest(string GroupName, IDictionary<string, string> PossibleExceptions, string Name, string Source, JsonNode Transformer, JsonNode? Result, string? ExceptionCode, string? ExceptionType);
+    public sealed record EndToEndTest(string GroupName, IDictionary<string, string> PossibleExceptions, string Name, string Source, JsonNode Transformer, JsonNode? Result, string? ExceptionCode, string? InnerExceptionCode, string? ExceptionType);
 
     [Theory]
     [MemberData(nameof(GetTests))]
     public void ExecuteTest(EndToEndTest test)
     {        
+        ExceptionCode GetExceptionCodeFrom(string exceptionCodeText)
+        {
+            if (!test.PossibleExceptions.TryGetValue(exceptionCodeText, out var exceptionCodeName))
+            {
+                exceptionCodeName = exceptionCodeText;
+            }
+
+            if (!Enum.TryParse<ExceptionCode>(exceptionCodeName, out var expectedCode))
+            {
+                throw new ArgumentOutOfRangeException(nameof(exceptionCodeText), $"Unable to locate an exception code with the value '{exceptionCodeName}'");
+            }
+
+            return expectedCode;
+        }
+
         var transformer = CreateTransformerWith(test.Transformer.ToJsonString(), []);
 
         try
@@ -43,17 +58,21 @@ public abstract class JsonTest(IJsonContext context): Test(context)
                 // and we should default to that if it's present, otherwise we need to assume that they specified
                 // it explicitly and fall back to that if possible.
 
-                if (!test.PossibleExceptions.TryGetValue(test.ExceptionCode, out var exceptionCodeName))
-                {
-                    exceptionCodeName = test.ExceptionCode;
-                }
-
-                if (!Enum.TryParse<ExceptionCode>(exceptionCodeName, out var expectedCode))
-                {
-                    throw new ArgumentOutOfRangeException(nameof(test.ExceptionCode), $"Unable to locate an exception code with the value '{exceptionCodeName}'");
-                }
+                var expectedCode = GetExceptionCodeFrom(test.ExceptionCode);
 
                 ex.Code.Should().Be(expectedCode, "because this exception code was expected");
+
+                if (test.InnerExceptionCode is not null)
+                {
+                    var expectedInnerCode = GetExceptionCodeFrom(test.InnerExceptionCode);
+
+                    if (ex.InnerException is not JoltException innerException)
+                    {
+                        throw new ArgumentOutOfRangeException($"Expected inner exception to be of type 'JoltException' and contain code '{expectedInnerCode}' but found exception type '{ex.InnerException.GetType()}' instead");
+                    }
+
+                    ((JoltException)ex.InnerException).Code.Should().Be(expectedInnerCode, "because this inner exception code was expected");
+                }
             }
 
             if (test.ExceptionType is not null)

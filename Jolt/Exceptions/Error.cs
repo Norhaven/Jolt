@@ -33,6 +33,7 @@ namespace Jolt.Exceptions
             [ExceptionCode.ExpectedRangeVariableAfterSemicolonButFoundTokenInstead] = "Expected range variable declaration after semicolon but found '{0}' instead",
             [ExceptionCode.ExpectedAsKeywordButFoundUnexpectedToken] = "Expected 'as' keyword but found '{0}'",
             [ExceptionCode.UnableToParseVariableAlias] = "Unable to parse variable alias",
+            [ExceptionCode.ExpectedZeroOrOneComparisonSymbolsInExpressionButFoundMoreThanOne] = "Expected zero or one comparison operators in expression but found '{0}' instead",
 
             // Resolution
 
@@ -81,11 +82,12 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToUseMethodOutsideOfStatementBlock] = "Unable to use method '{0}' outside of a 'using' block",
             [ExceptionCode.UnableToUseMethodWithinNonRootStatementBlock] = "Unable to use method statement '{0}' as a non-root expression",
             [ExceptionCode.AttemptedToIndirectlyModifyVariableWithinUsingBlock] = "Attempted to indirectly modify variable '{0}' within a using block not scoped to it",
-            [ExceptionCode.UnableToResolveNewPropertyNameForUnsupportedResultOfType] = "Unable to resolve new property name for unsupported result of type '{0}'"
+            [ExceptionCode.UnableToResolveNewPropertyNameForUnsupportedResultOfType] = "Unable to resolve new property name for unsupported result of type '{0}'",
+            [ExceptionCode.ExternalMethodInvocationCausedAnException] = "Call to external method '{0}' caused an exception, check inner exception for details"
         };
 
-        public static JoltException CreateParsingErrorFrom(ExceptionCode code, params object[] parameters) => BuildExceptionFrom(code, parameters, x => new JoltParsingException(code, x));
-        public static JoltException CreateExecutionErrorFrom(ExceptionCode code, params object[] parameters) => BuildExceptionFrom(code, parameters, x => new JoltExecutionException(code, x));
+        public static JoltException CreateParsingErrorFrom(ExceptionCode code, JoltException? innerException, params object[] parameters) => BuildExceptionFrom(code, parameters, x => new JoltParsingException(code, x, innerException));
+        public static JoltException CreateExecutionErrorFrom(ExceptionCode code, JoltException? innerException, params object[] parameters) => BuildExceptionFrom(code, parameters, x => new JoltExecutionException(code, x, innerException));
         public static JoltException CreateResolutionErrorFrom(ExceptionCode code, string typeName, string methodName, params object[] parameters) => BuildExceptionFrom(code, parameters, x => new JoltMethodResolutionException(code, typeName, methodName, x));
 
         private static JoltException BuildExceptionFrom(ExceptionCode code, object[] parameters, Func<string, JoltException> createWith)

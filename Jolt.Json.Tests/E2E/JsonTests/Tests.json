@@ -3,7 +3,9 @@
     "missingParameter": "MissingRequiredMethodParameter",
     "tooManyParameters": "MethodCallActualParameterCountExceedsFormalParameterCount",
     "missingTokenAtEnd": "ExpectedTokenButFoundEndOfExpression",
-    "missingExpectedToken": "UnableToLocateExpectedCharactersInExpression"
+    "missingExpectedToken": "UnableToLocateExpectedCharactersInExpression",
+    "tooManyComparisons": "ExpectedZeroOrOneComparisonSymbolsInExpressionButFoundMoreThanOne",
+    "externalMethodException": "ExternalMethodInvocationCausedAnException"
   },
   "testGroups": [
     {
@@ -98,6 +100,51 @@
       ]
     },
     {
+      "name": "Comparison expressions",
+      "source": {
+        "one": 1,
+        "two": 2,
+        "three": 3
+      },
+      "tests": [
+        {
+          "name": "Comparison expressions will evaluate literals correctly",
+          "transformer": {
+            "equality1": "#eval('1 = 1')",
+            "equality2": "#eval('1 = 2')",
+            "inequality1": "#eval('1 != 2')",
+            "inequality2": "#eval('1 != 1')",
+            "lessThan1": "#eval('1 < 2')",
+            "lessThan2": "#eval('1 < 1')",
+            "lessThan3": "#eval('1 < 0')",
+            "greaterThan1": "#eval('2 > 1')",
+            "greaterThan2": "#eval('1 > 1')",
+            "greaterThan3": "#eval('0 > 1')",
+            "lessThanOrEquals1": "#eval('1 <= 1')",
+            "lessThanOrEquals2": "#eval('1 <= 2')",
+            "greaterThanOrEquals1": "#eval('1 >= 1')",
+            "greaterThanOrEquals2": "#eval('2 >= 1')"
+          },
+          "result": {
+            "equality1": true,
+            "equality2": false,
+            "inequality1": true,
+            "inequality2": false,
+            "lessThan1": true,
+            "lessThan2": false,
+            "lessThan3": false,
+            "greaterThan1": true,
+            "greaterThan2": false,
+            "greaterThan3": false,
+            "lessThanOrEquals1": true,
+            "lessThanOrEquals2": true,
+            "greaterThanOrEquals1": true,
+            "greaterThanOrEquals2": true
+          }
+        }
+      ]
+    },
+    {
       "name": "Operations on an empty source document",
       "source": {},
       "tests": [
@@ -157,6 +204,20 @@
           "result": {
             "value": "valueOf($.missing)"
           }
+        }
+      ]
+    },
+    {
+      "name": "Incorrect math and comparison operator usage that provokes errors",
+      "source": {},
+      "tests": [
+        {
+          "name": "Multiple equals signs present in expression",
+          "transformer": {
+            "value": "#eval('1 = 1 = 1')"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "tooManyComparisons"
         }
       ]
     },

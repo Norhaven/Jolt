@@ -6,8 +6,8 @@ namespace Jolt.Exceptions
 {
     public sealed class JoltExecutionException : JoltException
     {
-        public JoltExecutionException(ExceptionCode code, string message) 
-            : base(code, message)
+        public JoltExecutionException(ExceptionCode code, string message, JoltException? innerException = default) 
+            : base(code, message, innerException)
         {
         }
     }

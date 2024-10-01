@@ -8,8 +8,8 @@ namespace Jolt.Exceptions
     {
         public ExceptionCode Code { get; }
 
-        public JoltException(ExceptionCode code, string message)
-            : base(message)
+        public JoltException(ExceptionCode code, string message, JoltException? innerException = default)
+            : base(message, innerException)
         {
             Code = code;
         }

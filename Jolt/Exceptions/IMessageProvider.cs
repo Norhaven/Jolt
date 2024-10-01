@@ -31,6 +31,16 @@ namespace Jolt.Exceptions
         JoltException CreateErrorFor<T>(MessageCategory category, ExceptionCode exceptionCode, params object[] parameters);
 
         /// <summary>
+        /// Creates a categorized error for the provided exception code with an inner exception.
+        /// </summary>
+        /// <typeparam name="T">The type containing the invalid attempt.</typeparam>
+        /// <param name="category">The category for this particular message.</param>
+        /// <param name="exceptionCode">The exception code for this error.</param>
+        /// <param name="parameters">Parameters to apply to the message template.</param>
+        /// <returns>An instance of <see cref="JoltException"/> with the error information.</returns>
+        JoltException CreateErrorFor<T>(MessageCategory category, ExceptionCode exceptionCode, JoltException innerException, params object[] parameters);
+
+        /// <summary>
         /// Writes an information level message.
         /// </summary>
         /// <typeparam name="T">The type containing the code related to the message.</typeparam>

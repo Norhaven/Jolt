@@ -75,5 +75,10 @@ namespace Jolt.Extensions
         {
             return context.JsonContext.MessageProvider.CreateErrorFor<T>(MessageCategory.Execution, exceptionCode, parameters);
         }
+
+        public static JoltException CreateExecutionErrorFor<T>(this EvaluationContext context, ExceptionCode exceptionCode, JoltException innerException, params object[] parameters)
+        {
+            return context.JsonContext.MessageProvider.CreateErrorFor<T>(MessageCategory.Execution, exceptionCode, innerException, parameters);
+        }
     }
 }

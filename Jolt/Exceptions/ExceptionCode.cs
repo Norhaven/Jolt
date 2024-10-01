@@ -55,6 +55,8 @@ namespace Jolt.Exceptions
         ExpectedAsKeywordButFoundUnexpectedToken,
         [Description("JLT122")]
         UnableToParseVariableAlias,
+        [Description("JLT123")]
+        ExpectedZeroOrOneComparisonSymbolsInExpressionButFoundMoreThanOne,
 
         // Resolution
 
@@ -144,6 +146,8 @@ namespace Jolt.Exceptions
         [Description("JLT539")]
         AttemptedToIndirectlyModifyVariableWithinUsingBlock,
         [Description("JLT540")]
-        UnableToResolveNewPropertyNameForUnsupportedResultOfType
+        UnableToResolveNewPropertyNameForUnsupportedResultOfType,
+        [Description("JLT541")]
+        ExternalMethodInvocationCausedAnException
     }
 }

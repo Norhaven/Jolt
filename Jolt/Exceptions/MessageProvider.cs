@@ -16,12 +16,17 @@ namespace Jolt.Exceptions
 
         public JoltException CreateErrorFor<T>(MessageCategory category, ExceptionCode exceptionCode, params object[] parameters)
         {
+            return CreateErrorFor<T>(category, exceptionCode, default, parameters);
+        }
+
+        public JoltException CreateErrorFor<T>(MessageCategory category, ExceptionCode exceptionCode, JoltException? innerException, params object[] parameters)
+        {
             var logger = _options.LoggerFactory?.CreateLogger<T>();
 
             var exception = category switch
-            { 
-                MessageCategory.Parsing => Error.CreateParsingErrorFrom(exceptionCode, parameters),
-                MessageCategory.Execution => Error.CreateExecutionErrorFrom(exceptionCode, parameters),
+            {
+                MessageCategory.Parsing => Error.CreateParsingErrorFrom(exceptionCode, innerException, parameters),
+                MessageCategory.Execution => Error.CreateExecutionErrorFrom(exceptionCode, innerException, parameters),
                 _ => throw new ArgumentOutOfRangeException(nameof(category), $"Unable to create error for unsupported message category '{category}'"),
             };
 
