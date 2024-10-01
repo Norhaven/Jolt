@@ -317,6 +317,7 @@ This package comes with quite a few methods built into it to get you started, al
 | length | Returns the length of a string or array value | `#length($.some.path)` | Property Value
 | substring | Returns the string value that falls within the provided range in a given string | `#substring(1..2)` | Property Value
 | groupBy | Returns a JSON object that represents the grouping of an array's contents by its individual property values | `#groupBy($.some.path, @x: @x.propertyName)` | Property Value
+| summarizeWith | Returns an object array that's the result of applying an aggregate method to a grouped array's results | `#summarizeWith($.some.group, @seq: #someAggregateMethod(@seq))` | Property Value
 | orderBy | Returns an array in ascending order as determined by its individual property values | `#orderBy($.some.path, @x: @x.propertyName)` | Property Value
 | orderByDesc | Returns an array in descending order as determined by its individual property values | `#orderByDesc($.some.path, @x: @x.propertyName)` | Property Value
 | contains | Returns true when an array or string contains the provided value | `#contains($.some.path, 'some string')` | Property Value
