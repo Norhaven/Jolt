@@ -113,7 +113,7 @@ namespace Jolt.Parsing
                 }
                 else if (stream.CurrentToken == ExpressionToken.ArrowBody || stream.CurrentToken == ExpressionToken.Minus)
                 {
-                    stream.ConsumeCurrent();
+                    var minusToken = TokenFromCurrent(stream, ExpressionTokenCategory.Subtraction);
 
                     if (stream.CurrentToken == ExpressionToken.ArrowHead)
                     {
@@ -153,7 +153,7 @@ namespace Jolt.Parsing
                     }
                     else
                     {
-                        yield return TokenFromCurrent(stream, ExpressionTokenCategory.Subtraction);
+                        yield return minusToken;
                     }
                 }
                 else if (stream.CurrentToken == ExpressionToken.Hash)

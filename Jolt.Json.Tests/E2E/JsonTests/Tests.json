@@ -26,12 +26,30 @@
           }
         },
         {
+          "name": "Addition with valueOf() produces correct result when compared for equality",
+          "transformer": {
+            "value": "#valueOf($.one) + #valueOf($.two) + #valueOf($.three) = 6"
+          },
+          "result": {
+            "value": true
+          }
+        },
+        {
           "name": "Multiplication with valueOf() produces correct result",
           "transformer": {
             "value": "#valueOf($.one) * #valueOf($.two) * #valueOf($.three)"
           },
           "result": {
             "value": 6
+          }
+        },
+        {
+          "name": "Multiplication with valueOf() produces correct result when compared for equality",
+          "transformer": {
+            "value": "#valueOf($.one) * #valueOf($.two) * #valueOf($.three) = 6"
+          },
+          "result": {
+            "value": true
           }
         },
         {
@@ -44,12 +62,30 @@
           }
         },
         {
+          "name": "Subtraction with valueOf() produces correct result when compared for equality",
+          "transformer": {
+            "value": "#valueOf($.one) - #valueOf($.two) - #valueOf($.three) = -4"
+          },
+          "result": {
+            "value": true
+          }
+        },
+        {
           "name": "Division with valueOf() produces correct result",
           "transformer": {
             "value": "#valueOf($.one) / #valueOf($.two) / #valueOf($.three)"
           },
           "result": {
             "value": 0.16666666666666666
+          }
+        },
+        {
+          "name": "Division with valueOf() produces correct result when compared for equality",
+          "transformer": {
+            "value": "#valueOf($.one) / #valueOf($.two) / #valueOf($.three) = 0.16666666666666666"
+          },
+          "result": {
+            "value": true
           }
         },
         {
@@ -215,6 +251,54 @@
           "name": "Multiple equals signs present in expression",
           "transformer": {
             "value": "#eval('1 = 1 = 1')"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "tooManyComparisons"
+        },
+        {
+          "name": "Multiple distinct comparison signs present in expression",
+          "transformer": {
+            "value": "#eval('1 = 1 < 1 > 1 >= 1 <= 1')"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "tooManyComparisons"
+        },
+        {
+          "name": "Multiple less than comparison signs present in expression",
+          "transformer": {
+            "value": "#eval('1 < 1 < 1')"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "tooManyComparisons"
+        },
+        {
+          "name": "Multiple greater than comparison signs present in expression",
+          "transformer": {
+            "value": "#eval('1 > 1 > 1')"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "tooManyComparisons"
+        },
+        {
+          "name": "Multiple less than or equals comparison signs present in expression",
+          "transformer": {
+            "value": "#eval('1 <= 1 <= 1')"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "tooManyComparisons"
+        },
+        {
+          "name": "Multiple greater than or equals comparison signs present in expression",
+          "transformer": {
+            "value": "#eval('1 >= 1 >= 1')"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "tooManyComparisons"
+        },
+        {
+          "name": "Greater than and less than comparison signs present in expression",
+          "transformer": {
+            "value": "#eval('1 > 1 < 1')"
           },
           "exceptionCode": "externalMethodException",
           "innerExceptionCode": "tooManyComparisons"

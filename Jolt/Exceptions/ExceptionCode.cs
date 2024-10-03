@@ -57,6 +57,8 @@ namespace Jolt.Exceptions
         UnableToParseVariableAlias,
         [Description("JLT123")]
         ExpectedZeroOrOneComparisonSymbolsInExpressionButFoundMoreThanOne,
+        [Description("JLT124")]
+        ExpectedNumericLiteralFollowingNegativeSign,
 
         // Resolution
 

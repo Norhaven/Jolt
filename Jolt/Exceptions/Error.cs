@@ -34,6 +34,7 @@ namespace Jolt.Exceptions
             [ExceptionCode.ExpectedAsKeywordButFoundUnexpectedToken] = "Expected 'as' keyword but found '{0}'",
             [ExceptionCode.UnableToParseVariableAlias] = "Unable to parse variable alias",
             [ExceptionCode.ExpectedZeroOrOneComparisonSymbolsInExpressionButFoundMoreThanOne] = "Expected zero or one comparison operators in expression but found '{0}' instead",
+            [ExceptionCode.ExpectedNumericLiteralFollowingNegativeSign] = "Expected numeric literal following negative sign but found '{0}' instead",
 
             // Resolution
 

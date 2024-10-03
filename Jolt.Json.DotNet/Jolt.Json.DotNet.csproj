@@ -10,12 +10,18 @@
     <Copyright>Chris Hannon</Copyright>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>JoltLogo.png</PackageIcon>
-    <Version>1.4.0</Version>
+    <Version>1.4.1</Version>
     <PackageTags>json;xslt;transformation;transform</PackageTags>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="..\JoltLogo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\LICENSE">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

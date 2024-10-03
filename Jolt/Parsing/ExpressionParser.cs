@@ -147,7 +147,7 @@ namespace Jolt.Parsing
 
                     return rangeVariable;
                 }
-                else if (TryParseLiteral(reader, out var literal))
+                else if (TryParseLiteral(reader, context, out var literal))
                 {
                     return literal;
                 }
@@ -319,11 +319,18 @@ namespace Jolt.Parsing
             return true;
         }
 
-        private bool TryParseLiteral(ExpressionReader reader, out LiteralExpression? literal)
+        private bool TryParseLiteral(ExpressionReader reader, IJsonContext context, out LiteralExpression? literal)
         {
+            var isNegative = reader.CurrentToken.Category == ExpressionTokenCategory.Subtraction;
+
+            if (isNegative)
+            {
+                reader.ConsumeCurrent();
+            }
+
             literal = reader.CurrentToken.Category switch
             { 
-                ExpressionTokenCategory.NumericLiteral when reader.CurrentToken.Value.ToString().Contains('.') => new LiteralExpression(typeof(double), reader.CurrentToken.Value),
+                ExpressionTokenCategory.NumericLiteral when reader.CurrentToken.Value.Contains('.') => new LiteralExpression(typeof(double), reader.CurrentToken.Value),
                 ExpressionTokenCategory.NumericLiteral => new LiteralExpression(typeof(long), reader.CurrentToken.Value),
                 ExpressionTokenCategory.BooleanLiteral => new LiteralExpression(typeof(bool), reader.CurrentToken.Value),
                 ExpressionTokenCategory.StringLiteral => new LiteralExpression(typeof(string), reader.CurrentToken.Value),
@@ -334,7 +341,23 @@ namespace Jolt.Parsing
 
             if (isParseSuccessful)
             {
+                if (isNegative)
+                {
+                    if (reader.CurrentToken.Category == ExpressionTokenCategory.NumericLiteral)
+                    {
+                        literal = new LiteralExpression(literal.Type, $"-{literal.Value}");
+                    }
+                    else
+                    {
+                        throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.ExpectedNumericLiteralFollowingNegativeSign, literal.Value);
+                    }
+                }
+
                 reader.ConsumeCurrent();
+            }
+            else if (isNegative)
+            {
+                throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.ExpectedNumericLiteralFollowingNegativeSign, reader.CurrentToken.Value);
             }
 
             return isParseSuccessful;
