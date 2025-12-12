@@ -5,9 +5,15 @@
     <Nullable>enable</Nullable>
     <Title>Jolt</Title>
     <Authors>Norhaven</Authors>
-    <Description>A friendly way of transforming JSON into different JSON.</Description>
+    <Description>A friendly way of transforming JSON into different JSON. This package is the core of Jolt and will be pulled in by the Jolt.Json.DotNet and Jolt.Json.Newtonsoft packages, so there's no need to pull this directly unless you're interested in extending the functionality in a new way.</Description>
     <Copyright>Chris Hannon</Copyright>
     <RepositoryUrl>https://github.com/Norhaven/Jolt</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>JoltLogo.png</PackageIcon>
+    <Version>1.4.2</Version>
+    <PackageTags>json;xslt;transformation;transform</PackageTags>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
