@@ -15,6 +15,7 @@ Were you looking for the much older and unrelated .Net port of the Java JSON tra
 
 | Package Name | NuGet Version |
 | ------------ | ------------- |
+| Jolt | ![NuGet Version](https://img.shields.io/nuget/v/Jolt) |
 | Jolt.Json.DotNet | ![NuGet Version](https://img.shields.io/nuget/v/Jolt.Json.DotNet) |
 | Jolt.Json.Newtonsoft | ![NuGet Version](https://img.shields.io/nuget/v/Jolt.Json.Newtonsoft) |
 
