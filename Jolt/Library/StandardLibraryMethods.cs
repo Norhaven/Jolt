@@ -141,7 +141,7 @@ namespace Jolt.Library
             {                
                 string path => context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, path, JsonQueryMode.StartFromClosestMatch),
                 RangeVariable variable => variable.Value,
-                DereferencedPath path when path.MissingPaths.Any() => throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.AttemptedToDereferenceMissingPath, string.Join('.', path.MissingPaths), path.ObtainableToken.PropertyName),
+                DereferencedPath path when path.MissingPaths.Any() => throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.AttemptedToDereferenceMissingPath, path.MissingPaths.Join('.'), path.ObtainableToken.PropertyName),
                 DereferencedPath path => path.ObtainableToken,
                 _ => throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToPerformLoopLibraryCallDueToInvalidParameter, enumeration.Source)
             };
@@ -746,7 +746,7 @@ namespace Jolt.Library
 
             if (path.MissingPaths.Length > 0)
             {
-                var missing = string.Join('.', path.MissingPaths);
+                var missing = path.MissingPaths.Join('.');
                 throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.AttemptedToDereferenceMissingPath, missing, path.ObtainableToken.PropertyName);
             }
 
@@ -785,7 +785,7 @@ namespace Jolt.Library
             var actualNewValue = newValue switch
             {
                 DereferencedPath pathValue when pathValue.MissingPaths.Length == 0 => pathValue.ObtainableToken,
-                DereferencedPath pathValue => throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.AttemptedToDereferenceMissingPath, string.Join('.', pathValue.MissingPaths), pathValue.ObtainableToken.PropertyName),
+                DereferencedPath pathValue => throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.AttemptedToDereferenceMissingPath, pathValue.MissingPaths.Join('.'), pathValue.ObtainableToken.PropertyName),
                 string pathValue => context.ResolveQueryPathIfPresent(pathValue) as IJsonToken,
                 object obj => context.CreateTokenFrom(obj),
                 null => context.CreateTokenFrom(null)
@@ -798,7 +798,7 @@ namespace Jolt.Library
                 throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.UnableToSetPropertyOnNonObjectReference, token.PropertyName);
             }
 
-            var missingPath = string.Join('.', path.MissingPaths);
+            var missingPath = path.MissingPaths.Join('.');
 
             current.AddAtPath(missingPath, actualNewValue);
 

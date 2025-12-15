@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
@@ -11,62 +11,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="E2E\JsonTests\Tests.json" />
-    <None Remove="TestFiles\Conditions.json" />
-    <None Remove="TestFiles\Documents\ConditionsDocument.json" />
-    <None Remove="TestFiles\Documents\ExistenceDocument.json" />
-    <None Remove="TestFiles\Documents\ExternalMethodsDocument.json" />
-    <None Remove="TestFiles\Documents\LambdasDocument.json" />
-    <None Remove="TestFiles\Documents\MathDocument.json" />
-    <None Remove="TestFiles\Documents\PipedMethodsDocument.json" />
-    <None Remove="TestFiles\Existence.json" />
-    <None Remove="TestFiles\Math.json" />
-    <None Remove="TestFiles\MultiLevelDocument.json" />
-    <None Remove="TestFiles\MultiLevelValueOf.json" />
-    <None Remove="TestFiles\PipedMethods.json" />
-    <None Remove="TestFiles\SingleLevelDocument.json" />
-    <None Remove="TestFiles\SingleLevelLoop.json" />
-    <None Remove="TestFiles\SingleLevelLoopDocument.json" />
-    <None Remove="TestFiles\SingleLevelValueOf.json" />
-    <None Remove="TestFiles\Transformers\ExternalMethods.json" />
-    <None Remove="TestFiles\Transformers\Lambdas.json" />
-    <None Remove="TestFiles\Transformers\RangeVariables.json" />
-    <None Remove="TestFiles\Transformers\UsingBlock.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="E2E\JsonTests\Tests.json" />
-    <EmbeddedResource Include="TestFiles\Documents\PipedMethodsDocument.json" />
-    <EmbeddedResource Include="TestFiles\Documents\ExternalMethodsDocument.json" />
-    <EmbeddedResource Include="TestFiles\Documents\LambdasDocument.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\ExternalMethods.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\Lambdas.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\PipedMethods.json" />
-    <EmbeddedResource Include="TestFiles\Documents\ConditionsDocument.json" />
-    <EmbeddedResource Include="TestFiles\Documents\ExistenceDocument.json" />
-    <EmbeddedResource Include="TestFiles\Documents\MathDocument.json" />
-    <EmbeddedResource Include="TestFiles\Documents\MultiLevelDocument.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\Conditions.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\Existence.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\Math.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\MultiLevelValueOf.json" />
-    <EmbeddedResource Include="TestFiles\Documents\SingleLevelDocument.json" />
-    <EmbeddedResource Include="TestFiles\Documents\LoopDocument.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\Loops.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\RangeVariables.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\UsingBlock.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\SingleLevelValueOf.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="6.0.2">
+    <PackageReference Include="coverlet.collector" Version="6.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FluentAssertions" Version="6.12.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
-    <PackageReference Include="System.Text.Json" Version="10.0.1" />
-    <PackageReference Include="xunit" Version="2.9.0" />
+    <PackageReference Include="FluentAssertions" Version="8.8.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="Xunit.DependencyInjection" Version="9.3.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
       <PrivateAssets>all</PrivateAssets>
@@ -81,6 +32,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Jolt.Json.DotNet\Jolt.Json.DotNet.csproj" />
     <ProjectReference Include="..\Jolt.Json.Newtonsoft\Jolt.Json.Newtonsoft.csproj" />
+    <ProjectReference Include="..\Jolt.Json.Tests.Cases\Jolt.Json.Tests.Cases.csproj" />
+    <ProjectReference Include="..\Jolt.Json.Tests.Resources\Jolt.Json.Tests.Resources.csproj" />
   </ItemGroup>
 
   <ItemGroup>

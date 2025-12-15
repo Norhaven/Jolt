@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Nodes;
 using Nodes = System.Text.Json.Nodes;
+using Jolt.Extensions;
 
 namespace Jolt.Json.DotNet
 {
@@ -82,7 +83,7 @@ namespace Jolt.Json.DotNet
         public IJsonToken? AddAtPath(string path, IJsonToken? value)
         {
             var pathParts = path.Split('.');
-            var parentPath = string.Join('.', pathParts[..^1]);
+            var parentPath = pathParts[..^1].Join('.');
             var propertyName = pathParts[^1];
 
             var parent = SelectTokenAtPath(parentPath);
