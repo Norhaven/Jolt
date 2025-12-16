@@ -11,11 +11,11 @@ namespace Jolt.Json.DotNet
 {
     public sealed class JsonTokenReader : IJsonTokenReader
     {
-        public IJsonToken? CreateArrayFrom(IEnumerable<IJsonToken> tokens)
+        public IJsonToken? CreateArrayFrom(IEnumerable<IJsonToken>? tokens)
         {
             var array = new Nodes.JsonArray();
 
-            foreach (var token in tokens)
+            foreach (var token in tokens ?? Enumerable.Empty<IJsonToken>())
             {
                 if (token is IJsonValue value)
                 {
@@ -30,11 +30,11 @@ namespace Jolt.Json.DotNet
             return JsonToken.FromObject(array);
         }
 
-        public IJsonToken? CreateObjectFrom(IEnumerable<IJsonToken> tokens)
+        public IJsonToken? CreateObjectFrom(IEnumerable<IJsonToken>? tokens)
         {
             var obj = new Nodes.JsonObject();
 
-            foreach(var token in tokens)
+            foreach(var token in tokens ?? Enumerable.Empty<IJsonToken>())
             {
                 if (token is IJsonObject json)
                 {

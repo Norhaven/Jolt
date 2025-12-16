@@ -21,7 +21,7 @@ namespace Jolt.Structure
         /// </summary>
         /// <param name="tokens">The JSON structures to include in the array.</param>
         /// <returns>An instance of <see cref="IJsonToken"/> if the JSON could be read, null otherwise.</returns>
-        IJsonToken? CreateArrayFrom(IEnumerable<IJsonToken> tokens);
+        IJsonToken? CreateArrayFrom(IEnumerable<IJsonToken>? tokens);
 
         /// <summary>
         /// Reads a JSON structure from a .Net instance.

@@ -50,7 +50,7 @@ namespace Jolt.Evaluation
 
         public bool IsLessThan(object? value) => (bool)PerformOperationWith(value, Operator.LessThan, (left, right) => left.CompareTo(right) < 0, (left, right) => left.CompareTo(right) < 0);
 
-        public override bool Equals(object obj) => (bool)PerformOperationWith(obj, Operator.Equals, (left, right) => left == right, (left, right) => left == right);
+        public override bool Equals(object? obj) => (bool)PerformOperationWith(obj, Operator.Equals, (left, right) => left == right, (left, right) => left == right);
 
         public override int GetHashCode() => _value.GetHashCode();
 

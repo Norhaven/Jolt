@@ -60,7 +60,7 @@ namespace Jolt.Library
             {
                 bool value => value,
                 IJsonToken token => token.Type == JsonTokenType.Value && token.AsValue().ValueType == JsonValueType.Boolean && token.AsValue().ToTypeOf<bool>(),
-                null => false
+                _ => false
             };
 
             var expression = isTrue ? trueExpression : falseExpression;
@@ -500,7 +500,7 @@ namespace Jolt.Library
 
             IJsonToken? resultToken = context.CreateTokenFrom(resolved); 
 
-            foreach (var additionalValue in additionalValues)
+            foreach (var additionalValue in additionalValues ?? Enumerable.Empty<object>())
             {
                 var resolvedValue = context.ResolveQueryPathIfPresent(additionalValue);
 

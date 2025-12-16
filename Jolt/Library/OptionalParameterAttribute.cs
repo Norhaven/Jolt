@@ -11,9 +11,9 @@ namespace Jolt.Library
     [AttributeUsage(AttributeTargets.Parameter)]
     internal sealed class OptionalParameterAttribute : Attribute
     {
-        public object DefaultValue { get; }
+        public object? DefaultValue { get; }
 
-        public OptionalParameterAttribute(object defaultValue)
+        public OptionalParameterAttribute(object? defaultValue)
         {
             DefaultValue = defaultValue;
         }

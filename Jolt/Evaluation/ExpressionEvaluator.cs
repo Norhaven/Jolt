@@ -425,11 +425,11 @@ namespace Jolt.Evaluation
 
                 if (context.Token.CurrentTransformerToken.Type == JsonTokenType.Array)
                 {
-                    resultValue = context.JsonContext.JsonTokenReader.CreateArrayFrom((IEnumerable<IJsonToken>)resultValue);
+                    resultValue = context.JsonContext.JsonTokenReader.CreateArrayFrom((IEnumerable<IJsonToken>?)resultValue);
                 }
                 else if (context.Token.CurrentTransformerToken.Type == JsonTokenType.Object)
                 {
-                    resultValue = context.JsonContext.JsonTokenReader.CreateObjectFrom((IEnumerable<IJsonToken>)resultValue);
+                    resultValue = context.JsonContext.JsonTokenReader.CreateObjectFrom((IEnumerable<IJsonToken>?)resultValue);
                 }
             }
 
@@ -474,9 +474,12 @@ namespace Jolt.Evaluation
                 if (method.CallType == CallType.Static)
                 {
                     var type = Type.GetType(method.AssemblyQualifiedTypeName);
-                    var methodInfo = type.GetMethod(method.Name, BindingFlags.Public | BindingFlags.Static);
 
-                    return methodInfo.Invoke(null, actualParameterValues.ToArray());
+                    return type
+                        .ThrowIfNull(nameof(type), $"Unable to locate type '{method.AssemblyQualifiedTypeName}' for invocation of method '{method.Name}'")
+                        .AndGet(x => x.GetMethod(method.Name, BindingFlags.Public | BindingFlags.Static))
+                        .ThrowIfNull(nameof(method.Name), $"Unable to locate static method '{method.Name}' within type '{method.AssemblyQualifiedTypeName}'")
+                        .AndFinally(x => x.Value!.Invoke(null, actualParameterValues.ToArray()));
                 }
                 else if (method.CallType == CallType.Instance)
                 {
