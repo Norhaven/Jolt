@@ -25,7 +25,7 @@ The transformation language itself is pretty straightforward and primarily relie
 
 ## Methods
 
-All method calls begin with a `#` symbol and are case-sensitive. Open and close parentheses surround the method arguments, which are comma-separated. Let's take a look at a an example from the library.
+All method calls begin with a `#` symbol and are case-sensitive. Open and close parentheses surround the method arguments, which are comma-separated. Let's take a look at an example from the library.
 ```json
 {
     "value": "#valueOf($.some.json.path)"
