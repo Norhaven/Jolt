@@ -15,6 +15,7 @@ Were you looking for the much older and unrelated .Net port of the Java JSON tra
 
 | Package Name | NuGet Version |
 | ------------ | ------------- |
+| Jolt | ![NuGet Version](https://img.shields.io/nuget/v/Jolt) |
 | Jolt.Json.DotNet | ![NuGet Version](https://img.shields.io/nuget/v/Jolt.Json.DotNet) |
 | Jolt.Json.Newtonsoft | ![NuGet Version](https://img.shields.io/nuget/v/Jolt.Json.Newtonsoft) |
 
@@ -24,7 +25,7 @@ The transformation language itself is pretty straightforward and primarily relie
 
 ## Methods
 
-All method calls begin with a `#` symbol and are case-sensitive. Open and close parentheses surround the method arguments, which are comma-separated. Let's take a look at a an example from the library.
+All method calls begin with a `#` symbol and are case-sensitive. Open and close parentheses surround the method arguments, which are comma-separated. Let's take a look at an example from the library.
 ```json
 {
     "value": "#valueOf($.some.json.path)"
