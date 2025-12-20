@@ -21,6 +21,9 @@ namespace Jolt
         /// </summary>
         public JoltErrorMode ErrorMode { get; private set; }
 
+        /// <summary>
+        /// Gets the logger factory that Jolt will use to include log messages during its execution, if any.
+        /// </summary>
         public ILoggerFactory? LoggerFactory { get; private set; }
 
         private JoltOptions() 
