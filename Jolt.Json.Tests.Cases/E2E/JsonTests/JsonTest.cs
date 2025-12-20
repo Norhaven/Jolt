@@ -127,8 +127,6 @@ namespace Jolt.Json.Tests.Cases.E2E.JsonTests
 
         public static TheoryData<EndToEndTest> GetTests()
         {
-            string? StringFor(IJsonToken token, string propertyName) => token.AsObject()[propertyName]?.ToTypeOf<string>();
-
             using var manifestStream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"Jolt.Json.Tests.Cases.E2E.JsonTests.Tests.json");
             using var reader = new StreamReader(manifestStream);
 

@@ -39,7 +39,8 @@ namespace Jolt.Json.DotNet
         /// <param name="methodContext">The method context for any instance method registrations.</param>
         /// <param name="options">Options for controlling or enhancing the behavior of the transformer.</param>
         /// <returns>An instance of <see cref="IJsonTransformer{TContext}"/>.</returns>
-        public static IJsonTransformer<IJsonContext> DefaultWith<TMethodContext>(string jsonTransformer, TMethodContext methodContext = default, JoltOptions? options = default)
+        public static IJsonTransformer<IJsonContext> DefaultWith<TMethodContext>(string jsonTransformer, TMethodContext? methodContext = default, JoltOptions? options = default)
+            where TMethodContext : class
         {
             var thirdPartyMethods = GetExternalMethodRegistrationsFrom<TMethodContext>();
 
@@ -49,6 +50,7 @@ namespace Jolt.Json.DotNet
         private static JoltJsonTransformer CreateTransformerWith(string jsonTransformer, object? methodContext, IEnumerable<MethodRegistration>? methodRegistrations, JoltOptions? options)
         {
             options ??= JoltOptions.Default;
+            methodRegistrations ??= Enumerable.Empty<MethodRegistration>();
 
             var messageProvider = new MessageProvider(options);
 
