@@ -30,8 +30,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Jolt.Json.DotNet\Jolt.Json.DotNet.csproj" />
-    <ProjectReference Include="..\Jolt.Json.Newtonsoft\Jolt.Json.Newtonsoft.csproj" />
+    <ProjectReference Include="..\..\Jolt.Json.DotNet\Jolt.Json.DotNet.csproj" />
+    <ProjectReference Include="..\..\Jolt.Json.Newtonsoft\Jolt.Json.Newtonsoft.csproj" />
     <ProjectReference Include="..\Jolt.Json.Tests.Cases\Jolt.Json.Tests.Cases.csproj" />
     <ProjectReference Include="..\Jolt.Json.Tests.Resources\Jolt.Json.Tests.Resources.csproj" />
   </ItemGroup>
