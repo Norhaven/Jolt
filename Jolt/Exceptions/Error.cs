@@ -9,7 +9,6 @@ namespace Jolt.Exceptions
     {
         private static readonly Dictionary<ExceptionCode, string> _parsingErrorsByCode = new Dictionary<ExceptionCode, string>
         {
-            [ExceptionCode.MissingRequiredMethodParameter] = "Method '{0}' is missing a required parameter '{1}' of type '{2}'",
             [ExceptionCode.ExpectedTokenButFoundEndOfExpression] = "Unable to continue parsing, expected '{0}' but found end of expression",
             [ExceptionCode.ExpectedTokenButFoundDifferentToken] = "Unable to continue parsing, expected '{0}' but found '{1}' instead",
             [ExceptionCode.UnableToParseParenthesizedExpressionAtPosition] = "Unable to parse parenthesized expression at position '{0}'",
@@ -44,6 +43,7 @@ namespace Jolt.Exceptions
 
         private static readonly Dictionary<ExceptionCode, string> _executionErrorsByCode = new Dictionary<ExceptionCode, string>
         {
+            [ExceptionCode.MissingRequiredMethodParameter] = "Method '{0}' is missing a required parameter '{1}' of type '{2}'",
             [ExceptionCode.UnableToApplyChangesToUnsupportedParentToken] = "Unable to apply changes to parent token with unsupported type '{0}'",
             [ExceptionCode.EncounteredMultipleNonSystemMethodsWithSameNameOrAlias] = "Encountered multiple non-system methods with the name or alias '{0}'",
             [ExceptionCode.UnableToEvaluateExpressionWithOperatorAndArguments] = "Unable to evaluate expression '{0} {1} {2}'",
