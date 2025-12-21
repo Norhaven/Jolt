@@ -26,6 +26,11 @@ namespace Jolt
         /// </summary>
         public ILoggerFactory? LoggerFactory { get; private set; }
 
+        /// <summary>
+        /// Gets whether logging is enabled for Jolt.
+        /// </summary>
+        public bool IsLoggingEnabled => LoggerFactory != null;
+
         private JoltOptions() 
         { 
         }

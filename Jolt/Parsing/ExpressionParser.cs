@@ -303,7 +303,7 @@ namespace Jolt.Parsing
             return true;
         }
 
-        private bool TryParseRangeVariable(ExpressionReader reader, out RangeVariableExpression rangeVariable)
+        private bool TryParseRangeVariable(ExpressionReader reader, out RangeVariableExpression? rangeVariable)
         {
             rangeVariable = default;
 

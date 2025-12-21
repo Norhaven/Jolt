@@ -27,6 +27,7 @@ namespace Jolt.Exceptions
             {
                 MessageCategory.Parsing => Error.CreateParsingErrorFrom(exceptionCode, innerException, parameters),
                 MessageCategory.Execution => Error.CreateExecutionErrorFrom(exceptionCode, innerException, parameters),
+                MessageCategory.Resolution => throw new NotSupportedException($"Due to missing relevant type and method information, please use CreateResolutionErrorFor<T> to create resolution errors instead of CreateErrorFor<T>"),
                 _ => throw new ArgumentOutOfRangeException(nameof(category), $"Unable to create error for unsupported message category '{category}'"),
             };
 
@@ -48,6 +49,11 @@ namespace Jolt.Exceptions
 
         public void WriteDebugFor<T>(string message, params object[] parameters)
         {
+            if (!_options.IsLoggingEnabled)
+            {
+                return;
+            }
+
             var logger = _options.LoggerFactory?.CreateLogger<T>();
 
             logger?.LogDebug(message, parameters);
@@ -55,6 +61,11 @@ namespace Jolt.Exceptions
 
         public void WriteInfoFor<T>(string message, params object[] parameters)
         {
+            if (!_options.IsLoggingEnabled)
+            {
+                return;
+            }
+
             var logger = _options.LoggerFactory?.CreateLogger<T>();
 
             logger?.LogInformation(message, parameters);
@@ -62,6 +73,11 @@ namespace Jolt.Exceptions
 
         public void WriteWarningFor<T>(string message, params object[] parameters)
         {
+            if (!_options.IsLoggingEnabled)
+            {
+                return;
+            }
+
             var logger = _options.LoggerFactory?.CreateLogger<T>();
 
             logger?.LogWarning(message, parameters);

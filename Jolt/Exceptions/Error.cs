@@ -7,10 +7,8 @@ namespace Jolt.Exceptions
 {
     internal static class Error
     {
-        private static readonly IDictionary<ExceptionCode, string> _errorsByCode = new Dictionary<ExceptionCode, string>
-        { 
-            // Parsing
-
+        private static readonly Dictionary<ExceptionCode, string> _parsingErrorsByCode = new Dictionary<ExceptionCode, string>
+        {
             [ExceptionCode.MissingRequiredMethodParameter] = "Method '{0}' is missing a required parameter '{1}' of type '{2}'",
             [ExceptionCode.ExpectedTokenButFoundEndOfExpression] = "Unable to continue parsing, expected '{0}' but found end of expression",
             [ExceptionCode.ExpectedTokenButFoundDifferentToken] = "Unable to continue parsing, expected '{0}' but found '{1}' instead",
@@ -34,16 +32,18 @@ namespace Jolt.Exceptions
             [ExceptionCode.ExpectedAsKeywordButFoundUnexpectedToken] = "Expected 'as' keyword but found '{0}'",
             [ExceptionCode.UnableToParseVariableAlias] = "Unable to parse variable alias",
             [ExceptionCode.ExpectedZeroOrOneComparisonSymbolsInExpressionButFoundMoreThanOne] = "Expected zero or one comparison operators in expression but found '{0}' instead",
-            [ExceptionCode.ExpectedNumericLiteralFollowingNegativeSign] = "Expected numeric literal following negative sign but found '{0}' instead",
+            [ExceptionCode.ExpectedNumericLiteralFollowingNegativeSign] = "Expected numeric literal following negative sign but found '{0}' instead"
+        };
 
-            // Resolution
-
+        private static readonly Dictionary<ExceptionCode, string> _resolutionErrorsByCode = new Dictionary<ExceptionCode, string>
+        {
             [ExceptionCode.UnableToLocateInstanceMethod] = "Unable to locate instance method '{0}' during method resolution, no method context was provided",
             [ExceptionCode.UnableToLocateTypeForStaticMethod] = "Unable to locate defining type '{0}' for method '{1}' during method resolution",
-            [ExceptionCode.UnableToLocateStaticMethodWithProvidedType] = "Unable to locate static method '{0}' during method resolution within type '{1}'",
+            [ExceptionCode.UnableToLocateStaticMethodWithProvidedType] = "Unable to locate static method '{0}' during method resolution within type '{1}'"
+        };
 
-            // Execution
-
+        private static readonly Dictionary<ExceptionCode, string> _executionErrorsByCode = new Dictionary<ExceptionCode, string>
+        {
             [ExceptionCode.UnableToApplyChangesToUnsupportedParentToken] = "Unable to apply changes to parent token with unsupported type '{0}'",
             [ExceptionCode.EncounteredMultipleNonSystemMethodsWithSameNameOrAlias] = "Encountered multiple non-system methods with the name or alias '{0}'",
             [ExceptionCode.UnableToEvaluateExpressionWithOperatorAndArguments] = "Unable to evaluate expression '{0} {1} {2}'",
@@ -87,13 +87,24 @@ namespace Jolt.Exceptions
             [ExceptionCode.ExternalMethodInvocationCausedAnException] = "Call to external method '{0}' caused an exception, check inner exception for details"
         };
 
-        public static JoltException CreateParsingErrorFrom(ExceptionCode code, JoltException? innerException, params object[] parameters) => BuildExceptionFrom(code, parameters, x => new JoltParsingException(code, x, innerException));
-        public static JoltException CreateExecutionErrorFrom(ExceptionCode code, JoltException? innerException, params object[] parameters) => BuildExceptionFrom(code, parameters, x => new JoltExecutionException(code, x, innerException));
-        public static JoltException CreateResolutionErrorFrom(ExceptionCode code, string typeName, string methodName, params object[] parameters) => BuildExceptionFrom(code, parameters, x => new JoltMethodResolutionException(code, typeName, methodName, x));
-
-        private static JoltException BuildExceptionFrom(ExceptionCode code, object[] parameters, Func<string, JoltException> createWith)
+        public static JoltException CreateParsingErrorFrom(ExceptionCode code, JoltException? innerException, params object[] parameters)
         {
-            if (!_errorsByCode.TryGetValue(code, out var messageContent))
+            return BuildExceptionFrom(_parsingErrorsByCode, code, parameters, x => new JoltParsingException(code, x, innerException));
+        }
+
+        public static JoltException CreateExecutionErrorFrom(ExceptionCode code, JoltException? innerException, params object[] parameters)
+        {
+            return BuildExceptionFrom(_executionErrorsByCode, code, parameters, x => new JoltExecutionException(code, x, innerException));
+        }
+
+        public static JoltException CreateResolutionErrorFrom(ExceptionCode code, string typeName, string methodName, params object[] parameters)
+        {
+            return BuildExceptionFrom(_resolutionErrorsByCode, code, parameters, x => new JoltMethodResolutionException(code, typeName, methodName, x));
+        }
+
+        private static JoltException BuildExceptionFrom(Dictionary<ExceptionCode, string> codeMessages, ExceptionCode code, object[] parameters, Func<string, JoltException> createWith)
+        {
+            if (!codeMessages.TryGetValue(code, out var messageContent))
             {
                 throw new ArgumentOutOfRangeException($"Unable to create error from unsupported exception code '{code}'");
             }

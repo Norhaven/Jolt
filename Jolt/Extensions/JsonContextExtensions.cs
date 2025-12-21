@@ -16,5 +16,20 @@ namespace Jolt.Extensions
         {
             return context.MessageProvider.CreateErrorFor<T>(MessageCategory.Execution, exceptionCode, parameters);
         }
+
+        public static void WriteDebugFor<T>(this IJsonContext context, string message, params object[] parameters)
+        {
+            context.MessageProvider.WriteDebugFor<T>(message, parameters);
+        }
+
+        public static void WriteInfoFor<T>(this IJsonContext context, string message, params object[] parameters)
+        {
+            context.MessageProvider.WriteInfoFor<T>(message, parameters);
+        }
+
+        public static void WriteWarningFor<T>(this IJsonContext context, string message, params object[] parameters)
+        {
+            context.MessageProvider.WriteWarningFor<T>(message, parameters);
+        }
     }
 }

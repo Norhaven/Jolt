@@ -152,10 +152,15 @@ namespace Jolt
 
         private EvaluationResult? TransformExpression(EvaluationToken token, string expressionText, EvaluationMode evaluationMode, IEvaluationScope scope)
         {
+            _context.WriteDebugFor<JoltTransformer<TContext>>($"Transforming expression '{expressionText}' in '{evaluationMode}' mode.");
+            _context.WriteInfoFor<JoltTransformer<TContext>>($"Transforming expression '{expressionText}'.");
+
             var actualTokens = _context.TokenReader.ReadToEnd(expressionText, evaluationMode);
 
             if (!_context.ExpressionParser.TryParseExpression(actualTokens, _context, out var expression))
             {
+                _context.WriteInfoFor<JoltTransformer<TContext>>($"Expression '{expressionText}' could not be parsed, skipping transformation.");
+
                 return new EvaluationResult(token.PropertyName, null, token.CurrentTransformerToken);
             }
 
@@ -176,6 +181,8 @@ namespace Jolt
             {
                 if (result.RangeVariable != null && !scope.TryGetVariable(result.RangeVariable.Name, out var _))
                 {
+                    _context.WriteDebugFor<JoltTransformer<TContext>>($"Setting new variable '{result.RangeVariable.Name}' in scope with transformed token.");
+
                     if (result.RangeVariable.Name == propertyName)
                     {
                         json?.Remove(propertyName);
@@ -190,6 +197,8 @@ namespace Jolt
 
                 if (scope.TryGetVariable(propertyName, out var variable))
                 {
+                    _context.WriteDebugFor<JoltTransformer<TContext>>($"Updating variable '{variable.Name}' in scope with transformed token.");
+
                     json?.Remove(propertyName);
 
                     var updatedVariable = new RangeVariable(variable.Name, result.TransformedToken);
@@ -200,19 +209,27 @@ namespace Jolt
 
             if (parent is null)
             {
+                _context.WriteDebugFor<JoltTransformer<TContext>>("No parent token available to apply changes to, skipping.");
+
                 return;
             }
 
             if (parent is IJsonObject obj)
             {
+                _context.WriteInfoFor<JoltTransformer<TContext>>($"Applying transformed property '{result.OriginalPropertyName}' to parent object.");
+
                 if (string.IsNullOrWhiteSpace(result.NewPropertyName))
                 {
+                    _context.WriteDebugFor<JoltTransformer<TContext>>($"No new property name specified, using original property name '{result.OriginalPropertyName}'.");
+
                     obj[result.OriginalPropertyName] = result.TransformedToken;
 
                     SetVariableIfPresent(obj, result.OriginalPropertyName);
                 }
                 else
                 { 
+                    _context.WriteDebugFor<JoltTransformer<TContext>>($"Applying transformed property with new name '{result.NewPropertyName}', replacing old name '{result.OriginalPropertyName}'.");
+
                     obj.Remove(result.OriginalPropertyName);
                     obj[result.NewPropertyName] = result.TransformedToken;
 
@@ -226,6 +243,8 @@ namespace Jolt
 
                 if (result.TransformedToken != null && !isWithinStatementBlock)
                 {
+                    _context.WriteInfoFor<JoltTransformer<TContext>>($"Adding entry to non-statement parent array.");
+
                     array.Add(result.TransformedToken);                 
                 }
             }
