@@ -101,12 +101,22 @@ namespace Jolt
         {
             var type = typeof(T);
 
-            var methods = from method in type.GetMethods(BindingFlags.Public)
+            return RegisterAllMethodsFrom(type);
+        }
+
+        public IJsonContext RegisterAllMethodsFrom(Type type)
+        { 
+            if (type == null)
+            {
+                return this;
+            }
+
+            var methods = from method in type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance)
                           let attribute = method.GetCustomAttribute<JoltExternalMethodAttribute>()
                           where attribute != null
-                          select method.IsStatic ? new MethodRegistration(type.AssemblyQualifiedName, method.Name) : new MethodRegistration(method.Name, attribute.Name);
+                          select method.IsStatic ? MethodRegistration.FromStaticMethod(type, method.Name, attribute.Name) : MethodRegistration.FromInstanceMethod(method.Name, attribute.Name);
 
-            MethodRegistrations = MethodRegistrations.Concat(methods).ToArray();
+            MethodRegistrations = MethodRegistrations.Concat(methods.ToArray()).ToArray();
 
             return this;
         }

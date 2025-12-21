@@ -226,12 +226,12 @@ namespace Jolt
         protected static IEnumerable<MethodRegistration> GetExternalMethodRegistrationsFrom<T>()
         {
             var type = typeof(T);
-            var methods = type.GetMethods(BindingFlags.Public);
+            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance);
 
             return from method in methods
                    let attribute = method.GetCustomAttribute<JoltExternalMethodAttribute>()
                    where attribute != null
-                   select method.IsStatic ? new MethodRegistration(type.AssemblyQualifiedName, method.Name) : new MethodRegistration(method.Name, attribute.Name);
+                   select method.IsStatic ? MethodRegistration.FromStaticMethod(type, method.Name, attribute.Name) : MethodRegistration.FromInstanceMethod(method.Name, attribute.Name);
         }
     }
 }

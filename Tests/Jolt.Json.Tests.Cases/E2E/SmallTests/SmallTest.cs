@@ -54,7 +54,10 @@ namespace Jolt.Json.Tests.Cases.E2E.SmallTests
 
             transformerJson[target.NameExpression] = reader.CreateTokenFrom(target.ValueExpression);
 
-            var transformer = CreateTransformerWith(transformerJson.ToString(), Array.Empty<MethodRegistration>());
+            var context = _testContext
+                .UseTransformer(transformerJson.ToString());
+
+            var transformer = new JoltTransformer<IJsonContext>(_testContext);
 
             try
             {

@@ -1,14 +1,15 @@
-﻿using System;
+﻿using Jolt.Library;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Jolt.Json.Tests.TestMethods
+namespace Jolt.Json.Tests.Resources.TestMethods
 {
     public static class ExternalStaticMethods
     {
         public static bool TakesAndReturnsBoolean(bool value) => value;
-        public static string Concatenate(string first, string second) => first + second;
+        public static string Concatenate(string first, string second) => first + second;        
     }
 }

@@ -87,11 +87,18 @@ namespace Jolt
         IJsonContext RegisterAllMethods(IEnumerable<MethodRegistration> methods);
 
         /// <summary>
-        /// Registers one or more external methods for use. These must be marked with the <see cref="JoltExternalMethodAttribute"/> attribute
+        /// Registers one or more external methods from the given type for use. These must be marked with the <see cref="JoltExternalMethodAttribute"/> attribute
         /// in order to actually be registered.
         /// </summary>
         /// <returns>An instance of <see cref="IJsonContext"/> with the registrations applied to it.</returns>
         IJsonContext RegisterAllMethodsFrom<T>();
+
+        /// <summary>
+        /// Registers one or more external methods from the given type for use. These must be marked with the <see cref="JoltExternalMethodAttribute"/> attribute
+        /// in order to actually be registered.
+        /// </summary>
+        /// <returns>An instance of <see cref="IJsonContext"/> with the registrations applied to it.</returns>
+        IJsonContext RegisterAllMethodsFrom(Type type);
 
         /// <summary>
         /// Specifies the JSON transformer that will be used.

@@ -18,6 +18,7 @@
     <EmbeddedResource Include="TestFiles\Documents\SingleLevelDocument.json" />
     <EmbeddedResource Include="TestFiles\Transformers\Conditions.json" />
     <EmbeddedResource Include="TestFiles\Transformers\Existence.json" />
+    <EmbeddedResource Include="TestFiles\Transformers\ExternalMethodsWithAliases.json" />
     <EmbeddedResource Include="TestFiles\Transformers\ExternalMethods.json" />
     <EmbeddedResource Include="TestFiles\Transformers\Lambdas.json" />
     <EmbeddedResource Include="TestFiles\Transformers\Loops.json" />

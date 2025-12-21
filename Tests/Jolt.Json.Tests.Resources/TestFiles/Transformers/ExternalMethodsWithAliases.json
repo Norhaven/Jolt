@@ -1,0 +1,5 @@
+﻿{
+  "String": "#stringConcat(#valueOf($.stringLiteral), #valueOf($.stringLiteral))",
+  "Boolean": "#booleanPassthrough(#valueOf($.booleanLiteral))",
+  "AppendedString": "#aliasedAppend(#aliasedAppend(#valueOf($.stringLiteral)))"
+}

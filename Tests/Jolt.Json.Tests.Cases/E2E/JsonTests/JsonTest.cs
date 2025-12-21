@@ -52,7 +52,7 @@ namespace Jolt.Json.Tests.Cases.E2E.JsonTests
 
         [Theory]
         [MemberData(nameof(GetTests))]
-        public void ExecuteTest(EndToEndTest test)
+        public void ExecuteEndToEndTest(EndToEndTest test)
         {
             ExceptionCode GetExceptionCodeFrom(string exceptionCodeText)
             {
@@ -69,7 +69,10 @@ namespace Jolt.Json.Tests.Cases.E2E.JsonTests
                 return expectedCode;
             }
 
-            var transformer = CreateTransformerWith(test.Transformer.ToJsonString(), Array.Empty<MethodRegistration>());
+            var context = _testContext
+                .UseTransformer(test.Transformer.ToJsonString());
+
+            var transformer = new JoltTransformer<IJsonContext>(context);
 
             try
             {

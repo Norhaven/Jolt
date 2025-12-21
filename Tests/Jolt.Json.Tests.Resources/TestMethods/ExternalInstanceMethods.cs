@@ -5,13 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Jolt.Json.Tests.TestMethods
+namespace Jolt.Json.Tests.Resources.TestMethods
 {
     public class ExternalInstanceMethods
     {
         private readonly StringBuilder _builder = new StringBuilder();
 
-        [JoltExternalMethod("appendString")]
         public string AppendString(string text)
         {
             _builder.Append(text);
