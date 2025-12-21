@@ -29,8 +29,20 @@ namespace Jolt
         public string? Transform(string json)
         {
             var source = _context.JsonTokenReader.Read(json);
+
+            if (source == null)
+            {
+                throw new InvalidOperationException("The source document could not be read as valid JSON, please verify that your source document is valid.");
+            }
+
             var transformedJson = _context.JsonTokenReader.Read(_context.JsonTransformer);
-            var transformation = new EvaluationToken(default, default, default, transformedJson);
+
+            if (transformedJson is null)
+            {
+                throw new InvalidOperationException("The transformer could not be read as valid JSON, please verify that your transformer is valid");
+            }
+
+            var transformation = EvaluationToken.From(transformedJson);
 
             return TransformToken(transformation, EvaluationScope.Empty.CreateClosureOver(source))?.ToString();
         }

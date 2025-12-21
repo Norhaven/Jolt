@@ -19,7 +19,7 @@ namespace Jolt.Library
         /// <param name="methodName">The method to register.</param>
         /// <param name="alias">The alias of the named method.</param>
         /// <returns>An instance of <see cref="MethodRegistration"/>.</returns>
-        public static MethodRegistration FromStaticMethod<T>(string methodName, string alias = default) => FromStaticMethod(typeof(T), methodName, alias);
+        public static MethodRegistration FromStaticMethod<T>(string methodName, string? alias = default) => FromStaticMethod(typeof(T), methodName, alias);
 
         /// <summary>
         /// Creates a method registration for the named static method found on the type passed as a parameter
@@ -29,7 +29,7 @@ namespace Jolt.Library
         /// <param name="methodName">The method to register.</param>
         /// <param name="alias">The alias of the named method.</param>
         /// <returns>An instance of <see cref="MethodRegistration"/>.</returns>
-        public static MethodRegistration FromStaticMethod(Type type, string methodName, string alias = default) => new MethodRegistration(type.AssemblyQualifiedName, methodName, alias);
+        public static MethodRegistration FromStaticMethod(Type type, string methodName, string? alias = default) => new MethodRegistration(type.AssemblyQualifiedName, methodName, alias);
 
         /// <summary>
         /// Creates a method registration for the named instance method found on the type used as the method context
@@ -38,7 +38,7 @@ namespace Jolt.Library
         /// <param name="methodName">The method to register.</param>
         /// <param name="alias">The alias of the named method.</param>
         /// <returns>An instance of <see cref="MethodRegistration"/>.</returns>
-        public static MethodRegistration FromInstanceMethod(string methodName, string alias = default) => new MethodRegistration(methodName, alias);
+        public static MethodRegistration FromInstanceMethod(string methodName, string? alias = default) => new MethodRegistration(methodName, alias);
 
         /// <summary>
         /// Gets the assembly-qualified type name that contains the method.
@@ -58,7 +58,7 @@ namespace Jolt.Library
         /// <summary>
         /// Gets the alias for the method to register.
         /// </summary>
-        public string Alias { get; }
+        public string? Alias { get; }
 
         /// <summary>
         /// Initializes an instance of <see cref="MethodRegistration"/> with the provided parameters as a static method.
@@ -66,7 +66,7 @@ namespace Jolt.Library
         /// <param name="assemblyQualifiedTypeName">The assembly-qualified type name that contains this method.</param>
         /// <param name="staticMethodName">The name of the static method to register.</param>
         /// <param name="alias">The alias for the method to register.</param>
-        public MethodRegistration(string assemblyQualifiedTypeName, string staticMethodName, string alias)
+        public MethodRegistration(string assemblyQualifiedTypeName, string staticMethodName, string? alias)
         {
             FullyQualifiedTypeName = assemblyQualifiedTypeName;
             MethodName = staticMethodName;
@@ -79,7 +79,7 @@ namespace Jolt.Library
         /// </summary>
         /// <param name="instanceMethodName">The name of the instance method to register.</param>
         /// <param name="alias">The alias for the method to register.</param>
-        public MethodRegistration(string instanceMethodName, string alias)
+        public MethodRegistration(string instanceMethodName, string? alias)
         {
             FullyQualifiedTypeName = string.Empty;
             MethodName = instanceMethodName;
