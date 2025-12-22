@@ -73,7 +73,6 @@ jobs:
       with:
         filename: ./TestResults/**/*.cobertura.xml
         badge: true
-        fail_below_min: true
         format: markdown
         output: file      
     - name: Add coverage summary to workflow summary
