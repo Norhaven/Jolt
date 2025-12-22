@@ -54,12 +54,31 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
     - name: Run Standard Tests
-      run: dotnet test Tests/Jolt.Json.Tests/Jolt.Json.Tests.csproj --configuration Release
+      run: dotnet test Tests/Jolt.Json.Tests/Jolt.Json.Tests.csproj --configuration Release --collect:"XPlat Code Coverage"
     - name: Run Legacy Target Tests
-      run: dotnet test Tests/Jolt.Json.DotNetFramework.Tests/Jolt.Json.DotNetFramework.Tests.csproj --configuration Release
+      run: dotnet test Tests/Jolt.Json.DotNetFramework.Tests/Jolt.Json.DotNetFramework.Tests.csproj --configuration Release --collect:"XPlat Code Coverage"
     - name: Run Core Unit Tests
-      run: dotnet test Tests/Jolt.Tests/Jolt.Tests.csproj --configuration Release
-
+      run: dotnet test Tests/Jolt.Tests/Jolt.Tests.csproj --configuration Release --collect:"XPlat Code Coverage"
+    - name: Download code coverage report generator
+      run: dotnet tool install -g dotnet-reportgenerator-globaltool
+    - name: Generate code coverage report
+      run: reportgenerator "-reports:./TestResults/**/*.cobertura.xml" "-targetdir:./CoverageReport" "-reporttypes:Html"
+    - name: Upload test coverage report      
+      uses: actions/upload-artifact@v4
+      with:
+        name: Code-Coverage-Report
+        path: ./CoverageReport/
+    - name: Publish coverage summary
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        filename: ./TestResults/**/*.cobertura.xml
+        badge: true
+        fail_below_min: true
+        format: markdown
+        output: file      
+    - name: Add coverage summary to workflow summary
+      run: cat github_summary.md >> $GITHUB_STEP_SUMMARY
+        
   deploy:
     # Publish only when creating a GitHub Release
     # https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository
