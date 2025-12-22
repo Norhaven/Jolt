@@ -21,6 +21,7 @@ namespace Jolt.Json.Tests.Cases.E2E.JsonTests
         public sealed class TestFile
         {
             public JsonNode PossibleExceptionCodes { get; set; }
+            public JsonNode PossibleExternalMethodSources { get; set; }
             public TestGroup[] TestGroups { get; set; }
         }
 
@@ -28,6 +29,7 @@ namespace Jolt.Json.Tests.Cases.E2E.JsonTests
         {
             public string Name { get; set; }
             public JsonNode Source { get; set; }
+            public string ExternalMethodSource { get; set; }
             public EndToEndTest[] Tests { get; set; }
         }
 
@@ -35,6 +37,7 @@ namespace Jolt.Json.Tests.Cases.E2E.JsonTests
         {
             public string GroupName { get; set; }
             public IDictionary<string, string> PossibleExceptions { get; set; }
+            public IDictionary<string, string> PossibleExternalMethodSources { get; set; }
             public string Name { get; set; }
             public string Source { get; set; }
             public JsonNode Transformer { get; set; }
@@ -42,6 +45,7 @@ namespace Jolt.Json.Tests.Cases.E2E.JsonTests
             public string? ExceptionCode { get; set; }
             public string? InnerExceptionCode { get; set; }
             public string? ExceptionType { get; set; }
+            public string ExternalMethodSource { get; set; }
         }
 
         public JsonTest(IJsonContext context)
@@ -71,6 +75,25 @@ namespace Jolt.Json.Tests.Cases.E2E.JsonTests
 
             var context = _testContext
                 .UseTransformer(test.Transformer.ToJsonString());
+
+            if (!string.IsNullOrWhiteSpace(test.ExternalMethodSource))
+            {
+                if (!test.PossibleExternalMethodSources.TryGetValue(test.ExternalMethodSource, out var externalMethodSource))
+                {
+                    externalMethodSource = test.ExternalMethodSource;
+                }
+
+                var externalMethodType = Type.GetType(externalMethodSource);
+
+                context = context.RegisterAllMethodsFrom(externalMethodType);
+
+                var isStaticClass = externalMethodType.IsClass && externalMethodType.IsAbstract && externalMethodType.IsSealed;
+
+                if (!isStaticClass)
+                {
+                    context = context.UseMethodContext(Activator.CreateInstance(externalMethodType));
+                }
+            }
 
             var transformer = new JoltTransformer<IJsonContext>(context);
 
@@ -142,6 +165,7 @@ namespace Jolt.Json.Tests.Cases.E2E.JsonTests
 
             var testFile = JsonSerializer.Deserialize<TestFile>(json, options);
             var possibleExceptions = testFile.PossibleExceptionCodes.Deserialize<Dictionary<string, string>>();
+            var possibleExternalMethodSources = testFile.PossibleExternalMethodSources.Deserialize<Dictionary<string, string>>();
 
             var associatedTests = from testGroup in testFile.TestGroups
                                   from test in testGroup.Tests
@@ -155,7 +179,9 @@ namespace Jolt.Json.Tests.Cases.E2E.JsonTests
                                       ExceptionCode = test.ExceptionCode,
                                       GroupName = testGroup.Name,
                                       PossibleExceptions = possibleExceptions,
-                                      Source = testGroup.Source.ToJsonString()
+                                      PossibleExternalMethodSources = possibleExternalMethodSources,
+                                      Source = testGroup.Source.ToJsonString(),
+                                      ExternalMethodSource = test.ExternalMethodSource ?? testGroup.ExternalMethodSource
                                   };
 
             return new TheoryData<EndToEndTest>(associatedTests);

@@ -473,6 +473,8 @@ namespace Jolt.Evaluation
             {
                 if (method.CallType == CallType.Static)
                 {
+                    context.JsonContext.WriteInfoFor<ExpressionEvaluator>($"Attempting to invoke static method '{method.AssemblyQualifiedTypeName}.{method.Name}'");
+
                     var type = Type.GetType(method.AssemblyQualifiedTypeName);
 
                     return type
@@ -483,6 +485,8 @@ namespace Jolt.Evaluation
                 }
                 else if (method.CallType == CallType.Instance)
                 {
+                    context.JsonContext.WriteInfoFor<ExpressionEvaluator>($"Attempting to invoke instance method '{method.Name}'");
+
                     if (context.JsonContext.MethodContext is null)
                     {
                         throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToInvokeInstanceMethodWithoutMethodContext, method.Name);

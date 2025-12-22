@@ -274,6 +274,12 @@ namespace Jolt.Json.Tests.Cases.E2E.General
         public void ExternalMethod_IsSuccessful_UsingDefaultWithStaticMethodAliasedRegistrations()
         {
             var json = ExecuteTest();
+
+            json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
+
+            json.PropertyValueFor<bool>(TargetProperty.BooleanLiteral).Should().BeTrue("because that is the value in the source document");
+            json.PropertyValueFor<string>(TargetProperty.StringLiteral).Should().Be("testtest", "because that is the value concatenated with itself in the source document");
+            json.PropertyValueFor<string>(TargetProperty.AppendedString).Should().Be("testtest", "because that is the value appended twice with itself in the source document");
         }
 
         [Fact]

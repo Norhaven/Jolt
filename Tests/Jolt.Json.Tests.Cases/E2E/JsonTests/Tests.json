@@ -5,7 +5,11 @@
     "missingTokenAtEnd": "ExpectedTokenButFoundEndOfExpression",
     "missingExpectedToken": "UnableToLocateExpectedCharactersInExpression",
     "tooManyComparisons": "ExpectedZeroOrOneComparisonSymbolsInExpressionButFoundMoreThanOne",
-    "externalMethodException": "ExternalMethodInvocationCausedAnException"
+    "externalMethodException": "ExternalMethodInvocationCausedAnException",
+    "invalidMethodUseInPropertyName": "UnableToUseMethodWithinPropertyName"
+  },
+  "possibleExternalMethodSources": {
+    "ExternalMixedMethods": "Jolt.Json.Tests.Resources.TestMethods.ExternalMixedMethods, Jolt.Json.Tests.Resources, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
   },
   "testGroups": [
     {
@@ -336,6 +340,24 @@
             "value": "#valueOf$.missing)"
           },
           "exceptionCode": "missingExpectedToken"
+        }
+      ]
+    },
+    {
+      "name": "Invalid external method usages",
+      "source": {
+        "one": 1,
+        "two": "2",
+        "three": true
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method should not be valid on the property name side",
+          "transformer": {
+            "#stringConcat('2', '1')": "#valueOf($.one)"
+          },
+          "exceptionCode": "invalidMethodUseInPropertyName"
         }
       ]
     }
