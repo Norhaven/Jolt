@@ -74,9 +74,9 @@ jobs:
         filename: ./TestResults/**/*.cobertura.xml
         badge: true
         format: markdown
-        output: file      
+        output: both      
     - name: Add coverage summary to workflow summary
-      run: cat github_summary.md >> $GITHUB_STEP_SUMMARY
+      run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
         
   deploy:
     # Publish only when creating a GitHub Release
