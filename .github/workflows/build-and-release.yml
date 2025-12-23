@@ -56,7 +56,7 @@ jobs:
     - name: .NET Restore on the solution
       run: dotnet restore Jolt.sln
     - name: .NET Framework Build
-      run: dotnet build JoltBuild.targets -p:BuildGroup=WindowsOnly -t:Build --configuration Release --no-restore
+      run: dotnet build JoltBuild.targets -p:BuildGroup=WindowsOnly -t:Build --configuration Release
     - name: CrossPlatform Build
       run: dotnet build JoltBuild.targets -p:BuildGroup=CrossPlatform -t:Build --configuration Release --no-restore
     - name: Run Tests
