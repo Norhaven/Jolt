@@ -4,7 +4,7 @@
 
 Welcome! This is an imperative JSON transformation language inspired by XSLT and the wonderful .Net JSON adaptation of it over at [JUST.Net](https://github.com/WorkMaze/JUST.net). This project provides an expression-based interpreter for the language and a highly extensible way of approaching the same problem, namely How To Transform JSON Into Different JSON.
 
-There are two `.Net Standard 2.1` packages available: `Jolt.Json.Newtonsoft` and `Jolt.Json.DotNet`. These use `Newtonsoft` or `System.Text.Json` functionality, respectively.
+There are two packages available: `Jolt.Json.Newtonsoft` and `Jolt.Json.DotNet`. These use `Newtonsoft` or `System.Text.Json` functionality, respectively. All of the packages are multitargeted and support `.Net Standard 2.0`, `.Net Standard 2.1`, `.Net 8.0`, and `.Net 10.0`.
 
 ### Disambiguation
 Were you looking for the much older and unrelated .Net port of the Java JSON transformation library (by coincidence, also called Jolt) instead? [That's over here!](https://github.com/blushingpenguin/Jolt.Net)
@@ -60,7 +60,7 @@ public class TransformerMethods
     public static bool IsNotNull(string value) => value != null;
 }
 ```
-You will need to create a JSON transformer and register your methods with it prior to the actual transformation. There are two `.Net Standard 2.1` packages available by default: `Jolt.Json.Newtonsoft` and `Jolt.Json.DotNet`, which use either `Newtonsoft` or `System.Text.Json` as their particular flavor of implementation. Also, note that the `Jolt.Json.DotNet` package has an additional dependency, namely on [JsonPath.Net](https://github.com/json-everything/json-everything), due to there being no default JSON Path support out of the box in `System.Text.Json` as of yet. 
+You will need to create a JSON transformer and register your methods with it prior to the actual transformation. There are two packages available by default: `Jolt.Json.Newtonsoft` and `Jolt.Json.DotNet`, which use either `Newtonsoft` or `System.Text.Json` as their particular flavor of implementation. Also, note that the `Jolt.Json.DotNet` package has an additional dependency, namely on [JsonPath.Net](https://github.com/json-everything/json-everything), due to there being no default JSON Path support out of the box in `System.Text.Json` as of yet. 
 
 For our demonstration purposes here, we'll assume Newtonsoft.
 ```csharp
