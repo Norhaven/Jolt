@@ -60,7 +60,7 @@ jobs:
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v1.0.5      
     - name: .NET Framework Only Package Restore
-      run: nuget restore Tests/Jolt.Json.DotNetFramework.Tests/Jolt.Json.DotNetFramework.Tests.csproj -PackagesDirectory Tests/packages       
+      run: nuget restore Tests/Jolt.Json.DotNetFramework.Tests/Jolt.Json.DotNetFramework.Tests.csproj -PackagesDirectory Tests/packages -SolutionDirectory ./
     #- name: .NET Cross-platform Package Restore
     #  run: dotnet restore Jolt.sln
     - name: .NET Framework Build
