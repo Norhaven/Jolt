@@ -51,14 +51,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Setup .NET
+    - name: Setup .NET    
       uses: actions/setup-dotnet@v4
-    - name: Run Standard Tests
-      run: dotnet test Tests/Jolt.Json.Tests/Jolt.Json.Tests.csproj --configuration Release --collect:"XPlat Code Coverage" --results-directory ./TestResults/
-    - name: Run Legacy Target Tests
-      run: dotnet test Tests/Jolt.Json.DotNetFramework.Tests/Jolt.Json.DotNetFramework.Tests.csproj --configuration Release --collect:"XPlat Code Coverage" --results-directory ./TestResults/
-    - name: Run Core Unit Tests
-      run: dotnet test Tests/Jolt.Tests/Jolt.Tests.csproj --configuration Release --collect:"XPlat Code Coverage" --results-directory ./TestResults/
+    - name: .NET Restore on the solution
+      run: dotnet restore Jolt.sln
+    - name: .NET Build
+      run: dotnet build Jolt.sln --configuration Release --no-restore
+    - name: Run Tests
+      run: dotnet test Jolt.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./TestResults/
     - name: Download code coverage report generator
       run: dotnet tool install -g dotnet-reportgenerator-globaltool
     - name: Generate code coverage report
@@ -76,9 +76,7 @@ jobs:
         format: markdown
         output: both      
     - name: Add coverage summary to workflow summary
-      run: |
-        cat code-coverage-results.md
-        cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+      run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
         
   deploy:
     # Publish only when creating a GitHub Release
