@@ -59,6 +59,8 @@ jobs:
       uses: microsoft/setup-msbuild@v1
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v1.0.5      
+    - name: Setup VSTest
+      uses: darenm/Setup-VSTest@v1 # Action to add VSTest to the PATH
     - name: .NET Framework Only Package Restore
       run: nuget restore Tests/Jolt.Json.DotNetFramework.Tests/Jolt.Json.DotNetFramework.Tests.csproj -PackagesDirectory Tests/packages       
     - name: .NET Cross-platform Package Restore
@@ -68,7 +70,7 @@ jobs:
     - name: .NET Cross-platform Build
       run: dotnet build JoltBuild.targets -p:BuildGroup=CrossPlatform -t:Build --configuration Release --no-restore
     - name: Run .NET Framework Tests
-      run: dotnet test Tests/Jolt.Json.DotNetFramework.Tests/Jolt.Json.DotNetFramework.Tests.csproj --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./TestResults/
+      run: vstest.console.exe Tests/Jolt.Json.DotNetFramework.Tests/bin/Release/Jolt.Json.DotNetFramework.Tests.dll --collect:"Code Coverage"
     - name: Run .NET Cross-platform Tests
       run: |
         dotnet test Tests/Jolt.Tests/Jolt.Tests.csproj --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./TestResults/
@@ -82,13 +84,9 @@ jobs:
       with:
         name: Code Coverage Report
         path: ./CoverageReport/
-    - name: Publish Code Coverage Summary
-      uses: 5monkeys/cobertura-action@v14
-      with:
-        path: ./TestResults/**/*.cobertura.xml
-        report_name: Jolt Code Coverage
         
   deploy:
+    name: Publish Jolt NuGet Package
     # Publish only when creating a GitHub Release
     # https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository
     if: github.event_name == 'release'
