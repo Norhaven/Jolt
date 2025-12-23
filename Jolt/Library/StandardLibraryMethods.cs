@@ -952,6 +952,7 @@ namespace Jolt.Library
 
             return context.CreateTokenFrom(isAny);
         }
+
         private static IJsonToken? AsIntegerOrFloatingPoint(object? value, Func<IEnumerable<long>, long?> asInt64, Func<IEnumerable<double>, double> asDecimal, EvaluationContext context)
         {
             var resolved = context.ResolveQueryPathIfPresent(value);
