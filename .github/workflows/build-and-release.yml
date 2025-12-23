@@ -58,11 +58,11 @@ jobs:
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v1.0.5      
     - name: .NET Framework Only Package Restore
-      run: nuget restore Tests/Jolt.Json.DotNetFramework.Tests/Jolt.Json.DotNetFramework.Tests.csproj -PackagesDirectory Tests/packages
-    - name: .NET Framework Build
-      run: dotnet build JoltBuild.targets -p:BuildGroup=WindowsOnly -t:Build --configuration Release      
+      run: nuget restore Tests/Jolt.Json.DotNetFramework.Tests/Jolt.Json.DotNetFramework.Tests.csproj -PackagesDirectory Tests/packages       
     - name: .NET Cross-platform Package Restore
       run: dotnet restore Jolt.sln
+    - name: .NET Framework Build
+      run: dotnet build JoltBuild.targets -p:BuildGroup=WindowsOnly -t:Build --configuration Release   
     - name: .NET Cross-platform Build
       run: dotnet build JoltBuild.targets -p:BuildGroup=CrossPlatform -t:Build --configuration Release --no-restore
     - name: Run Tests
