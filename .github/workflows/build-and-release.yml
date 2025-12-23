@@ -53,11 +53,15 @@ jobs:
     - uses: actions/checkout@v3
     - name: Setup .NET    
       uses: actions/setup-dotnet@v4
-    - name: .NET Restore on the solution
-      run: dotnet restore Jolt.sln
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1.0.5      
+    - name: .NET Framework Only Package Restore
+      run: nuget restore Tests/Jolt.Json.DotNetFramework.Tests/Jolt.Json.DotNetFramework.Tests.csproj
     - name: .NET Framework Build
-      run: dotnet build JoltBuild.targets -p:BuildGroup=WindowsOnly -t:Build --configuration Release
-    - name: CrossPlatform Build
+      run: dotnet build JoltBuild.targets -p:BuildGroup=WindowsOnly -t:Build --configuration Release      
+    - name: .NET Cross-platform Package Restore
+      run: dotnet restore Jolt.sln
+    - name: .NET Cross-platform Build
       run: dotnet build JoltBuild.targets -p:BuildGroup=CrossPlatform -t:Build --configuration Release --no-restore
     - name: Run Tests
       run: dotnet test Jolt.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./TestResults/
