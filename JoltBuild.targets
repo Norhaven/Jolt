@@ -1,0 +1,22 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+ <ItemGroup Condition="'$(BuildGroup)' == ''">
+    <ProjectReference Include="**/*.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(BuildGroup)' == 'CrossPlatform'">
+    <ProjectReference Include="**/*.csproj" Exclude="Tests/Jolt.Json.DotNetFramework.Tests/Jolt.Json.DotNetFramework.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(BuildGroup)' == 'WindowsOnly'">
+    <ProjectReference Include="./Tests/Jolt.Json.DotNetFramework.Tests/Jolt.Json.DotNetFramework.Tests.csproj" />
+  </ItemGroup>
+  
+  <Target Name="Build">
+    <!-- The @(ProjectReference) item list will only contain projects from the active group -->
+    <Message Text="Building projects in group: $(BuildGroup)" Importance="high" />
+    <Message Text="Projects: @(ProjectReference)" Importance="high" />
+    
+	<MSBuild Projects="@(ProjectReference)"/>
+  </Target>
+</Project>
