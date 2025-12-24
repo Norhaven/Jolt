@@ -10,6 +10,7 @@
 
   <ItemGroup Condition="'$(BuildGroup)' == 'WindowsOnly'">
     <ProjectReference Include="./Tests/Jolt.Json.DotNetFramework.Tests/Jolt.Json.DotNetFramework.Tests.csproj" />
+	<CustomPackageDirectories>./packages;./Tests/packages</CustomPackageDirectories>
   </ItemGroup>
   
   <Target Name="Build">
