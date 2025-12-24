@@ -1,6 +1,5 @@
 ﻿using Jolt.Json.Tests.Cases.E2E.General;
 using Jolt.Json.Tests.Resources;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;

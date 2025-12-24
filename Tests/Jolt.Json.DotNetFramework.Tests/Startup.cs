@@ -3,8 +3,6 @@ using Jolt.Exceptions;
 using Jolt.Json.Tests.Resources;
 using Jolt.Parsing;
 using Jolt.Structure;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using System;
 using Xunit;
 
