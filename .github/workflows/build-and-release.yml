@@ -59,6 +59,7 @@ jobs:
       uses: microsoft/setup-msbuild@v1
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v1.0.5      
+           
     - name: .NET Framework Only Package Restore
       run: nuget restore Tests/Jolt.Json.DotNetFramework.Tests/Jolt.Json.DotNetFramework.Tests.csproj -PackagesDirectory ./packages
     - name: .NET Cross-platform Package Restore
@@ -67,6 +68,12 @@ jobs:
       run: dotnet msbuild JoltBuild.targets -p:BuildGroup=WindowsOnly -t:Build /p:Configuration=Release
     - name: .NET Cross-platform Build
       run: dotnet build JoltBuild.targets -p:BuildGroup=CrossPlatform -t:Build --configuration Release --no-restore
+    - name: vstest-action
+      uses: microsoft/vstest-action@v1.0.0
+      with:
+        # Run tests from the specified files
+        testAssembly: Tests/Jolt.Json.DotNetFramework.Tests/bin/Release/Jolt.Json.DotNetFramework.Tests.dll
+        # Folder to search for the test assemblies
     - name: Run .NET Framework Tests
       run: vstest.console.exe Tests/Jolt.Json.DotNetFramework.Tests/bin/Release/Jolt.Json.DotNetFramework.Tests.dll --collect:"Code Coverage"
     - name: Run .NET Cross-platform Tests
