@@ -12,10 +12,6 @@
     <ProjectReference Include="./Tests/Jolt.Json.DotNetFramework.Tests/Jolt.Json.DotNetFramework.Tests.csproj" />
   </ItemGroup>
   
-  <PropertyGroup Condition="'$(BuildGroup)' == 'WindowsOnly'">
-    <CustomPackageDirectories Condition="'$(BuildGroup)' == 'WindowsOnly'">./packages;./Tests/packages</CustomPackageDirectories>
-  </PropertyGroup>
-
   <Target Name="Build">
     <!-- The @(ProjectReference) item list will only contain projects from the active group -->
     <Message Text="Building projects in group: $(BuildGroup)" Importance="high" />
