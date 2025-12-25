@@ -1,6 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <!-- Define the custom packages directory path -->
-    <RestorePackagesPath>$(MSBuildProjectDirectory)\packages</RestorePackagesPath>
-  </PropertyGroup>
-</Project>
