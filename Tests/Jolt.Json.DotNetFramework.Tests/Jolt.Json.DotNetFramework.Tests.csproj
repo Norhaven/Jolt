@@ -123,9 +123,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Xunit.DependencyInjection">
-      <Version>9.9.1</Version>
-    </PackageReference>
     <PackageReference Include="xunit.extensibility.execution">
       <Version>2.9.3</Version>
     </PackageReference>
