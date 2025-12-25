@@ -22,6 +22,9 @@
     </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup>
+	<RuntimeIdentifiers>win</RuntimeIdentifiers>
+  </PropertyGroup>
+  <PropertyGroup>
     <XunitStartupAssembly>Jolt.Json.DotNetFramework.Tests</XunitStartupAssembly>
     <XunitStartupFullName>Jolt.Json.DotNetFramework.Tests.Startup</XunitStartupFullName>
   </PropertyGroup>
