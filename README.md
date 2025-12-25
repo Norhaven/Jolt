@@ -365,3 +365,19 @@ You'll notice that you don't have to provide an instance type for the instance m
 var transformer = JoltJsonTransformer.DefaultWith(transformerJson, new[] { staticRegistration, instanceRegistration }, new TransformerMethods());
 ```
 That's it! You can pass in your source JSON document to the `Transform` method call just like before and collect the transformed result.
+
+# How To Contribute To This Project
+
+If you happen to have the desire to help out with this, there are several ways to do so that I'd recommend.
+
+## Raising Issues
+
+You are more than welcome to [raise an issue](https://github.com/Norhaven/Jolt/issues/new/choose) when you think you've found a bug, a mismatch between documentation and behavior, an idea for a new feature or library method that you'd like to see, or even just a question on intended behavior if it doesn't meet your expectations (there's always room to improve).
+
+## Submitting Pull Requests
+
+Please [raise an issue](https://github.com/Norhaven/Jolt/issues/new/choose) prior to submitting a PR so we can discuss and arrive at an ideal solution that you're then encouraged to help out with, namely so that you don't end up spending your time on fixing or adding something that may not turn out to be needed or intended in the end.
+
+## Writing Tests
+
+Testing is crucial and also the thing that tends to be lacking in this project. Please refer to the documentation in the README and the [Jolt Wiki](https://github.com/Norhaven/Jolt/wiki) to identify test cases that are missing or incorrect, and then raise an issue (as per above) with your concerns and findings so that we can discuss and decide how to move forward.
