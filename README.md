@@ -340,7 +340,7 @@ This package comes with quite a few methods built into it to get you started, al
 | toString | Returns the string representation of a value | `#toString($.some.path)` | Property Value
 | toDecimal | Returns a value converted to a floating point number | `#toDecimal($.some.path)` | Property Value
 | toBoolean | Returns a value converted to a boolean | `#toBoolean($.some.path)` | Property Value
-| any | Returns true if the value is an array or string with contents, false otherwise | `#any($.some.path)` | Property Value
+| any | Returns true if the value is an array or string with contents, false otherwise (lambda parameter is optional) | `#any($.some.path)` | Property Value
 | where | Returns an array of objects that match a predicate | `#where($.some.path, @x: @x.other.path > 2)` | Property Value
 | select | Returns an array of objects that are the result of a projection | `#select($.some.path, @x: @x.other.path)` | Property Value
 | removeAt | Removes a JSON node from the provided variable-based path | `#removeAt(@x.some.path)` | Statement
