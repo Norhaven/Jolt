@@ -376,7 +376,7 @@ You are more than welcome to [raise an issue](https://github.com/Norhaven/Jolt/i
 
 ## Submitting Pull Requests
 
-Please [raise an issue](https://github.com/Norhaven/Jolt/issues/new/choose) prior to submitting a PR so we can discuss and arrive at an ideal solution that you're then encouraged to help out with, namely so that you don't end up spending your time on fixing or adding something that may not turn out to be needed or intended in the end.
+Please [raise an issue](https://github.com/Norhaven/Jolt/issues/new/choose) prior to submitting a PR so we can discuss and arrive at an ideal solution that you're then encouraged to help out with, namely so that you don't end up spending your time on fixing or adding something that may not turn out to be needed or intended in the end. I look forward to hearing from you!
 
 ## Writing Tests
 
