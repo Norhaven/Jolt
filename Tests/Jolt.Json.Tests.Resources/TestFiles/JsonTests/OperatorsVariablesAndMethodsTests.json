@@ -199,7 +199,7 @@
           }
         },
         {
-          "name": "Range variable set to null and read verbatim results in a null value",
+          "name": "Range variable indirectly set to null and read verbatim results in a null value",
           "transformer": {
             "@x": "#valueOf($.missing)",
             "value": "@x"
@@ -209,7 +209,7 @@
           }
         },
         {
-          "name": "Range variable indirectly set to null and read verbatim results in a null value",
+          "name": "Range variable set to null and read verbatim results in a null value",
           "transformer": {
             "@x": null,
             "value": "@x"
