@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using static Jolt.Json.Tests.Resources.SmallTest;
 
 namespace Jolt.Json.Tests.Resources
 {
@@ -139,122 +140,40 @@ namespace Jolt.Json.Tests.Resources
             public const string UsingBlock = "UsingBlock";
         }
 
+        public abstract class TestContainer
+        {
+            protected readonly MethodInfo _method;
+            protected readonly Attribute _attribute;
+
+            public string TestName => _method.Name;
+
+            public TestContainer(MethodInfo testMethod, Attribute attribute)
+            {
+                _method = testMethod;
+                _attribute = attribute;
+            }
+
+            public abstract void Execute(IJsonContext context);
+        }
+
         protected readonly IJsonContext _testContext;
 
         public Test(IJsonContext context)
         {
             _testContext = context;
         }
-
-        protected IJsonObject ExecuteTest<T>(Func<IJsonContext, IJsonContext> configureContext = default, [CallerMemberName] string testMethodName = default)
+                
+        public static IEnumerable<object[]> GetAllTestsInScope(Type testClassType, Type testAttributeType, Type testContainerType)
         {
-            return ExecuteTestIfPossible(configureContext, testMethodName);
-        }
+            var testMethods = from method in testClassType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                              let attribute = method.GetCustomAttribute(testAttributeType)
+                              where attribute != null
+                              select new { Method = method, Attribute = attribute };
 
-        protected IJsonObject ExecuteTest(Func<IJsonContext, IJsonContext> configureContext = default, [CallerMemberName] string testMethodName = default)
-        {
-            return ExecuteTestIfPossible(configureContext, testMethodName);
-        }
-
-        private IJsonObject ExecuteTestIfPossible(Func<IJsonContext, IJsonContext> configureContext, string testMethodName)
-        { 
-            var method = GetType().GetMethod(testMethodName);
-
-            if (method is null)
+            foreach (var testMethod in testMethods)
             {
-                throw new ArgumentNullException(nameof(testMethodName), $"Unable to locate test method '{testMethodName}'");
+                yield return new[] { Activator.CreateInstance(testContainerType, testMethod.Method, testMethod.Attribute) };
             }
-
-            var definition = method.GetCustomAttribute<TestDefinitionAttribute>(inherit: false);
-
-            if (definition is null)
-            {
-                throw new ArgumentNullException(nameof(testMethodName), $"Missing TestDefinitionAttribute on test method '{testMethodName}'");
-            }
-
-            var transformerJson = ReadTestTransformer(definition.TransformerName);
-            var sourceDocumentJson = ReadTestDocument(definition.SourceDocumentName);
-
-            var context = configureContext == null ? _testContext : configureContext(_testContext);
-
-            context = context
-                .UseTransformer(transformerJson)
-                .RegisterAllMethodsFrom(definition.ExternalMethodType);
-
-            var type = definition.ExternalMethodType;
-
-            if (type != null)
-            {
-                // If it's not a static class, go ahead and instantiate it anyway just in case there's some instance
-                // methods that will come along for the ride here.
-
-                var isStaticClass = type.IsClass && type.IsAbstract && type.IsSealed;
-
-                if (!isStaticClass)
-                {
-                    context = context.UseMethodContext(Activator.CreateInstance(definition.ExternalMethodType));
-                }
-            }
-
-            var transformer = new JoltTransformer<IJsonContext>(context);
-
-            var transformedDocument = transformer.Transform(sourceDocumentJson);
-
-            if (transformedDocument == null)
-            {
-                throw new ArgumentException("Expected a transformed document because a valid test document was sent in and used by a valid transformer but found null");
-            }
-
-            return _testContext.JsonTokenReader.Read(transformedDocument) as IJsonObject;
         }
-
-        protected IJsonObject ExecuteTestFor<T>(string transformerJson, string testDocumentJson, object methodContext = default)
-        {
-            var transformer = CreateTransformerWith<T>(transformerJson, methodContext);
-            var transformedDocument = transformer.Transform(testDocumentJson);
-
-            if (transformedDocument == null)
-            {
-                throw new ArgumentException("Expected a transformed document because a valid test document was sent in and used by a valid transformer but found null");
-            }
-
-            return _testContext.JsonTokenReader.Read(transformedDocument) as IJsonObject;
-        }
-
-        protected IJsonObject ExecuteTestFor(string transformerJson, string testDocumentJson, IEnumerable<MethodRegistration> methodRegistrations = default, object methodContext = default)
-        {
-            var transformer = CreateTransformerWith(transformerJson, methodRegistrations, methodContext);
-            var transformedDocument = transformer.Transform(testDocumentJson);
-
-            if (transformedDocument == null)
-            {
-                throw new ArgumentException("Expected a transformed document because a valid test document was sent in and used by a valid transformer but found null");
-            }
-
-            return _testContext.JsonTokenReader.Read(transformedDocument) as IJsonObject;
-        }
-
-        private IJsonTransformer<IJsonContext> CreateTransformerWith<T>(string transformerJson, object methodContext = default)
-        {
-            var context = _testContext
-                .UseTransformer(transformerJson)
-                .RegisterAllMethodsFrom<T>()
-                .UseMethodContext(methodContext);
-
-            return new JoltTransformer<IJsonContext>(context);
-        }
-
-        private IJsonTransformer<IJsonContext> CreateTransformerWith(string transformerJson, IEnumerable<MethodRegistration> methodRegistrations, object methodContext = default)
-        {
-            var context = _testContext
-                .UseTransformer(transformerJson)
-                .RegisterAllMethods(methodRegistrations)
-                .UseMethodContext(methodContext);
-
-            return new JoltTransformer<IJsonContext>(context);
-        }
-
-        private static string ReadTestDocument(string fileName) => TestResource.ReadDocument(fileName);
-        private static string ReadTestTransformer(string fileName) => TestResource.ReadTransformer(fileName);
     }
 }

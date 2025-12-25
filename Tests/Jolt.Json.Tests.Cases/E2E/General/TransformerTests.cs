@@ -3,49 +3,44 @@ using Jolt.Json.Tests.Resources.Extensions;
 using Jolt.Json.Tests.Resources;
 using Jolt.Library;
 using Jolt.Structure;
-using Xunit;
 using Jolt.Json.Tests.Resources.TestAttributes;
 using Jolt.Json.Tests.Resources.TestMethods;
 using System.Runtime.CompilerServices;
 
 namespace Jolt.Json.Tests.Cases.E2E.General
 {
-    public abstract class JoltTransformerTests : Test
+    public abstract class TransformerTests : TransformerTest
     {
-        public JoltTransformerTests(IJsonContext context)
+        public TransformerTests(IJsonContext context)
             : base(context)
-        { }
+        { 
+        }
 
-        [Fact]
-        [TestDefinition(Transformer.SingleLevelValueOf, SourceDocument.SingleLevel)]
+        [TransformerTestDefinition(Transformer.SingleLevelValueOf, SourceDocument.SingleLevel)]
         public void ValueOf_IsSuccessful_AtSingleLevelForNumericLiteral()
         {
             ValidateLiteralIsTransformed(TargetProperty.IntegerLiteral, Value.IntegerLiteral);
         }
 
-        [Fact]
-        [TestDefinition(Transformer.SingleLevelValueOf, SourceDocument.SingleLevel)]
+        [TransformerTestDefinition(Transformer.SingleLevelValueOf, SourceDocument.SingleLevel)]
         public void ValueOf_IsSuccessful_AtSingleLevelForStringLiteral()
         {
             ValidateLiteralIsTransformed(TargetProperty.StringLiteral, Value.StringLiteral);
         }
 
-        [Fact]
-        [TestDefinition(Transformer.SingleLevelValueOf, SourceDocument.SingleLevel)]
+        [TransformerTestDefinition(Transformer.SingleLevelValueOf, SourceDocument.SingleLevel)]
         public void ValueOf_IsSuccessful_AtSingleLevelForBooleanTrueLiteral()
         {
             ValidateLiteralIsTransformed(TargetProperty.BooleanTrueLiteral, Value.BooleanTrueLiteral);
         }
 
-        [Fact]
-        [TestDefinition(Transformer.SingleLevelValueOf, SourceDocument.SingleLevel)]
+        [TransformerTestDefinition(Transformer.SingleLevelValueOf, SourceDocument.SingleLevel)]
         public void ValueOf_IsSuccessful_AtSingleLevelForBooleanFalseLiteral()
         {
             ValidateLiteralIsTransformed(TargetProperty.BooleanFalseLiteral, Value.BooleanFalseLiteral);
         }
 
-        [Fact]
-        [TestDefinition(Transformer.MultiLevelValueOf, SourceDocument.MultiLevel)]
+        [TransformerTestDefinition(Transformer.MultiLevelValueOf, SourceDocument.MultiLevel)]
         public void ValueOf_IsSuccessful_AtMultiLevelForStringLiteral()
         {
             var json = ExecuteTest();
@@ -55,8 +50,7 @@ namespace Jolt.Json.Tests.Cases.E2E.General
             nestedJson.PropertyValueFor<string>(TargetProperty.StringLiteral).Should().Be(Value.StringLiteral, "because that was the value in the source document");
         }
 
-        [Fact]
-        [TestDefinition(Transformer.Loops, SourceDocument.Loop)]
+        [TransformerTestDefinition(Transformer.Loops, SourceDocument.Loop)]
         public void Loop_IsSuccessful_AtSingleLevelForMultiElements()
         {
             var json = ExecuteTest();
@@ -131,8 +125,7 @@ namespace Jolt.Json.Tests.Cases.E2E.General
             );
         }
 
-        [Fact]
-        [TestDefinition(Transformer.MultiLevelValueOf, SourceDocument.MultiLevel)]
+        [TransformerTestDefinition(Transformer.MultiLevelValueOf, SourceDocument.MultiLevel)]
         public void ValueOf_WorksSuccessfullyAtMultipleLevels()
         {
             var json = ExecuteTest();
@@ -144,8 +137,7 @@ namespace Jolt.Json.Tests.Cases.E2E.General
             objectProperty.PropertyValueFor<string>(TargetProperty.StringLiteral).Should().Be(Value.StringLiteral, "because that was the value in the source document");
         }
 
-        [Fact]
-        [TestDefinition(Transformer.Math, SourceDocument.Math)]
+        [TransformerTestDefinition(Transformer.Math, SourceDocument.Math)]
         public void Math_IsSuccessful_WithOperatorPrecedence()
         {
             var equation = "2 + 3 * 4 + 5 = 19";
@@ -163,8 +155,7 @@ namespace Jolt.Json.Tests.Cases.E2E.General
             json.PropertyValueFor<bool>(TargetProperty.BooleanLiteral).Should().Be(true, "because this is the result of evaluating the equation");
         }
 
-        [Fact]
-        [TestDefinition(Transformer.Existence, SourceDocument.Existence)]
+        [TransformerTestDefinition(Transformer.Existence, SourceDocument.Existence)]
         public void Existence_IsSuccessful_WithLiteralStringAndNull()
         {
             var json = ExecuteTest();
@@ -175,8 +166,7 @@ namespace Jolt.Json.Tests.Cases.E2E.General
             json.PropertyValueFor<bool>(TargetProperty.Empty).Should().BeFalse("because the document had a null value in this property");
         }
 
-        [Fact]
-        [TestDefinition(Transformer.Conditions, SourceDocument.Conditions)]
+        [TransformerTestDefinition(Transformer.Conditions, SourceDocument.Conditions)]
         public void IfCondition_IsSuccessful_WithStringComparisonAsConditionAndStringResult()
         {
             var json = ExecuteTest();
@@ -199,8 +189,7 @@ namespace Jolt.Json.Tests.Cases.E2E.General
             }
         }
 
-        [Fact]
-        [TestDefinition(Transformer.PipedMethods, SourceDocument.PipedMethods)]
+        [TransformerTestDefinition(Transformer.PipedMethods, SourceDocument.PipedMethods)]
         public void PipedMethod_IsSuccessful_WithCallToSingleAndMultiParameterMethod()
         {
             var json = ExecuteTest();
@@ -249,8 +238,7 @@ namespace Jolt.Json.Tests.Cases.E2E.General
             json.PropertyValueFor<string>(TargetProperty.Substring6).Should().Be("1.", "because that is the substring that should be retrieved from the source document");
         }
 
-        [Fact]
-        [TestDefinition(Transformer.ExternalMethods, SourceDocument.ExternalMethods, typeof(ExternalInstanceMethods))]
+        [TransformerTestDefinition(Transformer.ExternalMethods, SourceDocument.ExternalMethods, typeof(ExternalInstanceMethods))]
         public void ExternalMethod_IsSuccessful_WithStaticAndInstanceCallToSingleAndMultiParameterMethod()
         {
             var staticBoolRegistration = MethodRegistration.FromStaticMethod(typeof(ExternalStaticMethods), nameof(ExternalStaticMethods.TakesAndReturnsBoolean));
@@ -269,8 +257,7 @@ namespace Jolt.Json.Tests.Cases.E2E.General
             json.PropertyValueFor<string>(TargetProperty.AppendedString).Should().Be("testtest", "because that is the value appended twice with itself in the source document");
         }
 
-        [Fact]
-        [TestDefinition("ExternalMethodsWithAliases", "ExternalMethodsDocument", typeof(ExternalMixedMethods))]
+        [TransformerTestDefinition("ExternalMethodsWithAliases", "ExternalMethodsDocument", typeof(ExternalMixedMethods))]
         public void ExternalMethod_IsSuccessful_UsingDefaultWithStaticMethodAliasedRegistrations()
         {
             var json = ExecuteTest();
@@ -282,8 +269,7 @@ namespace Jolt.Json.Tests.Cases.E2E.General
             json.PropertyValueFor<string>(TargetProperty.AppendedString).Should().Be("testtest", "because that is the value appended twice with itself in the source document");
         }
 
-        [Fact]
-        [TestDefinition(Transformer.RangeVariables, SourceDocument.Loop)]
+        [TransformerTestDefinition(Transformer.RangeVariables, SourceDocument.Loop)]
         public void RangeVariables_AreSuccessful_WithDeclarationAndUsage()
         {
             var json = ExecuteTest();
@@ -298,8 +284,7 @@ namespace Jolt.Json.Tests.Cases.E2E.General
             json.PropertyValueFor<string>("InvalidVarReference").Should().BeNull("because the lifetime of the scoped variable ended with the loop");
         }
 
-        [Fact]
-        [TestDefinition(Transformer.Lambdas, SourceDocument.Lambdas)]
+        [TransformerTestDefinition(Transformer.Lambdas, SourceDocument.Lambdas)]
         public void Lambdas_AreSuccessful_WithDeclarationAndUsage()
         {
             var json = ExecuteTest();
@@ -311,8 +296,7 @@ namespace Jolt.Json.Tests.Cases.E2E.General
             json["Selected"].AsArray().ShouldContain(1, 2);
         }
 
-        [Fact]
-        [TestDefinition(Transformer.UsingBlock, SourceDocument.Loop)]
+        [TransformerTestDefinition(Transformer.UsingBlock, SourceDocument.Loop)]
         public void UsingBlock_IsSuccessful_WithDeclarationAndUsageIncludingFromRangeVariables()
         {
             var json = ExecuteTest();
@@ -327,8 +311,6 @@ namespace Jolt.Json.Tests.Cases.E2E.General
 
             obj.SelectTokenAtPath("$.third.deep.value").ToTypeOf<int>().Should().Be(3, "because that's the value assigned in the transformer");
             obj.SelectTokenAtPath("$.fourth.id").ToTypeOf<int>().Should().Be(12, "because that's the result of the equation in the transformer");
-
-
         }
 
         private void ValidateLiteralIsTransformed<T>(string targetProperty, T targetValue, [CallerMemberName] string testMethodName = default)

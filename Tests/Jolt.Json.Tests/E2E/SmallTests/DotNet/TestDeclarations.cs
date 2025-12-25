@@ -1,5 +1,6 @@
 ﻿using Jolt.Json.Tests.Cases.E2E.SmallTests;
 using Jolt.Json.Tests.Resources;
+using Jolt.Json.Tests.Resources.TestAttributes;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -14,5 +15,8 @@ namespace Jolt.Json.Tests.E2E.SmallTests.DotNet;
 public sealed class ValueOf([FromKeyedServices(TestType.DotNet)] IJsonContext context)
     : ValueOfTests(context)
 {
+    [Theory]
+    [MemberData(nameof(GetAllTestsInScope), typeof(ValueOf), typeof(SmallTestDefinitionAttribute), typeof(SmallTestContainer))]
+    public void ValueOfTests_WillSucceed(SmallTestContainer container) => container.Execute(_testContext);
 }
 

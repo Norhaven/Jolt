@@ -1,5 +1,4 @@
-﻿using Jolt.Json.Tests.Cases.E2E.JsonTests;
-using Jolt.Json.Tests.Cases.E2E.General;
+﻿using Jolt.Json.Tests.Cases.E2E.General;
 using Jolt.Json.Tests.Resources;
 using System;
 using System.Collections.Generic;
