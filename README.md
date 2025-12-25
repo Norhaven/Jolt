@@ -204,7 +204,7 @@ In the resulting JSON output, the `finalResult` property will be populated by th
 
 ### Range Variables: Lambda Expressions
 
-There are also another use for range variables, namely in lambda expressions. Several methods in the library will take a lambda in order to better filter and/or refine the JSON data, used in the form of declaring a range variable and a body expression separated by a colon `:`. The variable's lifetime is scoped to the lambda body and will not be accessible outside of it. Let's take a quick look at the methods which allow this usage.
+There is also another use for range variables, namely in lambda expressions. Several methods in the library will take a lambda in order to better filter and/or refine the JSON data, used in the form of declaring a range variable and a body expression separated by a colon `:`. The variable's lifetime is scoped to the lambda body and will not be accessible outside of it. Let's take a quick look at the methods which allow this usage.
 ```json
 {
     "hasValues": "#valueOf($.some.integerArray)->#any(@x: @x > 5)",
