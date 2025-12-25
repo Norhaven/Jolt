@@ -4,7 +4,9 @@
 
 Welcome! This is an imperative JSON transformation language inspired by XSLT and the wonderful .Net JSON adaptation of it over at [JUST.Net](https://github.com/WorkMaze/JUST.net). This project provides an expression-based interpreter for the language and a highly extensible way of approaching the same problem, namely How To Transform JSON Into Different JSON.
 
-There are two packages available: `Jolt.Json.Newtonsoft` and `Jolt.Json.DotNet`. These use `Newtonsoft` or `System.Text.Json` functionality, respectively. All of the packages are multitargeted and support `.Net Standard 2.0`, `.Net Standard 2.1`, `.Net 8.0`, and `.Net 10.0`.
+There are two packages generally available for this: `Jolt.Json.Newtonsoft` and `Jolt.Json.DotNet`. These use `Newtonsoft` or `System.Text.Json` functionality, respectively. All of the packages are multitargeted and support `.Net Standard 2.0`, `.Net Standard 2.1`, `.Net 8.0`, and `.Net 10.0`. 
+
+_<h6>The third package, which the first two depend on, is called `Jolt` and should only need to be directly referenced if you are building your own integration on top of it as the other packages have done.</h6>_
 
 ### Disambiguation
 Were you looking for the much older and unrelated .Net port of the Java JSON transformation library (by coincidence, also called Jolt) instead? [That's over here!](https://github.com/blushingpenguin/Jolt.Net)
