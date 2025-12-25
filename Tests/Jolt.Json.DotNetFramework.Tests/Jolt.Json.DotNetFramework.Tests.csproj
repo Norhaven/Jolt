@@ -245,6 +245,9 @@
     <PackageReference Include="System.Text.Json">
       <Version>10.0.1</Version>
     </PackageReference>
+    <PackageReference Include="xunit">
+      <Version>2.9.3</Version>
+    </PackageReference>
     <PackageReference Include="xunit.analyzers">
       <Version>1.26.0</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
