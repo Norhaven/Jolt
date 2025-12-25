@@ -66,7 +66,7 @@ jobs:
     - name: .NET Cross-platform Package Restore
       run: dotnet restore Jolt.sln
     - name: .NET Framework Build
-      run: dotnet msbuild JoltBuild.targets -p:BuildGroup=WindowsOnly -t:Build /p:Configuration=Release
+      run: msbuild JoltBuild.targets -p:BuildGroup=WindowsOnly -t:Build /p:Configuration=Release
     - name: .NET Cross-platform Build
       run: dotnet build JoltBuild.targets -p:BuildGroup=CrossPlatform -t:Build --configuration Release --no-restore
     
