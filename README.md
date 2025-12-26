@@ -345,6 +345,7 @@ This package comes with quite a few methods built into it to get you started, al
 | any | Returns true if the value is an array or string with contents, false otherwise (lambda parameter is optional) | `#any($.some.path)` | Property Value
 | where | Returns an array of objects that match a predicate | `#where($.some.path, @x: @x.other.path > 2)` | Property Value
 | select | Returns an array of objects that are the result of a projection | `#select($.some.path, @x: @x.other.path)` | Property Value
+| using | Assigns a specific path to a range variable and allows statements to operate on it | `"#using($.some.path as @x)->'result'":[ "#setAt(@x.other.path, 5)" ]` | Property Name
 | removeAt | Removes a JSON node from the provided variable-based path | `#removeAt(@x.some.path)` | Statement
 | setAt | Adds or modifies a JSON node specified with the provided variable-based path | `#setAt(@x.some.path, 5)` | Statement
 
