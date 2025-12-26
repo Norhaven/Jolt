@@ -1,0 +1,37 @@
+# Let's Talk About Testing
+
+Jolt is multitargeted with `.Net Standard 2.0` for older software and with `.Net Standard 2.1` for support beyond that. It also supports the more recent long-term .Net releases for `.Net 8.0` and `.Net 10.0` to take advantage of newer features and updates. I would personally rather avoid writing the same test over again to verify each of those targets, plus the majority of the setup and verification belongs in JSON which makes it easier to reuse across these different environments, so I've split testing into a few separate pieces for ease of reuse and development.
+
+# Entry Points
+
+All of the tests are run with `xUnit 2.9.3`, but the environment may differ to the point that it's unsupportable within a single test project. Due to that, Jolt is split into two separate streams of tests due to legacy .Net Framework support being Windows-only with a specific .csproj structure and later environments being more cross-platform with a different .csproj structure. These projects are a simple wrapper around the actual tests and just exist to allow executing the tests within a specific target. These should also rarely change, as all of the actual tests and their runners live deeper in.
+
+## Jolt.Json.DotNetFramework.Tests
+
+This test project solely targets `.Net 4.7.2` and verifies against the `.Net Standard 2.0` contract to make sure that older applications are supported. 
+
+## Jolt.Json.Tests
+
+This test project targets both `.Net 8.0` and `.Net 10.0` to test the more recent frameworks.
+
+_<h6>The `.Net Standard 2.1` contract is unsupported by the `Microsoft.NET.Test.Sdk` integration and so we're not currently testing this directly, assuming for the moment that if all of the other targets pass then this is good to go too.</h6>_
+
+# So Where Are The Tests?
+
+We have several flavors of test in use here: `Transformer`, `JSON`, and `Small`. These all live in the `Jol.Json.Tests.Cases` project, so let's go over those here.
+
+## Transformer
+
+These tests exist in the `./E2E/General` area of the project and are the most typical way of testing that you are probably already familiar with. Each is tagged with a `TransformerTestDefinition` attribute which specifies the transformer file name and source document file name that this test will make use of. It will then make some assertions about the state of the objects it receives as a result of transforming the source JSON. The files are located in the `Jolt.Json.Tests.Resources` project, in the `./TestFiles/Transformers` and `./TestFiles/Documents` folders respectively. If you have a lot of expectations that should be verified about a given test result, this may be a good place for that.
+
+## JSON
+
+These tests exist in the `./E2E/Json` area of the project and are tagged with a `JsonTestDefinition` attribute which specifies the tests file used for the given set of tests and expectations. The entire test structure exists in the `Jolt.Json.Tests.Resources` project, in the `./TestFiles/JsonTests` folder. The structure of the JSON tests in their files should hopefully be straightforward, but I'll update this with the structure at a later date. Generally, these are groups of like-minded tests that operate on medium-sized transformers and operations.
+
+## Small
+
+These tests exist in the `./E2E/SmallTests` area of the project and are tagged with a `SmallTestDefinition` and additionally decorated with attributes describing the source input, the transformer snippet, and the expectations for the shape of its results. As a rule of thumb, if a test involves variations on a single method call or operation then it belongs here.
+
+# You Mentioned A Resources Project?
+
+The `Jolt.Json.Tests.Resources` project contains all of the attributes, custom exceptions, test files, and test runners that are needed by the three different kinds of tests. All of the non-code files are marked as Embedded Resources and will be read in as such during test execution. If it's a part of the testing structures, but not an actual test or entry point, then it belongs here.

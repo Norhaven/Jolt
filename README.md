@@ -4,7 +4,9 @@
 
 Welcome! This is an imperative JSON transformation language inspired by XSLT and the wonderful .Net JSON adaptation of it over at [JUST.Net](https://github.com/WorkMaze/JUST.net). This project provides an expression-based interpreter for the language and a highly extensible way of approaching the same problem, namely How To Transform JSON Into Different JSON.
 
-There are two packages available: `Jolt.Json.Newtonsoft` and `Jolt.Json.DotNet`. These use `Newtonsoft` or `System.Text.Json` functionality, respectively. All of the packages are multitargeted and support `.Net Standard 2.0`, `.Net Standard 2.1`, `.Net 8.0`, and `.Net 10.0`.
+There are two packages generally available for this: `Jolt.Json.Newtonsoft` and `Jolt.Json.DotNet`. These use `Newtonsoft` or `System.Text.Json` functionality, respectively. All of the packages are multitargeted and support `.Net Standard 2.0`, `.Net Standard 2.1`, `.Net 8.0`, and `.Net 10.0`. 
+
+_<h6>The third package, which the first two depend on, is called `Jolt` and should only need to be directly referenced if you are building your own integration on top of it as the other packages have done.</h6>_
 
 ### Disambiguation
 Were you looking for the much older and unrelated .Net port of the Java JSON transformation library (by coincidence, also called Jolt) instead? [That's over here!](https://github.com/blushingpenguin/Jolt.Net)
@@ -343,6 +345,7 @@ This package comes with quite a few methods built into it to get you started, al
 | any | Returns true if the value is an array or string with contents, false otherwise (lambda parameter is optional) | `#any($.some.path)` | Property Value
 | where | Returns an array of objects that match a predicate | `#where($.some.path, @x: @x.other.path > 2)` | Property Value
 | select | Returns an array of objects that are the result of a projection | `#select($.some.path, @x: @x.other.path)` | Property Value
+| using | Assigns a specific path to a range variable and allows statements to operate on it | `"#using($.some.path as @x)->'result'":[ "#setAt(@x.other.path, 5)" ]` | Property Name
 | removeAt | Removes a JSON node from the provided variable-based path | `#removeAt(@x.some.path)` | Statement
 | setAt | Adds or modifies a JSON node specified with the provided variable-based path | `#setAt(@x.some.path, 5)` | Statement
 
@@ -380,4 +383,4 @@ Please [raise an issue](https://github.com/Norhaven/Jolt/issues/new/choose) prio
 
 ## Writing Tests
 
-Testing is crucial and also the thing that tends to be lacking in this project. Please refer to the documentation in the README and the [Jolt Wiki](https://github.com/Norhaven/Jolt/wiki) to identify test cases that are missing or incorrect, and then [raise an issue](https://github.com/Norhaven/Jolt/issues/new/choose) (as per above) with your concerns and findings so that we can discuss and decide how to move forward.
+Testing is crucial and also the thing that tends to be lacking in this project. Please refer to the documentation in this README, the ones in the [Tests](https://github.com/Norhaven/Jolt/tree/main/Tests) folder, and also the [Jolt Wiki](https://github.com/Norhaven/Jolt/wiki) to identify test cases that are missing or incorrect, and then [raise an issue](https://github.com/Norhaven/Jolt/issues/new/choose) (as per above) with your concerns and findings so that we can discuss and decide how to move forward.
