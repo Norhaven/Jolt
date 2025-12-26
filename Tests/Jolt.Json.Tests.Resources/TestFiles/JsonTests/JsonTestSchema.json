@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "possibleExceptionCodes": {
+      "type": "object"
+    },
+    "possibleExternalMethodSources": {
+      "type": "object"
+    },
+    "testGroups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "source": {
+            "type": "object"
+          },
+          "externalMethodSource": {
+            "type": "string"
+          },
+          "tests": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "oneOf": [
+                {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "transformer": {
+                      "type": "object"
+                    },
+                    "result": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "transformer",
+                    "result"
+                  ]
+                },
+                {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "transformer": {
+                      "type": "object"
+                    },
+                    "exceptionCode": {
+                      "type": "string"
+                    },
+                    "innerExceptionCode": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "transformer",
+                    "exceptionCode"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "name",
+          "source",
+          "tests"
+        ]
+      }
+    }
+  },
+  "required": [
+    "testGroups"
+  ]
+}
