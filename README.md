@@ -383,4 +383,4 @@ Please [raise an issue](https://github.com/Norhaven/Jolt/issues/new/choose) prio
 
 ## Writing Tests
 
-Testing is crucial and also the thing that tends to be lacking in this project. Please refer to the documentation in the README and the [Jolt Wiki](https://github.com/Norhaven/Jolt/wiki) to identify test cases that are missing or incorrect, and then [raise an issue](https://github.com/Norhaven/Jolt/issues/new/choose) (as per above) with your concerns and findings so that we can discuss and decide how to move forward.
+Testing is crucial and also the thing that tends to be lacking in this project. Please refer to the documentation in this README, the ones in the [Tests](https://github.com/Norhaven/Jolt/tree/main/Tests) folder, and also the [Jolt Wiki](https://github.com/Norhaven/Jolt/wiki) to identify test cases that are missing or incorrect, and then [raise an issue](https://github.com/Norhaven/Jolt/issues/new/choose) (as per above) with your concerns and findings so that we can discuss and decide how to move forward.
