@@ -4,7 +4,7 @@ Jolt is multitargeted for `.Net Standard 2.0` for older software with `.Net Stan
 
 # Entry Points
 
-All of the tests are run with `xUnit 2.9.3`, but the environment may differ to the point that it's unsupportable within a single test project. Due to that, Jolt is split into two separate streams of tests due to legacy .Net Framework support being Windows-only and later environments being more cross-platform. These project are a simple wrapper around the actual tests and just exist to allow executing the tests within a specific target. These should rarely change, as all of the actual tests and their runners live deeper in.
+All of the tests are run with `xUnit 2.9.3`, but the environment may differ to the point that it's unsupportable within a single test project. Due to that, Jolt is split into two separate streams of tests due to legacy .Net Framework support being Windows-only and later environments being more cross-platform. These projects are a simple wrapper around the actual tests and just exist to allow executing the tests within a specific target. These should rarely change, as all of the actual tests and their runners live deeper in.
 
 ## Jolt.Json.DotNetFramework.Tests
 
