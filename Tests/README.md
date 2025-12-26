@@ -1,6 +1,6 @@
 # Let's Talk About Testing
 
-Jolt is multitargeted for `.Net Standard 2.0` for older software with `.Net Standard 2.1` for support beyond that. It also supports the more recent long-term .Net releases for `.Net 8.0` and `.Net 10.0` to take advantage of newer features and updates. I would personally rather avoid writing the same test over again to verify each of those targets, plus the majority of the setup and verification belongs in JSON which makes it easier to reuse across these different environments, so I've split testing into a few separate pieces for ease of reuse and development.
+Jolt is multitargeted with `.Net Standard 2.0` for older software and with `.Net Standard 2.1` for support beyond that. It also supports the more recent long-term .Net releases for `.Net 8.0` and `.Net 10.0` to take advantage of newer features and updates. I would personally rather avoid writing the same test over again to verify each of those targets, plus the majority of the setup and verification belongs in JSON which makes it easier to reuse across these different environments, so I've split testing into a few separate pieces for ease of reuse and development.
 
 # Entry Points
 
