@@ -4,7 +4,7 @@ Jolt is multitargeted for `.Net Standard 2.0` for older software with `.Net Stan
 
 # Entry Points
 
-All of the tests are run with `xUnit 2.9.3`, but the environment may differ to the point that it's unsupportable within a single test project. Due to that, Jolt is split into two separate streams of tests due to legacy .Net Framework support being Windows-only and later environments being more cross-platform. These projects are a simple wrapper around the actual tests and just exist to allow executing the tests within a specific target. These should rarely change, as all of the actual tests and their runners live deeper in.
+All of the tests are run with `xUnit 2.9.3`, but the environment may differ to the point that it's unsupportable within a single test project. Due to that, Jolt is split into two separate streams of tests due to legacy .Net Framework support being Windows-only with a specific .csproj structure and later environments being more cross-platform with a different .csproj structure. These projects are a simple wrapper around the actual tests and just exist to allow executing the tests within a specific target. These should rarely change, as all of the actual tests and their runners live deeper in.
 
 ## Jolt.Json.DotNetFramework.Tests
 
@@ -14,7 +14,7 @@ This test project solely targets `.Net 4.7.2` and verifies against the `.Net Sta
 
 This test project targets both `.Net 8.0` and `.Net 10.0` to test the more recent frameworks.
 
-_<h6>`.Net Standard 2.1` is unsupported by the `Microsoft.NET.Test.Sdk` integration and so we're not currently testing this directly, assuming for the moment that if all of the other targets pass then this is good to go too.</h6>_
+_<h6>The `.Net Standard 2.1` contract is unsupported by the `Microsoft.NET.Test.Sdk` integration and so we're not currently testing this directly, assuming for the moment that if all of the other targets pass then this is good to go too.</h6>_
 
 # So Where Are The Tests?
 
@@ -26,7 +26,7 @@ These tests exist in the `./E2E/General` area of the project and are the most ty
 
 ## JSON
 
-These tests exist in the `./E2E/Json` area of the project and are tagged with a `JsonTestDefinition` attribute which specifies the tests file used for the given set of tests and expectations. The entire test structure exist in the `Jolt.Json.Tests.Resources` project, in the `./TestFiles/JsonTests` folder. The structure of the JSON tests in their files should hopefully be straightforward, but I'll update this with the structure at a later date. Generally, these are groups of like-minded tests that operate on medium-sized transformers and operations.
+These tests exist in the `./E2E/Json` area of the project and are tagged with a `JsonTestDefinition` attribute which specifies the tests file used for the given set of tests and expectations. The entire test structure exists in the `Jolt.Json.Tests.Resources` project, in the `./TestFiles/JsonTests` folder. The structure of the JSON tests in their files should hopefully be straightforward, but I'll update this with the structure at a later date. Generally, these are groups of like-minded tests that operate on medium-sized transformers and operations.
 
 ## Small
 
