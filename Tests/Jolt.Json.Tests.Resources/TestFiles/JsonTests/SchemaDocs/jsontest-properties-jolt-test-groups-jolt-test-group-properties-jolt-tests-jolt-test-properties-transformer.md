@@ -1,15 +1,15 @@
-# Untitled string in JSON Test Schema Schema
+# Transformer Schema
 
 ```txt
-undefined#/properties/testGroups/items/properties/tests/items/properties/name
+undefined#/properties/testGroups/items/properties/tests/items/properties/transformer
 ```
 
-The name of the test. It should be descriptive of the functionlity that it targets (e.g. The >= operator should return true when the number on the left is larger)
+The JSON object that acts as the transformer for this test group's incoming source document.
 
 | Abstract            | Extensible | Status         | Identifiable            | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                                   |
 | :------------------ | :--------- | :------------- | :---------------------- | :---------------- | :-------------------- | :------------------ | :--------------------------------------------------------------------------- |
 | Can be instantiated | No         | Unknown status | Unknown identifiability | Forbidden         | Allowed               | none                | [JsonTest.schema.json\*](../out/JsonTest.schema.json "open original schema") |
 
-## name Type
+## transformer Type
 
-`string`
+`object` ([Transformer](jsontest-properties-jolt-test-groups-jolt-test-group-properties-jolt-tests-jolt-test-properties-transformer.md))

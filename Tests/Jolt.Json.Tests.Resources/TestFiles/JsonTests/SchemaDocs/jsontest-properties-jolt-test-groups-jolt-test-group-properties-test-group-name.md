@@ -1,15 +1,15 @@
-# Untitled object in JSON Test Schema Schema
+# Test Group Name Schema
 
 ```txt
-undefined#/properties/testGroups/items/properties/source
+undefined#/properties/testGroups/items/properties/name
 ```
 
-The JSON object that acts as the incoming source document that will be transformed in all of the tests in this group.
+The name of the test group. It should be descriptive of the functionality that it targets (e.g.  math operators)
 
 | Abstract            | Extensible | Status         | Identifiable            | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                                   |
 | :------------------ | :--------- | :------------- | :---------------------- | :---------------- | :-------------------- | :------------------ | :--------------------------------------------------------------------------- |
 | Can be instantiated | No         | Unknown status | Unknown identifiability | Forbidden         | Allowed               | none                | [JsonTest.schema.json\*](../out/JsonTest.schema.json "open original schema") |
 
-## source Type
+## name Type
 
-`object` ([Details](jsontest-properties-testgroups-items-properties-source.md))
+`string` ([Test Group Name](jsontest-properties-jolt-test-groups-jolt-test-group-properties-test-group-name.md))

@@ -1,15 +1,15 @@
-# Untitled object in JSON Test Schema Schema
+# Source Document Schema
 
 ```txt
-undefined#/properties/testGroups/items/properties/tests/items/properties/transformer
+undefined#/properties/testGroups/items/properties/source
 ```
 
-The JSON object that acts as the transformer for this test group's incoming source document.
+The JSON object that acts as the incoming source document that will be transformed in all of the tests in this group.
 
 | Abstract            | Extensible | Status         | Identifiable            | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                                   |
 | :------------------ | :--------- | :------------- | :---------------------- | :---------------- | :-------------------- | :------------------ | :--------------------------------------------------------------------------- |
 | Can be instantiated | No         | Unknown status | Unknown identifiability | Forbidden         | Allowed               | none                | [JsonTest.schema.json\*](../out/JsonTest.schema.json "open original schema") |
 
-## transformer Type
+## source Type
 
-`object` ([Details](jsontest-properties-testgroups-items-properties-tests-items-properties-transformer.md))
+`object` ([Source Document](jsontest-properties-jolt-test-groups-jolt-test-group-properties-source-document.md))

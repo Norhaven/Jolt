@@ -1,15 +1,15 @@
-# Untitled object in JSON Test Schema Schema
+# Possible External Method Sources Schema
 
 ```txt
-undefined#/properties/possibleExceptionCodes
+undefined#/properties/possibleExternalMethodSources
 ```
 
-An alias list of exception code names as keys and their .Net enum names as values. Tests can list an exception code alias as their expectation.
+An alias list of external method names as keys and their fully qualified assembly names as values. Tests may be register these for use in their 'transformer' property.
 
 | Abstract            | Extensible | Status         | Identifiable            | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                                   |
 | :------------------ | :--------- | :------------- | :---------------------- | :---------------- | :-------------------- | :------------------ | :--------------------------------------------------------------------------- |
 | Can be instantiated | No         | Unknown status | Unknown identifiability | Forbidden         | Allowed               | none                | [JsonTest.schema.json\*](../out/JsonTest.schema.json "open original schema") |
 
-## possibleExceptionCodes Type
+## possibleExternalMethodSources Type
 
-`object` ([Details](jsontest-properties-possibleexceptioncodes.md))
+`object` ([Possible External Method Sources](jsontest-properties-possible-external-method-sources.md))

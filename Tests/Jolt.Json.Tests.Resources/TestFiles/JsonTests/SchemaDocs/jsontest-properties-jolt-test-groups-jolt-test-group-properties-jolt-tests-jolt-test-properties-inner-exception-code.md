@@ -1,4 +1,4 @@
-# Untitled string in JSON Test Schema Schema
+# Inner Exception Code Schema
 
 ```txt
 undefined#/properties/testGroups/items/properties/tests/items/properties/innerExceptionCode
@@ -12,4 +12,4 @@ The alias name of an exception code on the expected exception's inner exception 
 
 ## innerExceptionCode Type
 
-`string`
+`string` ([Inner Exception Code](jsontest-properties-jolt-test-groups-jolt-test-group-properties-jolt-tests-jolt-test-properties-inner-exception-code.md))

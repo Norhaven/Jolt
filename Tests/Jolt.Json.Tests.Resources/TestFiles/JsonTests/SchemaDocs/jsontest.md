@@ -4,7 +4,7 @@
 undefined
 ```
 
-
+A schema that defines the structure for a given Jolt JSON Test file.
 
 | Abstract            | Extensible | Status         | Identifiable | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                                 |
 | :------------------ | :--------- | :------------- | :----------- | :---------------- | :-------------------- | :------------------ | :------------------------------------------------------------------------- |
@@ -16,11 +16,11 @@ undefined
 
 # JSON Test Schema Properties
 
-| Property                                                        | Type     | Required | Nullable       | Defined by                                                                                                                     |
-| :-------------------------------------------------------------- | :------- | :------- | :------------- | :----------------------------------------------------------------------------------------------------------------------------- |
-| [possibleExceptionCodes](#possibleexceptioncodes)               | `object` | Optional | cannot be null | [JSON Test Schema](jsontest-properties-possibleexceptioncodes.md "undefined#/properties/possibleExceptionCodes")               |
-| [possibleExternalMethodSources](#possibleexternalmethodsources) | `object` | Optional | cannot be null | [JSON Test Schema](jsontest-properties-possibleexternalmethodsources.md "undefined#/properties/possibleExternalMethodSources") |
-| [testGroups](#testgroups)                                       | `array`  | Required | cannot be null | [JSON Test Schema](jsontest-properties-testgroups.md "undefined#/properties/testGroups")                                       |
+| Property                                                        | Type     | Required | Nullable       | Defined by                                                                                                                        |
+| :-------------------------------------------------------------- | :------- | :------- | :------------- | :-------------------------------------------------------------------------------------------------------------------------------- |
+| [possibleExceptionCodes](#possibleexceptioncodes)               | `object` | Optional | cannot be null | [JSON Test Schema](jsontest-properties-possible-exception-codes.md "undefined#/properties/possibleExceptionCodes")                |
+| [possibleExternalMethodSources](#possibleexternalmethodsources) | `object` | Optional | cannot be null | [JSON Test Schema](jsontest-properties-possible-external-method-sources.md "undefined#/properties/possibleExternalMethodSources") |
+| [testGroups](#testgroups)                                       | `array`  | Required | cannot be null | [JSON Test Schema](jsontest-properties-jolt-test-groups.md "undefined#/properties/testGroups")                                    |
 
 ## possibleExceptionCodes
 
@@ -30,15 +30,15 @@ An alias list of exception code names as keys and their .Net enum names as value
 
 * is optional
 
-* Type: `object` ([Details](jsontest-properties-possibleexceptioncodes.md))
+* Type: `object` ([Possible Exception Codes](jsontest-properties-possible-exception-codes.md))
 
 * cannot be null
 
-* defined in: [JSON Test Schema](jsontest-properties-possibleexceptioncodes.md "undefined#/properties/possibleExceptionCodes")
+* defined in: [JSON Test Schema](jsontest-properties-possible-exception-codes.md "undefined#/properties/possibleExceptionCodes")
 
 ### possibleExceptionCodes Type
 
-`object` ([Details](jsontest-properties-possibleexceptioncodes.md))
+`object` ([Possible Exception Codes](jsontest-properties-possible-exception-codes.md))
 
 ## possibleExternalMethodSources
 
@@ -48,15 +48,15 @@ An alias list of external method names as keys and their fully qualified assembl
 
 * is optional
 
-* Type: `object` ([Details](jsontest-properties-possibleexternalmethodsources.md))
+* Type: `object` ([Possible External Method Sources](jsontest-properties-possible-external-method-sources.md))
 
 * cannot be null
 
-* defined in: [JSON Test Schema](jsontest-properties-possibleexternalmethodsources.md "undefined#/properties/possibleExternalMethodSources")
+* defined in: [JSON Test Schema](jsontest-properties-possible-external-method-sources.md "undefined#/properties/possibleExternalMethodSources")
 
 ### possibleExternalMethodSources Type
 
-`object` ([Details](jsontest-properties-possibleexternalmethodsources.md))
+`object` ([Possible External Method Sources](jsontest-properties-possible-external-method-sources.md))
 
 ## testGroups
 
@@ -66,12 +66,12 @@ An array of test groups, each group containing a specific area that they cover (
 
 * is required
 
-* Type: `object[]` ([Details](jsontest-properties-testgroups-items.md))
+* Type: `object[]` ([Jolt Test Group](jsontest-properties-jolt-test-groups-jolt-test-group.md))
 
 * cannot be null
 
-* defined in: [JSON Test Schema](jsontest-properties-testgroups.md "undefined#/properties/testGroups")
+* defined in: [JSON Test Schema](jsontest-properties-jolt-test-groups.md "undefined#/properties/testGroups")
 
 ### testGroups Type
 
-`object[]` ([Details](jsontest-properties-testgroups-items.md))
+`object[]` ([Jolt Test Group](jsontest-properties-jolt-test-groups-jolt-test-group.md))

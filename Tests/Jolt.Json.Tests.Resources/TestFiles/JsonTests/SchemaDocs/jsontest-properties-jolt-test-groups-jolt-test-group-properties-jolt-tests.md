@@ -1,15 +1,15 @@
-# Untitled string in JSON Test Schema Schema
+# Jolt Tests Schema
 
 ```txt
-undefined#/properties/testGroups/items/properties/tests/items/properties/exceptionCode
+undefined#/properties/testGroups/items/properties/tests
 ```
 
-The alias name of an exception code that this test expects to receive as a result of this test.
+An array of tests that are contained in this group.
 
 | Abstract            | Extensible | Status         | Identifiable            | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                                   |
 | :------------------ | :--------- | :------------- | :---------------------- | :---------------- | :-------------------- | :------------------ | :--------------------------------------------------------------------------- |
 | Can be instantiated | No         | Unknown status | Unknown identifiability | Forbidden         | Allowed               | none                | [JsonTest.schema.json\*](../out/JsonTest.schema.json "open original schema") |
 
-## exceptionCode Type
+## tests Type
 
-`string`
+`object[]` ([Jolt Test](jsontest-properties-jolt-test-groups-jolt-test-group-properties-jolt-tests-jolt-test.md))

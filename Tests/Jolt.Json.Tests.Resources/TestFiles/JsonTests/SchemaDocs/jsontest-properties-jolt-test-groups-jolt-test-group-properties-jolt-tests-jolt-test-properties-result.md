@@ -1,15 +1,15 @@
-# Untitled string in JSON Test Schema Schema
+# Result Schema
 
 ```txt
-undefined#/properties/testGroups/items/properties/externalMethodSource
+undefined#/properties/testGroups/items/properties/tests/items/properties/result
 ```
 
-The alias name of an external method that may be used within a transformer in all of the tests in this group.
+The JSON object that acts as the expected result of this test.
 
 | Abstract            | Extensible | Status         | Identifiable            | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                                   |
 | :------------------ | :--------- | :------------- | :---------------------- | :---------------- | :-------------------- | :------------------ | :--------------------------------------------------------------------------- |
 | Can be instantiated | No         | Unknown status | Unknown identifiability | Forbidden         | Allowed               | none                | [JsonTest.schema.json\*](../out/JsonTest.schema.json "open original schema") |
 
-## externalMethodSource Type
+## result Type
 
-`string`
+`object` ([Result](jsontest-properties-jolt-test-groups-jolt-test-group-properties-jolt-tests-jolt-test-properties-result.md))
