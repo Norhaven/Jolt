@@ -1,0 +1,77 @@
+# Untitled object in undefined Schema
+
+```txt
+undefined
+```
+
+
+
+| Abstract            | Extensible | Status         | Identifiable | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                                 |
+| :------------------ | :--------- | :------------- | :----------- | :---------------- | :-------------------- | :------------------ | :------------------------------------------------------------------------- |
+| Can be instantiated | No         | Unknown status | No           | Forbidden         | Allowed               | none                | [JsonTest.schema.json](../out/JsonTest.schema.json "open original schema") |
+
+## Untitled object in undefined Type
+
+`object` ([Details](jsontest.md))
+
+# Untitled object in undefined Properties
+
+| Property                                                        | Type     | Required | Nullable       | Defined by                                                                                                                    |
+| :-------------------------------------------------------------- | :------- | :------- | :------------- | :---------------------------------------------------------------------------------------------------------------------------- |
+| [possibleExceptionCodes](#possibleexceptioncodes)               | `object` | Optional | cannot be null | [Untitled schema](jsontest-properties-possibleexceptioncodes.md "undefined#/properties/possibleExceptionCodes")               |
+| [possibleExternalMethodSources](#possibleexternalmethodsources) | `object` | Optional | cannot be null | [Untitled schema](jsontest-properties-possibleexternalmethodsources.md "undefined#/properties/possibleExternalMethodSources") |
+| [testGroups](#testgroups)                                       | `array`  | Required | cannot be null | [Untitled schema](jsontest-properties-testgroups.md "undefined#/properties/testGroups")                                       |
+
+## possibleExceptionCodes
+
+An alias list of exception code names as keys and their .Net enum names as values. Tests can list an exception code alias as their expectation.
+
+`possibleExceptionCodes`
+
+* is optional
+
+* Type: `object` ([Details](jsontest-properties-possibleexceptioncodes.md))
+
+* cannot be null
+
+* defined in: [Untitled schema](jsontest-properties-possibleexceptioncodes.md "undefined#/properties/possibleExceptionCodes")
+
+### possibleExceptionCodes Type
+
+`object` ([Details](jsontest-properties-possibleexceptioncodes.md))
+
+## possibleExternalMethodSources
+
+An alias list of external method names as keys and their fully qualified assembly names as values. Tests may be register these for use in their 'transformer' property.
+
+`possibleExternalMethodSources`
+
+* is optional
+
+* Type: `object` ([Details](jsontest-properties-possibleexternalmethodsources.md))
+
+* cannot be null
+
+* defined in: [Untitled schema](jsontest-properties-possibleexternalmethodsources.md "undefined#/properties/possibleExternalMethodSources")
+
+### possibleExternalMethodSources Type
+
+`object` ([Details](jsontest-properties-possibleexternalmethodsources.md))
+
+## testGroups
+
+An array of test groups, each group containing a specific area that they cover (e.g. math operators)
+
+`testGroups`
+
+* is required
+
+* Type: `object[]` ([Details](jsontest-properties-testgroups-items.md))
+
+* cannot be null
+
+* defined in: [Untitled schema](jsontest-properties-testgroups.md "undefined#/properties/testGroups")
+
+### testGroups Type
+
+`object[]` ([Details](jsontest-properties-testgroups-items.md))

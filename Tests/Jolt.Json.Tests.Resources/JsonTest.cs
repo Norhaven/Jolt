@@ -54,7 +54,7 @@ namespace Jolt.Json.Tests.Resources
                 : base(testMethod, testAttribute)
             {
                 var json = ReadEmbeddedJson(testAttribute.TestResourceName);
-                var schemaJson = ReadEmbeddedJson("JsonTestSchema");
+                var schemaJson = ReadEmbeddedJson("JsonTest.schema");
 
                 var schema = JsonSchema.FromJsonAsync(schemaJson).Result;
                 var jsonElement = JsonElement.Parse(json);
