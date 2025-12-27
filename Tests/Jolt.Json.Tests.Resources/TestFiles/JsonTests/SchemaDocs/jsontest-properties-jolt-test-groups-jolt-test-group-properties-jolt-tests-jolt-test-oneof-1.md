@@ -1,7 +1,7 @@
 # Untitled undefined type in JSON Test Schema Schema
 
 ```txt
-undefined#/properties/testGroups/items/properties/tests/items/oneOf/1
+https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests/items/oneOf/1
 ```
 
 

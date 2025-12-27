@@ -1,7 +1,7 @@
 # Jolt Tests Schema
 
 ```txt
-undefined#/properties/testGroups/items/properties/tests
+https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests
 ```
 
 An array of tests that are contained in this group.

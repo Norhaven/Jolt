@@ -1,7 +1,7 @@
 # Test Group Name Schema
 
 ```txt
-undefined#/properties/testGroups/items/properties/name
+https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/name
 ```
 
 The name of the test group. It should be descriptive of the functionality that it targets (e.g.  math operators)

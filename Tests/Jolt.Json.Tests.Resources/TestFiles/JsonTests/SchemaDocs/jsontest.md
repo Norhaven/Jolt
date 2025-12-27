@@ -1,7 +1,7 @@
 # JSON Test Schema Schema
 
 ```txt
-undefined
+https://norhaven.net/schemas/jolt/jsontest.schema.json
 ```
 
 A schema that defines the structure for a given Jolt JSON Test file.
@@ -16,11 +16,11 @@ A schema that defines the structure for a given Jolt JSON Test file.
 
 # JSON Test Schema Properties
 
-| Property                                                        | Type     | Required | Nullable       | Defined by                                                                                                                        |
-| :-------------------------------------------------------------- | :------- | :------- | :------------- | :-------------------------------------------------------------------------------------------------------------------------------- |
-| [possibleExceptionCodes](#possibleexceptioncodes)               | `object` | Optional | cannot be null | [JSON Test Schema](jsontest-properties-possible-exception-codes.md "undefined#/properties/possibleExceptionCodes")                |
-| [possibleExternalMethodSources](#possibleexternalmethodsources) | `object` | Optional | cannot be null | [JSON Test Schema](jsontest-properties-possible-external-method-sources.md "undefined#/properties/possibleExternalMethodSources") |
-| [testGroups](#testgroups)                                       | `array`  | Required | cannot be null | [JSON Test Schema](jsontest-properties-jolt-test-groups.md "undefined#/properties/testGroups")                                    |
+| Property                                                        | Type     | Required | Nullable       | Defined by                                                                                                                                                                     |
+| :-------------------------------------------------------------- | :------- | :------- | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [possibleExceptionCodes](#possibleexceptioncodes)               | `object` | Optional | cannot be null | [JSON Test Schema](jsontest-properties-possible-exception-codes.md "https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/possibleExceptionCodes")                |
+| [possibleExternalMethodSources](#possibleexternalmethodsources) | `object` | Optional | cannot be null | [JSON Test Schema](jsontest-properties-possible-external-method-sources.md "https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/possibleExternalMethodSources") |
+| [testGroups](#testgroups)                                       | `array`  | Required | cannot be null | [JSON Test Schema](jsontest-properties-jolt-test-groups.md "https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups")                                    |
 
 ## possibleExceptionCodes
 
@@ -34,7 +34,7 @@ An alias list of exception code names as keys and their .Net enum names as value
 
 * cannot be null
 
-* defined in: [JSON Test Schema](jsontest-properties-possible-exception-codes.md "undefined#/properties/possibleExceptionCodes")
+* defined in: [JSON Test Schema](jsontest-properties-possible-exception-codes.md "https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/possibleExceptionCodes")
 
 ### possibleExceptionCodes Type
 
@@ -52,7 +52,7 @@ An alias list of external method names as keys and their fully qualified assembl
 
 * cannot be null
 
-* defined in: [JSON Test Schema](jsontest-properties-possible-external-method-sources.md "undefined#/properties/possibleExternalMethodSources")
+* defined in: [JSON Test Schema](jsontest-properties-possible-external-method-sources.md "https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/possibleExternalMethodSources")
 
 ### possibleExternalMethodSources Type
 
@@ -70,7 +70,7 @@ An array of test groups, each group containing a specific area that they cover (
 
 * cannot be null
 
-* defined in: [JSON Test Schema](jsontest-properties-jolt-test-groups.md "undefined#/properties/testGroups")
+* defined in: [JSON Test Schema](jsontest-properties-jolt-test-groups.md "https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups")
 
 ### testGroups Type
 

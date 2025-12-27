@@ -1,7 +1,7 @@
 # Possible Exception Codes Schema
 
 ```txt
-undefined#/properties/possibleExceptionCodes
+https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/possibleExceptionCodes
 ```
 
 An alias list of exception code names as keys and their .Net enum names as values. Tests can list an exception code alias as their expectation.

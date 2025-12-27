@@ -1,7 +1,7 @@
 # Transformer Schema
 
 ```txt
-undefined#/properties/testGroups/items/properties/tests/items/properties/transformer
+https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests/items/properties/transformer
 ```
 
 The JSON object that acts as the transformer for this test group's incoming source document.

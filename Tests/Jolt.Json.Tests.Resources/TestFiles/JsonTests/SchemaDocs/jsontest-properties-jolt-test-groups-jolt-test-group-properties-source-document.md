@@ -1,7 +1,7 @@
 # Source Document Schema
 
 ```txt
-undefined#/properties/testGroups/items/properties/source
+https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/source
 ```
 
 The JSON object that acts as the incoming source document that will be transformed in all of the tests in this group.

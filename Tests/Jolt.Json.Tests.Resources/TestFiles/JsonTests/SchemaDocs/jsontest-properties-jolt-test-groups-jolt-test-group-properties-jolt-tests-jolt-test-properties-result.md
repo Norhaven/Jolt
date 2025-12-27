@@ -1,7 +1,7 @@
 # Result Schema
 
 ```txt
-undefined#/properties/testGroups/items/properties/tests/items/properties/result
+https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests/items/properties/result
 ```
 
 The JSON object that acts as the expected result of this test.

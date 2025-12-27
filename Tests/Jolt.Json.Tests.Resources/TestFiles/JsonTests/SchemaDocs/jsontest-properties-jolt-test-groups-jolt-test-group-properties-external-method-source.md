@@ -1,7 +1,7 @@
 # External Method Source Schema
 
 ```txt
-undefined#/properties/testGroups/items/properties/externalMethodSource
+https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/externalMethodSource
 ```
 
 The alias name of an external method that may be used within a transformer in all of the tests in this group.

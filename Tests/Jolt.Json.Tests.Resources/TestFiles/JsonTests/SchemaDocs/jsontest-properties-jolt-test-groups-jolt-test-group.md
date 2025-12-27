@@ -1,7 +1,7 @@
 # Jolt Test Group Schema
 
 ```txt
-undefined#/properties/testGroups/items
+https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items
 ```
 
 An individual test group object
@@ -16,12 +16,12 @@ An individual test group object
 
 # items Properties
 
-| Property                                      | Type     | Required | Nullable       | Defined by                                                                                                                                                                             |
-| :-------------------------------------------- | :------- | :------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [name](#name)                                 | `string` | Required | cannot be null | [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-test-group-name.md "undefined#/properties/testGroups/items/properties/name")                        |
-| [source](#source)                             | `object` | Required | cannot be null | [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-source-document.md "undefined#/properties/testGroups/items/properties/source")                      |
-| [externalMethodSource](#externalmethodsource) | `string` | Optional | cannot be null | [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-external-method-source.md "undefined#/properties/testGroups/items/properties/externalMethodSource") |
-| [tests](#tests)                               | `array`  | Required | cannot be null | [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-jolt-tests.md "undefined#/properties/testGroups/items/properties/tests")                            |
+| Property                                      | Type     | Required | Nullable       | Defined by                                                                                                                                                                                                                          |
+| :-------------------------------------------- | :------- | :------- | :------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [name](#name)                                 | `string` | Required | cannot be null | [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-test-group-name.md "https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/name")                        |
+| [source](#source)                             | `object` | Required | cannot be null | [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-source-document.md "https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/source")                      |
+| [externalMethodSource](#externalmethodsource) | `string` | Optional | cannot be null | [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-external-method-source.md "https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/externalMethodSource") |
+| [tests](#tests)                               | `array`  | Required | cannot be null | [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-jolt-tests.md "https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests")                            |
 
 ## name
 
@@ -35,7 +35,7 @@ The name of the test group. It should be descriptive of the functionality that i
 
 * cannot be null
 
-* defined in: [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-test-group-name.md "undefined#/properties/testGroups/items/properties/name")
+* defined in: [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-test-group-name.md "https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/name")
 
 ### name Type
 
@@ -53,7 +53,7 @@ The JSON object that acts as the incoming source document that will be transform
 
 * cannot be null
 
-* defined in: [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-source-document.md "undefined#/properties/testGroups/items/properties/source")
+* defined in: [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-source-document.md "https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/source")
 
 ### source Type
 
@@ -71,7 +71,7 @@ The alias name of an external method that may be used within a transformer in al
 
 * cannot be null
 
-* defined in: [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-external-method-source.md "undefined#/properties/testGroups/items/properties/externalMethodSource")
+* defined in: [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-external-method-source.md "https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/externalMethodSource")
 
 ### externalMethodSource Type
 
@@ -89,7 +89,7 @@ An array of tests that are contained in this group.
 
 * cannot be null
 
-* defined in: [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-jolt-tests.md "undefined#/properties/testGroups/items/properties/tests")
+* defined in: [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-jolt-tests.md "https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests")
 
 ### tests Type
 

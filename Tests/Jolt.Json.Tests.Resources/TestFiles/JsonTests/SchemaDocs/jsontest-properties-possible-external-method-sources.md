@@ -1,7 +1,7 @@
 # Possible External Method Sources Schema
 
 ```txt
-undefined#/properties/possibleExternalMethodSources
+https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/possibleExternalMethodSources
 ```
 
 An alias list of external method names as keys and their fully qualified assembly names as values. Tests may register these for use in their 'transformer' property.
