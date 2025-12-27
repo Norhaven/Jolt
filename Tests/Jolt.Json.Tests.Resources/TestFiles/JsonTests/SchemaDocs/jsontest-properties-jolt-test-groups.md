@@ -1,7 +1,7 @@
 # Jolt Test Groups Schema
 
 ```txt
-https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups
+https://github.com/norhaven/schemas/jolt/jsontest.schema.json#/properties/testGroups
 ```
 
 An array of test groups, each group containing a specific area that they cover (e.g. math operators)

@@ -1,7 +1,7 @@
 # Inner Exception Code Schema
 
 ```txt
-https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests/items/properties/innerExceptionCode
+https://github.com/norhaven/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests/items/properties/innerExceptionCode
 ```
 
 The alias name of an exception code on the expected exception's inner exception that this test expects to receive as a result of this test.

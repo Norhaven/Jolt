@@ -1,7 +1,7 @@
 # Exception Code Schema
 
 ```txt
-https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests/items/properties/exceptionCode
+https://github.com/norhaven/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests/items/properties/exceptionCode
 ```
 
 The alias name of an exception code that this test expects to receive as a result of this test.

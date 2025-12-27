@@ -1,7 +1,7 @@
 # Name Schema
 
 ```txt
-https://norhaven.net/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests/items/properties/name
+https://github.com/norhaven/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests/items/properties/name
 ```
 
 The name of the test. It should be descriptive of the functionlity that it targets (e.g. The >= operator should return true when the number on the left is larger)
