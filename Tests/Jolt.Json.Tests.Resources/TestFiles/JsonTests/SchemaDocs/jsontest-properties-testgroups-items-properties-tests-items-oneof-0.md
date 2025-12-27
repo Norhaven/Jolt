@@ -1,4 +1,4 @@
-# Untitled schema Schema
+# Untitled undefined type in JSON Test Schema Schema
 
 ```txt
 undefined#/properties/testGroups/items/properties/tests/items/oneOf/0

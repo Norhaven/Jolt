@@ -1,4 +1,4 @@
-# Untitled object in undefined Schema
+# JSON Test Schema Schema
 
 ```txt
 undefined
@@ -10,17 +10,17 @@ undefined
 | :------------------ | :--------- | :------------- | :----------- | :---------------- | :-------------------- | :------------------ | :------------------------------------------------------------------------- |
 | Can be instantiated | No         | Unknown status | No           | Forbidden         | Allowed               | none                | [JsonTest.schema.json](../out/JsonTest.schema.json "open original schema") |
 
-## Untitled object in undefined Type
+## JSON Test Schema Type
 
-`object` ([Details](jsontest.md))
+`object` ([JSON Test Schema](jsontest.md))
 
-# Untitled object in undefined Properties
+# JSON Test Schema Properties
 
-| Property                                                        | Type     | Required | Nullable       | Defined by                                                                                                                    |
-| :-------------------------------------------------------------- | :------- | :------- | :------------- | :---------------------------------------------------------------------------------------------------------------------------- |
-| [possibleExceptionCodes](#possibleexceptioncodes)               | `object` | Optional | cannot be null | [Untitled schema](jsontest-properties-possibleexceptioncodes.md "undefined#/properties/possibleExceptionCodes")               |
-| [possibleExternalMethodSources](#possibleexternalmethodsources) | `object` | Optional | cannot be null | [Untitled schema](jsontest-properties-possibleexternalmethodsources.md "undefined#/properties/possibleExternalMethodSources") |
-| [testGroups](#testgroups)                                       | `array`  | Required | cannot be null | [Untitled schema](jsontest-properties-testgroups.md "undefined#/properties/testGroups")                                       |
+| Property                                                        | Type     | Required | Nullable       | Defined by                                                                                                                     |
+| :-------------------------------------------------------------- | :------- | :------- | :------------- | :----------------------------------------------------------------------------------------------------------------------------- |
+| [possibleExceptionCodes](#possibleexceptioncodes)               | `object` | Optional | cannot be null | [JSON Test Schema](jsontest-properties-possibleexceptioncodes.md "undefined#/properties/possibleExceptionCodes")               |
+| [possibleExternalMethodSources](#possibleexternalmethodsources) | `object` | Optional | cannot be null | [JSON Test Schema](jsontest-properties-possibleexternalmethodsources.md "undefined#/properties/possibleExternalMethodSources") |
+| [testGroups](#testgroups)                                       | `array`  | Required | cannot be null | [JSON Test Schema](jsontest-properties-testgroups.md "undefined#/properties/testGroups")                                       |
 
 ## possibleExceptionCodes
 
@@ -34,7 +34,7 @@ An alias list of exception code names as keys and their .Net enum names as value
 
 * cannot be null
 
-* defined in: [Untitled schema](jsontest-properties-possibleexceptioncodes.md "undefined#/properties/possibleExceptionCodes")
+* defined in: [JSON Test Schema](jsontest-properties-possibleexceptioncodes.md "undefined#/properties/possibleExceptionCodes")
 
 ### possibleExceptionCodes Type
 
@@ -52,7 +52,7 @@ An alias list of external method names as keys and their fully qualified assembl
 
 * cannot be null
 
-* defined in: [Untitled schema](jsontest-properties-possibleexternalmethodsources.md "undefined#/properties/possibleExternalMethodSources")
+* defined in: [JSON Test Schema](jsontest-properties-possibleexternalmethodsources.md "undefined#/properties/possibleExternalMethodSources")
 
 ### possibleExternalMethodSources Type
 
@@ -70,7 +70,7 @@ An array of test groups, each group containing a specific area that they cover (
 
 * cannot be null
 
-* defined in: [Untitled schema](jsontest-properties-testgroups.md "undefined#/properties/testGroups")
+* defined in: [JSON Test Schema](jsontest-properties-testgroups.md "undefined#/properties/testGroups")
 
 ### testGroups Type
 

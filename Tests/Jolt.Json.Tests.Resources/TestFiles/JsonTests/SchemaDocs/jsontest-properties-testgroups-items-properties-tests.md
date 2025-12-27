@@ -1,4 +1,4 @@
-# Untitled array in undefined Schema
+# Untitled array in JSON Test Schema Schema
 
 ```txt
 undefined#/properties/testGroups/items/properties/tests

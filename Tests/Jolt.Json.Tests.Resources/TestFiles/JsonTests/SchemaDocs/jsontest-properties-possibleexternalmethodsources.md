@@ -1,4 +1,4 @@
-# Untitled object in undefined Schema
+# Untitled object in JSON Test Schema Schema
 
 ```txt
 undefined#/properties/possibleExternalMethodSources

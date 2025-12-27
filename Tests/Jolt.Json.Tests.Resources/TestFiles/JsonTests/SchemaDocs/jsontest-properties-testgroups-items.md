@@ -1,4 +1,4 @@
-# Untitled object in undefined Schema
+# Untitled object in JSON Test Schema Schema
 
 ```txt
 undefined#/properties/testGroups/items
@@ -16,12 +16,12 @@ An individual test group object
 
 # items Properties
 
-| Property                                      | Type     | Required | Nullable       | Defined by                                                                                                                                                          |
-| :-------------------------------------------- | :------- | :------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [name](#name)                                 | `string` | Required | cannot be null | [Untitled schema](jsontest-properties-testgroups-items-properties-name.md "undefined#/properties/testGroups/items/properties/name")                                 |
-| [source](#source)                             | `object` | Required | cannot be null | [Untitled schema](jsontest-properties-testgroups-items-properties-source.md "undefined#/properties/testGroups/items/properties/source")                             |
-| [externalMethodSource](#externalmethodsource) | `string` | Optional | cannot be null | [Untitled schema](jsontest-properties-testgroups-items-properties-externalmethodsource.md "undefined#/properties/testGroups/items/properties/externalMethodSource") |
-| [tests](#tests)                               | `array`  | Required | cannot be null | [Untitled schema](jsontest-properties-testgroups-items-properties-tests.md "undefined#/properties/testGroups/items/properties/tests")                               |
+| Property                                      | Type     | Required | Nullable       | Defined by                                                                                                                                                           |
+| :-------------------------------------------- | :------- | :------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [name](#name)                                 | `string` | Required | cannot be null | [JSON Test Schema](jsontest-properties-testgroups-items-properties-name.md "undefined#/properties/testGroups/items/properties/name")                                 |
+| [source](#source)                             | `object` | Required | cannot be null | [JSON Test Schema](jsontest-properties-testgroups-items-properties-source.md "undefined#/properties/testGroups/items/properties/source")                             |
+| [externalMethodSource](#externalmethodsource) | `string` | Optional | cannot be null | [JSON Test Schema](jsontest-properties-testgroups-items-properties-externalmethodsource.md "undefined#/properties/testGroups/items/properties/externalMethodSource") |
+| [tests](#tests)                               | `array`  | Required | cannot be null | [JSON Test Schema](jsontest-properties-testgroups-items-properties-tests.md "undefined#/properties/testGroups/items/properties/tests")                               |
 
 ## name
 
@@ -35,7 +35,7 @@ The name of the test group. It should be descriptive of the functionality that i
 
 * cannot be null
 
-* defined in: [Untitled schema](jsontest-properties-testgroups-items-properties-name.md "undefined#/properties/testGroups/items/properties/name")
+* defined in: [JSON Test Schema](jsontest-properties-testgroups-items-properties-name.md "undefined#/properties/testGroups/items/properties/name")
 
 ### name Type
 
@@ -53,7 +53,7 @@ The JSON object that acts as the incoming source document that will be transform
 
 * cannot be null
 
-* defined in: [Untitled schema](jsontest-properties-testgroups-items-properties-source.md "undefined#/properties/testGroups/items/properties/source")
+* defined in: [JSON Test Schema](jsontest-properties-testgroups-items-properties-source.md "undefined#/properties/testGroups/items/properties/source")
 
 ### source Type
 
@@ -71,7 +71,7 @@ The alias name of an external method that may be used within a transformer in al
 
 * cannot be null
 
-* defined in: [Untitled schema](jsontest-properties-testgroups-items-properties-externalmethodsource.md "undefined#/properties/testGroups/items/properties/externalMethodSource")
+* defined in: [JSON Test Schema](jsontest-properties-testgroups-items-properties-externalmethodsource.md "undefined#/properties/testGroups/items/properties/externalMethodSource")
 
 ### externalMethodSource Type
 
@@ -89,7 +89,7 @@ An array of tests that are contained in this group.
 
 * cannot be null
 
-* defined in: [Untitled schema](jsontest-properties-testgroups-items-properties-tests.md "undefined#/properties/testGroups/items/properties/tests")
+* defined in: [JSON Test Schema](jsontest-properties-testgroups-items-properties-tests.md "undefined#/properties/testGroups/items/properties/tests")
 
 ### tests Type
 

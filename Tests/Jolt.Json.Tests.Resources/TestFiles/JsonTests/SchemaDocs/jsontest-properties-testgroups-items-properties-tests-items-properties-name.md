@@ -1,4 +1,4 @@
-# Untitled string in undefined Schema
+# Untitled string in JSON Test Schema Schema
 
 ```txt
 undefined#/properties/testGroups/items/properties/tests/items/properties/name
