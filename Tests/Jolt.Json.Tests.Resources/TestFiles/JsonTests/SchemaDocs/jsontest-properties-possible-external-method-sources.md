@@ -4,7 +4,7 @@
 undefined#/properties/possibleExternalMethodSources
 ```
 
-An alias list of external method names as keys and their fully qualified assembly names as values. Tests may be register these for use in their 'transformer' property.
+An alias list of external method names as keys and their fully qualified assembly names as values. Tests may register these for use in their 'transformer' property.
 
 | Abstract            | Extensible | Status         | Identifiable            | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                                   |
 | :------------------ | :--------- | :------------- | :---------------------- | :---------------- | :-------------------- | :------------------ | :--------------------------------------------------------------------------- |

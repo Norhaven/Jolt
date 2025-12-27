@@ -12,7 +12,7 @@
     "possibleExternalMethodSources": {
       "type": "object",
       "title": "Possible External Method Sources",
-      "description": "An alias list of external method names as keys and their fully qualified assembly names as values. Tests may be register these for use in their 'transformer' property."
+      "description": "An alias list of external method names as keys and their fully qualified assembly names as values. Tests may register these for use in their 'transformer' property."
     },
     "testGroups": {
       "type": "array",
