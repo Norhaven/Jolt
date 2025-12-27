@@ -1,6 +1,8 @@
 ﻿using FluentAssertions;
 using Jolt.Exceptions;
 using Jolt.Json.Tests.Resources.TestAttributes;
+using NJsonSchema;
+using NJsonSchema.Validation;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -51,10 +53,20 @@ namespace Jolt.Json.Tests.Resources
             public JsonTestContainer(MethodInfo testMethod, JsonTestDefinitionAttribute testAttribute) 
                 : base(testMethod, testAttribute)
             {
-                using var manifestStream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"Jolt.Json.Tests.Resources.TestFiles.JsonTests.{testAttribute.TestResourceName}.json");
-                using var reader = new StreamReader(manifestStream);
+                var json = ReadEmbeddedJson(testAttribute.TestResourceName);
+                var schemaJson = ReadEmbeddedJson("JsonTestSchema");
 
-                var json = reader.ReadToEnd();
+                var schema = JsonSchema.FromJsonAsync(schemaJson).Result;
+                var jsonElement = JsonElement.Parse(json);
+
+                var evaluationResults = schema.Validate(json);
+
+                if (evaluationResults.Count > 0)
+                {
+                    var resultsText = string.Join(Environment.NewLine, evaluationResults);
+
+                    throw new InvalidDataException(resultsText);
+                }
 
                 var options = new JsonSerializerOptions
                 {
@@ -62,6 +74,14 @@ namespace Jolt.Json.Tests.Resources
                 };
 
                 _testFile = JsonSerializer.Deserialize<TestFile>(json, options);
+            }
+
+            private string ReadEmbeddedJson(string fileName)
+            {
+                using var manifestStream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"Jolt.Json.Tests.Resources.TestFiles.JsonTests.{fileName}.json");
+                using var reader = new StreamReader(manifestStream);
+
+                return reader.ReadToEnd();
             }
 
             public override void Execute(IJsonContext context)

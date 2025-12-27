@@ -26,43 +26,35 @@
             "type": "array",
             "items": {
               "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "transformer": {
+                  "type": "object"
+                },
+                "result": {
+                  "type": "object"
+                },
+                "exceptionCode": {
+                  "type": "string"
+                },
+                "innerExceptionCode": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "transformer"
+              ],
               "oneOf": [
                 {
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "transformer": {
-                      "type": "object"
-                    },
-                    "result": {
-                      "type": "object"
-                    }
-                  },
                   "required": [
-                    "name",
-                    "transformer",
                     "result"
                   ]
                 },
                 {
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "transformer": {
-                      "type": "object"
-                    },
-                    "exceptionCode": {
-                      "type": "string"
-                    },
-                    "innerExceptionCode": {
-                      "type": "string"
-                    }
-                  },
                   "required": [
-                    "name",
-                    "transformer",
                     "exceptionCode"
                   ]
                 }

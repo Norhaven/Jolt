@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="TestFiles\JsonTests\JsonTestSchema.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="TestFiles\Documents\ConditionsDocument.json" />
     <EmbeddedResource Include="TestFiles\Documents\ExistenceDocument.json" />
     <EmbeddedResource Include="TestFiles\Documents\ExternalMethodsDocument.json" />
@@ -16,6 +20,7 @@
     <EmbeddedResource Include="TestFiles\Documents\MultiLevelDocument.json" />
     <EmbeddedResource Include="TestFiles\Documents\PipedMethodsDocument.json" />
     <EmbeddedResource Include="TestFiles\Documents\SingleLevelDocument.json" />
+    <EmbeddedResource Include="TestFiles\JsonTests\JsonTestSchema.json" />
     <EmbeddedResource Include="TestFiles\JsonTests\OperatorsVariablesAndMethodsTests.json" />
     <EmbeddedResource Include="TestFiles\Transformers\Conditions.json" />
     <EmbeddedResource Include="TestFiles\Transformers\Existence.json" />
@@ -34,6 +39,7 @@
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="8.8.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="NJsonSchema" Version="11.5.2" />
     <PackageReference Include="System.Text.Json" Version="10.0.1" />
   </ItemGroup>
 
