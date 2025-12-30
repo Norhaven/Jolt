@@ -93,7 +93,7 @@ jobs:
         path: ./CoverageReport/
     - name: Add coverage summary to GitHub Step Summary
       run: |
-        cat ./CoverageReport/MarkdownSummaryGithub.md >> $GITHUB_STEP_SUMMARY
+        cat ./CoverageReport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
 
     
   deploy:
