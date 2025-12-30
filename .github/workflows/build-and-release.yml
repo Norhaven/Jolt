@@ -90,11 +90,20 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Code Coverage Report
-        path: ./CoverageReport/
+        path: ./CoverageReport/    
+        
+  add_code_coverage_summary:
+    runs-on: ubuntu-latest
+    needs: run_dotnet_build_and_test
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/download-artifact@v4
+      with:
+        name: Code Coverage Report
+        path: ./CoverageReport
     - name: Add coverage summary to GitHub Step Summary
       run: |
-        type ./CoverageReport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
-
+        cat ./CoverageReport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
     
   deploy:
     name: Publish Jolt NuGet Package
