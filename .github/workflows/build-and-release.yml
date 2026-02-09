@@ -85,13 +85,26 @@ jobs:
     - name: Download code coverage report generator
       run: dotnet tool install -g dotnet-reportgenerator-globaltool
     - name: Generate code coverage report
-      run: reportgenerator "-reports:./TestResults/**/*.cobertura.xml" "-targetdir:./CoverageReport" "-reporttypes:Html"
+      run: reportgenerator "-reports:./TestResults/**/*.cobertura.xml" "-targetdir:./CoverageReport" "-reporttypes:Badges;MarkdownSummaryGithub"
     - name: Upload test coverage report      
       uses: actions/upload-artifact@v4
       with:
         name: Code Coverage Report
-        path: ./CoverageReport/
+        path: ./CoverageReport/    
         
+  add_code_coverage_summary:
+    runs-on: ubuntu-latest
+    needs: run_dotnet_build_and_test
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/download-artifact@v4
+      with:
+        name: Code Coverage Report
+        path: ./CoverageReport
+    - name: Add coverage summary to GitHub Step Summary
+      run: |
+        cat ./CoverageReport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+    
   deploy:
     name: Publish Jolt NuGet Package
     # Publish only when creating a GitHub Release

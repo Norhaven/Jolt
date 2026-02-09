@@ -18,7 +18,7 @@ _<h6>The `.Net Standard 2.1` contract is unsupported by the `Microsoft.NET.Test.
 
 # So Where Are The Tests?
 
-We have several flavors of test in use here: `Transformer`, `JSON`, and `Small`. These all live in the `Jol.Json.Tests.Cases` project, so let's go over those here.
+We have several flavors of test in use here: `Transformer`, `JSON`, and `Small`. These all live in the `Jolt.Json.Tests.Cases` project, so let's go over those here.
 
 ## Transformer
 
