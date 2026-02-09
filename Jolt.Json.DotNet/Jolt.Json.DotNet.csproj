@@ -11,7 +11,7 @@
     <Copyright>Chris Hannon</Copyright>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>JoltLogo.png</PackageIcon>
-    <Version>1.4.5</Version>
+    <Version>1.4.6</Version>
     <PackageTags>json;xslt;transformation;transform</PackageTags>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
