@@ -90,6 +90,17 @@ namespace Jolt.Json.DotNet
             return FromObject(copiedToken);
         }
 
+        public object ToTypeOf(Type type)
+        {
+            // Due to the System.Text.Json library's result when using GetValue<object>() where it passes back
+            // the JsonElement in question instead of the underlying value as an object, we're doing a quick hack
+            // here to use the generic ToTypeOf<T>() method instead of the other way around.
+
+            var method = GetType().GetMethod(nameof(ToTypeOf), System.Type.EmptyTypes)?.MakeGenericMethod(type);
+
+            return method.Invoke(this, null);
+        }
+
         public T ToTypeOf<T>()
         {
             if (typeof(T) == typeof(object))
@@ -125,6 +136,21 @@ namespace Jolt.Json.DotNet
             else if (typeof(T) == typeof(string))
             {
                 return (T)(object)_token.ToString();
+            }
+            else if (_token is Nodes.JsonObject || _token is Nodes.JsonArray)
+            {
+                var options = new JsonSerializerOptions
+                {
+                    Converters =
+                    {
+                        new JoltJsonObjectConverter()
+                    },
+                    PropertyNameCaseInsensitive = true
+                };
+
+                options.Converters.Add(new JoltJsonObjectConverter());
+
+                return JsonSerializer.Deserialize<T>(_token.ToJsonString(), options);
             }
 
             return _token.GetValue<T>();

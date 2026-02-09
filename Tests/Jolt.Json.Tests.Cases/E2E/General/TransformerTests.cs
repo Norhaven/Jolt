@@ -6,12 +6,13 @@ using Jolt.Structure;
 using Jolt.Json.Tests.Resources.TestAttributes;
 using Jolt.Json.Tests.Resources.TestMethods;
 using System.Runtime.CompilerServices;
+using System;
 
 namespace Jolt.Json.Tests.Cases.E2E.General
 {
     public abstract class TransformerTests : TransformerTest
     {
-        public TransformerTests(IJsonContext context)
+        public TransformerTests(Func<IJsonContext> context)
             : base(context)
         { 
         }

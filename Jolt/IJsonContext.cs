@@ -113,5 +113,11 @@ namespace Jolt
         /// <param name="methodContext">The method context instance.</param>
         /// <returns>An instance of <see cref="IJsonContext"/> with the method context usage applied to it.</returns>
         IJsonContext UseMethodContext(object? methodContext);
+
+        /// <summary>
+        /// Clears all state from the context.
+        /// </summary>
+        /// <returns>An instance of <see cref="IJsonContext"/> with the state removed.</returns>
+        IJsonContext Clear();
     }
 }

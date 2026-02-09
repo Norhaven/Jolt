@@ -1,6 +1,7 @@
 ﻿using Jolt.Structure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -86,14 +87,28 @@ namespace Jolt.Json.Newtonsoft
             return FromObject(copiedToken);
         }
 
-        public T ToTypeOf<T>()
+        public object ToTypeOf(Type type)
         {
-            if (typeof(T) == typeof(string))
+            if (type == typeof(string))
             {
-                return (T)(object)_token.ToString();
+                return _token.ToString();
             }
 
-            return _token.ToObject<T>();
+            var serializer = new JsonSerializer
+            {
+                Converters =
+                {
+                    new JoltJsonObjectConverter()
+                },
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
+
+            return _token.ToObject(type, serializer);
+        }
+
+        public T ToTypeOf<T>()
+        {
+            return (T)ToTypeOf(typeof(T));
         }
 
         public override string ToString() => _token?.ToString(Formatting.None);

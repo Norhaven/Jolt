@@ -18,12 +18,15 @@ namespace Jolt.Json.Tests.Cases.E2E.Json
 {
     public abstract class JsonFileTests : JsonTest
     {
-        protected JsonFileTests(IJsonContext context) 
+        protected JsonFileTests(Func<IJsonContext> context) 
             : base(context)
         {
         }
 
-        [JsonTestDefinition("OperatorsVariablesAndMethodsTests")]
-        public void OperatorsVariablesAndMethodsTests_WillSucceed() { }
+        [JsonTestDefinition("ExternalMethodsTests")]
+        public void ExternalMethodsTests() { }
+
+        [JsonTestDefinition("OperatorsAndVariablesTests")]
+        public void OperatorsAndVariablesTests_WillSucceed() { }
     }
 }

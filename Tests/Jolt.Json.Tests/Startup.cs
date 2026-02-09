@@ -48,7 +48,7 @@ public class Startup
         }
 
         services
-            .AddKeyedTransient(TestType.Newtonsoft, (x, _) => CreateNewtonsoftContext())
-            .AddKeyedTransient(TestType.DotNet, (x, _) => CreateDotNetContext());
+            .AddKeyedTransient<Func<IJsonContext>>(TestType.Newtonsoft, (x, _) => CreateNewtonsoftContext)
+            .AddKeyedTransient<Func<IJsonContext>>(TestType.DotNet, (x, _) => CreateDotNetContext);
     }
 }

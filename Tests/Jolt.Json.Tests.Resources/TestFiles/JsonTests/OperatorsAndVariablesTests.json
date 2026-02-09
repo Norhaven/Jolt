@@ -1,13 +1,13 @@
 ﻿{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "possibleExceptionCodes": {
+    "invalidMethodUseInPropertyName": "UnableToUseMethodWithinPropertyName",
     "missingParameter": "MissingRequiredMethodParameter",
     "tooManyParameters": "MethodCallActualParameterCountExceedsFormalParameterCount",
     "missingTokenAtEnd": "ExpectedTokenButFoundEndOfExpression",
     "missingExpectedToken": "UnableToLocateExpectedCharactersInExpression",
     "tooManyComparisons": "ExpectedZeroOrOneComparisonSymbolsInExpressionButFoundMoreThanOne",
-    "externalMethodException": "ExternalMethodInvocationCausedAnException",
-    "invalidMethodUseInPropertyName": "UnableToUseMethodWithinPropertyName"
+    "externalMethodException": "ExternalMethodInvocationCausedAnException"
   },
   "possibleExternalMethodSources": {
     "ExternalMixedMethods": "Jolt.Json.Tests.Resources.TestMethods.ExternalMixedMethods, Jolt.Json.Tests.Resources, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
@@ -341,24 +341,6 @@
             "value": "#valueOf$.missing)"
           },
           "exceptionCode": "missingExpectedToken"
-        }
-      ]
-    },
-    {
-      "name": "Invalid external method usages",
-      "source": {
-        "one": 1,
-        "two": "2",
-        "three": true
-      },
-      "externalMethodSource": "ExternalMixedMethods",
-      "tests": [
-        {
-          "name": "External method should not be valid on the property name side",
-          "transformer": {
-            "#stringConcat('2', '1')": "#valueOf($.one)"
-          },
-          "exceptionCode": "invalidMethodUseInPropertyName"
         }
       ]
     }

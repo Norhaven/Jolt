@@ -156,11 +156,13 @@ namespace Jolt.Json.Tests.Resources
             public abstract void Execute(IJsonContext context);
         }
 
-        protected readonly IJsonContext _testContext;
+        public IJsonContext Context => _getTestContext();
 
-        public Test(IJsonContext context)
+        private readonly Func<IJsonContext> _getTestContext;
+
+        public Test(Func<IJsonContext> getContext)
         {
-            _testContext = context;
+            _getTestContext = getContext;
         }
                 
         public static IEnumerable<object[]> GetAllTestsInScope(Type testClassType, Type testAttributeType, Type testContainerType)

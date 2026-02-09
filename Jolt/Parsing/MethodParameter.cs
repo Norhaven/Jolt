@@ -14,8 +14,9 @@ namespace Jolt.Parsing
         public bool IsVariadic { get; }
         public bool IsOptional { get; }
         public object? OptionalDefaultValue { get; }
+        public bool IsDelegate { get; }
 
-        public MethodParameter(Type type, string name, bool isLazyEvaluated, bool isVariadic, bool isOptional, object? optionalDefaultValue)
+        public MethodParameter(Type type, string name, bool isLazyEvaluated, bool isVariadic, bool isOptional, object? optionalDefaultValue, bool isDelegate)
         {
             Type = type;
             Name = name;
@@ -23,6 +24,7 @@ namespace Jolt.Parsing
             IsVariadic = isVariadic;
             IsOptional = isOptional;
             OptionalDefaultValue = optionalDefaultValue;
+            IsDelegate = isDelegate;
         }
     }
 }

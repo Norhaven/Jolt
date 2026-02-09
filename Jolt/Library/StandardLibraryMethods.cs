@@ -267,6 +267,7 @@ namespace Jolt.Library
                 string text => text.Length,
                 IJsonArray array => array.Count(),
                 IJsonValue token when token.AsValue().ValueType == JsonValueType.String => token.AsValue().ToTypeOf<string>().Length,
+                RangeVariable variable when variable.Value?.AsValue().ValueType == JsonValueType.String => variable.Value.ToTypeOf<string>().Length,
                 object[] array => array.Length,
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get length for unsupported object type '{value?.GetType()}'")
             };

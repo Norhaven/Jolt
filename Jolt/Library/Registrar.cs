@@ -1,4 +1,5 @@
 ﻿using Jolt.Exceptions;
+using Jolt.Extensions;
 using Jolt.Parsing;
 using System;
 using System.Collections.Concurrent;
@@ -20,7 +21,7 @@ namespace Jolt.Library
                    let attribute = method.GetCustomAttribute<JoltLibraryMethodAttribute>()
                    where attribute != null
                    let validity = method.GetCustomAttribute<MethodIsValidOnAttribute>()
-                   let parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, x.GetCustomAttribute<LazyEvaluationAttribute>() != null, x.GetCustomAttribute<VariadicEvaluationAttribute>() != null, x.GetCustomAttribute<OptionalParameterAttribute>() != null, x.GetCustomAttribute<OptionalParameterAttribute>()?.DefaultValue))
+                   let parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, x.GetCustomAttribute<LazyEvaluationAttribute>() != null, x.GetCustomAttribute<VariadicEvaluationAttribute>() != null, x.GetCustomAttribute<OptionalParameterAttribute>() != null, x.GetCustomAttribute<OptionalParameterAttribute>()?.DefaultValue, x.ParameterType.IsDelegate()))
                    select new MethodSignature(type.AssemblyQualifiedName, method.Name, attribute.Name, method.ReturnType, CallType.Static, true, attribute.IsValueGenerator, validity.Target.HasFlag(LibraryMethodTarget.PropertyName), validity.Target.HasFlag(LibraryMethodTarget.PropertyValue), validity.Target.HasFlag(LibraryMethodTarget.StatementBlock), parameters.ToArray());
         }
 
@@ -46,7 +47,7 @@ namespace Jolt.Library
                     throw messageProvider.CreateResolutionErrorFor<Registrar>(ExceptionCode.UnableToLocateInstanceMethodWithProvidedMethodContext, type.FullName, registration.MethodName, registration.MethodName, type.FullName);
                 }
 
-                var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false, false, false, null)).ToArray();
+                var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false, false, false, null, x.ParameterType.IsDelegate())).ToArray();
 
                 return new MethodSignature(type?.AssemblyQualifiedName, registration.MethodName, registration.Alias, method?.ReturnType, registration.CallType, false, false, false, true, false, parameters);
             }
@@ -66,7 +67,7 @@ namespace Jolt.Library
                     throw messageProvider.CreateResolutionErrorFor<Registrar>(ExceptionCode.UnableToLocateStaticMethodWithProvidedType, type.FullName, registration.MethodName, registration.MethodName, type.FullName);
                 }
 
-                var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false, false, false, null)).ToArray();
+                var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false, false, false, null, x.ParameterType.IsDelegate())).ToArray();
 
                 return new MethodSignature(type.AssemblyQualifiedName, registration.MethodName, registration.Alias, method.ReturnType, registration.CallType, false, false, false, true, false, parameters);
             }

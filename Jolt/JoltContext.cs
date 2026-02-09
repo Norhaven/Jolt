@@ -120,5 +120,22 @@ namespace Jolt
 
             return this;
         }
+
+        public IJsonContext Clear()
+        {
+            // Just create a new instance that won't directly contain the state of the current one.
+
+            return new JoltContext(
+                JsonTransformer,
+                ExpressionParser,
+                ExpressionEvaluator,
+                TokenReader,
+                JsonTokenReader,
+                QueryPathProvider,
+                ReferenceResolver,
+                MessageProvider,
+                ErrorHandler
+            );
+        }
     }
 }

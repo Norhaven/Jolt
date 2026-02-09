@@ -12,10 +12,10 @@ using Xunit.DependencyInjection;
 namespace Jolt.Json.Tests.E2E.SmallTests.Newtonsoft;
 
 [Startup(typeof(Startup), Shared = false)]
-public sealed class ValueOf([FromKeyedServices(TestType.Newtonsoft)] IJsonContext context)
+public sealed class ValueOf([FromKeyedServices(TestType.Newtonsoft)] Func<IJsonContext> context)
     : ValueOfTests(context)
 {
     [Theory]
     [MemberData(nameof(GetAllTestsInScope), typeof(ValueOf), typeof(SmallTestDefinitionAttribute), typeof(SmallTestContainer))]
-    public void ValueOfTests_WillSucceed(SmallTestContainer container) => container.Execute(_testContext);
+    public void ValueOfTests_WillSucceed(SmallTestContainer container) => container.Execute(Context);
 }

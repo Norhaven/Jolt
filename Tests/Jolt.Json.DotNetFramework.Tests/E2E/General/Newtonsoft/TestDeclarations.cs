@@ -13,12 +13,12 @@ namespace Jolt.Json.DotNetFramework.Tests.E2E.General.Newtonsoft
     public sealed class JoltTransformer : TransformerTests
     {
         public JoltTransformer()
-            : base(Startup.CreateNewtonsoftContext())
+            : base(Startup.CreateNewtonsoftContext)
         {
         }
 
         [Theory]
         [MemberData(nameof(GetAllTestsInScope), typeof(JoltTransformer), typeof(TransformerTestDefinitionAttribute), typeof(TransformerTestContainer))]
-        public void TransformerTests_WillSucceed(TransformerTestContainer container) => container.Execute(_testContext, this);
+        public void TransformerTests_WillSucceed(TransformerTestContainer container) => container.Execute(Context, this);
     }
 }

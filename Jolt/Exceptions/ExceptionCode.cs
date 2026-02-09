@@ -150,6 +150,18 @@ namespace Jolt.Exceptions
         [Description("JLT540")]
         UnableToResolveNewPropertyNameForUnsupportedResultOfType,
         [Description("JLT541")]
-        ExternalMethodInvocationCausedAnException
+        ExternalMethodInvocationCausedAnException,
+        [Description("JLT542")]
+        UnableToUseLambdaAsArgumentForNonDelegateParameter,
+        [Description("JLT543")]
+        DelegateParameterRequiresLambdaArgument,
+        [Description("JLT544")]
+        UnableToConvertJsonArrayToRequiredParameterType,
+        [Description("JLT545")]
+        UnableToConvertToCurrentParameterEnumerableType,
+        [Description("JLT546")]
+        UnableToConvertLambdaToRequiredDelegateParameterType,
+        [Description("JLT547")]
+        UnableToConvertToSupportedEnumerableType
     }
 }

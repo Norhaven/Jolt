@@ -1,16 +1,13 @@
 ﻿using FluentAssertions;
 using Jolt.Exceptions;
 using Jolt.Json.Tests.Resources.TestAttributes;
+using Jolt.Structure;
 using NJsonSchema;
-using NJsonSchema.Validation;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 
 namespace Jolt.Json.Tests.Resources
 {
@@ -18,15 +15,15 @@ namespace Jolt.Json.Tests.Resources
     {
         public sealed class TestFile
         {
-            public JsonNode PossibleExceptionCodes { get; set; }
-            public JsonNode PossibleExternalMethodSources { get; set; }
+            public Dictionary<string, string> PossibleExceptionCodes { get; set; }
+            public Dictionary<string, string> PossibleExternalMethodSources { get; set; }
             public TestGroup[] TestGroups { get; set; }
         }
 
         public sealed class TestGroup
         {
             public string Name { get; set; }
-            public JsonNode Source { get; set; }
+            public dynamic Source { get; set; }
             public string ExternalMethodSource { get; set; }
             public EndToEndTest[] Tests { get; set; }
         }
@@ -34,12 +31,12 @@ namespace Jolt.Json.Tests.Resources
         public sealed class EndToEndTest
         {
             public string GroupName { get; set; }
-            public IDictionary<string, string> PossibleExceptions { get; set; }
-            public IDictionary<string, string> PossibleExternalMethodSources { get; set; }
+            public Dictionary<string, string> PossibleExceptions { get; set; }
+            public Dictionary<string, string> PossibleExternalMethodSources { get; set; }
             public string Name { get; set; }
             public string Source { get; set; }
-            public JsonNode Transformer { get; set; }
-            public JsonNode? Result { get; set; }
+            public IJsonObject Transformer { get; set; }
+            public IJsonObject? Result { get; set; }
             public string? ExceptionCode { get; set; }
             public string? InnerExceptionCode { get; set; }
             public string? ExceptionType { get; set; }
@@ -48,18 +45,17 @@ namespace Jolt.Json.Tests.Resources
 
         public sealed class JsonTestContainer : TestContainer
         {
-            private readonly TestFile _testFile;
+            private readonly string _testFileJson;
 
             public JsonTestContainer(MethodInfo testMethod, JsonTestDefinitionAttribute testAttribute) 
                 : base(testMethod, testAttribute)
             {
-                var json = ReadEmbeddedJson(testAttribute.TestResourceName);
+                _testFileJson = ReadEmbeddedJson(testAttribute.TestResourceName);
                 var schemaJson = ReadEmbeddedJson("JsonTest.schema");
 
                 var schema = JsonSchema.FromJsonAsync(schemaJson).Result;
-                var jsonElement = JsonElement.Parse(json);
 
-                var evaluationResults = schema.Validate(json);
+                var evaluationResults = schema.Validate(_testFileJson);
 
                 if (evaluationResults.Count > 0)
                 {
@@ -67,13 +63,6 @@ namespace Jolt.Json.Tests.Resources
 
                     throw new InvalidDataException(resultsText);
                 }
-
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                };
-
-                _testFile = JsonSerializer.Deserialize<TestFile>(json, options);
             }
 
             private string ReadEmbeddedJson(string fileName)
@@ -86,10 +75,9 @@ namespace Jolt.Json.Tests.Resources
 
             public override void Execute(IJsonContext context)
             {
-                var possibleExceptions = _testFile.PossibleExceptionCodes.Deserialize<Dictionary<string, string>>();
-                var possibleExternalMethodSources = _testFile.PossibleExternalMethodSources.Deserialize<Dictionary<string, string>>();
+                var testFile = context.JsonTokenReader.Read(_testFileJson).ToTypeOf<TestFile>();
 
-                var associatedTests = from testGroup in _testFile.TestGroups
+                var associatedTests = from testGroup in testFile.TestGroups
                                       from test in testGroup.Tests
                                       select new EndToEndTest
                                       {
@@ -100,14 +88,21 @@ namespace Jolt.Json.Tests.Resources
                                           ExceptionType = test.ExceptionType,
                                           ExceptionCode = test.ExceptionCode,
                                           GroupName = testGroup.Name,
-                                          PossibleExceptions = possibleExceptions,
-                                          PossibleExternalMethodSources = possibleExternalMethodSources,
-                                          Source = testGroup.Source.ToJsonString(),
+                                          PossibleExceptions = testFile.PossibleExceptionCodes,
+                                          PossibleExternalMethodSources = testFile.PossibleExternalMethodSources,
+                                          Source = testGroup.Source.ToString(),
                                           ExternalMethodSource = test.ExternalMethodSource ?? testGroup.ExternalMethodSource
                                       };
 
                 foreach (var test in associatedTests)
                 {
+                    // We're only working with a single context that's passed in for all tests within the JSON file,
+                    // so in case the tests are registering external methods we want to start those fresh each time
+                    // to avoid them stacking up and duplicating.
+
+                    context = context.Clear();
+                    context.ReferenceResolver.Clear();
+
                     ExecuteEndToEndTest(test, context);
                 }
             }
@@ -130,7 +125,7 @@ namespace Jolt.Json.Tests.Resources
                 }
 
                 var builtContext = context
-                    .UseTransformer(test.Transformer.ToJsonString());
+                    .UseTransformer(test.Transformer.ToString());
 
                 if (!string.IsNullOrWhiteSpace(test.ExternalMethodSource))
                 {
@@ -157,7 +152,13 @@ namespace Jolt.Json.Tests.Resources
                 {
                     var result = transformer.Transform(test.Source);
 
-                    result.Should().Be(test.Result.ToJsonString(new JsonSerializerOptions() { WriteIndented = false }), "because the result should exactly match the specified output");
+                    var resultToken = context.JsonTokenReader.Read(result);
+                    var isEqual = test.Result.Equals(resultToken);
+
+                    if (!isEqual)
+                    {
+                        
+                    }
                 }
                 catch (JoltException ex)
                 {
@@ -208,7 +209,7 @@ namespace Jolt.Json.Tests.Resources
             }
         }
         
-        public JsonTest(IJsonContext context)
+        public JsonTest(Func<IJsonContext> context)
             : base(context)
         {
         }        

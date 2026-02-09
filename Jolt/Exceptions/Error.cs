@@ -84,7 +84,13 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToUseMethodWithinNonRootStatementBlock] = "Unable to use method statement '{0}' as a non-root expression",
             [ExceptionCode.AttemptedToIndirectlyModifyVariableWithinUsingBlock] = "Attempted to indirectly modify variable '{0}' within a using block not scoped to it",
             [ExceptionCode.UnableToResolveNewPropertyNameForUnsupportedResultOfType] = "Unable to resolve new property name for unsupported result of type '{0}'",
-            [ExceptionCode.ExternalMethodInvocationCausedAnException] = "Call to external method '{0}' caused an exception, check inner exception for details"
+            [ExceptionCode.ExternalMethodInvocationCausedAnException] = "Call to external method '{0}' caused an exception, check inner exception for details",
+            [ExceptionCode.UnableToUseLambdaAsArgumentForNonDelegateParameter] = "Call to external method '{0}' attempted to pass a lambda to a non-delegate parameter",
+            [ExceptionCode.DelegateParameterRequiresLambdaArgument] = "Call to external method '{0}' contains a delegate parameter '{1}' but was invoked with non-lambda method",
+            [ExceptionCode.UnableToConvertJsonArrayToRequiredParameterType] = "Call to external method '{0}' was unable to convert parameter '{1}' from JSON array to required parameter type",
+            [ExceptionCode.UnableToConvertToCurrentParameterEnumerableType] = "Call to external method '{0}' was unable to convert parameter '{1}' to the requested IEnumerable<> type",
+            [ExceptionCode.UnableToConvertLambdaToRequiredDelegateParameterType] = "Call to external method '{0}' was unable to convert lambda parameter '{1}' to required delegate type '{2}'",
+            [ExceptionCode.UnableToConvertToSupportedEnumerableType] = "Call to external method '{0}' was unable to convert returned IEnumerable sequence to a known type"
         };
 
         public static JoltException CreateParsingErrorFrom(ExceptionCode code, JoltException? innerException, params object[] parameters)

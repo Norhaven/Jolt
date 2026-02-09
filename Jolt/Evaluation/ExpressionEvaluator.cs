@@ -361,6 +361,99 @@ namespace Jolt.Evaluation
 
                 value = value.UnwrapWith(context.JsonContext.JsonTokenReader);
 
+                if (value is IJsonArray array)
+                {
+                    if (currentFormalParameter.Type != typeof(IJsonArray) && currentFormalParameter.Type != typeof(object))
+                    {
+                        if (currentFormalParameter.Type.IsGenericType && currentFormalParameter.Type.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                        {
+                            var elementType = currentFormalParameter.Type.GetGenericArguments()[0];
+                            value = array.Select(x => x.ToTypeOf(elementType)) switch
+                            {
+                                var x when elementType == typeof(string) => x.Cast<string>(),
+                                var x when elementType == typeof(long) => x.Cast<long>(),
+                                var x when elementType == typeof(double) => x.Cast<double>(),
+                                var x when elementType == typeof(bool) => x.Cast<bool>(),
+                                var x when elementType == typeof(IJsonToken) => x.Cast<IJsonToken>(),
+                                _ => throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToConvertToCurrentParameterEnumerableType, call.Signature, currentFormalParameter.Name)
+                            };
+                        }
+                        else if (currentFormalParameter.Type.IsArray && currentFormalParameter.Type.IsArray)
+                        {
+                            var elementType = currentFormalParameter.Type.GetElementType();
+                            value = array.Select(x => x.ToTypeOf(elementType)).ToArray();
+                        }
+                        else
+                        {
+                            throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToConvertJsonArrayToRequiredParameterType, currentFormalParameter.Name, call.Signature.Name, currentFormalParameter.Type);
+                        }
+                    }
+                }
+                else if (value is LambdaMethod lambda && currentFormalParameter.Type != typeof(LambdaMethod))
+                {
+                    if (!currentFormalParameter.IsDelegate)
+                    {
+                        throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseLambdaAsArgumentForNonDelegateParameter, call.Signature.Name, currentFormalParameter.Name);
+                    }
+
+                    IJsonToken? ExecuteCustomLambda(object value)
+                    {
+                        var itemToken = context.CreateTokenFrom(value);
+                        var loopVariable = new RangeVariable(lambda.Variable.Name, itemToken);
+
+                        context.Scope.AddOrUpdateVariable(loopVariable);
+
+                        try
+                        {
+                            var evaluationContext = new EvaluationContext(
+                                context.Mode,
+                                lambda.Body,
+                                context.JsonContext,
+                                context.Token,
+                                context.Scope,
+                                context.Transform);
+
+                            var result = Evaluate(evaluationContext);
+
+                            return result.TransformedToken;
+                        }
+                        finally
+                        {
+                            context.Scope.RemoveCurrentVariablesLayer();
+                        }
+                    }
+
+                    value = currentFormalParameter.Type switch
+                    {
+                        var x when x == typeof(Func<object, object>) => new Func<object, object>(ExecuteCustomLambda),
+                        var x when x == typeof(Func<string, bool>) => new Func<string, bool>(x => ExecuteCustomLambda(x).ToTypeOf<bool>()),
+                        var x when x == typeof(Func<long, bool>) => new Func<long, bool>(x => ExecuteCustomLambda(x).ToTypeOf<bool>()),
+                        var x when x == typeof(Func<double, bool>) => new Func<double, bool>(x => ExecuteCustomLambda(x).ToTypeOf<bool>()),
+                        var x when x == typeof(Func<bool, bool>) => new Func<bool, bool>(x => ExecuteCustomLambda(x).ToTypeOf<bool>()),
+                        var x when x == typeof(Func<IJsonToken, bool>) => new Func<IJsonToken, bool>(x => ExecuteCustomLambda(x).ToTypeOf<bool>()),
+                        var x when x == typeof(Func<string, string>) => new Func<string, string>(x => ExecuteCustomLambda(x).ToTypeOf<string>()),
+                        var x when x == typeof(Func<long, string>) => new Func<long, string>(x => ExecuteCustomLambda(x).ToTypeOf<string>()),
+                        var x when x == typeof(Func<double, string>) => new Func<double, string>(x => ExecuteCustomLambda(x).ToTypeOf<string>()),
+                        var x when x == typeof(Func<bool, string>) => new Func<bool, string>(x => ExecuteCustomLambda(x).ToTypeOf<string>()),
+                        var x when x == typeof(Func<IJsonToken, string>) => new Func<string, string>(x => ExecuteCustomLambda(x).ToTypeOf<string>()),
+                        var x when x == typeof(Func<string, double>) => new Func<string, double>(x => ExecuteCustomLambda(x).ToTypeOf<double>()),
+                        var x when x == typeof(Func<long, double>) => new Func<long, double>(x => ExecuteCustomLambda(x).ToTypeOf<double>()),
+                        var x when x == typeof(Func<double, double>) => new Func<double, double>(x => ExecuteCustomLambda(x).ToTypeOf<double>()),
+                        var x when x == typeof(Func<bool, double>) => new Func<bool, double>(x => ExecuteCustomLambda(x).ToTypeOf<double>()),
+                        var x when x == typeof(Func<IJsonToken, double>) => new Func<string, double>(x => ExecuteCustomLambda(x).ToTypeOf<double>()),
+                        var x when x == typeof(Func<string, double>) => new Func<string, double>(x => ExecuteCustomLambda(x).ToTypeOf<long>()),
+                        var x when x == typeof(Func<long, long>) => new Func<long, long>(x => ExecuteCustomLambda(x).ToTypeOf<long>()),
+                        var x when x == typeof(Func<double, long>) => new Func<double, long>(x => ExecuteCustomLambda(x).ToTypeOf<long>()),
+                        var x when x == typeof(Func<bool, long>) => new Func<bool, long>(x => ExecuteCustomLambda(x).ToTypeOf<long>()),
+                        var x when x == typeof(Func<IJsonToken, long>) => new Func<string, long>(x => ExecuteCustomLambda(x).ToTypeOf<long>()),
+                        _ => throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToConvertLambdaToRequiredDelegateParameterType, call.Signature.Name, currentFormalParameter.Name, currentFormalParameter.Type)
+                    };
+                }
+                else if (currentFormalParameter.IsDelegate)
+                {
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.DelegateParameterRequiresLambdaArgument, call.Signature.Name, currentFormalParameter.Name);
+                }
+
                 if (currentFormalParameter.IsVariadic)
                 {
                     variadicParameterValue.Add(value);
@@ -416,9 +509,9 @@ namespace Jolt.Evaluation
             // contained and does not need to be packed up into a structure even though they can be enumerated
             // as a sequence of tokens, so we're disallowing the repackaging operation for those types here.
 
-            var isResultObjectOrArray = resultValue is IJsonObject || resultValue is IJsonArray;
+            var isResultJsonObjectOrArray = resultValue is IJsonObject || resultValue is IJsonArray;
 
-            if (!isResultObjectOrArray && typeof(IEnumerable<IJsonToken>).IsAssignableFrom(resultValue?.GetType()))
+            if (!isResultJsonObjectOrArray && typeof(IEnumerable<IJsonToken>).IsAssignableFrom(resultValue?.GetType()))
             {
                 // We may have gotten a sequence of either array elements or object properties back
                 // with that call so we need to iterate over them and populate the appropriate target structure.
@@ -432,8 +525,23 @@ namespace Jolt.Evaluation
                     resultValue = context.JsonContext.JsonTokenReader.CreateObjectFrom((IEnumerable<IJsonToken>?)resultValue);
                 }
             }
+            else if (!isResultJsonObjectOrArray && typeof(IEnumerable<object>).IsAssignableFrom(resultValue?.GetType()))
+            {
+                var sequence = resultValue.GetType() switch
+                {
+                    var x when typeof(IEnumerable<string>).IsAssignableFrom(x) ||
+                               typeof(IEnumerable<long>).IsAssignableFrom(x) ||
+                               typeof(IEnumerable<double>).IsAssignableFrom(x) ||
+                               typeof(IEnumerable<bool>).IsAssignableFrom(x) => (IEnumerable<object>)resultValue,
+                    _ => throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToConvertToSupportedEnumerableType, call.Signature.Name)
+                };
 
-            if (context.Mode == EvaluationMode.PropertyName)
+                var tokenSequence = sequence.Select(x => context.JsonContext.JsonTokenReader.CreateTokenFrom(x));
+
+                resultValue = context.JsonContext.JsonTokenReader.CreateArrayFrom(tokenSequence);
+            }
+            
+                if (context.Mode == EvaluationMode.PropertyName)
             {
                 // The method may have been a value generator, meaning that evaluating the property name will
                 // also cause the value for that property to be generated (e.g. the loop method) but if we're

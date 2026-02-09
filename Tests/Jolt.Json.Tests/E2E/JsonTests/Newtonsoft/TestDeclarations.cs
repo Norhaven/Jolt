@@ -7,10 +7,10 @@ using Xunit.DependencyInjection;
 namespace Jolt.Json.Tests.E2E.JsonTests.Newtonsoft;
 
 [Startup(typeof(Startup), Shared = false)]
-public sealed class JsonTestHarness([FromKeyedServices(TestType.Newtonsoft)] IJsonContext context)
+public sealed class JsonTestHarness([FromKeyedServices(TestType.Newtonsoft)] Func<IJsonContext> context)
     : JsonFileTests(context)
 {
     [Theory]
     [MemberData(nameof(GetAllTestsInScope), typeof(JsonTestHarness), typeof(JsonTestDefinitionAttribute), typeof(JsonTestContainer))]
-    public void JsonTests_WillSucceed(JsonTestContainer container) => container.Execute(_testContext);
+    public void JsonTests_WillSucceed(JsonTestContainer container) => container.Execute(Context);
 }

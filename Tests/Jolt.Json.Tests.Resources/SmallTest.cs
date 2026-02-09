@@ -111,7 +111,7 @@ namespace Jolt.Json.Tests.Resources
             }
         }
 
-        public SmallTest(IJsonContext context)
+        public SmallTest(Func<IJsonContext> context)
             :base(context)
         {
         }

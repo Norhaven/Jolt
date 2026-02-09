@@ -17,7 +17,8 @@
     <EmbeddedResource Include="TestFiles\Documents\PipedMethodsDocument.json" />
     <EmbeddedResource Include="TestFiles\Documents\SingleLevelDocument.json" />
     <EmbeddedResource Include="TestFiles\JsonTests\JsonTest.schema.json" />
-    <EmbeddedResource Include="TestFiles\JsonTests\OperatorsVariablesAndMethodsTests.json" />
+    <EmbeddedResource Include="TestFiles\JsonTests\ExternalMethodsTests.json" />
+    <EmbeddedResource Include="TestFiles\JsonTests\OperatorsAndVariablesTests.json" />
     <EmbeddedResource Include="TestFiles\Transformers\Conditions.json" />
     <EmbeddedResource Include="TestFiles\Transformers\Existence.json" />
     <EmbeddedResource Include="TestFiles\Transformers\ExternalMethodsWithAliases.json" />

@@ -15,13 +15,13 @@ namespace Jolt.Json.DotNetFramework.Tests.E2E.JsonTests.DotNet
     public sealed class JsonTestHarness : JsonFileTests
     {
         public JsonTestHarness()
-            :base(Startup.CreateDotNetContext())
+            :base(Startup.CreateDotNetContext)
         {
         }
 
         [Theory]
         [MemberData(nameof(GetAllTestsInScope), typeof(JsonTestHarness), typeof(JsonTestDefinitionAttribute), typeof(JsonTestContainer))]
-        public void JsonTests_WillSucceed(JsonTestContainer container) => container.Execute(_testContext);
+        public void JsonTests_WillSucceed(JsonTestContainer container) => container.Execute(Context);
     }
 }
 

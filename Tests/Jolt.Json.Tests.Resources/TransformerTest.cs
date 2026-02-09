@@ -29,7 +29,7 @@ namespace Jolt.Json.Tests.Resources
             }
         }
 
-        protected TransformerTest(IJsonContext context)
+        protected TransformerTest(Func<IJsonContext> context)
             : base(context)
         {
         }
@@ -58,7 +58,7 @@ namespace Jolt.Json.Tests.Resources
             var transformerJson = ReadTestTransformer(definition.TransformerName);
             var sourceDocumentJson = ReadTestDocument(definition.SourceDocumentName);
 
-            var context = configureContext == null ? _testContext : configureContext(_testContext);
+            var context = configureContext == null ? Context : configureContext(Context);
 
             context = context
                 .UseTransformer(transformerJson)
@@ -88,7 +88,7 @@ namespace Jolt.Json.Tests.Resources
                 throw new ArgumentException("Expected a transformed document because a valid test document was sent in and used by a valid transformer but found null");
             }
 
-            return _testContext.JsonTokenReader.Read(transformedDocument) as IJsonObject;
+            return Context.JsonTokenReader.Read(transformedDocument) as IJsonObject;
         }
 
         protected IJsonObject ExecuteTestFor<T>(string transformerJson, string testDocumentJson, object methodContext = default)
@@ -101,7 +101,7 @@ namespace Jolt.Json.Tests.Resources
                 throw new ArgumentException("Expected a transformed document because a valid test document was sent in and used by a valid transformer but found null");
             }
 
-            return _testContext.JsonTokenReader.Read(transformedDocument) as IJsonObject;
+            return Context.JsonTokenReader.Read(transformedDocument) as IJsonObject;
         }
 
         protected IJsonObject ExecuteTestFor(string transformerJson, string testDocumentJson, IEnumerable<MethodRegistration> methodRegistrations = default, object methodContext = default)
@@ -114,12 +114,12 @@ namespace Jolt.Json.Tests.Resources
                 throw new ArgumentException("Expected a transformed document because a valid test document was sent in and used by a valid transformer but found null");
             }
 
-            return _testContext.JsonTokenReader.Read(transformedDocument) as IJsonObject;
+            return Context.JsonTokenReader.Read(transformedDocument) as IJsonObject;
         }
 
         private IJsonTransformer<IJsonContext> CreateTransformerWith<T>(string transformerJson, object methodContext = default)
         {
-            var context = _testContext
+            var context = Context
                 .UseTransformer(transformerJson)
                 .RegisterAllMethodsFrom<T>()
                 .UseMethodContext(methodContext);
@@ -129,7 +129,7 @@ namespace Jolt.Json.Tests.Resources
 
         private IJsonTransformer<IJsonContext> CreateTransformerWith(string transformerJson, IEnumerable<MethodRegistration> methodRegistrations, object methodContext = default)
         {
-            var context = _testContext
+            var context = Context
                 .UseTransformer(transformerJson)
                 .RegisterAllMethods(methodRegistrations)
                 .UseMethodContext(methodContext);

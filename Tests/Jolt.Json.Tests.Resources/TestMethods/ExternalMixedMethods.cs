@@ -21,5 +21,38 @@ namespace Jolt.Json.Tests.Resources.TestMethods
 
         [JoltExternalMethod("stringConcat")]
         public static string StringConcatenation(string first, string second) => first + second;
+
+        [JoltExternalMethod("customStringFilterWithLambda")]
+        public static IEnumerable<string> CustomStringFilterWithLambda(IEnumerable<string> sequence, Func<string, bool> filter)
+        {
+            foreach (var item in sequence)
+            {
+                if (filter(item))
+                {
+                    yield return item;
+                }
+            }
+        }
+
+        [JoltExternalMethod("customDoubleFilterWithLambda")]
+        public static IEnumerable<double> CustomDoubleFilterWithLambda(IEnumerable<double> sequence, Func<double, bool> filter)
+        {
+            foreach (var item in sequence)
+            {
+                if (filter(item))
+                {
+                    yield return item;
+                }
+            }
+        }
+
+        [JoltExternalMethod("customBoolFilterWithLambda")]
+        public static IEnumerable<string> CustomBoolFilterWithLambda(IEnumerable<bool> sequence, Func<bool, string> filter)
+        {
+            foreach (var item in sequence)
+            {
+                yield return filter(item);
+            }
+        }
     }
 }

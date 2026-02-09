@@ -67,5 +67,12 @@ namespace Jolt.Structure
         /// <typeparam name="T">The .Net type to convert to.</typeparam>
         /// <returns>An instance of the underlying structure as <typeparamref name="T"/>.</returns>
         T ToTypeOf<T>();
+
+        /// <summary>
+        /// Converts the underleying structure to a .Net type specified by the given <see cref="Type"/> parameter.
+        /// </summary>
+        /// <param name="type">The .Net type to convert to.</param>
+        /// <returns>An instance of the underlying structure as a <see cref="Type"/>.</returns>
+        object ToTypeOf(Type type);
     }
 }

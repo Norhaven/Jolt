@@ -1,0 +1,104 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "possibleExceptionCodes": {
+    "invalidMethodUseInPropertyName": "UnableToUseMethodWithinPropertyName",
+    "lambdaUsedForNonDelegate": "UnableToUseLambdaAsArgumentForNonDelegateParameter",
+    "nonLambdaUsedForDelegate": "DelegateParameterRequiresLambdaArgument",
+    "unableToConvertArrayToType": "UnableToConvertJsonArrayToRequiredParameterType"
+  },
+  "possibleExternalMethodSources": {
+    "ExternalMixedMethods": "Jolt.Json.Tests.Resources.TestMethods.ExternalMixedMethods, Jolt.Json.Tests.Resources, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+  },
+  "testGroups": [
+    {
+      "name": "Invalid external method usages",
+      "source": {
+        "one": 1,
+        "two": "2",
+        "three": true
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method should not be valid on the property name side",
+          "transformer": {
+            "#stringConcat('2', '1')": "#valueOf($.one)"
+          },
+          "exceptionCode": "invalidMethodUseInPropertyName"
+        }
+      ]
+    },
+    {
+      "name": "Invoking a string/bool parameter delegate using JSON lambda",
+      "source": {
+        "testData": [ "hello", "this is a", "test" ]
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method with string/bool delegate parameter should be invoked from JSON lambda",
+          "transformer": {
+            "filtered": "#valueOf($.testData)->#customStringFilterWithLambda(@x: #length(@x) > 5)"
+          },
+          "result": {
+            "filtered": [ "this is a" ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoking a double/double parameter delegate using JSON lambda",
+      "source": {
+        "testData": [ 1.3, 5.5, 7.0, 15.1 ]
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method with double/bool delegate parameter should be invoked from JSON lambda",
+          "transformer": {
+            "filtered": "#valueOf($.testData)->#customDoubleFilterWithLambda(@x: @x > 4)"
+          },
+          "result": {
+            "filtered": [ 5.5, 7.0, 15.1 ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoking a long/long parameter delegate using JSON lambda",
+      "source": {
+        "testData": [ 1, 5, 15 ]
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method with double/bool delegate parameter should be invoked from JSON lambda",
+          "transformer": {
+            "filtered": "#valueOf($.testData)->#customDoubleFilterWithLambda(@x: @x > 4)"
+          },
+          "result": {
+            "filtered": [ 5, 15 ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoking a bool/string parameter delegate using JSON lambda",
+      "source": {
+        "testData": [ true, false, true ]
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method with bool/bool delegate parameter should be invoked from JSON lambda",
+          "transformer": {
+            "filtered": "#valueOf($.testData)->#customBoolFilterWithLambda(@x: #toString(@x))"
+          },
+          "result": {
+            "filtered": [ "true", "false", "true" ]
+          }
+        }
+      ]
+    }
+  ]
+}

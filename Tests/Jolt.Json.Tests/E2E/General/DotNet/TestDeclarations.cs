@@ -7,10 +7,10 @@ using Xunit.DependencyInjection;
 namespace Jolt.Json.Tests.E2E.General.DotNet;
 
 [Startup(typeof(Startup), Shared = false)]
-public sealed class JoltTransformer([FromKeyedServices(TestType.DotNet)] IJsonContext context)
+public sealed class JoltTransformer([FromKeyedServices(TestType.DotNet)] Func<IJsonContext> context)
     : TransformerTests(context)
 {
     [Theory]
     [MemberData(nameof(GetAllTestsInScope), typeof(JoltTransformer), typeof(TransformerTestDefinitionAttribute), typeof(TransformerTestContainer))]
-    public void TransformerTests_WillSucceed(TransformerTestContainer container) => container.Execute(_testContext, this);
+    public void TransformerTests_WillSucceed(TransformerTestContainer container) => container.Execute(Context, this);
 }
