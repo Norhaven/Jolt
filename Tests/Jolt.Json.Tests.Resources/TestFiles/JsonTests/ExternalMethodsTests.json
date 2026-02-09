@@ -47,7 +47,7 @@
       ]
     },
     {
-      "name": "Invoking a double/double parameter delegate using JSON lambda",
+      "name": "Invoking a double/bool parameter delegate using JSON lambda",
       "source": {
         "testData": [ 1.3, 5.5, 7.0, 15.1 ]
       },
@@ -72,9 +72,9 @@
       "externalMethodSource": "ExternalMixedMethods",
       "tests": [
         {
-          "name": "External method with double/bool delegate parameter should be invoked from JSON lambda",
+          "name": "External method with long/bool delegate parameter should be invoked from JSON lambda",
           "transformer": {
-            "filtered": "#valueOf($.testData)->#customDoubleFilterWithLambda(@x: @x > 4)"
+            "filtered": "#valueOf($.testData)->#customLongFilterWithLambda(@x: @x > 4)"
           },
           "result": {
             "filtered": [ 5, 15 ]
@@ -96,6 +96,34 @@
           },
           "result": {
             "filtered": [ "true", "false", "true" ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoking a IJsonObject/string parameter delegate using JSON lambda",
+      "source": {
+        "testData": [
+          {
+            "text": "this"
+          },
+          {
+            "text":  "is a"
+          },
+          {
+            "text": "test"
+          }
+        ]
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method with IJsonObject/string delegate parameter should be invoked from JSON lambda",
+          "transformer": {
+            "filtered": "#valueOf($.testData)->#customJsonObjectFilterWithLambda(@x: @x.text)"
+          },
+          "result": {
+            "filtered": [ "this", "is a", "test" ]
           }
         }
       ]

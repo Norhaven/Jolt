@@ -1,4 +1,5 @@
 ﻿using Jolt.Library;
+using Jolt.Structure;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -46,8 +47,29 @@ namespace Jolt.Json.Tests.Resources.TestMethods
             }
         }
 
+        [JoltExternalMethod("customLongFilterWithLambda")]
+        public static IEnumerable<long> CustomLongFilterWithLambda(IEnumerable<long> sequence, Func<long, bool> filter)
+        {
+            foreach (var item in sequence)
+            {
+                if (filter(item))
+                {
+                    yield return item;
+                }
+            }
+        }
+
         [JoltExternalMethod("customBoolFilterWithLambda")]
         public static IEnumerable<string> CustomBoolFilterWithLambda(IEnumerable<bool> sequence, Func<bool, string> filter)
+        {
+            foreach (var item in sequence)
+            {
+                yield return filter(item);
+            }
+        }
+
+        [JoltExternalMethod("customJsonObjectFilterWithLambda")]
+        public static IEnumerable<string> CustomJsonObjectFilterWithLambda(IEnumerable<IJsonObject> sequence, Func<IJsonObject, string> filter)
         {
             foreach (var item in sequence)
             {
