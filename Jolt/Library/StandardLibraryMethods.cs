@@ -991,10 +991,35 @@ namespace Jolt.Library
             {
                 value = token.AsValue().ToTypeOf<object>();
             }
+            else if (value is RangeVariable val)
+            {
+                value = val.Value.Type switch
+                {
+                    JsonTokenType.Value when val.Value.AsValue().ValueType == JsonValueType.String => val.Value.AsValue().ToTypeOf<string>(),
+                    JsonTokenType.Value when val.Value.AsValue().ValueType == JsonValueType.Number => val.Value.AsValue().ToTypeOf<double>(),
+                    JsonTokenType.Value when val.Value.AsValue().ValueType == JsonValueType.Boolean => val.Value.AsValue().ToTypeOf<bool>(),
+                    _ => val.Value
+                };
+            }
 
             if (value is null || value is T)
             {
                 return context.CreateTokenFrom(value);
+            }
+            else if (value is string text)
+            {
+                if (typeof(T) == typeof(long) && long.TryParse(text, out var longResult))
+                {
+                    return context.CreateTokenFrom(longResult);
+                }
+                else if (typeof(T) == typeof(double) && double.TryParse(text, out var doubleResult))
+                {
+                    return context.CreateTokenFrom(doubleResult);
+                }
+                else if (typeof(T) == typeof(bool) && bool.TryParse(text, out var boolResult))
+                {
+                    return context.CreateTokenFrom(boolResult);
+                }
             }
 
             var convertedValue = Convert.ChangeType(value, typeof(T));

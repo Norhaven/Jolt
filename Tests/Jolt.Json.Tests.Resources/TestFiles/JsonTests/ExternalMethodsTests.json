@@ -108,7 +108,7 @@
             "text": "this"
           },
           {
-            "text":  "is a"
+            "text": "is a"
           },
           {
             "text": "test"
@@ -124,6 +124,24 @@
           },
           "result": {
             "filtered": [ "this", "is a", "test" ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoking a string/long parameter delegate using JSON lambda",
+      "source": {
+        "testStrings": [ "5", "10", "2", "15" ]
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method with string/long delegate parameter should be invoked from JSON lambda",
+          "transformer": {
+            "filtered": "#valueOf($.testStrings)->#customStringToLongFilterWithLambda(@x: #toInteger(@x))"
+          },
+          "result": {
+            "filtered": [ 10, 15 ]
           }
         }
       ]

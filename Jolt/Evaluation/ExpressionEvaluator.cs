@@ -449,7 +449,7 @@ namespace Jolt.Evaluation
                         var x when x == typeof(Func<IJsonToken, double>) => new Func<string, double>(x => ExecuteCustomLambda(x).ToTypeOf<double>()),
                         var x when x == typeof(Func<IJsonObject, double>) => new Func<IJsonObject, double>(x => ExecuteCustomLambda(x).ToTypeOf<double>()),
                         var x when x == typeof(Func<IJsonArray, double>) => new Func<IJsonArray, double>(x => ExecuteCustomLambda(x).ToTypeOf<double>()),
-                        var x when x == typeof(Func<string, double>) => new Func<string, double>(x => ExecuteCustomLambda(x).ToTypeOf<long>()),
+                        var x when x == typeof(Func<string, long>) => new Func<string, long>(x => ExecuteCustomLambda(x).ToTypeOf<long>()),
                         var x when x == typeof(Func<long, long>) => new Func<long, long>(x => ExecuteCustomLambda(x).ToTypeOf<long>()),
                         var x when x == typeof(Func<double, long>) => new Func<double, long>(x => ExecuteCustomLambda(x).ToTypeOf<long>()),
                         var x when x == typeof(Func<bool, long>) => new Func<bool, long>(x => ExecuteCustomLambda(x).ToTypeOf<long>()),

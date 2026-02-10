@@ -76,5 +76,21 @@ namespace Jolt.Json.Tests.Resources.TestMethods
                 yield return filter(item);
             }
         }
+
+        [JoltExternalMethod("customStringToLongFilterWithLambda")]
+        public static IEnumerable<long> CustomStringToLongFilterWithLambda(IEnumerable<string> sequence, Func<string, long> convertStringToLong)
+        {
+            foreach (var value in sequence)
+            {
+                var result = convertStringToLong(value);
+
+                if (result <= 5)
+                {
+                    continue;
+                }
+
+                yield return result;
+            }
+        }
     }
 }
