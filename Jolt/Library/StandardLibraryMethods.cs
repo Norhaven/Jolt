@@ -262,15 +262,13 @@ namespace Jolt.Library
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Length(object? value, EvaluationContext context)
         {
-            var resolved = context.ResolveQueryPathIfPresent(value);
+            var resolved = value is RangeVariable variable ? variable.Value?.ToTypeOf<object>() : context.ResolveQueryPathIfPresent(value);
+            var resultToken = context.CreateTokenFrom(resolved);
 
-            var length = resolved switch
+            var length = resultToken switch
             {
-                string text => text.Length,
                 IJsonArray array => array.Count(),
                 IJsonValue token when token.AsValue().ValueType == JsonValueType.String => token.AsValue().ToTypeOf<string>().Length,
-                RangeVariable variable when variable.Value?.AsValue().ValueType == JsonValueType.String => variable.Value.ToTypeOf<string>().Length,
-                object[] array => array.Length,
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get length for unsupported object type '{value?.GetType()}'")
             };
 
@@ -450,7 +448,11 @@ namespace Jolt.Library
 
                 if (lambda != null)
                 {
-                    value = Select(value, lambda, context);
+                    resolved = Select(value, lambda, context);
+                }
+                else
+                {
+                    resolved = value;
                 }
             }
 
@@ -515,7 +517,7 @@ namespace Jolt.Library
 
             foreach (var additionalValue in additionalValues ?? Enumerable.Empty<object>())
             {
-                var resolvedValue = context.ResolveQueryPathIfPresent(additionalValue);
+                var resolvedValue = additionalValue is RangeVariable variable ? variable.Value?.ToTypeOf<object>() : context.ResolveQueryPathIfPresent(additionalValue);
 
                 resultToken = (resultToken, resolvedValue) switch
                 {
@@ -585,7 +587,12 @@ namespace Jolt.Library
                 return context.CreateTokenFrom(false);
             }
 
-            var resolved = value is RangeVariable variable ? variable.Value?.ToTypeOf<object>() : context.ResolveQueryPathIfPresent(value);
+            var resolved = value switch
+            {
+                RangeVariable variable when variable.Value?.Type == JsonTokenType.Array => variable.Value.ToTypeOf<IJsonArray>(),
+                RangeVariable variable => variable.Value?.ToTypeOf<string>(),
+                _ => context.ResolveQueryPathIfPresent(value)
+            };
 
             var empty = resolved switch
             {

@@ -105,7 +105,7 @@ namespace Jolt.Json.DotNet
         {
             if (typeof(T) == typeof(object))
             {
-                if (_token is Nodes.JsonObject)
+                if (_token is Nodes.JsonObject || _token is Nodes.JsonArray)
                 {
                     return JsonSerializer.Deserialize<T>(_token.ToJsonString());
                 }
@@ -143,7 +143,8 @@ namespace Jolt.Json.DotNet
                 {
                     Converters =
                     {
-                        new JoltJsonObjectConverter()
+                        new JoltJsonObjectConverter(),
+                        new JoltJsonArrayConverter()
                     },
                     PropertyNameCaseInsensitive = true
                 };

@@ -13,7 +13,7 @@ namespace Jolt.Json.Newtonsoft
         {
             var jsonObject = JObject.Load(reader);
 
-            return (JsonObject)JsonObject.Parse(jsonObject.ToString());
+            return (JsonObject)JsonToken.Parse(jsonObject.ToString());
         }
 
         public override void WriteJson(JsonWriter writer, IJsonObject? value, JsonSerializer serializer)

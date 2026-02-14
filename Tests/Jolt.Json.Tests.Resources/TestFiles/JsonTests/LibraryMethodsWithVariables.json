@@ -11,11 +11,14 @@
       "name": "Standard library methods work with range variables in lambda expressions",
       "source": {
         "integerValue": 1,
-        "doubleValue": 2,
+        "doubleValue": 3.1415,
         "stringValue": "3",
         "booleanValue": true,
+        "booleanStringValue": "true",
         "stringText": "this is a test",
-        "stringArray": [ "this", "is", "a", "test" ]
+        "stringArray": [ "this", "is", "a", "test" ],
+        "integerArray": [ 0, 5, 1, 9 ],
+        "emptyArray": []
       },
       "tests": [
         {
@@ -48,19 +51,270 @@
         {
           "name": "GroupBy works with a range variable containing a string value",
           "transformer": {
-            "resultArray": "#valueOf($.stringArray)->#groupBy(@x: #contains(@x, 'is'))"
+            "@x": "#valueOf($.stringArray)",
+            "resultArray": "#groupBy(@x, @y: #contains(@y, 'is')))"
           },
           "result": {
             "resultArray": [
               {
-                "key": "true",
+                "key": true,
                 "results": [ "this", "is" ]
               },
               {
-                "key": "false",
+                "key": false,
                 "results": [ "a", "test" ]
               }
             ]
+          }
+        },
+        {
+          "name": "OrderBy works with a range variable containing an integer array",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#orderBy(@x)"
+          },
+          "result": {
+            "resultArray": [ 0, 1, 5, 9 ]
+          }
+        },
+        {
+          "name": "OrderByDesc works with a range variable containing an integer array",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#orderByDesc(@x)"
+          },
+          "result": {
+            "resultArray": [ 9, 5, 1, 0 ]
+          }
+        },
+        {
+          "name": "RoundTo works with a range variable containing a double value",
+          "transformer": {
+            "@x": "#valueOf($.doubleValue)",
+            "resultValue": "#roundTo(@x, 1)"
+          },
+          "result": {
+            "resultValue": 3.1
+          }
+        },
+        {
+          "name": "Max works with a range variable containing an integer array",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultValue": "#max(@x)"
+          },
+          "result": {
+            "resultValue": 9
+          }
+        },
+        {
+          "name": "Min works with a range variable containing an integer array",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultValue": "#min(@x)"
+          },
+          "result": {
+            "resultValue": 0
+          }
+        },
+        {
+          "name": "Sum works with a range variable containing an integer array",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultValue": "#sum(@x)"
+          },
+          "result": {
+            "resultValue": 15
+          }
+        },
+        {
+          "name": "Average works with a range variable containing an integer array",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultValue": "#average(@x)"
+          },
+          "result": {
+            "resultValue": 3.75
+          }
+        },
+        {
+          "name": "JoinWith works with a range variable containing a string array",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)",
+            "resultValue": "#joinWith(@x, ',')"
+          },
+          "result": {
+            "resultValue": "this,is,a,test"
+          }
+        },
+        {
+          "name": "SplitOn works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.stringText)",
+            "resultArray": "#splitOn(@x, ' ')"
+          },
+          "result": {
+            "resultArray": [ "this", "is", "a", "test" ]
+          }
+        },
+        {
+          "name": "Append works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.stringText)",
+            "resultValue": "#append(@x, ' ', '1', '2', '3')"
+          },
+          "result": {
+            "resultValue": [ "this is a test 123" ]
+          }
+        },
+        {
+          "name": "Append works with a range variable containing a string array",
+          "transformer": {
+            "@x": "#valueOf($.stringText)",
+            "resultArray": "#append(@x, ' ', '1', '2', '3')"
+          },
+          "result": {
+            "resultArray": [ "this", "is", "a", "test", " ", "1", "2", "3" ]
+          }
+        },
+        {
+          "name": "IsInteger works with a range variable containing an integer value",
+          "transformer": {
+            "@x": "#valueOf($.integerValue)",
+            "resultValue": "#isInteger(@x)"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "IsDecimal works with a range variable containing a double value",
+          "transformer": {
+            "@x": "#valueOf($.doubleValue)",
+            "resultValue": "#isDecimal(@x)"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "IsBoolean works with a range variable containing a boolean value",
+          "transformer": {
+            "@x": "#valueOf($.booleanValue)",
+            "resultValue": "#isBoolean(@x)"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "IsString works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.stringText)",
+            "resultValue": "#isString(@x)"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "IsEmpty works with a range variable containing a string value",
+          "transformer": {
+            "@x": "''",
+            "resultValue": "#isEmpty(@x)"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "IsEmpty works with a range variable containing an array value",
+          "transformer": {
+            "@x": "#valueOf($.emptyArray)",
+            "resultValue": "#isEmpty(@x)"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Any works with a range variable containing an array value",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)",
+            "resultValue": "#any(@x)"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Where works with a range variable containing an array value",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#where(@x, @y: @y > 4)"
+          },
+          "result": {
+            "resultArray": [ 5, 9 ]
+          }
+        },
+        {
+          "name": "Select works with a range variable containing an array value",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#select(@x, @y: @y * 2)"
+          },
+          "result": {
+            "resultArray": [ 0, 10, 2, 18 ]
+          }
+        },
+        {
+          "name": "ToInteger works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "resultValue": "#toInteger(@x)"
+          },
+          "result": {
+            "resultValue": 3
+          }
+        },
+        {
+          "name": "ToString works with a range variable containing an integer value",
+          "transformer": {
+            "@x": "#valueOf($.integerValue)",
+            "resultValue": "#toString(@x)"
+          },
+          "result": {
+            "resultValue": "1"
+          }
+        },
+        {
+          "name": "ToDecimal works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "resultValue": "#toDecimal(@x)"
+          },
+          "result": {
+            "resultValue": 3.0
+          }
+        },
+        {
+          "name": "ToBoolean works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.booleanStringValue)",
+            "resultValue": "#toBoolean(@x)"
+          },
+          "result": {
+            "resultValue": 3
+          }
+        },
+        {
+          "name": "SummarizeWith works with a range variable containing a string array",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)->#groupBy(@y: #contains(@y, 'is'))",
+            "resultArray": "#summarizeWith(@x, @y: #length(@y))"
+          },
+          "result": {
+            "resultArray": [ 4, 2, 1, 4 ]
           }
         }
       ]

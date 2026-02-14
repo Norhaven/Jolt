@@ -98,7 +98,8 @@ namespace Jolt.Json.Newtonsoft
             {
                 Converters =
                 {
-                    new JoltJsonObjectConverter()
+                    new JoltJsonObjectConverter(),
+                    new JoltJsonArrayConverter()
                 },
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             };
