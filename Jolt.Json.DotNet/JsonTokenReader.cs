@@ -73,12 +73,24 @@ namespace Jolt.Json.DotNet
             {
                 var grouped = new List<Nodes.JsonNode>();
 
-                foreach(var group in grouping)
+                Nodes.JsonNode? ReadOrParse(IJsonToken token)
+                {
+                    if (token.Type == Structure.JsonTokenType.Value)
+                    {
+                        return Nodes.JsonValue.Create(token.AsValue().ToTypeOf<object>());
+                    }
+                    else
+                    {
+                        return Nodes.JsonNode.Parse(token.ToString());
+                    }
+                }
+
+                foreach (var group in grouping)
                 {
                     var json = new Nodes.JsonObject
                     { 
                         ["key"] = Nodes.JsonValue.Create(group.Key),
-                        ["results"] = new Nodes.JsonArray(group.Select(x => Nodes.JsonNode.Parse(x.ToString())).ToArray())
+                        ["results"] = new Nodes.JsonArray(group.Select(ReadOrParse).ToArray())
                     };
 
                     grouped.Add(json);

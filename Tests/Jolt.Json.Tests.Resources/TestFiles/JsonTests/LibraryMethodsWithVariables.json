@@ -1,0 +1,69 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "possibleExceptionCodes": {
+    "invalidMethodUseInPropertyName": "UnableToUseMethodWithinPropertyName",
+    "lambdaUsedForNonDelegate": "UnableToUseLambdaAsArgumentForNonDelegateParameter",
+    "nonLambdaUsedForDelegate": "DelegateParameterRequiresLambdaArgument",
+    "unableToConvertArrayToType": "UnableToConvertJsonArrayToRequiredParameterType"
+  },
+  "testGroups": [
+    {
+      "name": "Standard library methods work with range variables in lambda expressions",
+      "source": {
+        "integerValue": 1,
+        "doubleValue": 2,
+        "stringValue": "3",
+        "booleanValue": true,
+        "stringText": "this is a test",
+        "stringArray": [ "this", "is", "a", "test" ]
+      },
+      "tests": [
+        {
+          "name": "IndexOf works with a range variable containing a string value",
+          "transformer": {
+            "resultArray": "#valueOf($.stringArray)->#select(@x: #indexOf(@x, 'is'))"
+          },
+          "result": {
+            "resultArray": [ 2, 0 ]
+          }
+        },
+        {
+          "name": "Length works with a range variable containing a string value",
+          "transformer": {
+            "resultArray": "#valueOf($.stringArray)->#select(@x: #length(@x))"
+          },
+          "result": {
+            "resultArray": [ 4, 2, 1, 4 ]
+          }
+        },
+        {
+          "name": "If/Substring works with a range variable containing a string value",
+          "transformer": {
+            "resultArray": "#valueOf($.stringArray)->#select(@x: #if(#length(@x) > 2, #substring(@x, ..2), 0))"
+          },
+          "result": {
+            "resultArray": [ "th", "te" ]
+          }
+        },
+        {
+          "name": "GroupBy works with a range variable containing a string value",
+          "transformer": {
+            "resultArray": "#valueOf($.stringArray)->#groupBy(@x: #contains(@x, 'is'))"
+          },
+          "result": {
+            "resultArray": [
+              {
+                "key": "true",
+                "results": [ "this", "is" ]
+              },
+              {
+                "key": "false",
+                "results": [ "a", "test" ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

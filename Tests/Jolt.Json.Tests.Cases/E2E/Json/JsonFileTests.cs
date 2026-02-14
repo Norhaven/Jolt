@@ -23,6 +23,9 @@ namespace Jolt.Json.Tests.Cases.E2E.Json
         {
         }
 
+        [JsonTestDefinition("LibraryMethodsWithVariables")]
+        public void LibraryMethodsWithVariablesTests() { }
+
         [JsonTestDefinition("ExternalMethodsTests")]
         public void ExternalMethodsTests() { }
 

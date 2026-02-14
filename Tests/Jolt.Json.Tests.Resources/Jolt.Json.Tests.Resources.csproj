@@ -16,6 +16,7 @@
     <EmbeddedResource Include="TestFiles\Documents\MultiLevelDocument.json" />
     <EmbeddedResource Include="TestFiles\Documents\PipedMethodsDocument.json" />
     <EmbeddedResource Include="TestFiles\Documents\SingleLevelDocument.json" />
+    <EmbeddedResource Include="TestFiles\JsonTests\LibraryMethodsWithVariables.json" />
     <EmbeddedResource Include="TestFiles\JsonTests\JsonTest.schema.json" />
     <EmbeddedResource Include="TestFiles\JsonTests\ExternalMethodsTests.json" />
     <EmbeddedResource Include="TestFiles\JsonTests\OperatorsAndVariablesTests.json" />

@@ -68,6 +68,18 @@ namespace Jolt.Json.Newtonsoft
             }
             else if (value is IEnumerable<IGrouping<object, IJsonToken>> grouping)
             {
+                JToken ReadOrParse(IJsonToken token)
+                {
+                    if (token.Type == JsonTokenType.Value)
+                    {
+                        return JToken.FromObject(token.AsValue().ToTypeOf<object>());
+                    }
+                    else
+                    {
+                        return JToken.Parse(token.ToTypeOf<string>());
+                    }
+                }
+
                 var grouped = new List<JToken>();
 
                 foreach(var group in grouping)
@@ -75,7 +87,7 @@ namespace Jolt.Json.Newtonsoft
                     var json = new JObject
                     { 
                         ["key"] = JToken.FromObject(group.Key),
-                        ["results"] = new JArray(group.Select(x => JToken.Parse(x.ToString())))
+                        ["results"] = new JArray(group.Select(ReadOrParse))
                     };
 
                     grouped.Add(json);
