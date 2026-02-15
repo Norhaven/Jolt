@@ -92,5 +92,21 @@ namespace Jolt.Json.Tests.Resources.TestMethods
                 yield return result;
             }
         }
+
+        [JoltExternalMethod("stringPassthrough")]
+        public static string PassStringThroughAndReturn(string value) => value;
+
+        [JoltExternalMethod("integerPassthrough")]
+        public static long PassLongThroughAndReturn(long value) => value;
+
+        [JoltExternalMethod("doublePassthrough")]
+        public static double PassDoubleThroughAndReturn(double value) => value;
+
+        [JoltExternalMethod("jsonObjectPassthrough")]
+        public static IJsonObject PassJsonObjectThroughAndReturn(IJsonObject obj) => obj;
+
+        [JoltExternalMethod("jsonArrayPassthrough")]
+        public static IJsonArray PassJsonArrayThroughAndReturn(IJsonArray array) => array;
+
     }
 }

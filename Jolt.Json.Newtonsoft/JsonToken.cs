@@ -93,7 +93,14 @@ namespace Jolt.Json.Newtonsoft
             {
                 return _token.ToString();
             }
-
+            else if (type == typeof(object))
+            {
+                if (_token is JObject || _token is JArray)
+                {
+                    return Parse(_token.DeepClone().ToString());
+                }
+            }
+            
             var serializer = new JsonSerializer
             {
                 Converters =

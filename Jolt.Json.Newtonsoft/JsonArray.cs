@@ -29,7 +29,11 @@ namespace Jolt.Json.Newtonsoft
             _arrayElements = ((JArray)token).Select(x => FromObject(x)).ToList();
         }
 
-        public void Add(IJsonToken? token) => _arrayElements.Add(token);
+        public void Add(IJsonToken? token)
+        {
+            _arrayElements.Add(token);
+            ((JArray)_token).Add(token.ToTypeOf<object>());
+        }
 
         public IEnumerator<IJsonToken> GetEnumerator() => _arrayElements.GetEnumerator();
 

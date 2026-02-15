@@ -95,7 +95,7 @@
             "filtered": "#valueOf($.testData)->#customBoolFilterWithLambda(@x: #toString(@x))"
           },
           "result": {
-            "filtered": [ "true", "false", "true" ]
+            "filtered": [ "True", "False", "True" ]
           }
         }
       ]
@@ -142,6 +142,49 @@
           },
           "result": {
             "filtered": [ 10, 15 ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "External passthrough methods will accept range variables as parameters",
+      "source": {
+        "stringValue": "test",
+        "integerValue": 5,
+        "doubleValue": 7.12,
+        "booleanValue": true,
+        "jsonObject": {
+          "text": "test"
+        },
+        "jsonArray": [ 1, 2, 3 ]
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method with string/long delegate parameter should be invoked from JSON lambda",
+          "transformer": {
+            "@stringValue": "#valueOf($.stringValue)",
+            "@integerValue": "#valueOf($.integerValue)",
+            "@doubleValue": "#valueOf($.doubleValue)",
+            "@booleanValue": "#valueOf($.booleanValue)",
+            "@jsonObject": "#valueOf($.jsonObject)",
+            "@jsonArray": "#valueOf($.jsonArray)",
+            "stringResult": "#stringPassthrough(@stringValue)",
+            "integerResult": "#integerPassthrough(@integerValue)",
+            "doubleResult": "#doublePassthrough(@doubleValue)",
+            "booleanResult": "#booleanPassthrough(@booleanValue)",
+            "jsonObjectResult": "#jsonObjectPassthrough(@jsonObject)",
+            "jsonArrayResult": "#jsonArrayPassthrough(@jsonArray)"
+          },
+          "result": {
+            "stringResult": "test",
+            "integerResult": 5,
+            "doubleResult": 7.12,
+            "booleanResult": true,
+            "jsonObjectResult": {
+              "text": "test"
+            },
+            "jsonArrayResult": [ 1, 2, 3 ]
           }
         }
       ]

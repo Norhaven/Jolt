@@ -26,10 +26,14 @@ namespace Jolt.Json.DotNet
         public JsonArray(Nodes.JsonNode? token) 
             : base(token)
         {
-            _arrayElements = ((Nodes.JsonArray)token).Select(x => FromObject(x)).ToList();
+            _arrayElements = ((Nodes.JsonArray)token).Select(FromObject).ToList();
         }
 
-        public void Add(IJsonToken? token) => _arrayElements.Add(token);
+        public void Add(IJsonToken? token)
+        {
+            _arrayElements.Add(token);
+            _token.AsArray().Add(token.ToTypeOf<object>());
+        }
 
         public IEnumerator<IJsonToken> GetEnumerator() => _arrayElements.GetEnumerator();
 

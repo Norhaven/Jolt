@@ -107,7 +107,7 @@ namespace Jolt.Json.DotNet
             {
                 if (_token is Nodes.JsonObject || _token is Nodes.JsonArray)
                 {
-                    return JsonSerializer.Deserialize<T>(_token.ToJsonString());
+                    return (T)Parse(_token.ToJsonString());
                 }
 
                 var value = _token.GetValue<object?>();
@@ -117,7 +117,8 @@ namespace Jolt.Json.DotNet
                     value = ((JsonElement)_token.GetValue<object>()) switch
                     {
                         var x when x.ValueKind == JsonValueKind.String => x.GetString(),
-                        var x when x.ValueKind == JsonValueKind.Number => x.GetDecimal(),
+                        var x when x.ValueKind == JsonValueKind.Number && x.TryGetInt64(out var integerValue) => integerValue,
+                        var x when x.ValueKind == JsonValueKind.Number && x.TryGetDouble(out var doubleValue) => doubleValue,
                         var x when x.ValueKind == JsonValueKind.True => x.GetBoolean(),
                         var x when x.ValueKind == JsonValueKind.False => x.GetBoolean(),
                         var x when x.ValueKind == JsonValueKind.Null => null,

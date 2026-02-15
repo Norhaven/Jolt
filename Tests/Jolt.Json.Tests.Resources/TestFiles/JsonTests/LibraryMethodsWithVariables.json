@@ -27,7 +27,7 @@
             "resultArray": "#valueOf($.stringArray)->#select(@x: #indexOf(@x, 'is'))"
           },
           "result": {
-            "resultArray": [ 2, 0 ]
+            "resultArray": [ 2, 0, -1, -1 ]
           }
         },
         {
@@ -45,7 +45,7 @@
             "resultArray": "#valueOf($.stringArray)->#select(@x: #if(#length(@x) > 2, #substring(@x, ..2), 0))"
           },
           "result": {
-            "resultArray": [ "th", "te" ]
+            "resultArray": [ "th", 0, 0, "te" ]
           }
         },
         {
@@ -164,13 +164,13 @@
             "resultValue": "#append(@x, ' ', '1', '2', '3')"
           },
           "result": {
-            "resultValue": [ "this is a test 123" ]
+            "resultValue": "this is a test 123"
           }
         },
         {
           "name": "Append works with a range variable containing a string array",
           "transformer": {
-            "@x": "#valueOf($.stringText)",
+            "@x": "#valueOf($.stringArray)",
             "resultArray": "#append(@x, ' ', '1', '2', '3')"
           },
           "result": {
@@ -304,7 +304,7 @@
             "resultValue": "#toBoolean(@x)"
           },
           "result": {
-            "resultValue": 3
+            "resultValue": true
           }
         },
         {
@@ -314,7 +314,14 @@
             "resultArray": "#summarizeWith(@x, @y: #length(@y))"
           },
           "result": {
-            "resultArray": [ 4, 2, 1, 4 ]
+            "resultArray": [
+              {
+                "True": 2
+              },
+              {
+                "False": 2
+              }
+            ]
           }
         }
       ]

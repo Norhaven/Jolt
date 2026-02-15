@@ -515,6 +515,12 @@ namespace Jolt.Library
 
             IJsonToken? resultToken = context.CreateTokenFrom(resolved);
 
+            IJsonArray Concat(IJsonArray array, string value)
+            {
+                array.Add(context.CreateTokenFrom(value));
+                return array;
+            }
+
             foreach (var additionalValue in additionalValues ?? Enumerable.Empty<object>())
             {
                 var resolvedValue = additionalValue is RangeVariable variable ? variable.Value?.ToTypeOf<object>() : context.ResolveQueryPathIfPresent(additionalValue);
@@ -522,11 +528,12 @@ namespace Jolt.Library
                 resultToken = (resultToken, resolvedValue) switch
                 {
                     (IJsonArray first, IJsonArray second) => context.CreateArrayFrom(first.Concat(second).ToArray()),
+                    (IJsonArray first, string second) => Concat(first, second),
                     (IJsonObject first, IJsonObject second) => context.CreateObjectFrom(first.Concat(second).ToArray()),
                     (IEnumerable<object> first, IEnumerable<object> second) => context.CreateTokenFrom(first.Concat(second).ToArray()),
                     (IJsonValue first, string second) when first.IsString() => context.CreateTokenFrom($"{first.ToTypeOf<string>()}{second}"),
                     (IJsonValue first, IJsonValue second) when first.IsString() && second.IsString() => context.CreateTokenFrom($"{first}{second}"),
-                    _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to append with unsupported object types '{value?.GetType()}' and '{resolvedValue?.GetType()}'")
+                    _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to append with unsupported object types '{resultToken?.GetType()}' and '{resolvedValue?.GetType()}'")
                 };
             }
 
@@ -598,7 +605,7 @@ namespace Jolt.Library
             {
                 IJsonArray array => array.Length == 0,
                 IJsonValue val when val.IsString() => val.ToTypeOf<string>().Length == 0,
-                string val => val.Length == 0,
+                string val => val.Length == 0 || (val.Length == 2 && val.Replace("'", string.Empty).Length == 0), // The presence of a string literal should register as empty.
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check emptiness with unsupported object type '{value?.GetType()}'")
             };
 

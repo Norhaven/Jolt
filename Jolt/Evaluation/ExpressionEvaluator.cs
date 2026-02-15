@@ -361,6 +361,11 @@ namespace Jolt.Evaluation
 
                 value = value.UnwrapWith(context.JsonContext.JsonTokenReader);
 
+                if (!call.Signature.IsSystemMethod && value is RangeVariable variable)
+                {
+                    value = variable.Value?.ToTypeOf<object>();
+                }
+
                 if (value is IJsonArray array)
                 {
                     if (currentFormalParameter.Type != typeof(IJsonArray) && currentFormalParameter.Type != typeof(object))
