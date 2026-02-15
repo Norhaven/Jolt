@@ -11,7 +11,7 @@
     <RepositoryUrl>https://github.com/Norhaven/Jolt</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>JoltLogo.png</PackageIcon>
-    <Version>1.4.7</Version>
+    <Version>1.4.8</Version>
     <PackageTags>json;xslt;transformation;transform</PackageTags>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
