@@ -143,7 +143,7 @@ namespace Jolt.Parsing
                             }
                             else if (stream.CurrentToken == ExpressionToken.At)
                             {
-                                yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace);
+                                yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.ArrowBody);
                             }
                             else
                             {
@@ -164,7 +164,7 @@ namespace Jolt.Parsing
                 }                
                 else if (stream.CurrentToken == ExpressionToken.At)
                 {
-                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Semicolon, ExpressionToken.Dot);
+                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Semicolon, ExpressionToken.Dot, ExpressionToken.ArrowBody);
 
                     if (stream.CurrentToken == ExpressionToken.Semicolon)
                     {
@@ -180,7 +180,7 @@ namespace Jolt.Parsing
                             throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedRangeVariableAfterSemicolonButFoundTokenInstead, stream.CurrentToken);
                         }
 
-                        yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot);
+                        yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot, ExpressionToken.ArrowBody);
                     }
                     
                     if (stream.CurrentToken == ExpressionToken.Whitespace)

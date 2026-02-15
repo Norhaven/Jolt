@@ -122,6 +122,10 @@ namespace Jolt.Parsing
 
                         return new PropertyDereferenceExpression(rangeVariable, dereferenceChain.Select(x => x.Value).ToArray());
                     }
+                    else if (reader.CurrentToken?.Category == ExpressionTokenCategory.StartOfPipedMethodCall && TryParseMethod(reader, context, out method, rangeVariable))
+                    {
+                        return method;
+                    }
                     else if (reader.CurrentToken?.Category == ExpressionTokenCategory.In)
                     {
                         reader.ConsumeCurrent();
@@ -363,7 +367,7 @@ namespace Jolt.Parsing
             return isParseSuccessful;
         }
 
-        private bool TryParseMethod(ExpressionReader reader, IJsonContext context, out MethodCallExpression? methodCall)
+        private bool TryParseMethod(ExpressionReader reader, IJsonContext context, out MethodCallExpression? methodCall, RangeVariableExpression? invocationSource = default)
         {
             methodCall = default;
 
@@ -383,7 +387,10 @@ namespace Jolt.Parsing
                 return false;
             }
 
-            var actualParameters = new List<Expression>();
+            // If the method call was initiated off of a range variable, we need to include that as the first parameter
+            // so it doesn't get lost in the shuffle and give us a parameter count mismatch.
+
+            var actualParameters = invocationSource != null ? new List<Expression> { invocationSource } : new List<Expression>();
 
             if (reader.CurrentToken.Category != ExpressionTokenCategory.CloseParenthesesGroup)
             {

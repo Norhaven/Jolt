@@ -318,6 +318,33 @@
           }
         }
       ]
+    },
+    {
+      "name": "Standard library methods will accept a piped method call off of a range variable",
+      "source": {
+        "stringArray": [ "this", "is", "a", "test" ]
+      },
+      "tests": [
+        {
+          "name": "Length works with a piped method call off of a range variable containing a string value",
+          "transformer": {
+            "resultArray": "#valueOf($.stringArray)->#select(@x: @x->#length())"
+          },
+          "result": {
+            "resultArray": [ 4, 2, 1, 4 ]
+          }
+        },
+        {
+          "name": "Select works with a piped method call off of a range variable containing a string array",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)",
+            "resultArray": "@x->#select(@y: @y->#length())"
+          },
+          "result": {
+            "resultArray": [ 4, 2, 1, 4 ]
+          }
+        }
+      ]
     }
   ]
 }
