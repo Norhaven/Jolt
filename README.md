@@ -306,6 +306,7 @@ Lastly, you can take advantage of pre-processing variables with a `using` block 
 # Library Methods
 
 This package comes with quite a few methods built into it to get you started, all of which are documented here and represent the most common things that you may want to do when transforming a JSON file. If you find that an opportunity for a new library method exists, please raise an issue and it will be considered. For more detail on the individual library methods, please see the Jolt wiki [over here.](https://github.com/Norhaven/Jolt/wiki)
+
 Additionally, keep in mind that you can pass range variables as parameters into nearly all standard library methods. You can also use the piped method syntax directly off of a range variable, so for example the following transformer represents a valid use of both of those concepts together.
 
 ```json
