@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Jolt.Json.Newtonsoft
@@ -134,6 +135,95 @@ namespace Jolt.Json.Newtonsoft
         public override int GetHashCode()
         {
             return _token.GetHashCode();
+        }
+
+        public virtual bool DeepEquals(IJsonToken otherToken, params IJsonEqualityComparer[] comparers)
+        {
+            var comparersByApplicableTypes = (comparers ?? Array.Empty<IJsonEqualityComparer>()).ToDictionary(x => x.ApplicableType, x => x);
+
+            var thisIsNull = _token is null || _token.Type == JTokenType.Null;
+            var otherIsNull = otherToken is null || otherToken.Type == JsonTokenType.Null;
+
+            if (thisIsNull && otherIsNull)
+            {
+                return true;
+            }
+
+            if (thisIsNull || otherIsNull)
+            {
+                return false;
+            }
+
+            if (_token is JValue && otherToken is IJsonValue val)
+            {
+                if (comparersByApplicableTypes.TryGetValue(typeof(IJsonValue), out var comparer))
+                {
+                    return comparer.AreEqual(this, otherToken);
+                }
+
+                object? actualValue = _token.Type switch
+                {
+                    JTokenType.Boolean => _token.Value<bool>(),
+                    JTokenType.Float => _token.Value<double>(),
+                    JTokenType.Integer => _token.Value<long>(),
+                    JTokenType.String => _token.Value<string>(),
+                    JTokenType.Null => null,
+                    _ => throw new InvalidOperationException($"Unexpected JTokenType '{_token.Type}' for value token")
+                };
+
+                return actualValue?.Equals(val.ToTypeOf<object>()) == true;
+            }
+            else if (this is IJsonObject && otherToken is IJsonObject obj)
+            {
+                if (comparersByApplicableTypes.TryGetValue(typeof(IJsonObject), out var comparer))
+                {
+                    return comparer.AreEqual(this, otherToken);
+                }
+
+                var thisProperties = ((IJsonObject)this).ToDictionary(p => p.PropertyName, p => p.Value);
+                var otherProperties = obj.ToDictionary(p => p.PropertyName, p => p.Value);
+
+                if (thisProperties.Count != otherProperties.Count)
+                {
+                    return false;
+                }
+
+                foreach (var property in thisProperties)
+                {
+                    if (!otherProperties.TryGetValue(property.Key, out var otherValue))
+                    {
+                        return false;
+                    }
+
+                    if (property.Value?.DeepEquals(otherValue, comparers) != true)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            else if (this is IJsonArray && otherToken is IJsonArray array)
+            {
+                var thisItems = AsArray();
+
+                if (thisItems.Length != array.Length)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < thisItems.Length; i++)
+                {
+                    if (thisItems[i]?.DeepEquals(array[i]) != true)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

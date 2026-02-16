@@ -370,15 +370,12 @@ namespace Jolt.Library
         {
             var resolved = value is RangeVariable variable ? variable.Value?.ToTypeOf<object>() : context.ResolveQueryPathIfPresent(value);
 
-            object? rounded = resolved switch
+            var resolvedValue = context.CreateTokenFrom(resolved);
+
+            object? rounded = resolvedValue switch
             {
-                long i => i,
-                double d when decimalPlaces is long i => Math.Round(d, (int)i),
-                double d when decimalPlaces is IJsonValue token && token.ValueType == JsonValueType.Number => Math.Round(d, token.ToTypeOf<int>()),
-                decimal d when decimalPlaces is long i => Math.Round(d, (int)i),
-                decimal d when decimalPlaces is IJsonValue token && token.ValueType == JsonValueType.Number => Math.Round(d, token.ToTypeOf<int>()),
-                IJsonValue token when token.ValueType == JsonValueType.Number && decimalPlaces is long i => Math.Round(token.ToTypeOf<decimal>(), (int)i),
-                IJsonValue token when token.ValueType == JsonValueType.Number && decimalPlaces is IJsonValue val && val.ValueType == JsonValueType.Number => Math.Round(token.ToTypeOf<decimal>(), val.ToTypeOf<int>()),
+                IJsonValue token when token.ValueType == JsonValueType.Number && decimalPlaces is long i => Math.Round(token.ToTypeOf<double>(), (int)i),
+                IJsonValue token when token.ValueType == JsonValueType.Number && decimalPlaces is IJsonValue val && val.ValueType == JsonValueType.Number => Math.Round(token.ToTypeOf<double>(), val.ToTypeOf<int>()),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to determine rounding for unsupported object types '{value?.GetType()}' and '{decimalPlaces?.GetType()}'")
             };
 
@@ -813,7 +810,7 @@ namespace Jolt.Library
             {
                 DereferencedPath pathValue when pathValue.MissingPaths.Length == 0 => pathValue.ObtainableToken,
                 DereferencedPath pathValue => throw context.CreateExecutionErrorFor<StandardLibraryMethods>(ExceptionCode.AttemptedToDereferenceMissingPath, pathValue.MissingPaths.Join('.'), pathValue.ObtainableToken.PropertyName),
-                string pathValue => context.ResolveQueryPathIfPresent(pathValue) as IJsonToken,
+                string pathValue => context.ResolveQueryPathIfPresent(pathValue) is IJsonToken pathToken ? pathToken : context.CreateTokenFrom(pathValue),
                 object obj => context.CreateTokenFrom(obj),
                 null => context.CreateTokenFrom(null)
             };

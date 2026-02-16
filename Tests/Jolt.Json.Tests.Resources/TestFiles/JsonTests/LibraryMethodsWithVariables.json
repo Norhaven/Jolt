@@ -18,7 +18,12 @@
         "stringText": "this is a test",
         "stringArray": [ "this", "is", "a", "test" ],
         "integerArray": [ 0, 5, 1, 9 ],
-        "emptyArray": []
+        "emptyArray": [],
+        "testObject": {
+          "first": "value",
+          "second": 2,
+          "third": [ 1, 2, 3 ]
+        }
       },
       "tests": [
         {
@@ -91,10 +96,10 @@
           "name": "RoundTo works with a range variable containing a double value",
           "transformer": {
             "@x": "#valueOf($.doubleValue)",
-            "resultValue": "#roundTo(@x, 1)"
+            "resultValue": "#roundTo(@x, 2)"
           },
           "result": {
-            "resultValue": 3.1
+            "resultValue": 3.14
           }
         },
         {
@@ -322,6 +327,22 @@
                 "False": 2
               }
             ]
+          }
+        },
+        {
+          "name": "SetAt/RemoveAt works with a range variable containing an object",
+          "transformer": {
+            "#using($.testObject as @x)->'resultObject'": [
+              "#setAt(@x.addedProperty, 'new value')",
+              "#removeAt(@x.first)"
+            ]
+          },
+          "result": {
+            "resultObject": {
+              "second": 2,
+              "third": [ 1, 2, 3 ],
+              "addedProperty": "new value"
+            }
           }
         }
       ]

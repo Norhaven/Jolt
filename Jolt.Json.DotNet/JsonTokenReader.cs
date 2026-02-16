@@ -102,6 +102,10 @@ namespace Jolt.Json.DotNet
             {
                 return JsonToken.FromObject(new Nodes.JsonArray(sequence.Select(x => Nodes.JsonNode.Parse(x.ToString())).ToArray()));
             }
+            else if (value is double d)
+            {
+                return JsonValue.Parse(d.ToString());
+            }
             
             return JsonToken.FromObject(JsonSerializer.SerializeToNode(value));
         }

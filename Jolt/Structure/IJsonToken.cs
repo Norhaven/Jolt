@@ -69,10 +69,17 @@ namespace Jolt.Structure
         T ToTypeOf<T>();
 
         /// <summary>
-        /// Converts the underleying structure to a .Net type specified by the given <see cref="Type"/> parameter.
+        /// Converts the underlying structure to a .Net type specified by the given <see cref="Type"/> parameter.
         /// </summary>
         /// <param name="type">The .Net type to convert to.</param>
         /// <returns>An instance of the underlying structure as a <see cref="Type"/>.</returns>
         object ToTypeOf(Type type);
+
+        /// <summary>
+        /// Compares this JSON structure to another for deep equality. This will compare the entire structure of both tokens, not just the immediate properties of the token itself.
+        /// </summary>
+        /// <param name="otherToken">The token to compare this token to.</param>
+        /// <returns>True if equal, false otherwise.</returns>
+        bool DeepEquals(IJsonToken otherToken, params IJsonEqualityComparer[] comparers);
     }
 }

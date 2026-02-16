@@ -179,9 +179,9 @@ namespace Jolt.Json.DotNet
 
         public override bool Equals(object obj)
         {
-            if (obj is JsonToken json)
+            if (obj is IJsonToken token)
             {
-                return Nodes.JsonNode.DeepEquals(_token, json._token);
+                return DeepEquals(token);
             }
 
             return base.Equals(obj);
@@ -190,6 +190,101 @@ namespace Jolt.Json.DotNet
         public override int GetHashCode()
         {
             return _token.GetHashCode();
+        }
+
+        public virtual bool DeepEquals(IJsonToken otherToken, params IJsonEqualityComparer[] comparers)
+        {
+            var comparersByApplicableTypes = (comparers ?? Array.Empty<IJsonEqualityComparer>()).ToDictionary(x => x.ApplicableType, x => x);
+
+            var thisIsNull = _token is null || _token.GetValueKind() == JsonValueKind.Null;
+            var otherIsNull = otherToken is null || otherToken.Type == JsonTokenType.Null;
+
+            if (thisIsNull && otherIsNull)
+            {
+                return true;
+            }
+
+            if (thisIsNull || otherIsNull)
+            {
+                return false;
+            }
+
+            if (this is IJsonValue && otherToken is IJsonValue val)
+            {
+                if (comparersByApplicableTypes.TryGetValue(typeof(IJsonValue), out var comparer))
+                {
+                    return comparer.AreEqual(this, otherToken);
+                }
+
+                object? actualValue = _token.GetValueKind() switch
+                {
+                    JsonValueKind.True => _token.GetValue<bool>(),
+                    JsonValueKind.False => _token.GetValue<bool>(),
+                    JsonValueKind.Number when _token.TryGetValue<long>(out var longVal) => longVal,
+                    JsonValueKind.Number when _token.TryGetValue<double>(out var doubleVal) => doubleVal,
+                    JsonValueKind.String => _token.GetValue<string>(),
+                    JsonValueKind.Null => null,
+                    _ => throw new InvalidOperationException($"Unexpected JsonValueKind '{_token.GetValueKind()}' for value token")
+                };
+
+                return actualValue?.Equals(val.ToTypeOf<object>()) == true;
+            }
+            else if (this is IJsonObject && otherToken is IJsonObject obj)
+            {
+                if (comparersByApplicableTypes.TryGetValue(typeof(IJsonObject), out var comparer))
+                {
+                    return comparer.AreEqual(this, otherToken);
+                }
+
+                var thisProperties = ((IJsonObject)this).ToDictionary(p => p.PropertyName, p => p.Value);
+                var otherProperties = obj.ToDictionary(p => p.PropertyName, p => p.Value);
+
+                if (thisProperties.Count != otherProperties.Count)
+                {
+                    return false;
+                }
+
+                foreach (var property in thisProperties)
+                {
+                    if (!otherProperties.TryGetValue(property.Key, out var otherValue))
+                    {
+                        return false;
+                    }
+
+                    if (property.Value is null && otherValue is null)
+                    {
+                        return true;
+                    }
+
+                    if (property.Value?.DeepEquals(otherValue, comparers) != true)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            else if (this is IJsonArray && otherToken is IJsonArray array)
+            {
+                var thisItems = AsArray();
+
+                if (thisItems.Length != array.Length)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < thisItems.Length; i++)
+                {
+                    if (thisItems[i]?.DeepEquals(array[i], comparers) != true)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

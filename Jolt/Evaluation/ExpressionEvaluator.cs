@@ -556,7 +556,7 @@ namespace Jolt.Evaluation
                 resultValue = context.JsonContext.JsonTokenReader.CreateArrayFrom(tokenSequence);
             }
             
-                if (context.Mode == EvaluationMode.PropertyName)
+            if (context.Mode == EvaluationMode.PropertyName)
             {
                 // The method may have been a value generator, meaning that evaluating the property name will
                 // also cause the value for that property to be generated (e.g. the loop method) but if we're
