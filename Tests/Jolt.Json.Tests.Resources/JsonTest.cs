@@ -231,7 +231,7 @@ namespace Jolt.Json.Tests.Resources
 
                     if (!isEqual)
                     {
-                        throw new InvalidOperationException($"Expected JSON result was not present!\nExpected: {test.Result}\nActual: {result}");
+                        throw new InvalidOperationException($"Test '{test.Name}' failed, expected JSON result was not present!\nExpected: {test.Result}\nActual: {result}");
                     }
                 }
                 catch (JoltException ex)
