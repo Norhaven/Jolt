@@ -379,7 +379,7 @@ That's it! You can pass in your source JSON document to the `Transform` method c
 
 # How To Contribute To This Project
 
-If you happen to have the desire to help out with this, there are several ways to do so that I'd recommend.
+If you happen to have the desire to help out with this (and I would love it if you do), there are several ways to do so that I'd recommend.
 
 ## Raising Issues
 
