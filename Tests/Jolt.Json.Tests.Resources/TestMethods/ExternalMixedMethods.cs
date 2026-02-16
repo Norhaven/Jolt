@@ -8,6 +8,12 @@ namespace Jolt.Json.Tests.Resources.TestMethods
 {
     public class ExternalMixedMethods
     {
+        public sealed class ComplexObject
+        {
+            public string Name { get; set; }
+            public int Id { get; set; }
+        }
+
         private readonly StringBuilder _builder = new StringBuilder();
 
         [JoltExternalMethod("aliasedAppend")]
@@ -108,5 +114,7 @@ namespace Jolt.Json.Tests.Resources.TestMethods
         [JoltExternalMethod("jsonArrayPassthrough")]
         public static IJsonArray PassJsonArrayThroughAndReturn(IJsonArray array) => array;
 
+        [JoltExternalMethod("returnsComplexObject")]
+        public static ComplexObject ReturnsComplexObject() => new ComplexObject { Name = "Test", Id = 123 };
     }
 }

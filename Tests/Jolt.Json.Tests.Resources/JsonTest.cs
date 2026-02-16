@@ -64,8 +64,9 @@ namespace Jolt.Json.Tests.Resources
                                 var tokenParts = tokenString.Split(new[] { '.', 'e', 'E' }, StringSplitOptions.RemoveEmptyEntries);
                                 var otherTokenParts = otherString.Split(new[] { '.', 'e', 'E' }, StringSplitOptions.RemoveEmptyEntries);
 
-                                // The number before the decimal point or exponent should be the same regardless of how the JSON parser might choose to represent it,
-                                // so if those don't match we can just fail immediately without worrying about truncation.
+                                // The number before the decimal point or exponent should be the same regardless of how the JSON parser
+                                // might choose to represent it, so if those don't match we can just fail immediately without worrying
+                                // about truncation.
 
                                 if (tokenParts[0] != otherTokenParts[0])
                                 {
@@ -74,8 +75,9 @@ namespace Jolt.Json.Tests.Resources
 
                                 if (tokenParts.Length != otherTokenParts.Length)
                                 {
-                                    // The number may actually be a whole number but due to the way the JSON parser works it might be represented with a decimal point
-                                    // and some number of zeros after it, so we should consider those equal as well since they are mathematically equivalent.
+                                    // The number may actually be a whole number but due to the way the JSON parser works it might be represented
+                                    // with a decimal point and some number of zeros after it, so we should consider those equal as well since they
+                                    // are mathematically equivalent.
 
                                     if (tokenParts.Length == 1 && otherTokenParts[1].All(x => x == '0'))
                                     {

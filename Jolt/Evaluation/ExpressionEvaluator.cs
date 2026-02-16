@@ -347,10 +347,10 @@ namespace Jolt.Evaluation
             // understand that case as well.
 
             var numberOfFormalParameters = call.Signature.Parameters.Length;
-            var hasEvaluationContext = call.Signature.Parameters[^1].Type == typeof(EvaluationContext);
+            var hasEvaluationContext = numberOfFormalParameters > 0 && call.Signature.Parameters[^1].Type == typeof(EvaluationContext);
             var lastParameterIndexFromEnd = hasEvaluationContext && numberOfFormalParameters > 1 ? numberOfFormalParameters - 2 : numberOfFormalParameters - 1;
-            var lastParameterIsVariadic = call.Signature.Parameters[lastParameterIndexFromEnd].IsVariadic;
-            var lastParameterIsOptional = call.Signature.Parameters[lastParameterIndexFromEnd].IsOptional;
+            var lastParameterIsVariadic = numberOfFormalParameters > 0 && call.Signature.Parameters[lastParameterIndexFromEnd].IsVariadic;
+            var lastParameterIsOptional = numberOfFormalParameters > 0 && call.Signature.Parameters[lastParameterIndexFromEnd].IsOptional;
 
             for(var i = 0; i < call.ParameterValues.Length; i++)
             {

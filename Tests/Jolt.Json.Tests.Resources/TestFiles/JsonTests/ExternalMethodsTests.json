@@ -174,7 +174,8 @@
             "doubleResult": "#doublePassthrough(@doubleValue)",
             "booleanResult": "#booleanPassthrough(@booleanValue)",
             "jsonObjectResult": "#jsonObjectPassthrough(@jsonObject)",
-            "jsonArrayResult": "#jsonArrayPassthrough(@jsonArray)"
+            "jsonArrayResult": "#jsonArrayPassthrough(@jsonArray)",
+            "complexObject": "#returnsComplexObject()"
           },
           "result": {
             "stringResult": "test",
@@ -184,7 +185,11 @@
             "jsonObjectResult": {
               "text": "test"
             },
-            "jsonArrayResult": [ 1, 2, 3 ]
+            "jsonArrayResult": [ 1, 2, 3 ],
+            "complexObject": {
+              "Id": 123,
+              "Name": "Test"
+            }
           }
         }
       ]
