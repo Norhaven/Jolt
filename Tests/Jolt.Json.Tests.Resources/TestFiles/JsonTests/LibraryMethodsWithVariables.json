@@ -344,6 +344,33 @@
               "addedProperty": "new value"
             }
           }
+        },
+        {
+          "name": "SetAt/RemoveAt works with a range variable containing a root object",
+          "transformer": {
+            "#using($ as @x)->'newObject'": [
+              "#setAt(@x.addedProperty, 'new value')",
+              "#removeAt(@x.testObject.first)"
+            ]
+          },
+          "result": {
+            "newObject": {
+              "integerValue": 1,
+              "doubleValue": 3.1415,
+              "stringValue": "3",
+              "booleanValue": true,
+              "booleanStringValue": "true",
+              "stringText": "this is a test",
+              "stringArray": [ "this", "is", "a", "test" ],
+              "integerArray": [ 0, 5, 1, 9 ],
+              "emptyArray": [],
+              "testObject": {
+                "second": 2,
+                "third": [ 1, 2, 3 ]
+              },
+              "addedProperty": "new value"
+            }
+          }
         }
       ]
     },
