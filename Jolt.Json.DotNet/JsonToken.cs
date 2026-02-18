@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using Nodes = System.Text.Json.Nodes;
 using JsonValueKind = System.Text.Json.JsonValueKind;
+using NamingPolicy = System.Text.Json.JsonNamingPolicy;
 using System.Linq;
 using System.Xml.Linq;
 using Json.Path;
@@ -147,7 +148,7 @@ namespace Jolt.Json.DotNet
                         new JoltJsonObjectConverter(),
                         new JoltJsonArrayConverter()
                     },
-                    PropertyNameCaseInsensitive = true
+                    PropertyNamingPolicy = NamingPolicy.CamelCase
                 };
 
                 options.Converters.Add(new JoltJsonObjectConverter());
