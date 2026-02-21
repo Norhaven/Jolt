@@ -286,7 +286,7 @@ And that will create the resulting JSON:
     "arrayElement": [ 9 ]
 }
 ```
-Range expressions immediately follow a variable and are enclosed in square brackets `[` and `]`. They behave much the same as C# range expressions that you may already be used to, where a literal integer indicates an offset from the beginning of the string or array and the caret `^` indicates an index that is offset from the end of it. It's important to note that there are some standard library methods that take a range as a parameter, such as `substring` or `slice`, and in those cases you don't need to use square brackets and can specify the range expression as a first class citizen of the method call.
+Range expressions immediately follow a variable and are enclosed in square brackets `[` and `]`. They behave much the same as C# range expressions that you may already be used to, where a literal integer indicates an offset from the beginning of the string or array and the caret `^` indicates an index that is offset from the end of it. It's important to note that there are some standard library methods that take a range as a parameter, such as `substring` or `slice`, and in those cases you don't need to use square brackets and can specify the range expression as a first class citizen of the method call parameter, such as `"#substring($.some.text, ..2)` or `#slice($.some.array, ^3..)`.
 
 ### Range Variables: Using Blocks and Statements
 
