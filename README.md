@@ -266,9 +266,11 @@ We can use the following transformer to obtain subsections of the string and arr
     "textStart": "@someText[..2]",
     "textMiddle": "@someText[1..3]",
     "textEnd": "@someText[^2..]",
+    "textCharacter": "@someText[^1]",
     "arrayStart": "@someNumbers[..3]",
     "arrayMiddle": "@someNumbers[2..4]",
-    "arrayEnd": "@someNumbers[^3..]"  
+    "arrayEnd": "@someNumbers[^3..]",
+    "arrayElement": "@someNumbers[1]"  
 }
 ```
 And that will create the resulting JSON:
@@ -277,12 +279,14 @@ And that will create the resulting JSON:
     "textStart": "th",
     "textMiddle": "hi",
     "textEnd": "le",
+    "textCharacter": "e",
     "arrayStart": [ 1, 9, 3 ],
     "arrayMiddle": [ 3, 2 ],
-    "arrayEnd": [ 3, 2, 6 ]
+    "arrayEnd": [ 3, 2, 6 ],
+    "arrayElement": [ 9 ]
 }
 ```
-Range expressions behave much the same as C# range expressions that you may already be used to, where a literal integer indicates an offset from the beginning of the string or array and the caret `^` indicates an index that is offset from the end of it.
+Range expressions immediately follow a variable and are enclosed in square brackets `[` and `]` and they behave much the same as C# range expressions that you may already be used to, where a literal integer indicates an offset from the beginning of the string or array and the caret `^` indicates an index that is offset from the end of it. It's important to note that there are some standard library methods that take a range as a parameter, such as `substring` or `slice`, and in those cases you don't need to use square brackets and can specify the range expression as a first class citizen of the method call.
 
 ### Range Variables: Using Blocks and Statements
 
