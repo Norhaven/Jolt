@@ -66,6 +66,10 @@ namespace Jolt.Parsing
         [Description("the 'in' keyword")]
         In,
         [Description("the 'as' keyword")]
-        As
+        As,
+        [Description("the start of an indexer group")]
+        StartOfIndexer,
+        [Description("the end of an indexer group")]
+        EndOfIndexer
     }
 }

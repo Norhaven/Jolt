@@ -23,6 +23,9 @@ namespace Jolt.Json.Tests.Cases.E2E.Json
         {
         }
 
+        [JsonTestDefinition("IndexingWithVariables")]
+        public void IndexingWithVariablesTests() { }
+
         [JsonTestDefinition("LibraryMethodsWithVariables")]
         public void LibraryMethodsWithVariablesTests() { }
 

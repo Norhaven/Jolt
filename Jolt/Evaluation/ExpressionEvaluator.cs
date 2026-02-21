@@ -1,6 +1,7 @@
 ﻿using Jolt.Exceptions;
 using Jolt.Expressions;
 using Jolt.Extensions;
+using Jolt.Library;
 using Jolt.Parsing;
 using Jolt.Structure;
 using System;
@@ -57,6 +58,7 @@ namespace Jolt.Evaluation
                 RangeExpression range => UnwrapRange(range, context),
                 RangeVariableExpression range => UnwrapRangeVariable(range, context),
                 PropertyDereferenceExpression dereference => UnwrapDereferenceChain(dereference, context),
+                SlicedVariableExpression slicedVariable => UnwrapSlicedVariable(slicedVariable, context, isRootExpression),
                 EnumerateAsVariableExpression enumerate => UnwrapEnumeration(enumerate, context),
                 VariableAliasExpression variable => UnwrapVariableAlias(variable, context),
                 LiteralExpression literal => UnwrapLiteralValue(literal, context),
@@ -229,6 +231,45 @@ namespace Jolt.Evaluation
             }
 
             return variable;
+        }
+
+        private object? UnwrapSlicedVariable(SlicedVariableExpression slicedVariable, EvaluationContext context, bool isRootExpression)
+        {
+            var variable = UnwrapRangeVariable(slicedVariable.Variable, context);
+
+            object? value = variable.Value switch
+            {
+                IJsonValue val when val.ValueType == JsonValueType.String => val.ToTypeOf<string>(),
+                IJsonValue val when val.ValueType == JsonValueType.Null => null,
+                IJsonArray array => array,
+                _ => null
+            };
+            
+            if (value is null)
+            {
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.AttemptedToIndexOrSliceNullVariableValue, variable.Name);
+            }
+
+            var range = UnwrapRange(slicedVariable.Range, context);
+
+            if (value is string s)
+            {
+                var method = context.JsonContext.ReferenceResolver.GetMethod(nameof(StandardLibraryMethods.Substring).ToLowerInvariant());
+                var call = new MethodCallExpression(method, new Expression[] { slicedVariable.Variable, slicedVariable.Range });
+
+                return ExecuteMethodCall(call, context, isRootExpression);
+            }
+            else if (value is IJsonArray array)
+            {
+                var method = context.JsonContext.ReferenceResolver.GetMethod(nameof(StandardLibraryMethods.Slice).ToLowerInvariant());
+                var call = new MethodCallExpression(method, new Expression[] { slicedVariable.Variable, slicedVariable.Range });
+
+                return ExecuteMethodCall(call, context, isRootExpression);
+            }
+            else
+            {
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.AttemptedToIndexOrSliceNonStringAndNonArrayValue, value.GetType().Name);
+            }
         }
 
         private DereferencedPath UnwrapDereferenceChain(PropertyDereferenceExpression dereference, EvaluationContext context)

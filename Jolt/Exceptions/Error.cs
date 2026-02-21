@@ -31,7 +31,11 @@ namespace Jolt.Exceptions
             [ExceptionCode.ExpectedAsKeywordButFoundUnexpectedToken] = "Expected 'as' keyword but found '{0}'",
             [ExceptionCode.UnableToParseVariableAlias] = "Unable to parse variable alias",
             [ExceptionCode.ExpectedZeroOrOneComparisonSymbolsInExpressionButFoundMoreThanOne] = "Expected zero or one comparison operators in expression but found '{0}' instead",
-            [ExceptionCode.ExpectedNumericLiteralFollowingNegativeSign] = "Expected numeric literal following negative sign but found '{0}' instead"
+            [ExceptionCode.ExpectedNumericLiteralFollowingNegativeSign] = "Expected numeric literal following negative sign but found '{0}' instead",
+            [ExceptionCode.UnableToParseIndexerExpressionAtPosition] = "Unable to parse indexer expression at position '{0}'",
+            [ExceptionCode.UnableToCloseIndexerExpressionAtPosition] = "Unable to close indexer expression at position '{0}'",
+            [ExceptionCode.UnableToIndexOrSliceVariablePair] = "Unable to index or slice a variable pair, please select either '{0}' or '{1}' but not both together",
+            [ExceptionCode.ExpectedIndexOrSliceRangeButFoundOtherExpression] = "Expected an index or slice range but found other expression of type '{0}' instead"
         };
 
         private static readonly Dictionary<ExceptionCode, string> _resolutionErrorsByCode = new Dictionary<ExceptionCode, string>
@@ -90,7 +94,9 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToConvertJsonArrayToRequiredParameterType] = "Call to external method '{0}' was unable to convert parameter '{1}' from JSON array to required parameter type",
             [ExceptionCode.UnableToConvertToCurrentParameterEnumerableType] = "Call to external method '{0}' was unable to convert parameter '{1}' to the requested IEnumerable<> type",
             [ExceptionCode.UnableToConvertLambdaToRequiredDelegateParameterType] = "Call to external method '{0}' was unable to convert lambda parameter '{1}' to required delegate type '{2}'",
-            [ExceptionCode.UnableToConvertToSupportedEnumerableType] = "Call to external method '{0}' was unable to convert returned IEnumerable sequence to a known type"
+            [ExceptionCode.UnableToConvertToSupportedEnumerableType] = "Call to external method '{0}' was unable to convert returned IEnumerable sequence to a known type",
+            [ExceptionCode.AttemptedToIndexOrSliceNullVariableValue] = "Attempted to index or slice into a null value stored in variable '{0}'",
+            [ExceptionCode.AttemptedToIndexOrSliceNonStringAndNonArrayValue] = "Attempted to index or slice a non-string and non-array value of type '{0}'"
         };
 
         public static JoltException CreateParsingErrorFrom(ExceptionCode code, JoltException? innerException, params object[] parameters)

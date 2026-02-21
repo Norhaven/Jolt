@@ -249,7 +249,42 @@ Using the previous transform, the output would look like:
 }
 ```
 
-### Range Variables: Using blocks and statements
+### Range Variables: Indexing and Slicing
+
+You are also welcome to use a range expression to index into a string or array at a specific point or range as shorthand for calling the `substring` or `slice` library methods. Let's say we have the following source JSON:
+```json
+{
+    "text": "this is an example",
+    "numbers": [ 1, 9, 3, 2, 6 ]
+}
+```
+We can use the following transformer to obtain subsections of the string and array.
+```json
+{
+    "@someText": "#valueOf($.text)",
+    "@someNumbers": "#valueOf($.numbers)",
+    "textStart": "@someText[..2]",
+    "textMiddle": "@someText[1..3]",
+    "textEnd": "@someText[^2..]",
+    "arrayStart": "@someNumbers[..3]",
+    "arrayMiddle": "@someNumbers[2..4]",
+    "arrayEnd": "@someNumbers[^3..]"  
+}
+```
+And that will create the resulting JSON:
+```json
+{
+    "textStart": "th",
+    "textMiddle": "hi",
+    "textEnd": "le",
+    "arrayStart": [ 1, 9, 3 ],
+    "arrayMiddle": [ 3, 2 ],
+    "arrayEnd": [ 3, 2, 6 ]
+}
+```
+Range expressions behave much the same as C# range expressions that you may already be used to, where a literal integer indicates an offset from the beginning of the string or array and the caret `^` indicates an index that is offset from the end of it.
+
+### Range Variables: Using Blocks and Statements
 
 A final use for range variables is in the case where you have a path or variable that needs direct modification to include, modify, or exclude specific JSON nodes. For example, you might not know the entire shape of the incoming JSON document but you know that it needs to stay the same except for a few changes, or perhaps you might want to replicate a few parts of the source document within the transformer output along with some tweaks to its data and/or structure. This would mean that you can't necessarily stand up an entire transformer that manually contains every node ahead of time. Let's take a look at a way you could approach this using the following source JSON.
 ```json
@@ -327,7 +362,8 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | nameOf | Returns the name of the property being evaluated by the provided loop variable | `"#nameOf(@x)": "#valueOf($.some.path)"` | Property Name
 | indexOf | Returns the zero-based index value of the first occurrence of the provided value | `#indexOf(#valueOf($.some.path), 'some string')` | Property Value
 | length | Returns the length of a string or array value | `#length($.some.path)` | Property Value
-| substring | Returns the string value that falls within the provided range in a given string | `#substring(1..2)` | Property Value
+| substring | Returns the string value that falls within the provided range in a given string | `#substring($.some.path, 1..2)` | Property Value
+| slice | Returns the array slice that falls within the provided range in a given array | `#slice($.some.path, 1..2)` | Property Value
 | groupBy | Returns a JSON object that represents the grouping of an array's contents by its individual property values | `#groupBy($.some.path, @x: @x.propertyName)` | Property Value
 | summarizeWith | Returns an object array that's the result of applying an aggregate method to a grouped array's results | `#summarizeWith($.some.group, @seq: #someAggregateMethod(@seq))` | Property Value
 | orderBy | Returns an array in ascending order as determined by its individual property values | `#orderBy($.some.path, @x: @x.propertyName)` | Property Value

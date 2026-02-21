@@ -111,6 +111,12 @@ namespace Jolt.Parsing
                 {
                     yield return TokenFromCurrent(stream, ExpressionTokenCategory.Division);
                 }
+                else if (stream.CurrentToken == ExpressionToken.OpenSquareBracket)
+                {
+                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfIndexer);
+                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeExpression, ExpressionToken.CloseSquareBracket);
+                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.EndOfIndexer);
+                }
                 else if (stream.CurrentToken == ExpressionToken.ArrowBody || stream.CurrentToken == ExpressionToken.Minus)
                 {
                     var minusToken = TokenFromCurrent(stream, ExpressionTokenCategory.Subtraction);
@@ -164,7 +170,7 @@ namespace Jolt.Parsing
                 }                
                 else if (stream.CurrentToken == ExpressionToken.At)
                 {
-                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Semicolon, ExpressionToken.Dot, ExpressionToken.ArrowBody);
+                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Semicolon, ExpressionToken.Dot, ExpressionToken.ArrowBody, ExpressionToken.OpenSquareBracket);
 
                     if (stream.CurrentToken == ExpressionToken.Semicolon)
                     {
@@ -174,6 +180,10 @@ namespace Jolt.Parsing
                         {
                             stream.ConsumeCurrent();
                         }
+
+                        // The only use case we have for a semicolon after a range variable is in reading
+                        // off the current loop iteration index in a foreach loop, so the second variable is
+                        // not allowed to be indexed/sliced. Don't check for a square bracket here to avoid that.
 
                         if (stream.CurrentToken != ExpressionToken.At)
                         {
@@ -201,7 +211,7 @@ namespace Jolt.Parsing
 
                             yield return token;
                         }
-                    }
+                    }                    
                     else
                     {
                         while (stream.CurrentToken == ExpressionToken.Dot)

@@ -100,7 +100,7 @@ namespace Jolt.Json.DotNet
             }
             else if (value is IEnumerable<IJsonToken> sequence)
             {
-                return JsonToken.FromObject(new Nodes.JsonArray(sequence.Select(x => Nodes.JsonNode.Parse(x.ToString())).ToArray()));
+                return CreateArrayFrom(sequence);
             }
             else if (value is double d)
             {

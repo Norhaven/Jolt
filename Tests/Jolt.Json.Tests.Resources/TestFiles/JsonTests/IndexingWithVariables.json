@@ -1,0 +1,121 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "possibleExceptionCodes": {
+  },
+  "testGroups": [
+    {
+      "name": "Indexing works with range variables",
+      "source": {
+        "integerValue": 1,
+        "doubleValue": 3.1415,
+        "stringValue": "3",
+        "booleanValue": true,
+        "booleanStringValue": "true",
+        "stringText": "this is a test",
+        "stringArray": [ "this", "is", "a", "test" ],
+        "integerArray": [ 0, 5, 1, 9 ],
+        "emptyArray": [],
+        "testObject": {
+          "first": "value",
+          "second": 2,
+          "third": [ 1, 2, 3 ]
+        },
+        "text": "this is an example",
+        "numbers": [ 1, 9, 3, 2, 6 ]
+      },
+      "tests": [
+        {
+          "name": "Indexer into a range variable containing a string value works",
+          "transformer": {
+            "@x": "#valueOf($.stringText)",
+            "resultString": "@x[0]"
+          },
+          "result": {
+            "resultString": "t"
+          }
+        },
+        {
+          "name": "Indexer from the end into a range variable containing a string value works",
+          "transformer": {
+            "@x": "#valueOf($.stringText)",
+            "resultString": "@x[^2]"
+          },
+          "result": {
+            "resultString": "s"
+          }
+        },
+        {
+          "name": "Indexer slice into a range variable containing a string value creates substring",
+          "transformer": {
+            "@x": "#valueOf($.stringText)",
+            "resultString": "@x[..2]"
+          },
+          "result": {
+            "resultString": "th"
+          }
+        },
+        {
+          "name": "Indexer slice into a range variable containing a string array creates slice",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)",
+            "resultArray": "@x[..2]"
+          },
+          "result": {
+            "resultArray": [ "this", "is" ]
+          }
+        },
+        {
+          "name": "Indexer slice into a range variable containing an integer array creates slice",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "@x[1..3]"
+          },
+          "result": {
+            "resultArray": [ 5, 1 ]
+          }
+        },
+        {
+          "name": "Indexer slice into the middle to the end of a range variable containing an integer array creates slice",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "@x[2..]"
+          },
+          "result": {
+            "resultArray": [ 1, 9 ]
+          }
+        },
+        {
+          "name": "Indexer slice into the middle to end offset of a range variable containing an integer array creates slice",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "@x[1..^1]"
+          },
+          "result": {
+            "resultArray": [ 5, 1 ]
+          }
+        },
+        {
+          "name": "Indexer substring and slice all work as expected",
+          "transformer": {
+            "@someText": "#valueOf($.text)",
+            "@someNumbers": "#valueOf($.numbers)",
+            "textStart": "@someText[..2]",
+            "textMiddle": "@someText[1..3]",
+            "textEnd": "@someText[^2..]",
+            "arrayStart": "@someNumbers[..3]",
+            "arrayMiddle": "@someNumbers[2..4]",
+            "arrayEnd": "@someNumbers[^3..]"
+          },
+          "result": {
+            "textStart": "th",
+            "textMiddle": "hi",
+            "textEnd": "le",
+            "arrayStart": [ 1, 9, 3 ],
+            "arrayMiddle": [ 3, 2 ],
+            "arrayEnd": [ 3, 2, 6 ]
+          }
+        }
+      ]
+    }
+  ]
+}

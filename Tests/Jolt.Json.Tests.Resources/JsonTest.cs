@@ -197,8 +197,7 @@ namespace Jolt.Json.Tests.Resources
                     return expectedCode;
                 }
 
-                var builtContext = context
-                    .UseTransformer(test.Transformer.ToString());
+                var builtContext = context.UseTransformer(test.Transformer.ToString());
 
                 if (!string.IsNullOrWhiteSpace(test.ExternalMethodSource))
                 {

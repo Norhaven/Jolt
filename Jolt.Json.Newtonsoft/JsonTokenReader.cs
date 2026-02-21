@@ -1,5 +1,6 @@
 ﻿using Jolt.Exceptions;
 using Jolt.Structure;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -97,7 +98,7 @@ namespace Jolt.Json.Newtonsoft
             }
             else if (value is IEnumerable<IJsonToken> sequence)
             {
-                return JsonToken.FromObject(JToken.FromObject(sequence.Select(x => JToken.Parse(x.ToString()))));
+                return CreateArrayFrom(sequence);
             }
             
             return JsonToken.FromObject(JToken.FromObject(value));

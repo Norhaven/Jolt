@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
@@ -288,6 +289,22 @@ namespace Jolt.Library
                 string text => text.Substring(range),
                 IJsonValue token when token.AsValue().ValueType == JsonValueType.String => AsString(token).Substring(range),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get substring for unsupported object type '{value?.GetType()}'")
+            };
+
+            return context.CreateTokenFrom(content);
+        }
+
+        [JoltLibraryMethod("slice")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? Slice(object? value, Range range, EvaluationContext context)
+        {
+            var resolved = value is RangeVariable variable ? variable.Value?.ToTypeOf<IJsonArray>() : context.ResolveQueryPathIfPresent(value);
+
+            var content = resolved switch
+            {
+                object[] array => RuntimeHelpers.GetSubArray(array, range),
+                IJsonArray array => RuntimeHelpers.GetSubArray(array.ToArray(), range),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to slice unsupported object type '{value?.GetType()}'")
             };
 
             return context.CreateTokenFrom(content);

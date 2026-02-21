@@ -70,7 +70,7 @@ namespace Jolt.Parsing
                     }
 
                     return parenthesizedExpression;
-                }
+                }                
                 else if (TryParseMethod(reader, context, out var method))
                 {
                     return method;
@@ -147,6 +147,32 @@ namespace Jolt.Parsing
                         }
 
                         return new VariableAliasExpression(rangeVariable, aliasVariable);
+                    }
+                    else if (reader.CurrentToken?.Category == ExpressionTokenCategory.StartOfIndexer)
+                    {
+                        if (rangeVariable is RangeVariablePairExpression pair)
+                        {
+                            throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToIndexOrSliceVariablePair, rangeVariable.Name, pair.SecondVariable.Name);
+                        }
+
+                        reader.ConsumeCurrent();
+
+                        if (!TryParseRangeExpression(reader, context, out var indexerExpression, isIndexRange: true))
+                        {
+                            throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToParseIndexerExpressionAtPosition, reader.Position);
+                        }
+
+                        if (!reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.EndOfIndexer))
+                        {
+                            throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToCloseIndexerExpressionAtPosition, reader.Position);
+                        }
+
+                        if (indexerExpression is RangeExpression parsedRange)
+                        {
+                            return new SlicedVariableExpression(rangeVariable, parsedRange);
+                        }
+
+                        throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.ExpectedIndexOrSliceRangeButFoundOtherExpression, indexerExpression.GetType().Name);
                     }
 
                     return rangeVariable;
@@ -258,22 +284,46 @@ namespace Jolt.Parsing
             return true;
         }
 
-        private bool TryParseRangeExpression(ExpressionReader reader, IJsonContext context, out RangeExpression? range)
+        private bool TryParseRangeExpression(ExpressionReader reader, IJsonContext context, out RangeExpression? range, bool isIndexRange = false)
         {
             const string RangeDots = "..";
 
             range = default;
             
-            if (reader.CurrentToken.Category != ExpressionTokenCategory.NumericLiteral)
+            if (reader.CurrentToken.Category != ExpressionTokenCategory.NumericLiteral && reader.CurrentToken.Category != ExpressionTokenCategory.RangeExpression)
             {
                 return false;
             }
 
             var value = reader.CurrentToken.Value;
 
-            if (!value.Contains(RangeDots) && !value.Contains(ExpressionToken.RangeEndIndexer))
+            if (!value.Contains(RangeDots))
             {
-                return false;
+                // Make sure that this isn't just a numeric literal we encountered and that it's
+                // actually intended to be a range.
+
+                if (!isIndexRange)
+                {
+                    return false;
+                }
+
+                // This is just a single index, not a range, so we can treat it as a range with a single start and end.
+
+                if (value.Contains(ExpressionToken.RangeEndIndexer))
+                {
+                    value = value.Replace(ExpressionToken.RangeEndIndexer, ' ').Trim();
+                    var intValue = int.Parse(value);
+                    range = new RangeExpression(new Index(intValue, fromEnd: true), new Index(intValue - 1, fromEnd: true));
+                }
+                else
+                {
+                    var intValue = int.Parse(value);
+                    range = new RangeExpression(intValue, intValue + 1);
+                }
+
+                reader.ConsumeCurrent();
+
+                return true;
             }
 
             var pieces = value.Split(RangeDots, StringSplitOptions.RemoveEmptyEntries);

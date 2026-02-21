@@ -59,6 +59,14 @@ namespace Jolt.Exceptions
         ExpectedZeroOrOneComparisonSymbolsInExpressionButFoundMoreThanOne,
         [Description("JLT124")]
         ExpectedNumericLiteralFollowingNegativeSign,
+        [Description("JLT125")]
+        UnableToParseIndexerExpressionAtPosition,
+        [Description("JLT126")]
+        UnableToCloseIndexerExpressionAtPosition,
+        [Description("JLT127")]
+        UnableToIndexOrSliceVariablePair,
+        [Description("JLT128")]
+        ExpectedIndexOrSliceRangeButFoundOtherExpression,
 
         // Resolution
 
@@ -162,6 +170,10 @@ namespace Jolt.Exceptions
         [Description("JLT546")]
         UnableToConvertLambdaToRequiredDelegateParameterType,
         [Description("JLT547")]
-        UnableToConvertToSupportedEnumerableType
+        UnableToConvertToSupportedEnumerableType,
+        [Description("JLT548")]
+        AttemptedToIndexOrSliceNullVariableValue,
+        [Description("JLT549")]
+        AttemptedToIndexOrSliceNonStringAndNonArrayValue
     }
 }
