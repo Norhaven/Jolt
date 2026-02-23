@@ -120,6 +120,26 @@
           }
         }
       ]
+    },
+    {
+      "name": "Indexing works with method return values",
+      "source": {
+        "text": "this is an example",
+        "numbers": [ 1, 9, 3, 2, 6 ]
+      },
+      "tests": [
+        {
+            "name": "Indexer substring and slice all work as expected",
+            "transformer": {
+              "textSubstring": "#valueOf($.text)[..2]",
+              "arraySlice": "#valueOf($.numbers)[..3]"
+            },
+            "result": {
+              "textSubstring": "th",
+              "arraySlice": [ 1, 9, 3 ]
+            }          
+        }
+      ]
     }
   ]
 }

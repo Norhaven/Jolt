@@ -244,31 +244,47 @@ namespace Jolt.Evaluation
                 IJsonArray array => array,
                 _ => null
             };
-            
+
             if (value is null)
             {
                 throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.AttemptedToIndexOrSliceNullVariableValue, variable.Name);
             }
 
-            var range = UnwrapRange(slicedVariable.Range, context);
+            return IndexOrSliceWithRange(slicedVariable.Range, variable.Value, context, isRootExpression);
+        }
 
-            if (value is string s)
+        private object? IndexOrSliceWithRange(RangeExpression indexOrSliceRange, IJsonToken value, EvaluationContext context, bool isRootExpression)
+        {
+            var closure = context.Scope.CreateClosureOver(value);
+
+            var variableName = Guid.NewGuid().ToString();
+
+            closure.AddOrUpdateVariable(new RangeVariable(variableName, value));
+
+            try
             {
-                var method = context.JsonContext.ReferenceResolver.GetMethod(nameof(StandardLibraryMethods.Substring).ToLowerInvariant());
-                var call = new MethodCallExpression(method, new Expression[] { slicedVariable.Variable, slicedVariable.Range });
+                if (value is IJsonValue val && val.IsString())
+                {
+                    var method = context.JsonContext.ReferenceResolver.GetMethod(nameof(StandardLibraryMethods.Substring).ToLowerInvariant());
+                    var call = new MethodCallExpression(method, new Expression[] { new RangeVariableExpression(variableName), indexOrSliceRange });
 
-                return ExecuteMethodCall(call, context, isRootExpression);
+                    return ExecuteMethodCall(call, context, isRootExpression);
+                }
+                else if (value is IJsonArray array)
+                {
+                    var method = context.JsonContext.ReferenceResolver.GetMethod(nameof(StandardLibraryMethods.Slice).ToLowerInvariant());
+                    var call = new MethodCallExpression(method, new Expression[] { new RangeVariableExpression(variableName), indexOrSliceRange });
+
+                    return ExecuteMethodCall(call, context, isRootExpression);
+                }
+                else
+                {
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.AttemptedToIndexOrSliceNonStringAndNonArrayValue, value.GetType().Name);
+                }
             }
-            else if (value is IJsonArray array)
+            finally
             {
-                var method = context.JsonContext.ReferenceResolver.GetMethod(nameof(StandardLibraryMethods.Slice).ToLowerInvariant());
-                var call = new MethodCallExpression(method, new Expression[] { slicedVariable.Variable, slicedVariable.Range });
-
-                return ExecuteMethodCall(call, context, isRootExpression);
-            }
-            else
-            {
-                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.AttemptedToIndexOrSliceNonStringAndNonArrayValue, value.GetType().Name);
+                closure.RemoveCurrentClosure();
             }
         }
 
@@ -625,6 +641,11 @@ namespace Jolt.Evaluation
             }
             else if (context.Mode == EvaluationMode.PropertyValue)
             {
+                if (call is IndexOrSliceMethodResultExpression indexOrSlice)
+                {
+                    return IndexOrSliceWithRange(indexOrSlice.ResultRange, (IJsonToken)resultValue, context, isRootExpression);
+                }
+
                 return resultValue;
             }
 

@@ -9,7 +9,7 @@ using System.Text;
 namespace Jolt.Expressions
 {
     [DebuggerDisplay("{Signature.Alias}({ParameterValues.Length})")]
-    public sealed class MethodCallExpression : Expression
+    public class MethodCallExpression : Expression
     {
         public MethodSignature Signature { get; }
         public Expression[] ParameterValues { get; }

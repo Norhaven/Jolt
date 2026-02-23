@@ -417,7 +417,7 @@ namespace Jolt.Parsing
             return isParseSuccessful;
         }
 
-        private bool TryParseMethod(ExpressionReader reader, IJsonContext context, out MethodCallExpression? methodCall, RangeVariableExpression? invocationSource = default)
+        private bool TryParseMethod(ExpressionReader reader, IJsonContext context, out MethodCallExpression? methodCall, Expression? invocationSource = default)
         {
             methodCall = default;
 
@@ -480,6 +480,33 @@ namespace Jolt.Parsing
             else if (reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.RangeVariable, out var rangeVariable))
             {
                 methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), rangeVariable.Value, new RangeVariable(rangeVariable.Value));
+            }
+            else if (reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.StartOfIndexer, out var indexer))
+            {
+                if (!TryParseRangeExpression(reader, context, out var range, isIndexRange: true))
+                {
+                    throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.ExpectedIndexOrSliceRangeButFoundOtherExpression, reader.CurrentToken.Value);
+                }
+
+                if (!reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.EndOfIndexer))
+                {
+                    throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToCloseIndexerExpressionAtPosition, reader.Position);
+                }
+
+                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray());
+                methodCall = new IndexOrSliceMethodResultExpression(range, methodCall);
+
+                if (reader.CurrentToken?.Category == ExpressionTokenCategory.StartOfPipedMethodCall)
+                {
+                    if (!TryParseMethod(reader, context, out var pipedMethodCall, methodCall))
+                    {
+                        throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToCompleteParsingOfPipedMethodCall);
+                    }
+
+                    methodCall = pipedMethodCall;
+
+                    return true;
+                }
             }
             else if (reader.CurrentToken?.Category == ExpressionTokenCategory.StartOfPipedMethodCall)
             {
