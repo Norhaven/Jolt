@@ -282,7 +282,7 @@ And that will create the resulting JSON:
     "arrayEnd": [ 3, 2, 6 ]
 }
 ```
-Range expressions behave much the same as C# range expressions that you may already be used to, where a literal integer indicates an offset from the beginning of the string or array and the caret `^` indicates an index that is offset from the end of it.
+Range expressions behave much the same as C# range expressions that you may already be used to, where a literal integer indicates an offset index from the beginning of the string or array and the caret `^` indicates an index that is offset from the end of it. It's also worth noting that you can directly index into a string or array result of a method without going through variables at all. For example, `#valueOf($.someString)[..2]` would give the first two characters of the string retrieved by the `valueOf` method.
 
 ### Range Variables: Using Blocks and Statements
 
