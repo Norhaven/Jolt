@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Jolt.Parsing
 {
-    internal class TokenStream<T>
+    internal class TokenStream<T> : ITokenStream<T>
     {
         private readonly IEnumerator<T> _enumerator;
         private bool _isCompleted;
@@ -20,7 +20,7 @@ namespace Jolt.Parsing
         {
             _enumerator = tokens.GetEnumerator();
             _isCompleted = !_enumerator.MoveNext();
-            _position = 1;            
+            _position = 1;
         }
 
         public bool TryMatchNextAndConsume(Predicate<T> isMatch)
@@ -145,7 +145,7 @@ namespace Jolt.Parsing
                 _enumerator.Current
             };
 
-            while(_enumerator.MoveNext())
+            while (_enumerator.MoveNext())
             {
                 tokens.Add(_enumerator.Current);
             }

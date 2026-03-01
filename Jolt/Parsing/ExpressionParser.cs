@@ -157,9 +157,14 @@ namespace Jolt.Parsing
 
                         reader.ConsumeCurrent();
 
-                        if (!TryParseRangeExpression(reader, context, out var indexerExpression, isIndexRange: true))
+                        if (!TryParseRangeExpression(reader, context, out var indexerExpression))
                         {
-                            throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToParseIndexerExpressionAtPosition, reader.Position);
+                            if (!TryParseLiteral(reader, context, out var literal))
+                            {
+                                throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToParseIndexerExpressionAtPosition, reader.Position);
+                            }
+
+                            return new SlicedVariableExpression(rangeVariable, new RangeExpression(int.Parse(literal.Value), int.Parse(literal.Value) + 1));
                         }
 
                         if (!reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.EndOfIndexer))
@@ -284,13 +289,13 @@ namespace Jolt.Parsing
             return true;
         }
 
-        private bool TryParseRangeExpression(ExpressionReader reader, IJsonContext context, out RangeExpression? range, bool isIndexRange = false)
+        private bool TryParseRangeExpression(ExpressionReader reader, IJsonContext context, out RangeExpression? range)
         {
             const string RangeDots = "..";
 
             range = default;
             
-            if (reader.CurrentToken.Category != ExpressionTokenCategory.NumericLiteral && reader.CurrentToken.Category != ExpressionTokenCategory.RangeExpression)
+            if (reader.CurrentToken.Category != ExpressionTokenCategory.RangeExpression)
             {
                 return false;
             }
@@ -299,14 +304,6 @@ namespace Jolt.Parsing
 
             if (!value.Contains(RangeDots))
             {
-                // Make sure that this isn't just a numeric literal we encountered and that it's
-                // actually intended to be a range.
-
-                if (!isIndexRange)
-                {
-                    return false;
-                }
-
                 // This is just a single index, not a range, so we can treat it as a range with a single start and end.
 
                 if (value.Contains(ExpressionToken.RangeEndIndexer))
@@ -483,7 +480,7 @@ namespace Jolt.Parsing
             }
             else if (reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.StartOfIndexer, out var indexer))
             {
-                if (!TryParseRangeExpression(reader, context, out var range, isIndexRange: true))
+                if (!TryParseRangeExpression(reader, context, out var range))
                 {
                     throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.ExpectedIndexOrSliceRangeButFoundOtherExpression, reader.CurrentToken.Value);
                 }

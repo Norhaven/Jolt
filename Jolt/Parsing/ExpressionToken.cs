@@ -35,6 +35,7 @@ namespace Jolt.Parsing
         public const char Semicolon = ';';
         public const char OpenSquareBracket = '[';
         public const char CloseSquareBracket = ']';
+        public const char Caret = '^';
 
         public string Value { get; }
         public ExpressionTokenCategory Category { get; }

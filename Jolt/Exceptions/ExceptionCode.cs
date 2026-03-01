@@ -67,6 +67,10 @@ namespace Jolt.Exceptions
         UnableToIndexOrSliceVariablePair,
         [Description("JLT128")]
         ExpectedIndexOrSliceRangeButFoundOtherExpression,
+        [Description("JLT129")]
+        ExpectedNumericValueOrRangeExpressionButEncounteredTooManyDots,
+        [Description("JLT130")]
+        InvalidRangeExpressionFormat,
 
         // Resolution
 

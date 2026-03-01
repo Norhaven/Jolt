@@ -35,7 +35,9 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToParseIndexerExpressionAtPosition] = "Unable to parse indexer expression at position '{0}'",
             [ExceptionCode.UnableToCloseIndexerExpressionAtPosition] = "Unable to close indexer expression at position '{0}'",
             [ExceptionCode.UnableToIndexOrSliceVariablePair] = "Unable to index or slice a variable pair, please select either '{0}' or '{1}' but not both together",
-            [ExceptionCode.ExpectedIndexOrSliceRangeButFoundOtherExpression] = "Expected an index or slice range but found other expression of type '{0}' instead"
+            [ExceptionCode.ExpectedIndexOrSliceRangeButFoundOtherExpression] = "Expected an index or slice range but found other expression of type '{0}' instead",
+            [ExceptionCode.ExpectedNumericValueOrRangeExpressionButEncounteredTooManyDots] = "Expected a numeric value or range expression but encountered too many '.' characters ({0}) in expression",
+            [ExceptionCode.InvalidRangeExpressionFormat] = "Expected a range expression but found an expression with invalid format: '{0}'"
         };
 
         private static readonly Dictionary<ExceptionCode, string> _resolutionErrorsByCode = new Dictionary<ExceptionCode, string>
