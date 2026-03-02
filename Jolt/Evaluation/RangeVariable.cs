@@ -9,11 +9,13 @@ namespace Jolt.Evaluation
     {
         public string Name { get; }
         public IJsonToken? Value { get; set; }
+        public bool ProvidesNullSafeAccess { get; }
 
-        public RangeVariable(string name)
+        public RangeVariable(string name, bool providesNullSafeAccess = false)
         {
             Name = name;
             Value = default;
+            ProvidesNullSafeAccess = providesNullSafeAccess;
         }
 
         public RangeVariable(string name, IJsonToken value)

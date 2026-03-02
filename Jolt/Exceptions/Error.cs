@@ -37,7 +37,9 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToIndexOrSliceVariablePair] = "Unable to index or slice a variable pair, please select either '{0}' or '{1}' but not both together",
             [ExceptionCode.ExpectedIndexOrSliceRangeButFoundOtherExpression] = "Expected an index or slice range but found other expression of type '{0}' instead",
             [ExceptionCode.ExpectedNumericValueOrRangeExpressionButEncounteredTooManyDots] = "Expected a numeric value or range expression but encountered too many '.' characters ({0}) in expression",
-            [ExceptionCode.InvalidRangeExpressionFormat] = "Expected a range expression but found an expression with invalid format: '{0}'"
+            [ExceptionCode.InvalidRangeExpressionFormat] = "Expected a range expression but found an expression with invalid format: '{0}'",
+            [ExceptionCode.ExpectedNullCoalescingOperatorButFoundSingleQuestionMark] = "Expected '??' null coalescing operator but found single '?' character instead",
+            [ExceptionCode.ExpectedDotAfterQuestionMarkForNullSafePropertyAccessButFoundDifferentToken] = "Expected '.' after '?' for null safe property access but found '{0}' instead"
         };
 
         private static readonly Dictionary<ExceptionCode, string> _resolutionErrorsByCode = new Dictionary<ExceptionCode, string>

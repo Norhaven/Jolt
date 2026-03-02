@@ -71,6 +71,10 @@ namespace Jolt.Exceptions
         ExpectedNumericValueOrRangeExpressionButEncounteredTooManyDots,
         [Description("JLT130")]
         InvalidRangeExpressionFormat,
+        [Description("JLT131")]
+        ExpectedNullCoalescingOperatorButFoundSingleQuestionMark,
+        [Description("JLT132")]
+        ExpectedDotAfterQuestionMarkForNullSafePropertyAccessButFoundDifferentToken,
 
         // Resolution
 

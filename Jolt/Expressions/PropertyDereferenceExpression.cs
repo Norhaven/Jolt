@@ -8,12 +8,12 @@ namespace Jolt.Expressions
     public sealed class PropertyDereferenceExpression : Expression
     {
         public RangeVariableExpression Variable { get; }
-        public string[] PropertyPaths { get; }
+        public DereferenceExpression[] DereferenceChain { get; }
 
-        public PropertyDereferenceExpression(RangeVariableExpression variable, string[] propertyPaths)
+        public PropertyDereferenceExpression(RangeVariableExpression variable, DereferenceExpression[] dereferenceChain)
         {
             Variable = variable;
-            PropertyPaths = propertyPaths;
+            DereferenceChain = dereferenceChain;
         }
     }
 }

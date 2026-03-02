@@ -185,7 +185,25 @@ namespace Jolt.Parsing
             }
             else if (stream.CurrentToken == ExpressionToken.At)
             {
-                yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Semicolon, ExpressionToken.Dot, ExpressionToken.ArrowBody, ExpressionToken.OpenSquareBracket);
+                var variable = TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Semicolon, ExpressionToken.Dot, ExpressionToken.ArrowBody, ExpressionToken.OpenSquareBracket, ExpressionToken.QuestionMark);
+
+                var isNullSafeVariableDereference = stream.CurrentToken == ExpressionToken.QuestionMark;
+
+                if (isNullSafeVariableDereference)
+                {
+                    stream.ConsumeCurrent();
+
+                    if (stream.CurrentToken != ExpressionToken.Dot)
+                    {
+                        throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedDotAfterQuestionMarkForNullSafePropertyAccessButFoundDifferentToken, stream.CurrentToken);
+                    }
+
+                    // We're not consuming the dot here, we'll wait until down below handles path dereferencing that needs it to be there.
+
+                    variable = new ExpressionToken(variable.Value, ExpressionTokenCategory.NullSafeRangeVariableDereference, providesNullSafeAccess: true);
+                }
+
+                yield return variable;
 
                 if (stream.CurrentToken == ExpressionToken.Semicolon)
                 {
@@ -229,11 +247,38 @@ namespace Jolt.Parsing
                 }
                 else
                 {
-                    while (stream.CurrentToken == ExpressionToken.Dot)
+                    while (stream.CurrentToken == ExpressionToken.Dot || stream.CurrentToken == ExpressionToken.QuestionMark)
                     {
-                        stream.ConsumeCurrent();
+                        var isNullSafeReference = stream.CurrentToken == ExpressionToken.QuestionMark;
 
-                        yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.PropertyDereference, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot);
+                        if (isNullSafeReference)
+                        {
+                            stream.ConsumeCurrent();
+
+                            if (stream.CurrentToken != ExpressionToken.Dot)
+                            {
+                                throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedDotAfterQuestionMarkForNullSafePropertyAccessButFoundDifferentToken, stream.CurrentToken);
+                            }
+
+                            stream.ConsumeCurrent();
+
+                            yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.NullSafePropertyDereference, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot, ExpressionToken.QuestionMark);
+                        }
+                        else
+                        {
+                            stream.ConsumeCurrent();
+
+                            var token = TokenUntilMatchedWith(stream, ExpressionTokenCategory.PropertyDereference, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot, ExpressionToken.QuestionMark);
+
+                            if (stream.CurrentToken == ExpressionToken.QuestionMark)
+                            {
+                                yield return new ExpressionToken(token.Value, ExpressionTokenCategory.NullSafePropertyDereference);
+                            }
+                            else
+                            {
+                                yield return token;
+                            }
+                        }
                     }
                 }
             }
@@ -267,6 +312,20 @@ namespace Jolt.Parsing
             else if (stream.CurrentToken == ExpressionToken.DollarSign)
             {
                 yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.PathLiteral, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace);
+            }
+            else if (stream.CurrentToken == ExpressionToken.QuestionMark)
+            {
+                stream.ConsumeCurrent();
+
+                if (stream.CurrentToken == ExpressionToken.QuestionMark)
+                {
+                    stream.ConsumeCurrent();
+                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.NullCoalescing);
+                }
+                else
+                {
+                    throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedNullCoalescingOperatorButFoundSingleQuestionMark);
+                }
             }
             else if (char.IsNumber(stream.CurrentToken) || stream.CurrentToken == ExpressionToken.DecimalPoint || stream.CurrentToken == ExpressionToken.Caret)
             {

@@ -119,12 +119,12 @@ namespace Jolt.Evaluation
 
             if (leftResult is RangeVariable leftResultVariable)
             {
-                leftResult = leftResultVariable.Value.ToTypeOf<object>();
+                leftResult = leftResultVariable.Value?.ToTypeOf<object>();
             }
 
             if (rightResult is RangeVariable rightResultVariable)
             {
-                rightResult = rightResultVariable.Value.ToTypeOf<object>();
+                rightResult = rightResultVariable.Value?.ToTypeOf<object>();
             }
 
             if (binary.IsComparison)
@@ -164,6 +164,10 @@ namespace Jolt.Evaluation
                         _ => throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateExpressionWithOperatorAndArguments, leftResult, binary.Operator, rightResult)
                     };
                 }
+            }
+            else if (binary.Operator == Operator.NullCoalescing)
+            {
+                return leftResult ?? rightResult;
             }
             else
             {
@@ -227,7 +231,7 @@ namespace Jolt.Evaluation
         {
             if (!context.Scope.TryGetVariable(range.Name, out var variable))
             {
-                return new RangeVariable(range.Name);
+                return new RangeVariable(range.Name, range.ProvidesNullSafeAccess);
             }
 
             return variable;
@@ -292,35 +296,59 @@ namespace Jolt.Evaluation
         {
             var rangeVariable = EvaluateExpression(dereference.Variable, context) as RangeVariable;
 
-            var currentProperty = rangeVariable.Value;
+            var currentProperty = rangeVariable?.Value;
+            var hasDereferenceChain = dereference.DereferenceChain.Length > 0;
 
-            for(var i = 0; i < dereference.PropertyPaths.Length; i++)
+            if (rangeVariable?.ProvidesNullSafeAccess == true && hasDereferenceChain && currentProperty is null)
             {
-                var property = dereference.PropertyPaths[i];
+                var missingDereferencePaths = dereference.DereferenceChain.Select(x => x.PropertyName).ToArray();
+                return new DereferencedPath(rangeVariable, null, missingDereferencePaths);
+            }
+
+            for (var i = 0; i < dereference.DereferenceChain.Length; i++)
+            {
+                var propertyReference = dereference.DereferenceChain[i];
 
                 if (currentProperty is IJsonObject json)
                 {
-                    var node = json[property];
+                    var node = json[propertyReference.PropertyName];
 
-                    if (node is null && context.Token.IsWithinStatementBlock)
+                    if (node is null)
                     {
-                        return new DereferencedPath(rangeVariable, json, dereference.PropertyPaths[i..]);
+                        var missingDereferencePaths = dereference.DereferenceChain[i..].Select(x => x.PropertyName).ToArray();
+
+                        if (context.Token.IsWithinStatementBlock)
+                        {
+                            return new DereferencedPath(rangeVariable, json, missingDereferencePaths);
+                        }
+
+                        if (propertyReference.IsNullSafe)
+                        {
+                            return new DereferencedPath(rangeVariable, null, missingDereferencePaths);
+                        }
+
+                        if (i == dereference.DereferenceChain.Length - 1)
+                        {
+                            return new DereferencedPath(rangeVariable, null, missingDereferencePaths);
+                        }
+
+                        throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.AttemptedToDereferenceMissingPath, propertyReference.PropertyName, currentProperty.PropertyName);
                     }
 
-                    currentProperty = json[property];
+                    currentProperty = node;
                 }
                 else if (currentProperty is IJsonValue value)
                 {
-                    if (i < dereference.PropertyPaths.Length - 1)
+                    if (i < dereference.DereferenceChain.Length - 1)
                     {
-                        throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.EncounteredValueInDereferenceChainButExpectedObject, property);
+                        throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.EncounteredValueInDereferenceChainButExpectedObject, propertyReference);
                     }
 
                     return new DereferencedPath(rangeVariable, value);
                 }
                 else
                 {
-                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.EncounteredNonObjectInDereferenceChainButExpectedObject, property);
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.EncounteredNonObjectInDereferenceChainButExpectedObject, propertyReference);
                 }
             }
 

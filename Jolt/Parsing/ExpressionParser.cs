@@ -113,14 +113,17 @@ namespace Jolt.Parsing
 
                         return new LambdaMethodExpression(rangeVariable, bodyExpression);
                     }
-                    else if (reader.CurrentToken?.Category == ExpressionTokenCategory.PropertyDereference)
+                    else if (reader.CurrentToken?.Category == ExpressionTokenCategory.PropertyDereference || reader.CurrentToken?.Category == ExpressionTokenCategory.NullSafePropertyDereference)
                     {
-                        if (!reader.TryConsumeUntilMatchOrEnd(x => x.Category != ExpressionTokenCategory.PropertyDereference, out var dereferenceChain))
+                        while (reader.CurrentToken.Category == ExpressionTokenCategory.PropertyDereference || reader.CurrentToken.Category == ExpressionTokenCategory.NullSafePropertyDereference)
                         {
-                            throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToParsePropertyDereferenceChain, reader.CurrentToken.Value);
-                        }
+                            if (!reader.TryConsumeUntilMatchOrEnd(x => x.Category != ExpressionTokenCategory.PropertyDereference && x.Category != ExpressionTokenCategory.NullSafePropertyDereference, out var dereferenceChain))
+                            {
+                                throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToParsePropertyDereferenceChain, reader.CurrentToken.Value);
+                            }
 
-                        return new PropertyDereferenceExpression(rangeVariable, dereferenceChain.Select(x => x.Value).ToArray());
+                            return new PropertyDereferenceExpression(rangeVariable, dereferenceChain.Select(x => new DereferenceExpression(x.Value, x.Category == ExpressionTokenCategory.NullSafePropertyDereference)).ToArray());
+                        }
                     }
                     else if (reader.CurrentToken?.Category == ExpressionTokenCategory.StartOfPipedMethodCall && TryParseMethod(reader, context, out method, rangeVariable))
                     {
@@ -204,6 +207,7 @@ namespace Jolt.Parsing
                     Operator.Subtraction => 1,
                     Operator.Multiplication => 2,
                     Operator.Division => 2,
+                    Operator.NullCoalescing => 3,
                     _ => -1
                 };
             }
@@ -255,6 +259,7 @@ namespace Jolt.Parsing
                     ExpressionTokenCategory.Multiplication => Operator.Multiplication,
                     ExpressionTokenCategory.Division => Operator.Division,
                     ExpressionTokenCategory.NotEqualComparison => Operator.NotEquals,
+                    ExpressionTokenCategory.NullCoalescing => Operator.NullCoalescing,
                     _ => Operator.Unknown
                 };
             }
@@ -358,12 +363,14 @@ namespace Jolt.Parsing
         {
             rangeVariable = default;
 
-            if (reader.CurrentToken?.Category != ExpressionTokenCategory.RangeVariable)
+            var category = reader.CurrentToken?.Category;
+
+            if (category != ExpressionTokenCategory.RangeVariable && category != ExpressionTokenCategory.NullSafeRangeVariableDereference)
             {
                 return false;
             }
 
-            rangeVariable = new RangeVariableExpression(reader.CurrentToken.Value);
+            rangeVariable = new RangeVariableExpression(reader.CurrentToken.Value, providesNullSafeAccess: category == ExpressionTokenCategory.NullSafeRangeVariableDereference);
 
             reader.ConsumeCurrent();
 

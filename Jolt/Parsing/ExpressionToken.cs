@@ -36,14 +36,17 @@ namespace Jolt.Parsing
         public const char OpenSquareBracket = '[';
         public const char CloseSquareBracket = ']';
         public const char Caret = '^';
+        public const char QuestionMark = '?';
 
         public string Value { get; }
         public ExpressionTokenCategory Category { get; }
+        public bool ProvidesNullSafeAccess { get; }
 
-        public ExpressionToken(string value, ExpressionTokenCategory category)
+        public ExpressionToken(string value, ExpressionTokenCategory category, bool providesNullSafeAccess = false)
         {
             Value = value;
             Category = category;
+            ProvidesNullSafeAccess = providesNullSafeAccess;
         }
     }
 }

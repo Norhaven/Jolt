@@ -7,12 +7,125 @@
     "missingTokenAtEnd": "ExpectedTokenButFoundEndOfExpression",
     "missingExpectedToken": "UnableToLocateExpectedCharactersInExpression",
     "tooManyComparisons": "ExpectedZeroOrOneComparisonSymbolsInExpressionButFoundMoreThanOne",
-    "externalMethodException": "ExternalMethodInvocationCausedAnException"
+    "externalMethodException": "ExternalMethodInvocationCausedAnException",
+    "dereferencedNonObject": "EncounteredNonObjectInDereferenceChainButExpectedObject",
+    "dereferencedMissingProperty": "AttemptedToDereferenceMissingPath"
   },
   "possibleExternalMethodSources": {
     "ExternalMixedMethods": "Jolt.Json.Tests.Resources.TestMethods.ExternalMixedMethods, Jolt.Json.Tests.Resources, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
   },
   "testGroups": [
+    {
+      "name": "Path dereferencing",
+      "source": {
+        "nested": {
+          "json": {
+            "object": {
+              "value": 2
+            }
+          }
+        }
+      },
+      "tests": [
+        {
+          "name": "Variable instance at root path will dereference nested object path correctly",
+          "transformer": {
+            "@x": "#valueOf($)",
+            "value": "@x.nested.json.object.value"
+          },
+          "result": {
+            "value": 2
+          }
+        },
+        {
+          "name": "Variable instance at root path will return null for missing value property",
+          "transformer": {
+            "@x": "#valueOf($)",
+            "value": "@x.nested.json.object.missingValue"
+          },
+          "result": {
+            "value": null
+          }
+        },
+        {
+          "name": "Variable instance at root path will throw exception for missing nested object property",
+          "transformer": {
+            "@x": "#valueOf($)",
+            "value": "@x.nested.json.missingObject.value"
+          },
+          "exceptionCode": "dereferencedMissingProperty"
+        },
+        {
+          "name": "Variable instance at root path will return null for earlier missing nested object property",
+          "transformer": {
+            "@x": "#valueOf($)",
+            "value": "@x.missingNested?.json.object.value"
+          },
+          "result": {
+            "value": null
+          }
+        },
+        {
+          "name": "Variable null instance will return null on any dereference action",
+          "transformer": {
+            "value": "@x?.nested.json.object.value"
+          },
+          "result": {
+            "value": null
+          }
+        },
+        {
+          "name": "Variable null instance will return value on any present dereference chain",
+          "transformer": {
+            "@x": "#valueOf($)",
+            "value": "@x?.nested?.json?.object?.value"
+          },
+          "result": {
+            "value": 2
+          }
+        },
+        {
+          "name": "Variable instance at root path will return value for existing path value",
+          "transformer": {
+            "@x": "#valueOf($)",
+            "value": "@x.nested?.json.object.value"
+          },
+          "result": {
+            "value": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "Null coalescing operator usage",
+      "source": {
+        "nullValue": null,
+        "nonNullValue": "value"
+      },
+      "tests": [
+        {
+          "name": "Null coalescing operator returns the right-hand operand when the left-hand operand is null",
+          "transformer": {
+            "value": "@x ?? 'default'",
+            "explicitNullValue": "#valueOf($.nullValue) ?? 'otherDefault'"
+          },
+          "result": {
+            "value": "default",
+            "explicitNullValue": "otherDefault"
+          }
+        },
+        {
+          "name": "Null coalescing operator returns the left-hand operand when it is not null",
+          "transformer": {
+            "@x": "#valueOf($.nonNullValue)",
+            "value": "@x ?? 'default'"
+          },
+          "result": {
+            "value": "value"
+          }
+        }
+      ]
+    },
     {
       "name": "Math expressions",
       "source": {

@@ -18,6 +18,7 @@ namespace Jolt.Expressions
         Multiplication,
         Division,
         OpenGroup,
-        CloseGroup
+        CloseGroup,
+        NullCoalescing
     }
 }

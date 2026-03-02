@@ -70,6 +70,12 @@ namespace Jolt.Parsing
         [Description("the start of an indexer group")]
         StartOfIndexer,
         [Description("the end of an indexer group")]
-        EndOfIndexer
+        EndOfIndexer,
+        [Description("the null coalescing operator")]
+        NullCoalescing,
+        [Description("a null-safe property dereference")]
+        NullSafePropertyDereference,
+        [Description("a null-safe variable dereference")]
+        NullSafeRangeVariableDereference
     }
 }
