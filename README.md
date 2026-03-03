@@ -344,6 +344,22 @@ Lastly, you can take advantage of pre-processing variables with a `using` block 
 }
 ```
 
+# Additional Operations
+
+As a final note, there are a few additional operations that you can take advantage of in your transformers that don't necessarily fit into the previous categories. The first is the null-coalescing operator `??` which returns the left-hand operand if it is not null, otherwise it returns the right-hand operand. For example:
+```json
+{
+    "coalescingResult": "#valueOf($.some.nullableValue) ?? 'default value'"
+}
+```
+You can also use the null-safe path dereferencing operator `?.` in your JSON paths to prevent null reference errors when traversing the source document, as below, which will return null when the property is null instead of throwing an error.
+```json
+{
+    "@x": "#valueOf($.some.nullableObject.property)",
+    "safeDereference": "@x.some.nullableObject?.property"
+}
+```
+
 # Library Methods
 
 This package comes with quite a few methods built into it to get you started, all of which are documented here and represent the most common things that you may want to do when transforming a JSON file. If you find that an opportunity for a new library method exists, please raise an issue and it will be considered. For more detail on the individual library methods, please see the Jolt wiki [over here.](https://github.com/Norhaven/Jolt/wiki)
@@ -386,6 +402,8 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | summarizeWith | Returns an object array that's the result of applying an aggregate method to a grouped array's results | `#summarizeWith($.some.group, @seq: #someAggregateMethod(@seq))` | Property Value
 | orderBy | Returns an array in ascending order as determined by its individual property values | `#orderBy($.some.path, @x: @x.propertyName)` | Property Value
 | orderByDesc | Returns an array in descending order as determined by its individual property values | `#orderByDesc($.some.path, @x: @x.propertyName)` | Property Value
+| takeWhile | Returns an array containing the leading elements of an array that satisfy a specified condition | `#takeWhile($.some.path, @x: @x.propertyName > 5)` | Property Value
+| skipWhile | Returns an array excluding the leading elements of an array that satisfy a specified condition | `#skipWhile($.some.path, @x: @x.propertyName > 5)` | Property Value
 | contains | Returns true when an array or string contains the provided value | `#contains($.some.path, 'some string')` | Property Value
 | roundTo | Returns the value of a provided number rounded to the specified decimal places | `#roundTo($.some.path, 2)` | Property Value
 | max | Returns the maximum value found within an array of numbers | `#max($.some.path)` | Property Value
@@ -397,7 +415,7 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | append | Returns a string or array made from appending one or more strings or arrays onto them | `#append($.some.path, 'one', 'two')` | Property Value
 | currentDateTime | Returns the current date and time as a string in ISO 8601 format | `#currentDateTime()` | Property Value
 | currentDateTimeUtc | Returns the current date and time in UTC as a string in ISO 8601 format | `#currentDateTimeUtc()` | Property Value
-| parseDateTime | Returns a string in ISO 8601 format that represents the date and time value of the provided string | `#parseDateTime($.some.path)` | Property Value
+| parseDateTime | Returns a string in ISO 8601 format that represents the date and time value of the provided string, requires exact format with optional format string | `#parseDateTime($.some.path, 'yyyy-MM-dd')` | Property Value
 | formatDateTime | Returns a string that represents the date and time value of the provided string formatted according to the provided format string | `#formatDateTime($.some.path, 'yyyy-MM-dd')` | Property Value
 | addDays | Returns a string in ISO 8601 format that represents the date and time value of the provided string with the specified number of days added to it | `#addDays($.some.path, 7)` | Property Value
 | addHours | Returns a string in ISO 8601 format that represents the date and time value of the provided string with the specified number of hours added to it | `#addHours($.some.path, 5)` | Property Value

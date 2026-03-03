@@ -314,6 +314,46 @@ namespace Jolt.Library.StandardLibrary
             return context.CreateTokenFrom(empty);
         }
 
+        [JoltLibraryMethod("takeWhile")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? TakeWhile(object? value, LambdaMethod lambda, EvaluationContext context)
+        {
+            if (value is null)
+            {
+                return context.CreateArrayFrom(Array.Empty<IJsonToken>());
+            }
+
+            var resolved = context.ResolveValueOf<IJsonArray>(value);
+
+            var takenItems = resolved switch
+            {
+                IJsonArray array => TakeWhile(array, lambda, x => ExecuteLambdaBody(x, context)?.ToTypeOf<bool>() == true, context),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for any with unsupported object type '{value?.GetType()}'")
+            };
+
+            return context.CreateArrayFrom(takenItems.ToArray());
+        }
+
+        [JoltLibraryMethod("skipWhile")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? SkipWhile(object? value, LambdaMethod lambda, EvaluationContext context)
+        {
+            if (value is null)
+            {
+                return context.CreateArrayFrom(Array.Empty<IJsonToken>());
+            }
+
+            var resolved = context.ResolveValueOf<IJsonArray>(value);
+
+            var takenItems = resolved switch
+            {
+                IJsonArray array => SkipWhile(array, lambda, x => ExecuteLambdaBody(x, context)?.ToTypeOf<bool>() == true, context),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for any with unsupported object type '{value?.GetType()}'")
+            };
+
+            return context.CreateArrayFrom(takenItems.ToArray());
+        }
+
         [JoltLibraryMethod("summarizeWith")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? SummarizeWith(object? value, LambdaMethod lambda, EvaluationContext context)
@@ -431,6 +471,63 @@ namespace Jolt.Library.StandardLibrary
 
             return context.CreateArrayFrom(results);
         }
+
+        private static IEnumerable<IJsonToken> TakeWhile<T>(IEnumerable<T> sequence, LambdaMethod lambda, Func<Expression, bool> shouldInclude, EvaluationContext context)
+        {
+            foreach (var item in sequence)
+            {
+                var itemToken = context.CreateTokenFrom(item);
+                var loopVariable = new RangeVariable(lambda.Variable.Name, itemToken);
+
+                context.Scope.AddOrUpdateVariable(loopVariable);
+
+                try
+                {
+                    if (shouldInclude(lambda.Body))
+                    {
+                        yield return itemToken;
+                    }
+                    else
+                    {
+                        yield break;
+                    }
+                }
+                finally
+                {
+                    context.Scope.RemoveCurrentVariablesLayer();
+                }
+            }
+        }
+
+        private static IEnumerable<IJsonToken> SkipWhile<T>(IEnumerable<T> sequence, LambdaMethod lambda, Func<Expression, bool> shouldSkip, EvaluationContext context)
+        {
+            var isSkipping = true;
+
+            foreach (var item in sequence)
+            {
+                var itemToken = context.CreateTokenFrom(item);
+                var loopVariable = new RangeVariable(lambda.Variable.Name, itemToken);
+
+                context.Scope.AddOrUpdateVariable(loopVariable);
+
+                try
+                {
+                    if (isSkipping && shouldSkip(lambda.Body))
+                    {
+                        continue;
+                    }
+
+                    isSkipping = false;
+
+                    yield return itemToken;
+                }
+                finally
+                {
+                    context.Scope.RemoveCurrentVariablesLayer();
+                }
+            }
+        }
+
 
         private static IEnumerable<IJsonToken> ProjectInto<T>(IEnumerable<T> sequence, LambdaMethod lambda, Func<Expression, bool> shouldInclude, Func<IJsonToken, IJsonToken> createProjection, EvaluationContext context)
         {

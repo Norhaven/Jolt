@@ -787,6 +787,210 @@
           }
         }
       ]
+    },
+    {
+      "name": "Standard library array filtering methods TakeWhile and SkipWhile work with range variables and lambdas",
+      "source": {
+        "integerArray": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ],
+        "mixedArray": [ 2, 4, 6, 5, 3, 8, 9, 1 ],
+        "stringArray": [ "apple", "apricot", "banana", "blueberry", "cherry" ],
+        "stringLengthArray": [ "a", "bb", "ccc", "dd", "e", "ffff" ],
+        "emptyArray": [],
+        "singleElementArray": [ 5 ]
+      },
+      "tests": [
+        {
+          "name": "TakeWhile works with a range variable containing an integer array and a simple condition",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#takeWhile(@x, @y: @y < 6)"
+          },
+          "result": {
+            "resultArray": [ 1, 2, 3, 4, 5 ]
+          }
+        },
+        {
+          "name": "TakeWhile stops at the first element that fails the condition",
+          "transformer": {
+            "@x": "#valueOf($.mixedArray)",
+            "resultArray": "#takeWhile(@x, @y: @y > 3)"
+          },
+          "result": {
+            "resultArray": []
+          }
+        },
+        {
+          "name": "TakeWhile returns empty array when condition is immediately false",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#takeWhile(@x, @y: @y > 100)"
+          },
+          "result": {
+            "resultArray": []
+          }
+        },
+        {
+          "name": "TakeWhile returns all elements when condition is always true",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#takeWhile(@x, @y: @y > 0)"
+          },
+          "result": {
+            "resultArray": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
+          }
+        },
+        {
+          "name": "TakeWhile works with string arrays using string comparison",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)",
+            "resultArray": "#takeWhile(@x, @y: #startsWith(@y, 'a'))"
+          },
+          "result": {
+            "resultArray": [ "apple", "apricot" ]
+          }
+        },
+        {
+          "name": "TakeWhile works with string arrays using length comparison",
+          "transformer": {
+            "@x": "#valueOf($.stringLengthArray)",
+            "resultArray": "#takeWhile(@x, @y: #length(@y) <= 3)"
+          },
+          "result": {
+            "resultArray": [ "a", "bb", "ccc", "dd", "e" ]
+          }
+        },
+        {
+          "name": "TakeWhile works with an empty array and returns empty array",
+          "transformer": {
+            "@x": "#valueOf($.emptyArray)",
+            "resultArray": "#takeWhile(@x, @y: @y > 0)"
+          },
+          "result": {
+            "resultArray": []
+          }
+        },
+        {
+          "name": "TakeWhile works with a single element array that matches the condition",
+          "transformer": {
+            "@x": "#valueOf($.singleElementArray)",
+            "resultArray": "#takeWhile(@x, @y: @y > 0)"
+          },
+          "result": {
+            "resultArray": [ 5 ]
+          }
+        },
+        {
+          "name": "TakeWhile works with a single element array that does not match the condition",
+          "transformer": {
+            "@x": "#valueOf($.singleElementArray)",
+            "resultArray": "#takeWhile(@x, @y: @y > 10)"
+          },
+          "result": {
+            "resultArray": []
+          }
+        },
+        {
+          "name": "SkipWhile works with a range variable containing an integer array and a simple condition",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#skipWhile(@x, @y: @y < 6)"
+          },
+          "result": {
+            "resultArray": [ 6, 7, 8, 9, 10 ]
+          }
+        },
+        {
+          "name": "SkipWhile skips until the first element that fails the condition",
+          "transformer": {
+            "@x": "#valueOf($.mixedArray)",
+            "resultArray": "#skipWhile(@x, @y: @y < 3)"
+          },
+          "result": {
+            "resultArray": [ 4, 6, 5, 3, 8, 9, 1 ]
+          }
+        },
+        {
+          "name": "SkipWhile returns all elements when condition is immediately false",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#skipWhile(@x, @y: @y > 100)"
+          },
+          "result": {
+            "resultArray": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
+          }
+        },
+        {
+          "name": "SkipWhile returns empty array when condition is always true",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#skipWhile(@x, @y: @y > 0)"
+          },
+          "result": {
+            "resultArray": []
+          }
+        },
+        {
+          "name": "SkipWhile works with string arrays using string comparison",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)",
+            "resultArray": "#skipWhile(@x, @y: #startsWith(@y, 'a'))"
+          },
+          "result": {
+            "resultArray": [ "banana", "blueberry", "cherry" ]
+          }
+        },
+        {
+          "name": "SkipWhile works with string arrays using length comparison",
+          "transformer": {
+            "@x": "#valueOf($.stringLengthArray)",
+            "resultArray": "#skipWhile(@x, @y: #length(@y) <= 3)"
+          },
+          "result": {
+            "resultArray": [ "ffff" ]
+          }
+        },
+        {
+          "name": "SkipWhile works with an empty array and returns empty array",
+          "transformer": {
+            "@x": "#valueOf($.emptyArray)",
+            "resultArray": "#skipWhile(@x, @y: @y > 0)"
+          },
+          "result": {
+            "resultArray": []
+          }
+        },
+        {
+          "name": "SkipWhile works with a single element array that matches the condition",
+          "transformer": {
+            "@x": "#valueOf($.singleElementArray)",
+            "resultArray": "#skipWhile(@x, @y: @y > 0)"
+          },
+          "result": {
+            "resultArray": []
+          }
+        },
+        {
+          "name": "SkipWhile works with a single element array that does not match the condition",
+          "transformer": {
+            "@x": "#valueOf($.singleElementArray)",
+            "resultArray": "#skipWhile(@x, @y: @y > 10)"
+          },
+          "result": {
+            "resultArray": [ 5 ]
+          }
+        },
+        {
+          "name": "TakeWhile and SkipWhile can be chained together",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "@taken": "#takeWhile(@x, @y: @y < 8)",
+            "resultArray": "#skipWhile(@taken, @y: @y < 3)"
+          },
+          "result": {
+            "resultArray": [ 3, 4, 5, 6, 7 ]
+          }
+        }
+      ]
     }
   ]
 }
