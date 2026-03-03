@@ -111,31 +111,6 @@ jobs:
         # Download the badge
         Invoke-WebRequest -Uri $badgeUrl -OutFile $badgeOutputPath
 
-        # Create a markdown file with badge instructions
-        $readmeContent = @"
-# Build Status Badge
-
-To use this badge in your README.md, add the following markdown:
-
-\`\`\`markdown
-[![Build Status](https://github.com/${{ github.repository }}/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/${{ github.repository }}/actions/workflows/build-and-release.yml)
-\`\`\`
-
-This badge reflects the status of the **Build Main Branch** workflow and monitors:
-- **.NET Framework 4.7.2** build and tests
-- **.NET Standard 2.0, 2.1** builds
-- **.NET 8, .NET 10** builds and tests
-
-**Job Details:**
-- Build Status: $jobStatus
-- Timestamp: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
-- Branch: ${{ github.ref_name }}
-- Commit: ${{ github.sha }}
-
-"@
-
-        $readmeContent | Out-File -FilePath "$badgeDirectory/BADGE_README.md" -Encoding UTF8
-
         Write-Host "Build Status Badge created successfully"
         Write-Host "Status: $jobStatus"
         Write-Host "Badge Color: $badgeColor"
