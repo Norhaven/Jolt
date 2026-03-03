@@ -80,7 +80,7 @@ jobs:
       run: |
         dotnet test Tests/Jolt.Tests/Jolt.Tests.csproj --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./TestResults/
         dotnet test Tests/Jolt.Json.Tests/Jolt.Json.Tests.csproj --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./TestResults/
-    
+
     # Create and attach code coverage report to pipeline run
     - name: Download code coverage report generator
       run: dotnet tool install -g dotnet-reportgenerator-globaltool
@@ -90,7 +90,63 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Code Coverage Report
-        path: ./CoverageReport/    
+        path: ./CoverageReport/
+
+    # Generate build status badge
+    - name: Create build status badge
+      if: always()
+      run: |
+        $badgeDirectory = "./BuildStatusBadge"
+        New-Item -ItemType Directory -Path $badgeDirectory -Force | Out-Null
+
+        $jobStatus = "${{ job.status }}"
+        $badgeColor = if ($jobStatus -eq "success") { "brightgreen" } else { "red" }
+        $badgeLabel = "Build & Test"
+        $badgeMessage = $jobStatus.ToUpper()
+
+        # Create badge using shields.io
+        $badgeUrl = "https://img.shields.io/badge/$badgeLabel-$badgeMessage-$badgeColor"
+        $badgeOutputPath = "$badgeDirectory/build-status-badge.svg"
+
+        # Download the badge
+        Invoke-WebRequest -Uri $badgeUrl -OutFile $badgeOutputPath
+
+        # Create a markdown file with badge instructions
+        $readmeContent = @"
+# Build Status Badge
+
+To use this badge in your README.md, add the following markdown:
+
+\`\`\`markdown
+[![Build Status](https://github.com/${{ github.repository }}/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/${{ github.repository }}/actions/workflows/build-and-release.yml)
+\`\`\`
+
+This badge reflects the status of the **Build Main Branch** workflow and monitors:
+- **.NET Framework 4.7.2** build and tests
+- **.NET Standard 2.0, 2.1** builds
+- **.NET 8, .NET 10** builds and tests
+
+**Job Details:**
+- Build Status: $jobStatus
+- Timestamp: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
+- Branch: ${{ github.ref_name }}
+- Commit: ${{ github.sha }}
+
+"@
+
+        $readmeContent | Out-File -FilePath "$badgeDirectory/BADGE_README.md" -Encoding UTF8
+
+        Write-Host "Build Status Badge created successfully"
+        Write-Host "Status: $jobStatus"
+        Write-Host "Badge Color: $badgeColor"
+
+    - name: Upload build status badge
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: Build Status Badge
+        path: ./BuildStatusBadge/
+        retention-days: 30
         
   add_code_coverage_summary:
     name: Add Code Coverage To Summary
