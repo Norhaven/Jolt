@@ -2,6 +2,7 @@
 using Jolt.Expressions;
 using Jolt.Extensions;
 using Jolt.Library;
+using Jolt.Library.StandardLibrary;
 using Jolt.Parsing;
 using Jolt.Structure;
 using System;
@@ -269,14 +270,14 @@ namespace Jolt.Evaluation
             {
                 if (value is IJsonValue val && val.IsString())
                 {
-                    var method = context.JsonContext.ReferenceResolver.GetMethod(nameof(StandardLibraryMethods.Substring).ToLowerInvariant());
+                    var method = context.JsonContext.ReferenceResolver.GetMethod(nameof(StringAndArrayMethods.Substring).ToLowerInvariant());
                     var call = new MethodCallExpression(method, new Expression[] { new RangeVariableExpression(variableName), indexOrSliceRange });
 
                     return ExecuteMethodCall(call, context, isRootExpression);
                 }
                 else if (value is IJsonArray array)
                 {
-                    var method = context.JsonContext.ReferenceResolver.GetMethod(nameof(StandardLibraryMethods.Slice).ToLowerInvariant());
+                    var method = context.JsonContext.ReferenceResolver.GetMethod(nameof(StringAndArrayMethods.Slice).ToLowerInvariant());
                     var call = new MethodCallExpression(method, new Expression[] { new RangeVariableExpression(variableName), indexOrSliceRange });
 
                     return ExecuteMethodCall(call, context, isRootExpression);

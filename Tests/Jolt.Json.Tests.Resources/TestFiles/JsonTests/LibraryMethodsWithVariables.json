@@ -8,6 +8,209 @@
   },
   "testGroups": [
     {
+      "name": "Standard library regex methods work when standard library classes are discrete",
+      "source": {
+        "stringValue": "this is a test",
+        "spacedAndCasedStringValue": " tHIs iS a tESt ",
+        "stringArray": [ "this", "is", "a", "test" ],
+        "nestedIntegerArray": [ [ 1, [ 2, 3 ] ], [ 4, 5 ] ]        
+      },
+      "tests": [
+        {
+          "name": "ToUpperCase works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#toUpperCase()"
+          },
+          "result": {
+            "resultValue": " THIS IS A TEST "
+          }
+        },
+        {
+          "name": "ToLowerCase works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#toLowerCase()"
+          },
+          "result": {
+            "resultValue": " this is a test "
+          }
+        },
+        {
+          "name": "Trim works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#trim()"
+          },
+          "result": {
+            "resultValue": "tHIs iS a tESt"
+          }
+        },
+        {
+          "name": "TrimStart works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#trimStart()"
+          },
+          "result": {
+            "resultValue": "tHIs iS a tESt "
+          }
+        },
+        {
+          "name": "TrimEnd works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#trimEnd()"
+          },
+          "result": {
+            "resultValue": " tHIs iS a tESt"
+          }
+        },
+        {
+          "name": "StartsWith works with a range variable containing a string value and a valid string start",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#startsWith(' tHIs')"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "StartsWith works with a range variable containing a string value and an invalid string start",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#startsWith(' asdf')"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "EndsWith works with a range variable containing a string value and a valid string end",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#endsWith('tESt ')"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "EndsWith works with a range variable containing a string value and an invalid string end",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#endsWith('asdf ')"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "Replace works with a range variable containing a string value and a valid substring",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#replace('tESt ', 'test')"
+          },
+          "result": {
+            "resultValue": " tHIs iS a test"
+          }
+        },
+        {
+          "name": "Replace works with a range variable containing a string value and an invalid substring",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#replace('asdf ', 'test')"
+          },
+          "result": {
+            "resultValue": " tHIs iS a tESt "
+          }
+        },
+        {
+          "name": "IsRegexMatch is true with a range variable containing a string value and a pattern that is present",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "resultValue": "#isRegexMatch(@x, 'is')"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "IsRegexMatch is false with a range variable containing a string value and a pattern that is not present",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "resultValue": "#isRegexMatch(@x, 'asdf')"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "RegexReplace works with a range variable containing a string value and a pattern that is present",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "resultValue": "#regexReplace(@x, 'is', 'x')"
+          },
+          "result": {
+            "resultValue": "thx x a test"
+          }
+        },
+        {
+          "name": "RegexReplace works with a range variable containing a string value and a pattern that is not present",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "resultValue": "#regexReplace(@x, 'asdf', 'x')"
+          },
+          "result": {
+            "resultValue": "this is a test"
+          }
+        },
+        {
+          "name": "Reverse works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "resultValue": "#reverse(@x)"
+          },
+          "result": {
+            "resultValue": "tset a si siht"
+          }
+        },
+        {
+          "name": "Reverse works with a range variable containing an array",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)",
+            "resultValue": "#reverse(@x)"
+          },
+          "result": {
+            "resultValue": [ "test", "a", "is", "this" ]
+          }
+        },
+        {
+          "name": "Flatten works with a range variable containing a single-level array and returns a single-level array",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)",
+            "resultValue": "#flatten(@x)"
+          },
+          "result": {
+            "resultValue": [ "this", "is", "a", "test" ]
+          }
+        },
+        {
+          "name": "Flatten works with a range variable containing a multi-level array and returns asingle-level array",
+          "transformer": {
+            "@x": "#valueOf($.nestedIntegerArray)",
+            "resultValue": "#flatten(@x)"
+          },
+          "result": {
+            "resultValue": [ 1, 2, 3, 4, 5 ]
+          }
+        }
+
+
+      ]
+    },
+    {
       "name": "Standard library methods work with range variables in lambda expressions",
       "source": {
         "integerValue": 1,
@@ -397,6 +600,190 @@
           },
           "result": {
             "resultArray": [ 4, 2, 1, 4 ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Standard library date/time methods work with range variables",
+      "source": {
+        "isoDateString": "2024-01-15T10:30:00",
+        "isoDateWithZ": "2024-01-15T10:30:00Z",
+        "customFormattedDate": "01/15/2024"
+      },
+      "tests": [
+        {
+          "name": "ParseDateTime works with ISO 8601 format string",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "resultValue": "#parseDateTime(@x, 'yyyy-MM-ddTHH:mm:ss')"
+          },
+          "result": {
+            "resultValue": "2024-01-15T10:30:00.0000000"
+          }
+        },
+        {
+          "name": "ParseDateTime works with custom date format",
+          "transformer": {
+            "@x": "#valueOf($.customFormattedDate)",
+            "resultValue": "#parseDateTime(@x, 'MM/dd/yyyy')"
+          },
+          "result": {
+            "resultValue": "2024-01-15T00:00:00.0000000"
+          }
+        },
+        {
+          "name": "FormatDateTime works to convert ISO 8601 to custom format",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "resultValue": "#formatDateTime(@x, 'MMM dd, yyyy')"
+          },
+          "result": {
+            "resultValue": "Jan 15, 2024"
+          }
+        },
+        {
+          "name": "FormatDateTime works to convert ISO 8601 to another format",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "resultValue": "#formatDateTime(@x, 'yyyy-MM-dd HH:mm:ss')"
+          },
+          "result": {
+            "resultValue": "2024-01-15 10:30:00"
+          }
+        },
+        {
+          "name": "CurrentDateTime returns a non-null ISO 8601 formatted string",
+          "transformer": {
+            "@x": "#currentDateTime()",
+            "resultHasValue": "#exists(@x)"
+          },
+          "result": {
+            "resultHasValue": true
+          }
+        },
+        {
+          "name": "CurrentDateTimeUtc returns a non-null ISO 8601 formatted string",
+          "transformer": {
+            "@x": "#currentDateTimeUtc()",
+            "resultHasValue": "#exists(@x)"
+          },
+          "result": {
+            "resultHasValue": true
+          }          
+        },
+        {
+          "name": "AddDays works with positive day value",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "resultValue": "#addDays(@x, 7)"
+          },
+          "result": {
+            "resultValue": "2024-01-22T10:30:00.0000000"
+          }
+        },
+        {
+          "name": "AddDays works with negative day value",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "resultValue": "#addDays(@x, -5)"
+          },
+          "result": {
+            "resultValue": "2024-01-10T10:30:00.0000000"
+          }
+        },
+        {
+          "name": "AddDays works with range variable containing numeric value",
+          "transformer": {
+            "@date": "#valueOf($.isoDateString)",
+            "@days": 10,
+            "resultValue": "#addDays(@date, @days)"
+          },
+          "result": {
+            "resultValue": "2024-01-25T10:30:00.0000000"
+          }
+        },
+        {
+          "name": "AddHours works with positive hour value",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "resultValue": "#addHours(@x, 5)"
+          },
+          "result": {
+            "resultValue": "2024-01-15T15:30:00.0000000"
+          }
+        },
+        {
+          "name": "AddHours works with negative hour value",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "resultValue": "#addHours(@x, -3)"
+          },
+          "result": {
+            "resultValue": "2024-01-15T07:30:00.0000000"
+          }
+        },
+        {
+          "name": "AddHours works with range variable containing numeric value",
+          "transformer": {
+            "@date": "#valueOf($.isoDateString)",
+            "@hours": 12,
+            "resultValue": "#addHours(@date, @hours)"
+          },
+          "result": {
+            "resultValue": "2024-01-15T22:30:00.0000000"
+          }
+        },
+        {
+          "name": "AddMinutes works with positive minute value",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "resultValue": "#addMinutes(@x, 45)"
+          },
+          "result": {
+            "resultValue": "2024-01-15T11:15:00.0000000"
+          }
+        },
+        {
+          "name": "AddMinutes works with negative minute value",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "resultValue": "#addMinutes(@x, -30)"
+          },
+          "result": {
+            "resultValue": "2024-01-15T10:00:00.0000000"
+          }
+        },
+        {
+          "name": "AddMinutes works with range variable containing numeric value",
+          "transformer": {
+            "@date": "#valueOf($.isoDateString)",
+            "@minutes": 90,
+            "resultValue": "#addMinutes(@date, @minutes)"
+          },
+          "result": {
+            "resultValue": "2024-01-15T12:00:00.0000000"
+          }
+        },
+        {
+          "name": "Date arithmetic chain: parseDateTime then format",
+          "transformer": {
+            "@parsed": "#parseDateTime($.customFormattedDate, 'MM/dd/yyyy')",
+            "resultValue": "#formatDateTime(@parsed, 'yyyy-MM-dd')"
+          },
+          "result": {
+            "resultValue": "2024-01-15"
+          }
+        },
+        {
+          "name": "Date arithmetic chain: add days then format",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "@future": "#addDays(@x, 30)",
+            "resultValue": "#formatDateTime(@future, 'MMMM dd, yyyy')"
+          },
+          "result": {
+            "resultValue": "February 14, 2024"
           }
         }
       ]

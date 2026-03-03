@@ -14,10 +14,10 @@ namespace Jolt.Library
     {
         public static IEnumerable<MethodSignature> GetStandardLibraryRegistrations()
         {
-            var type = typeof(StandardLibraryMethods);
-            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
+            var assembly = typeof(Registrar).Assembly;
 
-            return from method in methods
+            return from type in assembly.GetTypes().Where(x => x.GetCustomAttribute<IncludeInStandardLibraryAttribute>() != null)
+                   from method in type.GetMethods(BindingFlags.Public | BindingFlags.Static)
                    let attribute = method.GetCustomAttribute<JoltLibraryMethodAttribute>()
                    where attribute != null
                    let validity = method.GetCustomAttribute<MethodIsValidOnAttribute>()

@@ -3,6 +3,8 @@ using Jolt.Exceptions;
 using Jolt.Library;
 using Jolt.Parsing;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,6 +79,24 @@ namespace Jolt.Json.Newtonsoft
         public JoltJsonTransformer(JoltContext context) 
             : base(context)
         {
+            // We're setting the default settings for JsonConvert at a global level here because we'd
+            // like to have these custom converters, contract resolver, and date handling to be used for
+            // any JSON deserialization that occurs (until such time as we can resolve this through a
+            // more configurable approach like dependency injection via the context). We're specifically
+            // setting the DateParseHandling to None because otherwise Newtonsoft will parse any date-like strings
+            // into a JToken with a Date type and 1) We don't have that concept at the moment, and 2) We'll lose
+            // the formatting of the original string and cause things like ParseExact to choke on the resulting value.
+
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+            {
+                Converters =
+                {
+                    new JoltJsonObjectConverter(),
+                    new JoltJsonArrayConverter()
+                },
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                DateParseHandling = DateParseHandling.None
+            };
         }
     }
 }

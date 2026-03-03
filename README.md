@@ -368,8 +368,20 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | nameOf | Returns the name of the property being evaluated by the provided loop variable | `"#nameOf(@x)": "#valueOf($.some.path)"` | Property Name
 | indexOf | Returns the zero-based index value of the first occurrence of the provided value | `#indexOf(#valueOf($.some.path), 'some string')` | Property Value
 | length | Returns the length of a string or array value | `#length($.some.path)` | Property Value
+| toUpperCase | Returns the uppercase version of a string value | `#toUpperCase($.some.path)` | Property Value
+| toLowerCase | Returns the lowercase version of a string value | `#toLowerCase($.some.path)` | Property Value
+| trim | Returns the string value with all leading and trailing whitespace removed | `#trim($.some.path)` | Property Value
+| trimStart | Returns the string value with all leading whitespace removed | `#trimStart($.some.path)` | Property Value
+| trimEnd | Returns the string value with all trailing whitespace removed | `#trimEnd($.some.path)` | Property Value
+| replace | Returns the string value with all occurrences of a specified substring replaced with another value | `#replace($.some.path, 'old', 'new')` | Property Value
+| startsWith | Returns true if a string value starts with the provided substring, false otherwise | `#startsWith($.some.path, 'start')` | Property Value
+| endsWith | Returns true if a string value ends with the provided substring, false otherwise | `#endsWith($.some.path, 'end')` | Property Value
 | substring | Returns the string value that falls within the provided range in a given string | `#substring($.some.path, 1..2)` | Property Value
+| isRegexMatch | Returns true if a string value matches the provided regular expression pattern, false otherwise | `#isRegexMatch($.some.path, '^pattern$')` | Property Value
+| regexReplace | Returns the string value with all occurrences of a specified regular expression pattern replaced with another value | `#regexReplace($.some.path, '^pattern$', 'new')` | Property Value
 | slice | Returns the array slice that falls within the provided range in a given array | `#slice($.some.path, 1..2)` | Property Value
+| reverse | Returns the string or array value with its elements in reverse order | `#reverse($.some.path)` | Property Value
+| flatten | Returns a single array that is the result of recursively flattening an array of nested arrays | `#flatten($.some.path)` | Property Value
 | groupBy | Returns a JSON object that represents the grouping of an array's contents by its individual property values | `#groupBy($.some.path, @x: @x.propertyName)` | Property Value
 | summarizeWith | Returns an object array that's the result of applying an aggregate method to a grouped array's results | `#summarizeWith($.some.group, @seq: #someAggregateMethod(@seq))` | Property Value
 | orderBy | Returns an array in ascending order as determined by its individual property values | `#orderBy($.some.path, @x: @x.propertyName)` | Property Value
@@ -383,6 +395,13 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | joinWith | Returns a string that joins all elements of an array with the provided delimiter | `#joinWith($.some.path, ',')` | Property Name/Value
 | splitOn | Returns an array of substrings from a string value splitting on the provided delimiter | `#splitOn($.some.path, ',')` | Property Value
 | append | Returns a string or array made from appending one or more strings or arrays onto them | `#append($.some.path, 'one', 'two')` | Property Value
+| currentDateTime | Returns the current date and time as a string in ISO 8601 format | `#currentDateTime()` | Property Value
+| currentDateTimeUtc | Returns the current date and time in UTC as a string in ISO 8601 format | `#currentDateTimeUtc()` | Property Value
+| parseDateTime | Returns a string in ISO 8601 format that represents the date and time value of the provided string | `#parseDateTime($.some.path)` | Property Value
+| formatDateTime | Returns a string that represents the date and time value of the provided string formatted according to the provided format string | `#formatDateTime($.some.path, 'yyyy-MM-dd')` | Property Value
+| addDays | Returns a string in ISO 8601 format that represents the date and time value of the provided string with the specified number of days added to it | `#addDays($.some.path, 7)` | Property Value
+| addHours | Returns a string in ISO 8601 format that represents the date and time value of the provided string with the specified number of hours added to it | `#addHours($.some.path, 5)` | Property Value
+| addMinutes | Returns a string in ISO 8601 format that represents the date and time value of the provided string with the specified number of minutes added to it | `#addMinutes($.some.path, 30)` | Property Value
 | isInteger | Returns true if the value is represented as a whole number | `#isInteger($.some.path)` | Property Value
 | isString | Returns true if the value is represented as a string | `#isString($.some.path)` | Property Value
 | isDecimal | Returns true if the value is represented as a floating point number | `#isDecimal($.some.path)` | Property Value

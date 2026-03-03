@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -13,7 +14,19 @@ namespace Jolt.Json.Newtonsoft
     {
         public static IJsonToken? Parse(string json)
         {
-            var token = JToken.Parse(json);
+            // We're jumping through a few hoops here because we want to ensure that date strings are not
+            // automatically parsed as Date types by Newtonsoft, since we don't have a Date type and if they're
+            // parsed as such then we lose the original string value and any specific formatting it may contain
+            // which will cause methods like ParseExact to choke when they may expect a specific format to be used.
+            // JToken.Parse() doesn't allow you to directly modify DateParseHandling, so we're going the long
+            // way around here.
+
+            using var reader = new StringReader(json);
+            using var jsonReader = new JsonTextReader(reader);
+
+            jsonReader.DateParseHandling = DateParseHandling.None;
+
+            var token = JToken.Load(jsonReader);
 
             return FromObject(token);
         }
@@ -35,6 +48,7 @@ namespace Jolt.Json.Newtonsoft
                 JTokenType.Boolean => new JsonValue(token),
                 JTokenType.Float => new JsonValue(token),
                 JTokenType.Null => new JsonValue(token),
+                JTokenType.Date => new JsonValue(token),
                 _ => throw new ArgumentOutOfRangeException(nameof(token), $"Unable to parse JSON token from object with unsupported type '{token.Type}'"),
             };
         }
@@ -68,6 +82,7 @@ namespace Jolt.Json.Newtonsoft
                     JTokenType.Boolean => JsonTokenType.Value,
                     JTokenType.Float => JsonTokenType.Value,
                     JTokenType.Null => JsonTokenType.Null,
+                    JTokenType.Date => JsonTokenType.Value,
                     _ => throw new ArgumentOutOfRangeException(nameof(token), $"Unable to determine best JSON token type for unsupported type '{token.Type}'")
                 };
             }
@@ -109,7 +124,8 @@ namespace Jolt.Json.Newtonsoft
                     new JoltJsonObjectConverter(),
                     new JoltJsonArrayConverter()
                 },
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                DateParseHandling = DateParseHandling.None
             };
 
             return _token.ToObject(type, serializer);

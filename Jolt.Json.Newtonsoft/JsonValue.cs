@@ -26,6 +26,7 @@ namespace Jolt.Json.Newtonsoft
                     JTokenType.Boolean => JsonValueType.Boolean,
                     JTokenType.Float => JsonValueType.Number,
                     JTokenType.Null => JsonValueType.Null,
+                    JTokenType.Date => JsonValueType.String,
                     _ => throw new ArgumentOutOfRangeException(nameof(token), $"Unable to determine best JSON value type for unsupported type '{_token.Type}'")
                 };
             }
