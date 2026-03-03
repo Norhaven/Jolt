@@ -91,37 +91,6 @@ jobs:
       with:
         name: Code Coverage Report
         path: ./CoverageReport/
-
-    # Generate build status badge
-    - name: Create build status badge
-      if: always()
-      run: |
-        $badgeDirectory = "./BuildStatusBadge"
-        New-Item -ItemType Directory -Path $badgeDirectory -Force | Out-Null
-
-        $jobStatus = "${{ job.status }}"
-        $badgeColor = if ($jobStatus -eq "success") { "brightgreen" } else { "red" }
-        $badgeLabel = "Build & Test"
-        $badgeMessage = $jobStatus.ToUpper()
-
-        # Create badge using shields.io
-        $badgeUrl = "https://img.shields.io/badge/$badgeLabel-$badgeMessage-$badgeColor"
-        $badgeOutputPath = "$badgeDirectory/build-status-badge.svg"
-
-        # Download the badge
-        Invoke-WebRequest -Uri $badgeUrl -OutFile $badgeOutputPath
-
-        Write-Host "Build Status Badge created successfully"
-        Write-Host "Status: $jobStatus"
-        Write-Host "Badge Color: $badgeColor"
-
-    - name: Upload build status badge
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: Build Status Badge
-        path: ./BuildStatusBadge/
-        retention-days: 30
         
   add_code_coverage_summary:
     name: Add Code Coverage To Summary
