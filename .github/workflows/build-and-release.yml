@@ -104,9 +104,12 @@ jobs:
         path: ./CoverageReport
     - name: Add coverage summary to GitHub Step Summary
       run: |
-        cat ./CoverageReport/SummaryGithub.md
-        cat ./CoverageReport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
-        cat $GITHUB_STEP_SUMMARY
+        $summaryFile = Get-ChildItem -Path ./CoverageReport -Filter "SummaryGithub.md" -Recurse | Select-Object -First 1
+        if ($summaryFile) {
+          Get-Content $summaryFile.FullName | Add-Content -Path $env:GITHUB_STEP_SUMMARY -Encoding UTF8
+        } else {
+          Write-Warning "SummaryGithub.md file not found in CoverageReport directory"
+        }
     
   deploy:
     name: Publish Jolt NuGet Package
