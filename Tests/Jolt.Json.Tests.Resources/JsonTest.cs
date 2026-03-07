@@ -43,9 +43,9 @@ namespace Jolt.Json.Tests.Resources
             public string ExternalMethodSource { get; set; }
         }
 
-        public sealed class JsonTestContainer : TestContainer
+        public abstract class JsonTestContainer : TestContainer<EndToEndTest>
         {
-            private sealed class TestDoubleJsonEqualityComparer : IJsonEqualityComparer
+            public sealed class TestDoubleJsonEqualityComparer : IJsonEqualityComparer
             {
                 public Type ApplicableType => typeof(IJsonValue);
 
@@ -146,9 +146,9 @@ namespace Jolt.Json.Tests.Resources
                 return reader.ReadToEnd();
             }
 
-            public override void Execute(IJsonContext context)
+            public override IEnumerable<object[]> GetTestsFromContainer()
             {
-                var testFile = context.JsonTokenReader.Read(_testFileJson).ToTypeOf<TestFile>();
+                var testFile = Context.JsonTokenReader.Read(_testFileJson).ToTypeOf<TestFile>();
 
                 var associatedTests = from testGroup in testFile.TestGroups
                                       from test in testGroup.Tests
@@ -168,16 +168,21 @@ namespace Jolt.Json.Tests.Resources
                                       };
 
                 foreach (var test in associatedTests)
-                {
-                    // We're only working with a single context that's passed in for all tests within the JSON file,
-                    // so in case the tests are registering external methods we want to start those fresh each time
-                    // to avoid them stacking up and duplicating.
-
-                    context = context.Clear();
-                    context.ReferenceResolver.Clear();
-
-                    ExecuteEndToEndTest(test, context);
+                {                    
+                    yield return new object[] { this, test };
                 }
+            }
+
+            public override void Execute(EndToEndTest test)
+            {
+                // We're only working with a single context that's passed in for all tests within the JSON file,             
+                // so in case the tests are registering external methods we want to start those fresh each time             
+                // to avoid them stacking up and duplicating.
+
+                var context = Context.Clear();
+                context.ReferenceResolver.Clear();
+                
+                ExecuteEndToEndTest(test, context);
             }
 
             private void ExecuteEndToEndTest(EndToEndTest test, IJsonContext context)
@@ -281,10 +286,5 @@ namespace Jolt.Json.Tests.Resources
                 }
             }
         }
-        
-        public JsonTest(Func<IJsonContext> context)
-            : base(context)
-        {
-        }        
     }
 }

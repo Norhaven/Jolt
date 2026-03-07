@@ -11,44 +11,37 @@ namespace Jolt.Json.Tests;
 
 public class Startup
 {
-    public static void ConfigureServices(IServiceCollection services)
+    public static IJsonContext CreateNewtonsoftContext()
     {
-        IJsonContext CreateNewtonsoftContext()
-        {
-            var messageProvider = new MessageProvider(JoltOptions.Default);
+        var messageProvider = new MessageProvider(JoltOptions.Default);
 
-            return new JoltContext(
-                default,
-                new ExpressionParser(),
-                new ExpressionEvaluator(),
-                new TokenReader(messageProvider),
-                new Newtonsoft.JsonTokenReader(),
-                new Newtonsoft.JsonPathQueryPathProvider(),
-                new MethodReferenceResolver(messageProvider),
-                messageProvider,
-                new ErrorHandler(default)
-            );
-        }
+        return new JoltContext(
+            default,
+            new ExpressionParser(),
+            new ExpressionEvaluator(),
+            new TokenReader(messageProvider),
+            new Newtonsoft.JsonTokenReader(),
+            new Newtonsoft.JsonPathQueryPathProvider(),
+            new MethodReferenceResolver(messageProvider),
+            messageProvider,
+            new ErrorHandler(default)
+        );
+    }
 
-        IJsonContext CreateDotNetContext()
-        {
-            var messageProvider = new MessageProvider(JoltOptions.Default);
+    public static IJsonContext CreateDotNetContext()
+    {
+        var messageProvider = new MessageProvider(JoltOptions.Default);
 
-            return new JoltContext(
-                default,
-                new ExpressionParser(),
-                new ExpressionEvaluator(),
-                new TokenReader(messageProvider),
-                new DotNet.JsonTokenReader(),
-                new DotNet.JsonPathQueryPathProvider(),
-                new MethodReferenceResolver(messageProvider),
-                messageProvider,
-                new ErrorHandler(default)
-            );
-        }
-
-        services
-            .AddKeyedTransient<Func<IJsonContext>>(TestType.Newtonsoft, (x, _) => CreateNewtonsoftContext)
-            .AddKeyedTransient<Func<IJsonContext>>(TestType.DotNet, (x, _) => CreateDotNetContext);
+        return new JoltContext(
+            default,
+            new ExpressionParser(),
+            new ExpressionEvaluator(),
+            new TokenReader(messageProvider),
+            new DotNet.JsonTokenReader(),
+            new DotNet.JsonPathQueryPathProvider(),
+            new MethodReferenceResolver(messageProvider),
+            messageProvider,
+            new ErrorHandler(default)
+        );
     }
 }

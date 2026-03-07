@@ -4,6 +4,7 @@ using Jolt.Json.Tests.Resources.TestAttributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -12,13 +13,18 @@ namespace Jolt.Json.DotNetFramework.Tests.E2E.SmallTests.DotNet
 {
     public sealed class ValueOf : ValueOfTests
     {
-        public ValueOf()
-            :base(Startup.CreateDotNetContext)
+        public sealed class DotNetSmallTestContainer : SmallTestContainer
         {
+            public DotNetSmallTestContainer(MethodInfo testMethod, SmallTestDefinitionAttribute testAttribute)
+                : base(testMethod, testAttribute)
+            {
+            }
+
+            public override IJsonContext Context => Startup.CreateDotNetContext();
         }
 
         [Theory]
-        [MemberData(nameof(GetAllTestsInScope), typeof(ValueOf), typeof(SmallTestDefinitionAttribute), typeof(SmallTestContainer))]
-        public void ValueOfTests_WillSucceed(SmallTestContainer container) => container.Execute(Context);
+        [MemberData(nameof(GetAllTestsInScope), typeof(ValueOf), typeof(SmallTestDefinitionAttribute), typeof(DotNetSmallTestContainer))]
+        public void ValueOfTests_WillSucceed(DotNetSmallTestContainer container, QuickTest test) => container.Execute(test);
     }
 }

@@ -5,17 +5,28 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit.DependencyInjection;
+using static Jolt.Json.Tests.Resources.JsonTest;
 
 namespace Jolt.Json.Tests.E2E.SmallTests.Newtonsoft;
 
-[Startup(typeof(Startup), Shared = false)]
-public sealed class ValueOf([FromKeyedServices(TestType.Newtonsoft)] Func<IJsonContext> context)
-    : ValueOfTests(context)
+public sealed class ValueOf
+    : ValueOfTests
 {
+    public sealed class NewtonsoftSmallTestContainer : SmallTestContainer
+    {
+        public NewtonsoftSmallTestContainer(MethodInfo testMethod, SmallTestDefinitionAttribute testAttribute)
+            : base(testMethod, testAttribute)
+        {
+        }
+
+        public override IJsonContext Context => Startup.CreateNewtonsoftContext();
+    }
+
     [Theory]
-    [MemberData(nameof(GetAllTestsInScope), typeof(ValueOf), typeof(SmallTestDefinitionAttribute), typeof(SmallTestContainer))]
-    public void ValueOfTests_WillSucceed(SmallTestContainer container) => container.Execute(Context);
+    [MemberData(nameof(GetAllTestsInScope), typeof(ValueOf), typeof(SmallTestDefinitionAttribute), typeof(NewtonsoftSmallTestContainer))]
+    public void ValueOfTests_WillSucceed(NewtonsoftSmallTestContainer container, QuickTest test) => container.Execute(test);
 }

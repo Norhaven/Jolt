@@ -2,15 +2,25 @@
 using Jolt.Json.Tests.Resources;
 using Jolt.Json.Tests.Resources.TestAttributes;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 using Xunit.DependencyInjection;
 
 namespace Jolt.Json.Tests.E2E.General.Newtonsoft;
 
-[Startup(typeof(Startup), Shared = false)]
-public sealed class JoltTransformer([FromKeyedServices(TestType.Newtonsoft)] Func<IJsonContext> context)
-    : TransformerTests(context)
+public sealed class JoltTransformer
+    : TransformerTests
 {
+    public sealed class NewtonsoftTransformerTestContainer : TransformerTestContainer
+    {
+        public NewtonsoftTransformerTestContainer(MethodInfo testMethod, TransformerTestDefinitionAttribute testAttribute)
+            : base(testMethod, testAttribute)
+        {
+        }
+
+        public override IJsonContext Context => Startup.CreateNewtonsoftContext();
+    }
+
     [Theory]
-    [MemberData(nameof(GetAllTestsInScope), typeof(JoltTransformer), typeof(TransformerTestDefinitionAttribute), typeof(TransformerTestContainer))]
-    public void TransformerTests_WillSucceed(TransformerTestContainer container) => container.Execute(Context, this);
+    [MemberData(nameof(GetAllTestsInScope), typeof(JoltTransformer), typeof(TransformerTestDefinitionAttribute), typeof(NewtonsoftTransformerTestContainer))]
+    public void TransformerTests_WillSucceed(NewtonsoftTransformerTestContainer container) => container.Execute(this);
 }

@@ -17,19 +17,23 @@ namespace Jolt.Json.Tests.Resources
 {
     public abstract class SmallTest : Test
     {
-        public sealed class SmallTestContainer : TestContainer
+        public sealed class QuickTest
+        {
+            public IJsonObject SourceJson { get; set; }
+            public IJsonObject TransformerJson { get; set; }
+        }
+
+        public abstract class SmallTestContainer : TestContainer<QuickTest>
         {
             public SmallTestContainer(MethodInfo testMethod, SmallTestDefinitionAttribute attribute)
                 : base(testMethod, attribute)
             {
             }
 
-            public override void Execute(IJsonContext context)
+            public override IEnumerable<object[]> GetTestsFromContainer()
             {
                 var source = _method.GetCustomAttribute<SourceHasAttribute>();
                 var target = _method.GetCustomAttribute<TransformerIsAttribute>();
-                var expectsResult = _method.GetCustomAttribute<ExpectsResultAttribute>();
-                var expectsException = _method.GetCustomAttribute<ExpectsExceptionAttribute>();
 
                 if (_method is null)
                 {
@@ -41,7 +45,7 @@ namespace Jolt.Json.Tests.Resources
                     throw new ArgumentNullException(nameof(_method), $"Either source or transformer is missing for test method '{_method}'");
                 }
 
-                var reader = context.JsonTokenReader;
+                var reader = Context.JsonTokenReader;
 
                 var sourceJson = reader.Read("{}") as IJsonObject;
                 var transformerJson = reader.Read("{}") as IJsonObject;
@@ -54,16 +58,24 @@ namespace Jolt.Json.Tests.Resources
 
                 transformerJson[target.NameExpression] = reader.CreateTokenFrom(target.ValueExpression);
 
-                var currentContext = context
-                    .UseTransformer(transformerJson.ToString());
+                yield return new object[] { this, new QuickTest { SourceJson = sourceJson, TransformerJson = transformerJson } };
+            }
+
+            public override void Execute(QuickTest test)
+            {
+                var expectsResult = _method.GetCustomAttribute<ExpectsResultAttribute>();
+                var expectsException = _method.GetCustomAttribute<ExpectsExceptionAttribute>();
+
+                var currentContext = Context
+                    .UseTransformer(test.TransformerJson.ToString());
 
                 var transformer = new JoltTransformer<IJsonContext>(currentContext);
 
                 try
                 {
-                    var result = transformer.Transform(sourceJson.ToString());
+                    var result = transformer.Transform(test.SourceJson.ToString());
 
-                    var jsonResult = reader.Read(result) as IJsonObject;
+                    var jsonResult = Context.JsonTokenReader.Read(result) as IJsonObject;
                     var value = jsonResult[expectsResult.PropertyName];
 
                     if (value is null && expectsResult.Value is null)
@@ -75,7 +87,7 @@ namespace Jolt.Json.Tests.Resources
 
                     if (value.Type == JsonTokenType.Object)
                     {
-                        var expectedToken = reader.Read(expectsResult.Value?.ToString());
+                        var expectedToken = Context.JsonTokenReader.Read(expectsResult.Value?.ToString());
                         value.Equals(expectedToken).Should().BeTrue("because the transformed JSON should match the expectation");
                     }
                     else
@@ -109,11 +121,6 @@ namespace Jolt.Json.Tests.Resources
                     expectsException.ExceptionType.Should().Be(ex.GetType(), "because this exception was expected");
                 }
             }
-        }
-
-        public SmallTest(Func<IJsonContext> context)
-            :base(context)
-        {
         }
     }
 }

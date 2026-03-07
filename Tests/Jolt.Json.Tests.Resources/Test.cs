@@ -140,12 +140,15 @@ namespace Jolt.Json.Tests.Resources
             public const string UsingBlock = "UsingBlock";
         }
 
-        public abstract class TestContainer
+        public abstract class TestContainer        
         {
+
             protected readonly MethodInfo _method;
             protected readonly Attribute _attribute;
 
             public string TestName => _method.Name;
+
+            public abstract IJsonContext Context { get; }
 
             public TestContainer(MethodInfo testMethod, Attribute attribute)
             {
@@ -153,18 +156,19 @@ namespace Jolt.Json.Tests.Resources
                 _attribute = attribute;
             }
 
-            public abstract void Execute(IJsonContext context);
+            public abstract IEnumerable<object[]> GetTestsFromContainer();
         }
 
-        public IJsonContext Context => _getTestContext();
-
-        private readonly Func<IJsonContext> _getTestContext;
-
-        public Test(Func<IJsonContext> getContext)
+        public abstract class TestContainer<T> : TestContainer
         {
-            _getTestContext = getContext;
+            public TestContainer(MethodInfo testMethod, Attribute attribute)
+                :base(testMethod, attribute)
+            {
+            }
+
+            public abstract void Execute(T test);            
         }
-                
+                      
         public static IEnumerable<object[]> GetAllTestsInScope(Type testClassType, Type testAttributeType, Type testContainerType)
         {
             var testMethods = from method in testClassType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
@@ -174,7 +178,21 @@ namespace Jolt.Json.Tests.Resources
 
             foreach (var testMethod in testMethods)
             {
-                yield return new[] { Activator.CreateInstance(testContainerType, testMethod.Method, testMethod.Attribute) };
+                var container = Activator.CreateInstance(testContainerType, testMethod.Method, testMethod.Attribute);
+
+                var tests = ((TestContainer)container).GetTestsFromContainer().ToArray();
+
+                if (tests.Length == 0)
+                {
+                    yield return new[] { container }; 
+                }
+                else
+                {
+                    foreach (var test in tests)
+                    {
+                        yield return test;
+                    }
+                }
             }
         }
     }

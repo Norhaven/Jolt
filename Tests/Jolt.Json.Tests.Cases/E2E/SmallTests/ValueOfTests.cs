@@ -25,11 +25,6 @@ namespace Jolt.Json.Tests.Cases.E2E.SmallTests
             public const string TooManyParameters = "#valueOf($.value, $.wrong)";
         }
 
-        public ValueOfTests(Func<IJsonContext> context)
-            : base(context)
-        {
-        }
-
         [SmallTestDefinition]
         [SourceHasString("test")]
         [TransformerIs(ValueTransformer.Default)]

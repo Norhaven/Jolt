@@ -12,39 +12,34 @@ namespace Jolt.Json.Tests.Cases.E2E.General
 {
     public abstract class TransformerTests : TransformerTest
     {
-        public TransformerTests(Func<IJsonContext> context)
-            : base(context)
-        { 
+        [TransformerTestDefinition(Transformer.SingleLevelValueOf, SourceDocument.SingleLevel)]
+        public void ValueOf_IsSuccessful_AtSingleLevelForNumericLiteral(TransformerTestContainer container)
+        {
+            ValidateLiteralIsTransformed(container, TargetProperty.IntegerLiteral, Value.IntegerLiteral);
         }
 
         [TransformerTestDefinition(Transformer.SingleLevelValueOf, SourceDocument.SingleLevel)]
-        public void ValueOf_IsSuccessful_AtSingleLevelForNumericLiteral()
+        public void ValueOf_IsSuccessful_AtSingleLevelForStringLiteral(TransformerTestContainer container)
         {
-            ValidateLiteralIsTransformed(TargetProperty.IntegerLiteral, Value.IntegerLiteral);
+            ValidateLiteralIsTransformed(container, TargetProperty.StringLiteral, Value.StringLiteral);
         }
 
         [TransformerTestDefinition(Transformer.SingleLevelValueOf, SourceDocument.SingleLevel)]
-        public void ValueOf_IsSuccessful_AtSingleLevelForStringLiteral()
+        public void ValueOf_IsSuccessful_AtSingleLevelForBooleanTrueLiteral(TransformerTestContainer container)
         {
-            ValidateLiteralIsTransformed(TargetProperty.StringLiteral, Value.StringLiteral);
+            ValidateLiteralIsTransformed(container, TargetProperty.BooleanTrueLiteral, Value.BooleanTrueLiteral);
         }
 
         [TransformerTestDefinition(Transformer.SingleLevelValueOf, SourceDocument.SingleLevel)]
-        public void ValueOf_IsSuccessful_AtSingleLevelForBooleanTrueLiteral()
+        public void ValueOf_IsSuccessful_AtSingleLevelForBooleanFalseLiteral(TransformerTestContainer container)
         {
-            ValidateLiteralIsTransformed(TargetProperty.BooleanTrueLiteral, Value.BooleanTrueLiteral);
-        }
-
-        [TransformerTestDefinition(Transformer.SingleLevelValueOf, SourceDocument.SingleLevel)]
-        public void ValueOf_IsSuccessful_AtSingleLevelForBooleanFalseLiteral()
-        {
-            ValidateLiteralIsTransformed(TargetProperty.BooleanFalseLiteral, Value.BooleanFalseLiteral);
+            ValidateLiteralIsTransformed(container, TargetProperty.BooleanFalseLiteral, Value.BooleanFalseLiteral);
         }
 
         [TransformerTestDefinition(Transformer.MultiLevelValueOf, SourceDocument.MultiLevel)]
-        public void ValueOf_IsSuccessful_AtMultiLevelForStringLiteral()
+        public void ValueOf_IsSuccessful_AtMultiLevelForStringLiteral(TransformerTestContainer container)
         {
-            var json = ExecuteTest();
+            var json = ExecuteTest(container);
 
             var nestedJson = (IJsonObject)json[TargetProperty.Object];
 
@@ -52,9 +47,9 @@ namespace Jolt.Json.Tests.Cases.E2E.General
         }
 
         [TransformerTestDefinition(Transformer.Loops, SourceDocument.Loop)]
-        public void Loop_IsSuccessful_AtSingleLevelForMultiElements()
+        public void Loop_IsSuccessful_AtSingleLevelForMultiElements(TransformerTestContainer container)
         {
-            var json = ExecuteTest();
+            var json = ExecuteTest(container);
 
             var nestedJson = (IJsonArray)json[TargetProperty.Array];
 
@@ -127,9 +122,9 @@ namespace Jolt.Json.Tests.Cases.E2E.General
         }
 
         [TransformerTestDefinition(Transformer.MultiLevelValueOf, SourceDocument.MultiLevel)]
-        public void ValueOf_WorksSuccessfullyAtMultipleLevels()
+        public void ValueOf_WorksSuccessfullyAtMultipleLevels(TransformerTestContainer container)
         {
-            var json = ExecuteTest();
+            var json = ExecuteTest(container);
 
             json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
 
@@ -139,11 +134,11 @@ namespace Jolt.Json.Tests.Cases.E2E.General
         }
 
         [TransformerTestDefinition(Transformer.Math, SourceDocument.Math)]
-        public void Math_IsSuccessful_WithOperatorPrecedence()
+        public void Math_IsSuccessful_WithOperatorPrecedence(TransformerTestContainer container)
         {
             var equation = "2 + 3 * 4 + 5 = 19";
 
-            var json = ExecuteTest();
+            var json = ExecuteTest(container);
 
             json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
 
@@ -157,9 +152,9 @@ namespace Jolt.Json.Tests.Cases.E2E.General
         }
 
         [TransformerTestDefinition(Transformer.Existence, SourceDocument.Existence)]
-        public void Existence_IsSuccessful_WithLiteralStringAndNull()
+        public void Existence_IsSuccessful_WithLiteralStringAndNull(TransformerTestContainer container)
         {
-            var json = ExecuteTest();
+            var json = ExecuteTest(container);
 
             json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
 
@@ -168,9 +163,9 @@ namespace Jolt.Json.Tests.Cases.E2E.General
         }
 
         [TransformerTestDefinition(Transformer.Conditions, SourceDocument.Conditions)]
-        public void IfCondition_IsSuccessful_WithStringComparisonAsConditionAndStringResult()
+        public void IfCondition_IsSuccessful_WithStringComparisonAsConditionAndStringResult(TransformerTestContainer container)
         {
-            var json = ExecuteTest();
+            var json = ExecuteTest(container);
 
             json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
 
@@ -191,9 +186,9 @@ namespace Jolt.Json.Tests.Cases.E2E.General
         }
 
         [TransformerTestDefinition(Transformer.PipedMethods, SourceDocument.PipedMethods)]
-        public void PipedMethod_IsSuccessful_WithCallToSingleAndMultiParameterMethod()
+        public void PipedMethod_IsSuccessful_WithCallToSingleAndMultiParameterMethod(TransformerTestContainer container)
         {
-            var json = ExecuteTest();
+            var json = ExecuteTest(container);
 
             json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
 
@@ -240,7 +235,7 @@ namespace Jolt.Json.Tests.Cases.E2E.General
         }
 
         [TransformerTestDefinition(Transformer.ExternalMethods, SourceDocument.ExternalMethods, typeof(ExternalInstanceMethods))]
-        public void ExternalMethod_IsSuccessful_WithStaticAndInstanceCallToSingleAndMultiParameterMethod()
+        public void ExternalMethod_IsSuccessful_WithStaticAndInstanceCallToSingleAndMultiParameterMethod(TransformerTestContainer container)
         {
             var staticBoolRegistration = MethodRegistration.FromStaticMethod(typeof(ExternalStaticMethods), nameof(ExternalStaticMethods.TakesAndReturnsBoolean));
             var staticConcatRegistration = MethodRegistration.FromStaticMethod(typeof(ExternalStaticMethods), nameof(ExternalStaticMethods.Concatenate), "ConcatAlias");
@@ -249,7 +244,7 @@ namespace Jolt.Json.Tests.Cases.E2E.General
 
             var externalMethods = new[] { staticBoolRegistration, staticConcatRegistration, instanceAppendRegistration };
 
-            var json = ExecuteTest(x => x.RegisterAllMethods(externalMethods));
+            var json = ExecuteTest(container, x => x.RegisterAllMethods(externalMethods));
 
             json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
 
@@ -259,9 +254,9 @@ namespace Jolt.Json.Tests.Cases.E2E.General
         }
 
         [TransformerTestDefinition("ExternalMethodsWithAliases", "ExternalMethodsDocument", typeof(ExternalMixedMethods))]
-        public void ExternalMethod_IsSuccessful_UsingDefaultWithStaticMethodAliasedRegistrations()
+        public void ExternalMethod_IsSuccessful_UsingDefaultWithStaticMethodAliasedRegistrations(TransformerTestContainer container)
         {
-            var json = ExecuteTest();
+            var json = ExecuteTest(container);
 
             json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
 
@@ -271,9 +266,9 @@ namespace Jolt.Json.Tests.Cases.E2E.General
         }
 
         [TransformerTestDefinition(Transformer.RangeVariables, SourceDocument.Loop)]
-        public void RangeVariables_AreSuccessful_WithDeclarationAndUsage()
+        public void RangeVariables_AreSuccessful_WithDeclarationAndUsage(TransformerTestContainer container)
         {
-            var json = ExecuteTest();
+            var json = ExecuteTest(container);
 
             json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
 
@@ -286,9 +281,9 @@ namespace Jolt.Json.Tests.Cases.E2E.General
         }
 
         [TransformerTestDefinition(Transformer.Lambdas, SourceDocument.Lambdas)]
-        public void Lambdas_AreSuccessful_WithDeclarationAndUsage()
+        public void Lambdas_AreSuccessful_WithDeclarationAndUsage(TransformerTestContainer container)
         {
-            var json = ExecuteTest();
+            var json = ExecuteTest(container);
 
             json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
 
@@ -298,9 +293,9 @@ namespace Jolt.Json.Tests.Cases.E2E.General
         }
 
         [TransformerTestDefinition(Transformer.UsingBlock, SourceDocument.Loop)]
-        public void UsingBlock_IsSuccessful_WithDeclarationAndUsageIncludingFromRangeVariables()
+        public void UsingBlock_IsSuccessful_WithDeclarationAndUsageIncludingFromRangeVariables(TransformerTestContainer container)
         {
-            var json = ExecuteTest();
+            var json = ExecuteTest(container);
 
             json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
 
@@ -314,9 +309,9 @@ namespace Jolt.Json.Tests.Cases.E2E.General
             obj.SelectTokenAtPath("$.fourth.id").ToTypeOf<int>().Should().Be(12, "because that's the result of the equation in the transformer");
         }
 
-        private void ValidateLiteralIsTransformed<T>(string targetProperty, T targetValue, [CallerMemberName] string testMethodName = default)
+        private void ValidateLiteralIsTransformed<T>(TransformerTestContainer container,string targetProperty, T targetValue, [CallerMemberName] string testMethodName = default)
         {
-            var json = ExecuteTest(testMethodName: testMethodName);
+            var json = ExecuteTest(container, testMethodName: testMethodName);
 
             json.PropertyValueFor<T>(targetProperty).Should().Be(targetValue, "because that was the value in the source document");
         }

@@ -2,15 +2,25 @@
 using Jolt.Json.Tests.Resources;
 using Jolt.Json.Tests.Resources.TestAttributes;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 using Xunit.DependencyInjection;
 
 namespace Jolt.Json.Tests.E2E.JsonTests.Newtonsoft;
 
-[Startup(typeof(Startup), Shared = false)]
-public sealed class JsonTestHarness([FromKeyedServices(TestType.Newtonsoft)] Func<IJsonContext> context)
-    : JsonFileTests(context)
+public sealed class JsonTestHarness()
+    : JsonFileTests
 {
+    public sealed class NewtonsoftJsonTestContainer : JsonTestContainer
+    {
+        public NewtonsoftJsonTestContainer(MethodInfo testMethod, JsonTestDefinitionAttribute testAttribute)
+            : base(testMethod, testAttribute)
+        {
+        }
+
+        public override IJsonContext Context => Startup.CreateNewtonsoftContext();
+    }
+
     [Theory]
-    [MemberData(nameof(GetAllTestsInScope), typeof(JsonTestHarness), typeof(JsonTestDefinitionAttribute), typeof(JsonTestContainer))]
-    public void JsonTests_WillSucceed(JsonTestContainer container) => container.Execute(Context);
+    [MemberData(nameof(GetAllTestsInScope), typeof(JsonTestHarness), typeof(JsonTestDefinitionAttribute), typeof(NewtonsoftJsonTestContainer))]
+    public void JsonTests_WillSucceed(NewtonsoftJsonTestContainer container, EndToEndTest test) => container.Execute(test);
 }
