@@ -240,6 +240,96 @@ dotnet_naming_style.begins_with_i.required_suffix =
 dotnet_naming_style.begins_with_i.word_separator = 
 dotnet_naming_style.begins_with_i.capitalization = pascal_case
 
-# Set all naming rule violations to error severity
+# Local variables and parameters - camelCase
+dotnet_naming_rule.local_variables_should_be_camel_case.severity = suggestion
+dotnet_naming_rule.local_variables_should_be_camel_case.symbols = local_variables
+dotnet_naming_rule.local_variables_should_be_camel_case.style = camel_case
 
-dotnet_diagnostic.IDE1006.severity = error
+dotnet_naming_rule.parameters_should_be_camel_case.severity = suggestion
+dotnet_naming_rule.parameters_should_be_camel_case.symbols = parameters
+dotnet_naming_rule.parameters_should_be_camel_case.style = camel_case
+
+# Local constants - PascalCase
+dotnet_naming_rule.local_constants_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.local_constants_should_be_pascal_case.symbols = local_constants
+dotnet_naming_rule.local_constants_should_be_pascal_case.style = pascal_case
+
+# Type parameters - T + PascalCase
+dotnet_naming_rule.type_parameters_should_be_t_pascal_case.severity = suggestion
+dotnet_naming_rule.type_parameters_should_be_t_pascal_case.symbols = type_parameters
+dotnet_naming_rule.type_parameters_should_be_t_pascal_case.style = t_pascal_case
+
+# Exceptions - should end with Exception
+dotnet_naming_rule.exceptions_should_end_with_exception.severity = suggestion
+dotnet_naming_rule.exceptions_should_end_with_exception.symbols = exceptions
+dotnet_naming_rule.exceptions_should_end_with_exception.style = pascal_case_with_exception_suffix
+
+# Attributes - should end with Attribute
+dotnet_naming_rule.attributes_should_end_with_attribute.severity = suggestion
+dotnet_naming_rule.attributes_should_end_with_attribute.symbols = attributes
+dotnet_naming_rule.attributes_should_end_with_attribute.style = pascal_case_with_attribute_suffix
+
+# Additional symbol specifications
+
+dotnet_naming_symbols.local_variables.applicable_kinds = local
+dotnet_naming_symbols.local_variables.applicable_accessibilities = local
+dotnet_naming_symbols.local_variables.required_modifiers = 
+
+dotnet_naming_symbols.parameters.applicable_kinds = parameter
+dotnet_naming_symbols.parameters.applicable_accessibilities = *
+dotnet_naming_symbols.parameters.required_modifiers = 
+
+dotnet_naming_symbols.local_constants.applicable_kinds = local
+dotnet_naming_symbols.local_constants.applicable_accessibilities = local
+dotnet_naming_symbols.local_constants.required_modifiers = const
+
+dotnet_naming_symbols.type_parameters.applicable_kinds = type_parameter
+dotnet_naming_symbols.type_parameters.applicable_accessibilities = *
+dotnet_naming_symbols.type_parameters.required_modifiers = 
+
+dotnet_naming_symbols.exceptions.applicable_kinds = class
+dotnet_naming_symbols.exceptions.applicable_accessibilities = *
+dotnet_naming_symbols.exceptions.required_modifiers = 
+
+dotnet_naming_symbols.attributes.applicable_kinds = class
+dotnet_naming_symbols.attributes.applicable_accessibilities = *
+dotnet_naming_symbols.attributes.required_modifiers = 
+
+# Additional naming styles
+
+dotnet_naming_style.camel_case.capitalization = camel_case
+
+dotnet_naming_style.t_pascal_case.required_prefix = T
+dotnet_naming_style.t_pascal_case.capitalization = pascal_case
+
+dotnet_naming_style.pascal_case_with_exception_suffix.required_suffix = Exception
+dotnet_naming_style.pascal_case_with_exception_suffix.capitalization = pascal_case
+
+dotnet_naming_style.pascal_case_with_attribute_suffix.required_suffix = Attribute
+dotnet_naming_style.pascal_case_with_attribute_suffix.capitalization = pascal_case
+
+#### Diagnostic Rule Configuration ####
+
+# Naming and code style rules
+dotnet_diagnostic.IDE1006.severity = error      # Naming rule violation
+dotnet_diagnostic.IDE0003.severity = suggestion # Remove qualification
+dotnet_diagnostic.IDE0004.severity = suggestion # Remove unnecessary cast
+dotnet_diagnostic.IDE0005.severity = suggestion # Remove unnecessary imports
+dotnet_diagnostic.IDE0007.severity = suggestion # var preferences
+dotnet_diagnostic.IDE0055.severity = suggestion # Formatting
+dotnet_diagnostic.IDE0161.severity = none       # Use file-scoped namespace (we use block-scoped)
+
+# Design rules
+dotnet_diagnostic.CA1062.severity = suggestion  # Validate arguments of public methods
+dotnet_diagnostic.CA1707.severity = suggestion  # Remove underscores from identifier names
+dotnet_diagnostic.CA1711.severity = suggestion  # Rename type so that it doesn't end with 'Ex'
+dotnet_diagnostic.CA1716.severity = suggestion  # Identifiers should not match keywords
+
+# Performance rules
+dotnet_diagnostic.CA1805.severity = suggestion  # Do not initialize unnecessarily
+dotnet_diagnostic.CA1810.severity = suggestion  # Initialize reference type static fields inline
+dotnet_diagnostic.CA1820.severity = suggestion  # Test for empty strings using string length
+dotnet_diagnostic.CA1822.severity = suggestion  # Mark members as static
+
+# Documentation rules
+dotnet_diagnostic.CA1200.severity = none        # Avoid using cref tags with a prefix
