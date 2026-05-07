@@ -37,7 +37,8 @@ namespace Jolt.Parsing
 
             return stream.CurrentToken == ExpressionToken.Hash ||
                    stream.CurrentToken == ExpressionToken.OpenParentheses ||
-                   stream.CurrentToken == ExpressionToken.At;
+                   stream.CurrentToken == ExpressionToken.At ||
+                   stream.CurrentToken == ExpressionToken.OpenSquareBracket;
         }
 
         public IEnumerable<ExpressionToken> ReadToEnd(string expression, EvaluationMode mode)
@@ -121,16 +122,19 @@ namespace Jolt.Parsing
             }
             else if (stream.CurrentToken == ExpressionToken.OpenSquareBracket)
             {
-                var reader = new NumericOrRangeExpressionTokenReader(_messageProvider);
+                yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfIndexerOrArrayLiteral);
 
-                yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfIndexer);
+                var operations = new List<ExpressionToken[]>();
 
-                foreach(var token in reader.ReadTokenFrom(stream, mode))
+                while (stream.CurrentToken != ExpressionToken.CloseSquareBracket)
                 {
-                    yield return token;
+                    foreach(var token in ReadTokenFrom(stream, mode))
+                    {
+                        yield return token;
+                    }
                 }
-
-                yield return TokenFromCurrent(stream, ExpressionTokenCategory.EndOfIndexer);
+                
+                yield return TokenFromCurrent(stream, ExpressionTokenCategory.EndOfIndexerOrArrayLiteral);
             }
             else if (stream.CurrentToken == ExpressionToken.ArrowBody || stream.CurrentToken == ExpressionToken.Minus)
             {
@@ -327,13 +331,64 @@ namespace Jolt.Parsing
                     throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedNullCoalescingOperatorButFoundSingleQuestionMark);
                 }
             }
+            else if (stream.CurrentToken == ExpressionToken.RangeEndIndexer)
+            {
+                yield return TokenFromCurrent(stream, ExpressionTokenCategory.RangeEndIndexer);
+            }
             else if (char.IsNumber(stream.CurrentToken) || stream.CurrentToken == ExpressionToken.DecimalPoint || stream.CurrentToken == ExpressionToken.Caret)
             {
-                var numericOrRangeReader = new NumericOrRangeExpressionTokenReader(_messageProvider);
-
-                foreach(var token in numericOrRangeReader.ReadTokenFrom(stream, mode))
+                if (char.IsNumber(stream.CurrentToken))
                 {
-                    yield return token;
+                    var number = TokenUntilNotMatchedWith(stream, ExpressionTokenCategory.NumericLiteral, char.IsNumber);
+
+                    if (stream.TryMatchNextAndConsume(x => x == ExpressionToken.Dot))
+                    {
+                        if (stream.TryMatchNextAndConsume(x => x == ExpressionToken.Dot))
+                        {
+                            yield return number;
+
+                            yield return TokenFrom("..", ExpressionTokenCategory.RangeExpressionOperator);
+                        }
+                        else
+                        {
+                            var precision = TokenUntilNotMatchedWith(stream, ExpressionTokenCategory.NumericLiteral, char.IsNumber);
+
+                            yield return TokenFrom($"{number.Value}.{precision.Value}", ExpressionTokenCategory.NumericLiteral);
+                        }
+                    }
+                    else
+                    {
+                        yield return number;
+                    }
+                }
+                else if (stream.TryMatchNextAndConsume(x => x == ExpressionToken.Dot))
+                {
+                    if (stream.TryMatchNextAndConsume(x => x == ExpressionToken.Dot))
+                    {
+                        yield return TokenFrom("..", ExpressionTokenCategory.RangeExpressionOperator);
+                    }
+                    else if (stream.TryMatchNextAndConsume(char.IsNumber))
+                    {
+                        var precision = TokenUntilNotMatchedWith(stream, ExpressionTokenCategory.NumericLiteral, char.IsNumber);
+                        yield return TokenFrom($"0.{precision.Value}", ExpressionTokenCategory.NumericLiteral);
+                    }
+                    else
+                    {
+                        throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedDotForRangeOperatorOrNumericPrecisionButFoundDifferentToken, stream.CurrentToken);
+                    }
+                }
+                else if (stream.TryMatchNextAndConsume(x => x == ExpressionToken.Caret))
+                {
+                    yield return TokenFrom(ExpressionToken.Caret.ToString(), ExpressionTokenCategory.IndexFromEndOperator);
+
+                    foreach(var token in ReadTokenFrom(stream, mode))
+                    {
+                        yield return token;
+                    }
+                }
+                else
+                {
+                    throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.UnrecognizedNumericLiteralFormat, stream.CurrentToken);
                 }
             }
             else if (char.IsLetter(stream.CurrentToken))
@@ -343,6 +398,10 @@ namespace Jolt.Parsing
                 if (bool.TryParse(possibleBoolToken.Value, out var value))
                 {
                     yield return possibleBoolToken;
+                }
+                else if (possibleBoolToken.Value == "null")
+                {
+                    yield return TokenFrom(ExpressionToken.NullLiteral, ExpressionTokenCategory.NullLiteral);
                 }
                 else
                 {

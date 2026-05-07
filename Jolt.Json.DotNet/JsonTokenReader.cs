@@ -21,6 +21,10 @@ namespace Jolt.Json.DotNet
                 {
                     array.Add(value.ToTypeOf<object>());
                 }
+                else if (token is null)
+                {
+                    array.Add(Nodes.JsonValue.Create<string>(null));
+                }
                 else
                 {
                     array.Add(Nodes.JsonNode.Parse(token.ToString()));

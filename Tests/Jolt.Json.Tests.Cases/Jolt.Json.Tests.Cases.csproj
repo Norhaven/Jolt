@@ -12,10 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="8.8.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Jolt.Json.Tests.Resources\Jolt.Json.Tests.Resources.csproj" />
   </ItemGroup>
 

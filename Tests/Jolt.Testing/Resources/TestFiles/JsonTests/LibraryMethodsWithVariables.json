@@ -1,0 +1,1282 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "possibleExceptionCodes": {
+    "invalidMethodUseInPropertyName": "UnableToUseMethodWithinPropertyName",
+    "lambdaUsedForNonDelegate": "UnableToUseLambdaAsArgumentForNonDelegateParameter",
+    "nonLambdaUsedForDelegate": "DelegateParameterRequiresLambdaArgument",
+    "unableToConvertArrayToType": "UnableToConvertJsonArrayToRequiredParameterType"
+  },
+  "testGroups": [
+    {
+      "name": "Standard library regex methods work when standard library classes are discrete",
+      "source": {
+        "stringValue": "this is a test",
+        "spacedAndCasedStringValue": " tHIs iS a tESt ",
+        "stringArray": [ "this", "is", "a", "test" ],
+        "nestedIntegerArray": [
+          [
+            1,
+            [ 2, 3 ]
+          ],
+          [ 4, 5 ]
+        ]
+      },
+      "tests": [
+        {
+          "name": "ToUpperCase works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#toUpperCase()"
+          },
+          "result": {
+            "resultValue": " THIS IS A TEST "
+          }
+        },
+        {
+          "name": "ToLowerCase works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#toLowerCase()"
+          },
+          "result": {
+            "resultValue": " this is a test "
+          }
+        },
+        {
+          "name": "Trim works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#trim()"
+          },
+          "result": {
+            "resultValue": "tHIs iS a tESt"
+          }
+        },
+        {
+          "name": "TrimStart works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#trimStart()"
+          },
+          "result": {
+            "resultValue": "tHIs iS a tESt "
+          }
+        },
+        {
+          "name": "TrimEnd works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#trimEnd()"
+          },
+          "result": {
+            "resultValue": " tHIs iS a tESt"
+          }
+        },
+        {
+          "name": "StartsWith works with a range variable containing a string value and a valid string start",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#startsWith(' tHIs')"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "StartsWith works with a range variable containing a string value and an invalid string start",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#startsWith(' asdf')"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "EndsWith works with a range variable containing a string value and a valid string end",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#endsWith('tESt ')"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "EndsWith works with a range variable containing a string value and an invalid string end",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#endsWith('asdf ')"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "Replace works with a range variable containing a string value and a valid substring",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#replace('tESt ', 'test')"
+          },
+          "result": {
+            "resultValue": " tHIs iS a test"
+          }
+        },
+        {
+          "name": "Replace works with a range variable containing a string value and an invalid substring",
+          "transformer": {
+            "@x": "#valueOf($.spacedAndCasedStringValue)",
+            "resultValue": "@x->#replace('asdf ', 'test')"
+          },
+          "result": {
+            "resultValue": " tHIs iS a tESt "
+          }
+        },
+        {
+          "name": "IsRegexMatch is true with a range variable containing a string value and a pattern that is present",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "resultValue": "#isRegexMatch(@x, 'is')"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "IsRegexMatch is false with a range variable containing a string value and a pattern that is not present",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "resultValue": "#isRegexMatch(@x, 'asdf')"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "RegexReplace works with a range variable containing a string value and a pattern that is present",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "resultValue": "#regexReplace(@x, 'is', 'x')"
+          },
+          "result": {
+            "resultValue": "thx x a test"
+          }
+        },
+        {
+          "name": "RegexReplace works with a range variable containing a string value and a pattern that is not present",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "resultValue": "#regexReplace(@x, 'asdf', 'x')"
+          },
+          "result": {
+            "resultValue": "this is a test"
+          }
+        },
+        {
+          "name": "Reverse works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "resultValue": "#reverse(@x)"
+          },
+          "result": {
+            "resultValue": "tset a si siht"
+          }
+        },
+        {
+          "name": "Reverse works with a range variable containing an array",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)",
+            "resultValue": "#reverse(@x)"
+          },
+          "result": {
+            "resultValue": [ "test", "a", "is", "this" ]
+          }
+        },
+        {
+          "name": "Flatten works with a range variable containing a single-level array and returns a single-level array",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)",
+            "resultValue": "#flatten(@x)"
+          },
+          "result": {
+            "resultValue": [ "this", "is", "a", "test" ]
+          }
+        },
+        {
+          "name": "Flatten works with a range variable containing a multi-level array and returns asingle-level array",
+          "transformer": {
+            "@x": "#valueOf($.nestedIntegerArray)",
+            "resultValue": "#flatten(@x)"
+          },
+          "result": {
+            "resultValue": [ 1, 2, 3, 4, 5 ]
+          }
+        }
+
+
+      ]
+    },
+    {
+      "name": "Standard library methods work with range variables in lambda expressions",
+      "source": {
+        "integerValue": 1,
+        "doubleValue": 3.1415,
+        "stringValue": "3",
+        "booleanValue": true,
+        "booleanStringValue": "true",
+        "stringText": "this is a test",
+        "stringArray": [ "this", "is", "a", "test" ],
+        "integerArray": [ 0, 5, 1, 9 ],
+        "emptyArray": [],
+        "testObject": {
+          "first": "value",
+          "second": 2,
+          "third": [ 1, 2, 3 ]
+        }
+      },
+      "tests": [
+        {
+          "name": "IndexOf works with a range variable containing a string value",
+          "transformer": {
+            "resultArray": "#valueOf($.stringArray)->#select(@x: #indexOf(@x, 'is'))"
+          },
+          "result": {
+            "resultArray": [ 2, 0, -1, -1 ]
+          }
+        },
+        {
+          "name": "Length works with a range variable containing a string value",
+          "transformer": {
+            "resultArray": "#valueOf($.stringArray)->#select(@x: #length(@x))"
+          },
+          "result": {
+            "resultArray": [ 4, 2, 1, 4 ]
+          }
+        },
+        {
+          "name": "If/Substring works with a range variable containing a string value",
+          "transformer": {
+            "resultArray": "#valueOf($.stringArray)->#select(@x: #if(#length(@x) > 2, #substring(@x, ..2), 0))"
+          },
+          "result": {
+            "resultArray": [ "th", 0, 0, "te" ]
+          }
+        },
+        {
+          "name": "GroupBy works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)",
+            "resultArray": "#groupBy(@x, @y: #contains(@y, 'is')))"
+          },
+          "result": {
+            "resultArray": [
+              {
+                "key": true,
+                "results": [ "this", "is" ]
+              },
+              {
+                "key": false,
+                "results": [ "a", "test" ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "OrderBy works with a range variable containing an integer array",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#orderBy(@x)"
+          },
+          "result": {
+            "resultArray": [ 0, 1, 5, 9 ]
+          }
+        },
+        {
+          "name": "OrderByDesc works with a range variable containing an integer array",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#orderByDesc(@x)"
+          },
+          "result": {
+            "resultArray": [ 9, 5, 1, 0 ]
+          }
+        },
+        {
+          "name": "RoundTo works with a range variable containing a double value",
+          "transformer": {
+            "@x": "#valueOf($.doubleValue)",
+            "resultValue": "#roundTo(@x, 2)"
+          },
+          "result": {
+            "resultValue": 3.14
+          }
+        },
+        {
+          "name": "Max works with a range variable containing an integer array",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultValue": "#max(@x)"
+          },
+          "result": {
+            "resultValue": 9
+          }
+        },
+        {
+          "name": "Min works with a range variable containing an integer array",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultValue": "#min(@x)"
+          },
+          "result": {
+            "resultValue": 0
+          }
+        },
+        {
+          "name": "Sum works with a range variable containing an integer array",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultValue": "#sum(@x)"
+          },
+          "result": {
+            "resultValue": 15
+          }
+        },
+        {
+          "name": "Average works with a range variable containing an integer array",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultValue": "#average(@x)"
+          },
+          "result": {
+            "resultValue": 3.75
+          }
+        },
+        {
+          "name": "JoinWith works with a range variable containing a string array",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)",
+            "resultValue": "#joinWith(@x, ',')"
+          },
+          "result": {
+            "resultValue": "this,is,a,test"
+          }
+        },
+        {
+          "name": "SplitOn works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.stringText)",
+            "resultArray": "#splitOn(@x, ' ')"
+          },
+          "result": {
+            "resultArray": [ "this", "is", "a", "test" ]
+          }
+        },
+        {
+          "name": "Append works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.stringText)",
+            "resultValue": "#append(@x, ' ', '1', '2', '3')"
+          },
+          "result": {
+            "resultValue": "this is a test 123"
+          }
+        },
+        {
+          "name": "Append works with a range variable containing a string array",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)",
+            "resultArray": "#append(@x, ' ', '1', '2', '3')"
+          },
+          "result": {
+            "resultArray": [ "this", "is", "a", "test", " ", "1", "2", "3" ]
+          }
+        },
+        {
+          "name": "IsInteger works with a range variable containing an integer value",
+          "transformer": {
+            "@x": "#valueOf($.integerValue)",
+            "resultValue": "#isInteger(@x)"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "IsDecimal works with a range variable containing a double value",
+          "transformer": {
+            "@x": "#valueOf($.doubleValue)",
+            "resultValue": "#isDecimal(@x)"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "IsBoolean works with a range variable containing a boolean value",
+          "transformer": {
+            "@x": "#valueOf($.booleanValue)",
+            "resultValue": "#isBoolean(@x)"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "IsString works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.stringText)",
+            "resultValue": "#isString(@x)"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "IsEmpty works with a range variable containing a string value",
+          "transformer": {
+            "@x": "''",
+            "resultValue": "#isEmpty(@x)"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "IsEmpty works with a range variable containing an array value",
+          "transformer": {
+            "@x": "#valueOf($.emptyArray)",
+            "resultValue": "#isEmpty(@x)"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Any works with a range variable containing an array value",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)",
+            "resultValue": "#any(@x)"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Where works with a range variable containing an array value",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#where(@x, @y: @y > 4)"
+          },
+          "result": {
+            "resultArray": [ 5, 9 ]
+          }
+        },
+        {
+          "name": "Select works with a range variable containing an array value",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#select(@x, @y: @y * 2)"
+          },
+          "result": {
+            "resultArray": [ 0, 10, 2, 18 ]
+          }
+        },
+        {
+          "name": "ToInteger works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "resultValue": "#toInteger(@x)"
+          },
+          "result": {
+            "resultValue": 3
+          }
+        },
+        {
+          "name": "ToString works with a range variable containing an integer value",
+          "transformer": {
+            "@x": "#valueOf($.integerValue)",
+            "resultValue": "#toString(@x)"
+          },
+          "result": {
+            "resultValue": "1"
+          }
+        },
+        {
+          "name": "ToDecimal works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "resultValue": "#toDecimal(@x)"
+          },
+          "result": {
+            "resultValue": 3.0
+          }
+        },
+        {
+          "name": "ToBoolean works with a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.booleanStringValue)",
+            "resultValue": "#toBoolean(@x)"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "SummarizeWith works with a range variable containing a string array",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)->#groupBy(@y: #contains(@y, 'is'))",
+            "resultArray": "#summarizeWith(@x, @y: #length(@y))"
+          },
+          "result": {
+            "resultArray": [
+              {
+                "True": 2
+              },
+              {
+                "False": 2
+              }
+            ]
+          }
+        },
+        {
+          "name": "SetAt/RemoveAt works with a range variable containing an object",
+          "transformer": {
+            "#using($.testObject as @x)->'resultObject'": [
+              "#setAt(@x.addedProperty, 'new value')",
+              "#removeAt(@x.first)"
+            ]
+          },
+          "result": {
+            "resultObject": {
+              "second": 2,
+              "third": [ 1, 2, 3 ],
+              "addedProperty": "new value"
+            }
+          }
+        },
+        {
+          "name": "SetAt/RemoveAt works with a range variable containing a root object",
+          "transformer": {
+            "#using($ as @x)->'newObject'": [
+              "#setAt(@x.addedProperty, 'new value')",
+              "#removeAt(@x.testObject.first)"
+            ]
+          },
+          "result": {
+            "newObject": {
+              "integerValue": 1,
+              "doubleValue": 3.1415,
+              "stringValue": "3",
+              "booleanValue": true,
+              "booleanStringValue": "true",
+              "stringText": "this is a test",
+              "stringArray": [ "this", "is", "a", "test" ],
+              "integerArray": [ 0, 5, 1, 9 ],
+              "emptyArray": [],
+              "testObject": {
+                "second": 2,
+                "third": [ 1, 2, 3 ]
+              },
+              "addedProperty": "new value"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Standard library methods will accept a piped method call off of a range variable",
+      "source": {
+        "stringArray": [ "this", "is", "a", "test" ]
+      },
+      "tests": [
+        {
+          "name": "Length works with a piped method call off of a range variable containing a string value",
+          "transformer": {
+            "resultArray": "#valueOf($.stringArray)->#select(@x: @x->#length())"
+          },
+          "result": {
+            "resultArray": [ 4, 2, 1, 4 ]
+          }
+        },
+        {
+          "name": "Select works with a piped method call off of a range variable containing a string array",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)",
+            "resultArray": "@x->#select(@y: @y->#length())"
+          },
+          "result": {
+            "resultArray": [ 4, 2, 1, 4 ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Standard library date/time methods work with range variables",
+      "source": {
+        "isoDateString": "2024-01-15T10:30:00",
+        "isoDateWithZ": "2024-01-15T10:30:00Z",
+        "customFormattedDate": "01/15/2024"
+      },
+      "tests": [
+        {
+          "name": "ParseDateTime works with ISO 8601 format string",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "resultValue": "#parseDateTime(@x, 'yyyy-MM-ddTHH:mm:ss')"
+          },
+          "result": {
+            "resultValue": "2024-01-15T10:30:00.0000000"
+          }
+        },
+        {
+          "name": "ParseDateTime works with custom date format",
+          "transformer": {
+            "@x": "#valueOf($.customFormattedDate)",
+            "resultValue": "#parseDateTime(@x, 'MM/dd/yyyy')"
+          },
+          "result": {
+            "resultValue": "2024-01-15T00:00:00.0000000"
+          }
+        },
+        {
+          "name": "FormatDateTime works to convert ISO 8601 to custom format",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "resultValue": "#formatDateTime(@x, 'MMM dd, yyyy')"
+          },
+          "result": {
+            "resultValue": "Jan 15, 2024"
+          }
+        },
+        {
+          "name": "FormatDateTime works to convert ISO 8601 to another format",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "resultValue": "#formatDateTime(@x, 'yyyy-MM-dd HH:mm:ss')"
+          },
+          "result": {
+            "resultValue": "2024-01-15 10:30:00"
+          }
+        },
+        {
+          "name": "CurrentDateTime returns a non-null ISO 8601 formatted string",
+          "transformer": {
+            "@x": "#currentDateTime()",
+            "resultHasValue": "#exists(@x)"
+          },
+          "result": {
+            "resultHasValue": true
+          }
+        },
+        {
+          "name": "CurrentDateTimeUtc returns a non-null ISO 8601 formatted string",
+          "transformer": {
+            "@x": "#currentDateTimeUtc()",
+            "resultHasValue": "#exists(@x)"
+          },
+          "result": {
+            "resultHasValue": true
+          }
+        },
+        {
+          "name": "AddDays works with positive day value",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "resultValue": "#addDays(@x, 7)"
+          },
+          "result": {
+            "resultValue": "2024-01-22T10:30:00.0000000"
+          }
+        },
+        {
+          "name": "AddDays works with negative day value",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "resultValue": "#addDays(@x, -5)"
+          },
+          "result": {
+            "resultValue": "2024-01-10T10:30:00.0000000"
+          }
+        },
+        {
+          "name": "AddDays works with range variable containing numeric value",
+          "transformer": {
+            "@date": "#valueOf($.isoDateString)",
+            "@days": 10,
+            "resultValue": "#addDays(@date, @days)"
+          },
+          "result": {
+            "resultValue": "2024-01-25T10:30:00.0000000"
+          }
+        },
+        {
+          "name": "AddHours works with positive hour value",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "resultValue": "#addHours(@x, 5)"
+          },
+          "result": {
+            "resultValue": "2024-01-15T15:30:00.0000000"
+          }
+        },
+        {
+          "name": "AddHours works with negative hour value",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "resultValue": "#addHours(@x, -3)"
+          },
+          "result": {
+            "resultValue": "2024-01-15T07:30:00.0000000"
+          }
+        },
+        {
+          "name": "AddHours works with range variable containing numeric value",
+          "transformer": {
+            "@date": "#valueOf($.isoDateString)",
+            "@hours": 12,
+            "resultValue": "#addHours(@date, @hours)"
+          },
+          "result": {
+            "resultValue": "2024-01-15T22:30:00.0000000"
+          }
+        },
+        {
+          "name": "AddMinutes works with positive minute value",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "resultValue": "#addMinutes(@x, 45)"
+          },
+          "result": {
+            "resultValue": "2024-01-15T11:15:00.0000000"
+          }
+        },
+        {
+          "name": "AddMinutes works with negative minute value",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "resultValue": "#addMinutes(@x, -30)"
+          },
+          "result": {
+            "resultValue": "2024-01-15T10:00:00.0000000"
+          }
+        },
+        {
+          "name": "AddMinutes works with range variable containing numeric value",
+          "transformer": {
+            "@date": "#valueOf($.isoDateString)",
+            "@minutes": 90,
+            "resultValue": "#addMinutes(@date, @minutes)"
+          },
+          "result": {
+            "resultValue": "2024-01-15T12:00:00.0000000"
+          }
+        },
+        {
+          "name": "Date arithmetic chain: parseDateTime then format",
+          "transformer": {
+            "@parsed": "#parseDateTime($.customFormattedDate, 'MM/dd/yyyy')",
+            "resultValue": "#formatDateTime(@parsed, 'yyyy-MM-dd')"
+          },
+          "result": {
+            "resultValue": "2024-01-15"
+          }
+        },
+        {
+          "name": "Date arithmetic chain: add days then format",
+          "transformer": {
+            "@x": "#valueOf($.isoDateString)",
+            "@future": "#addDays(@x, 30)",
+            "resultValue": "#formatDateTime(@future, 'MMMM dd, yyyy')"
+          },
+          "result": {
+            "resultValue": "February 14, 2024"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Standard library array filtering methods TakeWhile and SkipWhile work with range variables and lambdas",
+      "source": {
+        "integerArray": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ],
+        "mixedArray": [ 2, 4, 6, 5, 3, 8, 9, 1 ],
+        "stringArray": [ "apple", "apricot", "banana", "blueberry", "cherry" ],
+        "stringLengthArray": [ "a", "bb", "ccc", "dd", "e", "ffff" ],
+        "emptyArray": [],
+        "singleElementArray": [ 5 ]
+      },
+      "tests": [
+        {
+          "name": "TakeWhile works with a range variable containing an integer array and a simple condition",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#takeWhile(@x, @y: @y < 6)"
+          },
+          "result": {
+            "resultArray": [ 1, 2, 3, 4, 5 ]
+          }
+        },
+        {
+          "name": "TakeWhile stops at the first element that fails the condition",
+          "transformer": {
+            "@x": "#valueOf($.mixedArray)",
+            "resultArray": "#takeWhile(@x, @y: @y > 3)"
+          },
+          "result": {
+            "resultArray": []
+          }
+        },
+        {
+          "name": "TakeWhile returns empty array when condition is immediately false",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#takeWhile(@x, @y: @y > 100)"
+          },
+          "result": {
+            "resultArray": []
+          }
+        },
+        {
+          "name": "TakeWhile returns all elements when condition is always true",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#takeWhile(@x, @y: @y > 0)"
+          },
+          "result": {
+            "resultArray": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
+          }
+        },
+        {
+          "name": "TakeWhile works with string arrays using string comparison",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)",
+            "resultArray": "#takeWhile(@x, @y: #startsWith(@y, 'a'))"
+          },
+          "result": {
+            "resultArray": [ "apple", "apricot" ]
+          }
+        },
+        {
+          "name": "TakeWhile works with string arrays using length comparison",
+          "transformer": {
+            "@x": "#valueOf($.stringLengthArray)",
+            "resultArray": "#takeWhile(@x, @y: #length(@y) <= 3)"
+          },
+          "result": {
+            "resultArray": [ "a", "bb", "ccc", "dd", "e" ]
+          }
+        },
+        {
+          "name": "TakeWhile works with an empty array and returns empty array",
+          "transformer": {
+            "@x": "#valueOf($.emptyArray)",
+            "resultArray": "#takeWhile(@x, @y: @y > 0)"
+          },
+          "result": {
+            "resultArray": []
+          }
+        },
+        {
+          "name": "TakeWhile works with a single element array that matches the condition",
+          "transformer": {
+            "@x": "#valueOf($.singleElementArray)",
+            "resultArray": "#takeWhile(@x, @y: @y > 0)"
+          },
+          "result": {
+            "resultArray": [ 5 ]
+          }
+        },
+        {
+          "name": "TakeWhile works with a single element array that does not match the condition",
+          "transformer": {
+            "@x": "#valueOf($.singleElementArray)",
+            "resultArray": "#takeWhile(@x, @y: @y > 10)"
+          },
+          "result": {
+            "resultArray": []
+          }
+        },
+        {
+          "name": "SkipWhile works with a range variable containing an integer array and a simple condition",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#skipWhile(@x, @y: @y < 6)"
+          },
+          "result": {
+            "resultArray": [ 6, 7, 8, 9, 10 ]
+          }
+        },
+        {
+          "name": "SkipWhile skips until the first element that fails the condition",
+          "transformer": {
+            "@x": "#valueOf($.mixedArray)",
+            "resultArray": "#skipWhile(@x, @y: @y < 3)"
+          },
+          "result": {
+            "resultArray": [ 4, 6, 5, 3, 8, 9, 1 ]
+          }
+        },
+        {
+          "name": "SkipWhile returns all elements when condition is immediately false",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#skipWhile(@x, @y: @y > 100)"
+          },
+          "result": {
+            "resultArray": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
+          }
+        },
+        {
+          "name": "SkipWhile returns empty array when condition is always true",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "resultArray": "#skipWhile(@x, @y: @y > 0)"
+          },
+          "result": {
+            "resultArray": []
+          }
+        },
+        {
+          "name": "SkipWhile works with string arrays using string comparison",
+          "transformer": {
+            "@x": "#valueOf($.stringArray)",
+            "resultArray": "#skipWhile(@x, @y: #startsWith(@y, 'a'))"
+          },
+          "result": {
+            "resultArray": [ "banana", "blueberry", "cherry" ]
+          }
+        },
+        {
+          "name": "SkipWhile works with string arrays using length comparison",
+          "transformer": {
+            "@x": "#valueOf($.stringLengthArray)",
+            "resultArray": "#skipWhile(@x, @y: #length(@y) <= 3)"
+          },
+          "result": {
+            "resultArray": [ "ffff" ]
+          }
+        },
+        {
+          "name": "SkipWhile works with an empty array and returns empty array",
+          "transformer": {
+            "@x": "#valueOf($.emptyArray)",
+            "resultArray": "#skipWhile(@x, @y: @y > 0)"
+          },
+          "result": {
+            "resultArray": []
+          }
+        },
+        {
+          "name": "SkipWhile works with a single element array that matches the condition",
+          "transformer": {
+            "@x": "#valueOf($.singleElementArray)",
+            "resultArray": "#skipWhile(@x, @y: @y > 0)"
+          },
+          "result": {
+            "resultArray": []
+          }
+        },
+        {
+          "name": "SkipWhile works with a single element array that does not match the condition",
+          "transformer": {
+            "@x": "#valueOf($.singleElementArray)",
+            "resultArray": "#skipWhile(@x, @y: @y > 10)"
+          },
+          "result": {
+            "resultArray": [ 5 ]
+          }
+        },
+        {
+          "name": "TakeWhile and SkipWhile can be chained together",
+          "transformer": {
+            "@x": "#valueOf($.integerArray)",
+            "@taken": "#takeWhile(@x, @y: @y < 8)",
+            "resultArray": "#skipWhile(@taken, @y: @y < 3)"
+          },
+          "result": {
+            "resultArray": [ 3, 4, 5, 6, 7 ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Standard library error handling method try works with range variables and lambda expressions",
+      "source": {
+        "validInteger": "42",
+        "invalidInteger": "not a number",
+        "validDecimal": "3.14",
+        "invalidDecimal": "abc123",
+        "nullValue": null,
+        "zeroValue": 0,
+        "stringValue": "test",
+        "numberValue": 100,
+        "complexObject": {
+          "value": "valid",
+          "nested": {
+            "data": 123
+          }
+        }
+      },
+      "tests": [
+        {
+          "name": "Try returns the transformed value when expression succeeds",
+          "transformer": {
+            "result": "#try(#toInteger($.validInteger), @e: 'error')"
+          },
+          "result": {
+            "result": 42
+          }
+        },
+        {
+          "name": "Try executes error handler when expression fails",
+          "transformer": {
+            "result": "#try(#toInteger($.invalidInteger), @e: 'conversion failed')"
+          },
+          "result": {
+            "result": "conversion failed"
+          }
+        },
+        {
+          "name": "Try with error handler returns the error handler result",
+          "transformer": {
+            "result": "#try(#toDecimal($.invalidDecimal), @e: 0.0)"
+          },
+          "result": {
+            "result": 0.0
+          }
+        },
+        {
+          "name": "Try error handler receives error object with message",
+          "transformer": {
+            "result": "#try(#toInteger($.invalidInteger), @e: #exists(@e.Message))"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "Try works with successful valueOf expression",
+          "transformer": {
+            "result": "#try(#valueOf($.stringValue), @e: 'fallback')"
+          },
+          "result": {
+            "result": "test"
+          }
+        },
+        {
+          "name": "Try works with successful method chain",
+          "transformer": {
+            "result": "#try(#valueOf($.stringValue)->#toUpperCase(), @e: 'failed')"
+          },
+          "result": {
+            "result": "TEST"
+          }
+        },
+        {
+          "name": "Try executes handler when method chain fails",
+          "transformer": {
+            "@x": null,
+            "result": "#try(@x->#length(), @e: -1)"
+          },
+          "result": {
+            "result": -1
+          }
+        },
+        {
+          "name": "Try with numeric error fallback",
+          "transformer": {
+            "result": "#try(#toInteger($.invalidInteger), @e: 0)"
+          },
+          "result": {
+            "result": 0
+          }
+        },
+        {
+          "name": "Try with range variable in error handler",
+          "transformer": {
+            "result": "#try(#toInteger($.invalidInteger), @e: @e->#exists())"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "Try with array return from error handler",
+          "transformer": {
+            "result": "#try(#toInteger($.invalidInteger), @e: [ 'failed', 'to', 'parse' ])"
+          },
+          "result": {
+            "result": [ "failed", "to", "parse" ]
+          }
+        },
+        {
+          "name": "Try with complex error handler expression",
+          "transformer": {
+            "result": "#try(#toInteger($.invalidInteger), @e: #if(#exists(@e.message), @e.message, 'unknown error'))"
+          },
+          "result": {
+            "result": "unknown error"
+          }
+        },
+        {
+          "name": "Try with null value returns null",
+          "transformer": {
+            "result": "#try(#valueOf($.nullValue), @e: 'error')"
+          },
+          "result": {
+            "result": null
+          }
+        },
+        {
+          "name": "Try with zero value returns zero",
+          "transformer": {
+            "result": "#try(#valueOf($.zeroValue), @e: 999)"
+          },
+          "result": {
+            "result": 0
+          }
+        },
+        {
+          "name": "Try with successful exists check",
+          "transformer": {
+            "result": "#try(#exists($.validInteger), @e: false)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "Try with failing exists check",
+          "transformer": {
+            "result": "#try(#exists($.nonExistent), @e: false)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "Try with mathematical operation success",
+          "transformer": {
+            "@x": "#valueOf($.numberValue)",
+            "result": "#try(@x * 2, @e: 0)"
+          },
+          "result": {
+            "result": 200
+          }
+        },
+        {
+          "name": "Try with successful string concatenation",
+          "transformer": {
+            "result": "#try(#valueOf($.stringValue) + ' value', @e: 'concat failed')"
+          },
+          "result": {
+            "result": "test value"
+          }
+        },
+        {
+          "name": "Try with nested object access success",
+          "transformer": {
+            "result": "#try(#valueOf($.complexObject.nested.data), @e: -1)"
+          },
+          "result": {
+            "result": 123
+          }
+        },
+        {
+          "name": "Try with isInteger check",
+          "transformer": {
+            "result": "#try(#isInteger(#toInteger($.validInteger)), @e: false)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "Try with array method in handler",
+          "transformer": {
+            "result": "#try(#toInteger($.invalidInteger), @e: [ 'error' ]->#length())"
+          },
+          "result": {
+            "result": 1
+          }
+        },
+        {
+          "name": "Try with conditional in error handler",
+          "transformer": {
+            "result": "#try(#toInteger($.invalidInteger), @e: #if(#contains(@e.message, 'conversion'), 'type error', 'unknown'))"
+          },
+          "result": {
+            "result": "type error"
+          }
+        },
+        {
+          "name": "Try with variable assignment and error handling",
+          "transformer": {
+            "@parsed": "#try(#toInteger($.validInteger), @e: 0)",
+            "result": "@parsed > 0"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "Try with failed variable assignment fallback",
+          "transformer": {
+            "@parsed": "#try(#toInteger($.invalidInteger), @e: 0)",
+            "result": "@parsed"
+          },
+          "result": {
+            "result": 0
+          }
+        },
+        {
+          "name": "Try with chained error handlers via nested try",
+          "transformer": {
+            "result": "#try(#try(#toInteger($.invalidInteger), @e1: #toInteger('abc')), @e2: -1)"
+          },
+          "result": {
+            "result": -1
+          }
+        },
+        {
+          "name": "Try in foreach loop with error handling",
+          "transformer": {
+            "@numbers": [ "1", "2", "invalid", "4" ],
+            "results": {
+              "#foreach(@num in @numbers)->@parsed": [
+                {
+                  "value": "#try(#toInteger(@num), @e: 0)"
+                }
+              ],
+              "values": "@parsed->#select(@x: @x.value)"
+            }
+          },
+          "result": {
+            "results": {
+              "values": [ 1, 2, 0, 4 ]
+            }
+          }
+        },
+        {
+          "name": "Try with select and error handling for multiple values",
+          "transformer": {
+            "@mixed": [ "10", "invalid", "20", "bad", "30" ],
+            "results": "@mixed->#select(@val: #try(#toInteger(@val), @e: null))"
+          },
+          "result": {
+            "results": [ 10, null, 20, null, 30 ]
+          }
+        },
+        {
+          "name": "Try with where clause filtering error results",
+          "transformer": {
+            "@mixed": [ "10", "invalid", "20", "bad", "30" ],
+            "results": "@mixed->#select(@val: #try(#toInteger(@val), @e: null))->#where(@v: #exists(@v))"
+          },
+          "result": {
+            "results": [ 10, 20, 30 ]
+          }
+        }
+      ]
+    }
+  ]
+}

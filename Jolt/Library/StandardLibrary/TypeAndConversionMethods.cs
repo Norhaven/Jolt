@@ -16,6 +16,24 @@ namespace Jolt.Library.StandardLibrary
         {
             var valueExists = pathOrValue != null;
 
+            if (pathOrValue is DereferencedPath dereferenced)
+            {
+                if (dereferenced.MissingPaths.Length > 0)
+                {
+                    return context.CreateTokenFrom(false);
+                }
+
+                pathOrValue = dereferenced.ObtainableToken;
+            }
+
+            if (pathOrValue is RangeVariable variable)
+            {
+                var variableValue = variable.Value;
+                var tokenExists = variableValue != null && variableValue.Type != JsonTokenType.Null && variableValue.ToTypeOf<object>() != null;
+
+                return context.CreateTokenFrom(tokenExists);
+            }
+
             if (pathOrValue is IJsonToken token)
             {
                 var tokenExists = valueExists && token.Type != JsonTokenType.Null && token.AsValue().ToTypeOf<object>() != null;

@@ -39,7 +39,14 @@ namespace Jolt.Exceptions
             [ExceptionCode.ExpectedNumericValueOrRangeExpressionButEncounteredTooManyDots] = "Expected a numeric value or range expression but encountered too many '.' characters ({0}) in expression",
             [ExceptionCode.InvalidRangeExpressionFormat] = "Expected a range expression but found an expression with invalid format: '{0}'",
             [ExceptionCode.ExpectedNullCoalescingOperatorButFoundSingleQuestionMark] = "Expected '??' null coalescing operator but found single '?' character instead",
-            [ExceptionCode.ExpectedDotAfterQuestionMarkForNullSafePropertyAccessButFoundDifferentToken] = "Expected '.' after '?' for null safe property access but found '{0}' instead"
+            [ExceptionCode.ExpectedDotAfterQuestionMarkForNullSafePropertyAccessButFoundDifferentToken] = "Expected '.' after '?' for null safe property access but found '{0}' instead",
+            [ExceptionCode.UnableToParseArrayLiteralElementAtPosition] = "Unable to parse array literal element at position '{0}'",
+            [ExceptionCode.ExpectedDotForRangeOperatorOrNumericPrecisionButFoundDifferentToken] = "Expected '.' character for range operator or numeric precision but found '{0}' instead",
+            [ExceptionCode.UnrecognizedNumericLiteralFormat] = "Found unrecognized numeric literal format at token '{0}'",
+            [ExceptionCode.UnableToParseRangeIndexExpressionAtPosition] = "Unable to parse range index expression at position '{0}', format is invalid",
+            [ExceptionCode.UnableToReduceLiteralFollowedByRangeExpression] = "Unable to reduce literal expression followed by range expression, found literal value '{0}' followed by range operator",
+            [ExceptionCode.UnableToReduceRangeVariableFollowedByRangeExpression] = "Unable to reduce range variable expression followed by range expression, found variable '{0}' followed by range operator",
+            [ExceptionCode.UnableToReduceMethodCallFollowedByRangeExpression] = "Unable to reduce method call expression followed by range expression, found method call '{0}' followed by range operator",
         };
 
         private static readonly Dictionary<ExceptionCode, string> _resolutionErrorsByCode = new Dictionary<ExceptionCode, string>
@@ -100,7 +107,9 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToConvertLambdaToRequiredDelegateParameterType] = "Call to external method '{0}' was unable to convert lambda parameter '{1}' to required delegate type '{2}'",
             [ExceptionCode.UnableToConvertToSupportedEnumerableType] = "Call to external method '{0}' was unable to convert returned IEnumerable sequence to a known type",
             [ExceptionCode.AttemptedToIndexOrSliceNullVariableValue] = "Attempted to index or slice into a null value stored in variable '{0}'",
-            [ExceptionCode.AttemptedToIndexOrSliceNonStringAndNonArrayValue] = "Attempted to index or slice a non-string and non-array value of type '{0}'"
+            [ExceptionCode.AttemptedToIndexOrSliceNonStringAndNonArrayValue] = "Attempted to index or slice a non-string and non-array value of type '{0}'",
+            [ExceptionCode.UnableToEvaluateRangeWithNullIndex] = "Unable to evaluate range expression '{0}..{1}' with null index value",
+            [ExceptionCode.UnableToEvaluateRangeWithNonIntegerIndex] = "Unable to evaluate range expression '{0}..{1}' with non-integer index value"
         };
 
         public static JoltException CreateParsingErrorFrom(ExceptionCode code, JoltException? innerException, params object[] parameters)

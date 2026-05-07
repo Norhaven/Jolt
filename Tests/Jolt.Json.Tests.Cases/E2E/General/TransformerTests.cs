@@ -12,6 +12,19 @@ namespace Jolt.Json.Tests.Cases.E2E.General
 {
     public abstract class TransformerTests : TransformerTest
     {
+        [TransformerTestDefinition(Transformer.ArrayLiterals, SourceDocument.SingleLevel)]
+        public void ArrayLiteral_IsSuccessful_AtSingleLevel(TransformerTestContainer container)
+        {
+            var json = ExecuteTest(container);
+
+            var arrayOfIntegerLiterals = json[TargetProperty.ArrayOfIntegerLiterals].AsArray();
+
+            arrayOfIntegerLiterals.Should().NotBeNullOrEmpty("because the transformer contained a template object and the document contained at least one array element");
+            arrayOfIntegerLiterals[0].ToTypeOf<int>().Should().Be(1, "because that was the value in the source document");
+            arrayOfIntegerLiterals[1].ToTypeOf<int>().Should().Be(2, "because that was the value in the source document");
+            arrayOfIntegerLiterals[2].ToTypeOf<int>().Should().Be(3, "because that was the value in the source document");
+        }
+
         [TransformerTestDefinition(Transformer.SingleLevelValueOf, SourceDocument.SingleLevel)]
         public void ValueOf_IsSuccessful_AtSingleLevelForNumericLiteral(TransformerTestContainer container)
         {

@@ -11,7 +11,7 @@ using System.Text;
 namespace Jolt.Library.StandardLibrary
 {
     [IncludeInStandardLibrary]
-    internal sealed class LoopAndQueryMethods
+    internal sealed class LoopAndQueryMethods : UnderlyingExecutionMethods
     {
         [JoltLibraryMethod("foreach", true)]
         [MethodIsValidOn(LibraryMethodTarget.PropertyName)]
@@ -432,46 +432,7 @@ namespace Jolt.Library.StandardLibrary
 
             return context.CreateTokenFrom(decimalValue);
         }
-
-        private static IJsonToken? ExecuteLambdaBody(Expression lambdaBodyExpression, EvaluationContext context)
-        {
-            var evaluationContext = new EvaluationContext(
-                context.Mode,
-                lambdaBodyExpression,
-                context.JsonContext,
-                context.Token,
-                context.Scope,
-                context.Transform);
-
-            var result = context.JsonContext.ExpressionEvaluator.Evaluate(evaluationContext);
-
-            return result.TransformedToken;
-        }
-
-        private static IJsonToken? LambdaOrDefault<T, TResult>(IEnumerable<T> sequence, LambdaMethod? lambda, Func<IEnumerable<T>, LambdaMethod, Func<Expression, IJsonToken?>, EvaluationContext, IJsonToken?> applyToItems, EvaluationContext context, Func<TResult> useDefault)
-        {
-            if (lambda is null)
-            {
-                if (useDefault is null)
-                {
-                    return default;
-                }
-
-                var result = useDefault();
-
-                return context.CreateTokenFrom(result);
-            }
-
-            return applyToItems(sequence, lambda, body => ExecuteLambdaBody(lambda.Body, context), context);
-        }
-
-        private static IJsonToken? LambdaOrDefault<T>(IEnumerable<T> sequence, LambdaMethod lambda, Func<IEnumerable<T>, LambdaMethod, Func<Expression, IJsonToken?>, EvaluationContext, IEnumerable<IJsonToken>> applyToItems, EvaluationContext context)
-        {
-            var results = applyToItems(sequence, lambda, body => ExecuteLambdaBody(lambda.Body, context), context).ToArray();
-
-            return context.CreateArrayFrom(results);
-        }
-
+        
         private static IEnumerable<IJsonToken> TakeWhile<T>(IEnumerable<T> sequence, LambdaMethod lambda, Func<Expression, bool> shouldInclude, EvaluationContext context)
         {
             foreach (var item in sequence)

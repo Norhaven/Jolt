@@ -4,7 +4,6 @@ using Jolt.Json.Tests.Resources.TestAttributes;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using Xunit.DependencyInjection;
-using static Jolt.Json.Tests.Resources.JsonTest;
 
 namespace Jolt.Json.Tests.E2E.General.DotNet;
 

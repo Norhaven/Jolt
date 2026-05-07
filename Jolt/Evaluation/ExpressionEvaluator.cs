@@ -56,7 +56,7 @@ namespace Jolt.Evaluation
         {
             return expression switch
             {
-                RangeExpression range => UnwrapRange(range, context),
+                RangeExpression range => EvaluateRange(range, context),
                 RangeVariableExpression range => UnwrapRangeVariable(range, context),
                 PropertyDereferenceExpression dereference => UnwrapDereferenceChain(dereference, context),
                 SlicedVariableExpression slicedVariable => UnwrapSlicedVariable(slicedVariable, context, isRootExpression),
@@ -67,8 +67,23 @@ namespace Jolt.Evaluation
                 MethodCallExpression call => ExecuteMethodCall(call, context, isRootExpression),
                 BinaryExpression binary => EvaluateBinaryExpression(binary, context),
                 LambdaMethodExpression lambda => EvaluateLambdaExpression(lambda, context),
+                ArrayLiteralExpression array => EvaluateArrayLiteral(array, context),
                 _ => default
             };
+        }
+
+        private object? EvaluateArrayLiteral(ArrayLiteralExpression array, EvaluationContext context)
+        {
+            if (array.Elements.Length == 0)
+            {
+                return context.CreateArrayFrom(Array.Empty<IJsonToken>());
+            }
+
+            var jsonElements = from element in array.Elements
+                               select EvaluateExpression(element, context) into evaluatedElement
+                               select context.CreateTokenFrom(evaluatedElement);
+
+            return context.CreateArrayFrom(jsonElements.ToArray());
         }
 
         private object? UnwrapEnumeration(EnumerateAsVariableExpression enumerate, EvaluationContext context)
@@ -223,9 +238,32 @@ namespace Jolt.Evaluation
             return path.PathQuery;
         }
 
-        private Range UnwrapRange(RangeExpression range, EvaluationContext context)
+        private Range EvaluateRange(RangeExpression range, EvaluationContext context)
         {
-            return new Range(range.StartIndex,range.EndIndex);
+            var leftResult = EvaluateExpression(range.StartIndex.Index, context).UnwrapWith(context.JsonContext.JsonTokenReader);
+            var rightResult = EvaluateExpression(range.EndIndex.Index, context).UnwrapWith(context.JsonContext.JsonTokenReader);
+
+            if (leftResult is null || rightResult is null)
+            {
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateRangeWithNullIndex, leftResult?.GetType(), rightResult?.GetType());
+            }
+
+            if (leftResult is long left && rightResult is long right)
+            {
+                var isIdenticalIndices = range.StartIndex == range.EndIndex;
+                var leftIndex = new Index((int)left, range.StartIndex.IsOffsetFromEnd);
+
+                var rightIndex = (isIdenticalIndices, range.EndIndex.IsOffsetFromEnd) switch
+                {
+                    (true, true) => new Index((int)right - 1, true),
+                    (true, false) => new Index((int)right + 1, false),
+                    (false, _) => new Index((int)right, range.EndIndex.IsOffsetFromEnd)
+                };
+
+                return new Range(leftIndex, rightIndex);
+            }
+
+            throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateRangeWithNonIntegerIndex, leftResult.GetType(), rightResult.GetType());
         }
 
         private RangeVariable UnwrapRangeVariable(RangeVariableExpression range, EvaluationContext context)
@@ -393,6 +431,11 @@ namespace Jolt.Evaluation
                 return booleanValue;
             }
 
+            if (literal.Type == typeof(object) && literal.Value is null)
+            {
+                return default;
+            }
+
             throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToConvertToBestTypeForLiteralValue, literal.Value);
         }
 
@@ -478,7 +521,7 @@ namespace Jolt.Evaluation
                         }
                         else
                         {
-                            throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToConvertJsonArrayToRequiredParameterType, currentFormalParameter.Name, call.Signature.Name, currentFormalParameter.Type);
+                            throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToConvertJsonArrayToRequiredParameterType, call.Signature.Name, currentFormalParameter.Name);
                         }
                     }
                 }

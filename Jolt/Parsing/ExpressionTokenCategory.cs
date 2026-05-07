@@ -57,6 +57,10 @@ namespace Jolt.Parsing
         CloseParenthesesGroup,
         [Description("a range expression")]
         RangeExpression,
+        [Description("a range expression operator")]
+        RangeExpressionOperator,
+        [Description("an index from the end operator")]
+        IndexFromEndOperator,
         [Description("a range variable")]
         RangeVariable,
         [Description("a lambda function separator")]
@@ -67,15 +71,19 @@ namespace Jolt.Parsing
         In,
         [Description("the 'as' keyword")]
         As,
-        [Description("the start of an indexer group")]
-        StartOfIndexer,
-        [Description("the end of an indexer group")]
-        EndOfIndexer,
+        [Description("the start of an indexer group or array literal")]
+        StartOfIndexerOrArrayLiteral,
+        [Description("the end of an indexer group or array literal")]
+        EndOfIndexerOrArrayLiteral,
+        [Description("the index-from-end character for a range")]
+        RangeEndIndexer,
         [Description("the null coalescing operator")]
         NullCoalescing,
         [Description("a null-safe property dereference")]
         NullSafePropertyDereference,
         [Description("a null-safe variable dereference")]
-        NullSafeRangeVariableDereference
+        NullSafeRangeVariableDereference,
+        [Description("a null literal")]
+        NullLiteral
     }
 }

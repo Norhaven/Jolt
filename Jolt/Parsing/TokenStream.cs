@@ -25,6 +25,11 @@ namespace Jolt.Parsing
 
         public bool TryMatchNextAndConsume(Predicate<T> isMatch)
         {
+            if (_isCompleted)
+            {
+                return false;
+            }
+
             if (isMatch(_enumerator.Current))
             {
                 MoveNext();

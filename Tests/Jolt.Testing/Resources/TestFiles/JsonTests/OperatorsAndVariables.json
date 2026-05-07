@@ -1,0 +1,461 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "possibleExceptionCodes": {
+    "invalidMethodUseInPropertyName": "UnableToUseMethodWithinPropertyName",
+    "missingParameter": "MissingRequiredMethodParameter",
+    "tooManyParameters": "MethodCallActualParameterCountExceedsFormalParameterCount",
+    "missingTokenAtEnd": "ExpectedTokenButFoundEndOfExpression",
+    "missingExpectedToken": "UnableToLocateExpectedCharactersInExpression",
+    "tooManyComparisons": "ExpectedZeroOrOneComparisonSymbolsInExpressionButFoundMoreThanOne",
+    "externalMethodException": "ExternalMethodInvocationCausedAnException",
+    "dereferencedNonObject": "EncounteredNonObjectInDereferenceChainButExpectedObject",
+    "dereferencedMissingProperty": "AttemptedToDereferenceMissingPath"
+  },
+  "possibleExternalMethodSources": {
+    "ExternalMixedMethods": "Jolt.Testing.Resources.TestMethods.ExternalMixedMethods, Jolt.Testing.Resources, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+  },
+  "testGroups": [
+    {
+      "name": "Path dereferencing",
+      "source": {
+        "nested": {
+          "json": {
+            "object": {
+              "value": 2
+            }
+          }
+        }
+      },
+      "tests": [
+        {
+          "name": "Variable instance at root path will dereference nested object path correctly",
+          "transformer": {
+            "@x": "#valueOf($)",
+            "value": "@x.nested.json.object.value"
+          },
+          "result": {
+            "value": 2
+          }
+        },
+        {
+          "name": "Variable instance at root path will return null for missing value property",
+          "transformer": {
+            "@x": "#valueOf($)",
+            "value": "@x.nested.json.object.missingValue"
+          },
+          "result": {
+            "value": null
+          }
+        },
+        {
+          "name": "Variable instance at root path will throw exception for missing nested object property",
+          "transformer": {
+            "@x": "#valueOf($)",
+            "value": "@x.nested.json.missingObject.value"
+          },
+          "exceptionCode": "dereferencedMissingProperty"
+        },
+        {
+          "name": "Variable instance at root path will return null for earlier missing nested object property",
+          "transformer": {
+            "@x": "#valueOf($)",
+            "value": "@x.missingNested?.json.object.value"
+          },
+          "result": {
+            "value": null
+          }
+        },
+        {
+          "name": "Variable null instance will return null on any dereference action",
+          "transformer": {
+            "value": "@x?.nested.json.object.value"
+          },
+          "result": {
+            "value": null
+          }
+        },
+        {
+          "name": "Variable null instance will return value on any present dereference chain",
+          "transformer": {
+            "@x": "#valueOf($)",
+            "value": "@x?.nested?.json?.object?.value"
+          },
+          "result": {
+            "value": 2
+          }
+        },
+        {
+          "name": "Variable instance at root path will return value for existing path value",
+          "transformer": {
+            "@x": "#valueOf($)",
+            "value": "@x.nested?.json.object.value"
+          },
+          "result": {
+            "value": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "Null coalescing operator usage",
+      "source": {
+        "nullValue": null,
+        "nonNullValue": "value"
+      },
+      "tests": [
+        {
+          "name": "Null coalescing operator returns the right-hand operand when the left-hand operand is null",
+          "transformer": {
+            "value": "@x ?? 'default'",
+            "explicitNullValue": "#valueOf($.nullValue) ?? 'otherDefault'"
+          },
+          "result": {
+            "value": "default",
+            "explicitNullValue": "otherDefault"
+          }
+        },
+        {
+          "name": "Null coalescing operator returns the left-hand operand when it is not null",
+          "transformer": {
+            "@x": "#valueOf($.nonNullValue)",
+            "value": "@x ?? 'default'"
+          },
+          "result": {
+            "value": "value"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Math expressions",
+      "source": {
+        "one": 1,
+        "two": 2,
+        "three": 3
+      },
+      "tests": [
+        {
+          "name": "Addition with valueOf() produces correct result",
+          "transformer": {
+            "value": "#valueOf($.one) + #valueOf($.two) + #valueOf($.three)"
+          },
+          "result": {
+            "value": 6
+          }
+        },
+        {
+          "name": "Addition with valueOf() produces correct result when compared for equality",
+          "transformer": {
+            "value": "#valueOf($.one) + #valueOf($.two) + #valueOf($.three) = 6"
+          },
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "name": "Multiplication with valueOf() produces correct result",
+          "transformer": {
+            "value": "#valueOf($.one) * #valueOf($.two) * #valueOf($.three)"
+          },
+          "result": {
+            "value": 6
+          }
+        },
+        {
+          "name": "Multiplication with valueOf() produces correct result when compared for equality",
+          "transformer": {
+            "value": "#valueOf($.one) * #valueOf($.two) * #valueOf($.three) = 6"
+          },
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "name": "Subtraction with valueOf() produces correct result",
+          "transformer": {
+            "value": "#valueOf($.one) - #valueOf($.two) - #valueOf($.three)"
+          },
+          "result": {
+            "value": -4
+          }
+        },
+        {
+          "name": "Subtraction with valueOf() produces correct result when compared for equality",
+          "transformer": {
+            "value": "#valueOf($.one) - #valueOf($.two) - #valueOf($.three) = -4"
+          },
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "name": "Division with valueOf() produces correct result",
+          "transformer": {
+            "value": "#valueOf($.one) / #valueOf($.two) / #valueOf($.three)"
+          },
+          "result": {
+            "value": 0.16666666666666666
+          }
+        },
+        {
+          "name": "Division with valueOf() produces correct result when compared for equality",
+          "transformer": {
+            "value": "#valueOf($.one) / #valueOf($.two) / #valueOf($.three) = 0.16666666666666666"
+          },
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "name": "Addition with eval() and literals produces correct result",
+          "transformer": {
+            "value": "#eval('1 + 2 + 3')"
+          },
+          "result": {
+            "value": 6
+          }
+        },
+        {
+          "name": "Multiplication with eval() and literals produces correct result",
+          "transformer": {
+            "value": "#eval('1 * 2 * 3')"
+          },
+          "result": {
+            "value": 6
+          }
+        },
+        {
+          "name": "Subtraction with eval() and literals produces correct result",
+          "transformer": {
+            "value": "#eval('1 - 2 - 3')"
+          },
+          "result": {
+            "value": -4
+          }
+        },
+        {
+          "name": "Division with eval() and literals produces correct result",
+          "transformer": {
+            "value": "#eval('1 / 2 / 3')"
+          },
+          "result": {
+            "value": 0.16666666666666666
+          }
+        },
+        {
+          "name": "Parentheses will determine evaluation precedence",
+          "transformer": {
+            "value": "#eval('(1 + 2) * (3 - 1) / 2)')"
+          },
+          "result": {
+            "value": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comparison expressions",
+      "source": {
+        "one": 1,
+        "two": 2,
+        "three": 3
+      },
+      "tests": [
+        {
+          "name": "Comparison expressions will evaluate literals correctly",
+          "transformer": {
+            "equality1": "#eval('1 = 1')",
+            "equality2": "#eval('1 = 2')",
+            "inequality1": "#eval('1 != 2')",
+            "inequality2": "#eval('1 != 1')",
+            "lessThan1": "#eval('1 < 2')",
+            "lessThan2": "#eval('1 < 1')",
+            "lessThan3": "#eval('1 < 0')",
+            "greaterThan1": "#eval('2 > 1')",
+            "greaterThan2": "#eval('1 > 1')",
+            "greaterThan3": "#eval('0 > 1')",
+            "lessThanOrEquals1": "#eval('1 <= 1')",
+            "lessThanOrEquals2": "#eval('1 <= 2')",
+            "greaterThanOrEquals1": "#eval('1 >= 1')",
+            "greaterThanOrEquals2": "#eval('2 >= 1')"
+          },
+          "result": {
+            "equality1": true,
+            "equality2": false,
+            "inequality1": true,
+            "inequality2": false,
+            "lessThan1": true,
+            "lessThan2": false,
+            "lessThan3": false,
+            "greaterThan1": true,
+            "greaterThan2": false,
+            "greaterThan3": false,
+            "lessThanOrEquals1": true,
+            "lessThanOrEquals2": true,
+            "greaterThanOrEquals1": true,
+            "greaterThanOrEquals2": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Operations on an empty source document",
+      "source": {},
+      "tests": [
+        {
+          "name": "Range variable set to empty string and read verbatim results in an empty string value",
+          "transformer": {
+            "@x": "",
+            "value": "@x"
+          },
+          "result": {
+            "value": ""
+          }
+        },
+        {
+          "name": "Range variable indirectly set to null and read verbatim results in a null value",
+          "transformer": {
+            "@x": "#valueOf($.missing)",
+            "value": "@x"
+          },
+          "result": {
+            "value": null
+          }
+        },
+        {
+          "name": "Range variable set to null and read verbatim results in a null value",
+          "transformer": {
+            "@x": null,
+            "value": "@x"
+          },
+          "result": {
+            "value": null
+          }
+        },
+        {
+          "name": "Range variable read without being set results in a null value",
+          "transformer": {
+            "value": "@x"
+          },
+          "result": {
+            "value": null
+          }
+        },
+        {
+          "name": "The valueOf call returns null when a path pointing to nothing is used",
+          "transformer": {
+            "value": "#valueOf($.missing)"
+          },
+          "result": {
+            "value": null
+          }
+        },
+        {
+          "name": "Missing initial hash sign for method will result in using the literal value",
+          "transformer": {
+            "value": "valueOf($.missing)"
+          },
+          "result": {
+            "value": "valueOf($.missing)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Incorrect math and comparison operator usage that provokes errors",
+      "source": {},
+      "tests": [
+        {
+          "name": "Multiple equals signs present in expression",
+          "transformer": {
+            "value": "#eval('1 = 1 = 1')"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "tooManyComparisons"
+        },
+        {
+          "name": "Multiple distinct comparison signs present in expression",
+          "transformer": {
+            "value": "#eval('1 = 1 < 1 > 1 >= 1 <= 1')"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "tooManyComparisons"
+        },
+        {
+          "name": "Multiple less than comparison signs present in expression",
+          "transformer": {
+            "value": "#eval('1 < 1 < 1')"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "tooManyComparisons"
+        },
+        {
+          "name": "Multiple greater than comparison signs present in expression",
+          "transformer": {
+            "value": "#eval('1 > 1 > 1')"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "tooManyComparisons"
+        },
+        {
+          "name": "Multiple less than or equals comparison signs present in expression",
+          "transformer": {
+            "value": "#eval('1 <= 1 <= 1')"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "tooManyComparisons"
+        },
+        {
+          "name": "Multiple greater than or equals comparison signs present in expression",
+          "transformer": {
+            "value": "#eval('1 >= 1 >= 1')"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "tooManyComparisons"
+        },
+        {
+          "name": "Greater than and less than comparison signs present in expression",
+          "transformer": {
+            "value": "#eval('1 > 1 < 1')"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "tooManyComparisons"
+        }
+      ]
+    },
+    {
+      "name": "Incorrect method signatures that provoke errors",
+      "source": {},
+      "tests": [
+        {
+          "name": "Single parameter required but zero were provided",
+          "transformer": {
+            "value": "#valueOf()"
+          },
+          "exceptionCode": "missingParameter"
+        },
+        {
+          "name": "Too many parameters provided for non-variadic method",
+          "transformer": {
+            "value": "#valueOf($.missing, $.extra)"
+          },
+          "exceptionCode": "tooManyParameters"
+        },
+        {
+          "name": "Closing parenthesis is missing",
+          "transformer": {
+            "value": "#valueOf($.missing"
+          },
+          "exceptionCode": "missingTokenAtEnd"
+        },
+        {
+          "name": "Opening parenthesis is missing",
+          "transformer": {
+            "value": "#valueOf$.missing)"
+          },
+          "exceptionCode": "missingExpectedToken"
+        }
+      ]
+    }
+  ]
+}

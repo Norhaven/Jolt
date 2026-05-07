@@ -11,7 +11,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using static Jolt.Json.Tests.Resources.SmallTest;
 
 namespace Jolt.Json.Tests.Resources
 {
@@ -51,6 +50,13 @@ namespace Jolt.Json.Tests.Resources
 
         protected static class TargetProperty
         {
+            public const string ArrayOfIntegerLiterals = "ArrayOfIntegerLiterals";
+            public const string ArrayOfStringLiterals = "ArrayOfStringLiterals";
+            public const string ArrayOfBooleanLiterals = "ArrayOfBooleanLiterals";
+            public const string ArrayOfIntegerValues = "ArrayOfIntegerValues";
+            public const string ArrayOfStringValues = "ArrayOfStringValues";
+            public const string ArrayOfBooleanValues = "ArrayOfBooleanValues";
+
             public const string IntegerLiteral = "Integer";
             public const string StringLiteral = "String";
             public const string DecimalLiteral = "Decimal";
@@ -126,6 +132,7 @@ namespace Jolt.Json.Tests.Resources
 
         public static class Transformer
         {
+            public const string ArrayLiterals = "ArrayLiterals";
             public const string SingleLevelValueOf = "SingleLevelValueOf";
             public const string MultiLevelValueOf = "MultiLevelValueOf";
             public const string Loops = "Loops";

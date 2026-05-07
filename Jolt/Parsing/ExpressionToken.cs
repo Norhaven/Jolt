@@ -37,6 +37,7 @@ namespace Jolt.Parsing
         public const char CloseSquareBracket = ']';
         public const char Caret = '^';
         public const char QuestionMark = '?';
+        public const string NullLiteral = null;
 
         public string Value { get; }
         public ExpressionTokenCategory Category { get; }

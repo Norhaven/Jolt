@@ -7,43 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="TestFiles\Documents\ConditionsDocument.json" />
-    <EmbeddedResource Include="TestFiles\Documents\ExistenceDocument.json" />
-    <EmbeddedResource Include="TestFiles\Documents\ExternalMethodsDocument.json" />
-    <EmbeddedResource Include="TestFiles\Documents\LambdasDocument.json" />
-    <EmbeddedResource Include="TestFiles\Documents\LoopDocument.json" />
-    <EmbeddedResource Include="TestFiles\Documents\MathDocument.json" />
-    <EmbeddedResource Include="TestFiles\Documents\MultiLevelDocument.json" />
-    <EmbeddedResource Include="TestFiles\Documents\PipedMethodsDocument.json" />
-    <EmbeddedResource Include="TestFiles\Documents\SingleLevelDocument.json" />
-    <EmbeddedResource Include="TestFiles\JsonTests\IndexingWithVariables.json" />
-    <EmbeddedResource Include="TestFiles\JsonTests\LibraryMethodsWithVariables.json" />
-    <EmbeddedResource Include="TestFiles\JsonTests\JsonTest.schema.json" />
-    <EmbeddedResource Include="TestFiles\JsonTests\ExternalMethodsTests.json" />
-    <EmbeddedResource Include="TestFiles\JsonTests\OperatorsAndVariablesTests.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\Conditions.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\Existence.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\ExternalMethodsWithAliases.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\ExternalMethods.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\Lambdas.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\Loops.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\Math.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\MultiLevelValueOf.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\PipedMethods.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\RangeVariables.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\SingleLevelValueOf.json" />
-    <EmbeddedResource Include="TestFiles\Transformers\UsingBlock.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="8.8.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="NJsonSchema" Version="11.5.2" />
     <PackageReference Include="System.Text.Json" Version="10.0.1" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\..\Jolt\Jolt.csproj" />
+    <ProjectReference Include="..\Jolt.Testing\Jolt.Testing.csproj" />
   </ItemGroup>
 
 </Project>

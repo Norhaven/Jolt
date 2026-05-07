@@ -276,6 +276,11 @@ namespace Jolt.Json.DotNet
 
                 for (int i = 0; i < thisItems.Length; i++)
                 {
+                    if (thisItems[i] is null && array[i] is null)
+                    {
+                        continue;
+                    }
+
                     if (thisItems[i]?.DeepEquals(array[i], comparers) != true)
                     {
                         return false;

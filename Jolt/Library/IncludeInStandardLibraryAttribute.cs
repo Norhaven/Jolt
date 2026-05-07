@@ -7,5 +7,6 @@ namespace Jolt.Library
     [AttributeUsage(AttributeTargets.Class)]
     internal sealed class IncludeInStandardLibraryAttribute : Attribute
     {
+
     }
 }

@@ -1,0 +1,58 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
+    <LangVersion Condition="'$(TargetFramework)' != 'net472'">8.0</LangVersion>
+    <LangVersion Condition="'$(TargetFramework)' == 'net472'">7.3</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\TestFiles\Documents\ConditionsDocument.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Documents\ExistenceDocument.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Documents\ExternalMethodsDocument.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Documents\LambdasDocument.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Documents\LoopDocument.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Documents\MathDocument.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Documents\MultiLevelDocument.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Documents\PipedMethodsDocument.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Documents\SingleLevelDocument.json" />
+    <EmbeddedResource Include="Resources\TestFiles\JsonTests\ExternalMethods.json" />
+    <EmbeddedResource Include="Resources\TestFiles\JsonTests\IndexingWithVariables.json" />
+    <EmbeddedResource Include="Resources\TestFiles\JsonTests\JsonTest.schema.json" />
+    <EmbeddedResource Include="Resources\TestFiles\JsonTests\LibraryMethodsWithVariables.json" />
+    <EmbeddedResource Include="Resources\TestFiles\JsonTests\OperatorsAndVariables.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Transformers\ArrayLiterals.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Transformers\Conditions.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Transformers\Existence.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Transformers\ExternalMethods.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Transformers\ExternalMethodsWithAliases.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Transformers\Lambdas.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Transformers\Loops.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Transformers\Math.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Transformers\MultiLevelValueOf.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Transformers\PipedMethods.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Transformers\RangeVariables.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Transformers\SingleLevelValueOf.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Transformers\UsingBlock.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="FluentAssertions" Version="8.9.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="NJsonSchema" Version="11.6.1" />
+    <PackageReference Include="System.Text.Json" Version="10.0.7" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Jolt\Jolt.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -5,8 +5,6 @@ VisualStudioVersion = 18.3.11310.294
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jolt", "Jolt\Jolt.csproj", "{76D612F9-5D5F-4250-AC50-6A3B4EB10BED}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jolt.Json.Tests", "Tests\Jolt.Json.Tests\Jolt.Json.Tests.csproj", "{85C69CC2-5DB6-40FD-A63B-6DF509505ACB}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jolt.Json.Newtonsoft", "Jolt.Json.Newtonsoft\Jolt.Json.Newtonsoft.csproj", "{61254730-0D0B-4884-B963-0CA1559F33A4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jolt.Json.DotNet", "Jolt.Json.DotNet\Jolt.Json.DotNet.csproj", "{AAA904F1-09B1-4396-8C3C-B3DC5C74427A}"
@@ -17,13 +15,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		SetVersion.ps1 = SetVersion.ps1
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jolt.Json.DotNetFramework.Tests", "Tests\Jolt.Json.DotNetFramework.Tests\Jolt.Json.DotNetFramework.Tests.csproj", "{D9B8BF2D-F768-4B7C-B096-58EA6878BE23}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{5FCF43B4-5B18-440C-8C04-18A9044EF9FF}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\testing.runsettings = Tests\testing.runsettings
+		Tests\Jolt.Testing.Harness\xunit.runner.json = Tests\Jolt.Testing.Harness\xunit.runner.json
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jolt.Json.Tests.Resources", "Tests\Jolt.Json.Tests.Resources\Jolt.Json.Tests.Resources.csproj", "{E58830EF-48A9-4984-9561-861398361F23}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jolt.Testing", "Tests\Jolt.Testing\Jolt.Testing.csproj", "{4B70DD10-31E7-49A2-8F28-685B75B5EC42}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jolt.Json.Tests.Cases", "Tests\Jolt.Json.Tests.Cases\Jolt.Json.Tests.Cases.csproj", "{752D95EC-1DE5-4D98-ABCD-375EE61DC292}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jolt.Testing.Harness", "Tests\Jolt.Testing.Harness\Jolt.Testing.Harness.csproj", "{A4FCD6A1-6B93-453D-AE63-7256BFB7447B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jolt.Testing.Harness.DotNetFramework", "Tests\Jolt.Testing.Harness.DotNetFramework\Jolt.Testing.Harness.DotNetFramework.csproj", "{F4D452C3-6950-0A86-E020-F4510CE437EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,10 +37,6 @@ Global
 		{76D612F9-5D5F-4250-AC50-6A3B4EB10BED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76D612F9-5D5F-4250-AC50-6A3B4EB10BED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{76D612F9-5D5F-4250-AC50-6A3B4EB10BED}.Release|Any CPU.Build.0 = Release|Any CPU
-		{85C69CC2-5DB6-40FD-A63B-6DF509505ACB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{85C69CC2-5DB6-40FD-A63B-6DF509505ACB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{85C69CC2-5DB6-40FD-A63B-6DF509505ACB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{85C69CC2-5DB6-40FD-A63B-6DF509505ACB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{61254730-0D0B-4884-B963-0CA1559F33A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{61254730-0D0B-4884-B963-0CA1559F33A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61254730-0D0B-4884-B963-0CA1559F33A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -47,27 +45,26 @@ Global
 		{AAA904F1-09B1-4396-8C3C-B3DC5C74427A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AAA904F1-09B1-4396-8C3C-B3DC5C74427A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AAA904F1-09B1-4396-8C3C-B3DC5C74427A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D9B8BF2D-F768-4B7C-B096-58EA6878BE23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D9B8BF2D-F768-4B7C-B096-58EA6878BE23}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D9B8BF2D-F768-4B7C-B096-58EA6878BE23}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D9B8BF2D-F768-4B7C-B096-58EA6878BE23}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E58830EF-48A9-4984-9561-861398361F23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E58830EF-48A9-4984-9561-861398361F23}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E58830EF-48A9-4984-9561-861398361F23}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E58830EF-48A9-4984-9561-861398361F23}.Release|Any CPU.Build.0 = Release|Any CPU
-		{752D95EC-1DE5-4D98-ABCD-375EE61DC292}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{752D95EC-1DE5-4D98-ABCD-375EE61DC292}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{752D95EC-1DE5-4D98-ABCD-375EE61DC292}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{752D95EC-1DE5-4D98-ABCD-375EE61DC292}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B70DD10-31E7-49A2-8F28-685B75B5EC42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B70DD10-31E7-49A2-8F28-685B75B5EC42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B70DD10-31E7-49A2-8F28-685B75B5EC42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B70DD10-31E7-49A2-8F28-685B75B5EC42}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4FCD6A1-6B93-453D-AE63-7256BFB7447B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4FCD6A1-6B93-453D-AE63-7256BFB7447B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4FCD6A1-6B93-453D-AE63-7256BFB7447B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4FCD6A1-6B93-453D-AE63-7256BFB7447B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4D452C3-6950-0A86-E020-F4510CE437EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4D452C3-6950-0A86-E020-F4510CE437EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4D452C3-6950-0A86-E020-F4510CE437EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4D452C3-6950-0A86-E020-F4510CE437EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{85C69CC2-5DB6-40FD-A63B-6DF509505ACB} = {5FCF43B4-5B18-440C-8C04-18A9044EF9FF}
-		{D9B8BF2D-F768-4B7C-B096-58EA6878BE23} = {5FCF43B4-5B18-440C-8C04-18A9044EF9FF}
-		{E58830EF-48A9-4984-9561-861398361F23} = {5FCF43B4-5B18-440C-8C04-18A9044EF9FF}
-		{752D95EC-1DE5-4D98-ABCD-375EE61DC292} = {5FCF43B4-5B18-440C-8C04-18A9044EF9FF}
+		{4B70DD10-31E7-49A2-8F28-685B75B5EC42} = {5FCF43B4-5B18-440C-8C04-18A9044EF9FF}
+		{A4FCD6A1-6B93-453D-AE63-7256BFB7447B} = {5FCF43B4-5B18-440C-8C04-18A9044EF9FF}
+		{F4D452C3-6950-0A86-E020-F4510CE437EC} = {5FCF43B4-5B18-440C-8C04-18A9044EF9FF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4829FB42-C288-40C1-8D3D-E85D47FC7B45}

@@ -1,0 +1,198 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "possibleExceptionCodes": {
+    "invalidMethodUseInPropertyName": "UnableToUseMethodWithinPropertyName",
+    "lambdaUsedForNonDelegate": "UnableToUseLambdaAsArgumentForNonDelegateParameter",
+    "nonLambdaUsedForDelegate": "DelegateParameterRequiresLambdaArgument",
+    "unableToConvertArrayToType": "UnableToConvertJsonArrayToRequiredParameterType"
+  },
+  "possibleExternalMethodSources": {
+    "ExternalMixedMethods": "Jolt.Testing.Resources.TestMethods.ExternalMixedMethods, Jolt.Testing, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+  },
+  "testGroups": [
+    {
+      "name": "Invalid external method usages",
+      "source": {
+        "one": 1,
+        "two": "2",
+        "three": true
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method should not be valid on the property name side",
+          "transformer": {
+            "#stringConcat('2', '1')": "#valueOf($.one)"
+          },
+          "exceptionCode": "invalidMethodUseInPropertyName"
+        }
+      ]
+    },
+    {
+      "name": "Invoking a string/bool parameter delegate using JSON lambda",
+      "source": {
+        "testData": [ "hello", "this is a", "test" ]
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method with string/bool delegate parameter should be invoked from JSON lambda",
+          "transformer": {
+            "filtered": "#valueOf($.testData)->#customStringFilterWithLambda(@x: #length(@x) > 5)"
+          },
+          "result": {
+            "filtered": [ "this is a" ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoking a double/bool parameter delegate using JSON lambda",
+      "source": {
+        "testData": [ 1.3, 5.5, 7.0, 15.1 ]
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method with double/bool delegate parameter should be invoked from JSON lambda",
+          "transformer": {
+            "filtered": "#valueOf($.testData)->#customDoubleFilterWithLambda(@x: @x > 4)"
+          },
+          "result": {
+            "filtered": [ 5.5, 7.0, 15.1 ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoking a long/long parameter delegate using JSON lambda",
+      "source": {
+        "testData": [ 1, 5, 15 ]
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method with long/bool delegate parameter should be invoked from JSON lambda",
+          "transformer": {
+            "filtered": "#valueOf($.testData)->#customLongFilterWithLambda(@x: @x > 4)"
+          },
+          "result": {
+            "filtered": [ 5, 15 ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoking a bool/string parameter delegate using JSON lambda",
+      "source": {
+        "testData": [ true, false, true ]
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method with bool/bool delegate parameter should be invoked from JSON lambda",
+          "transformer": {
+            "filtered": "#valueOf($.testData)->#customBoolFilterWithLambda(@x: #toString(@x))"
+          },
+          "result": {
+            "filtered": [ "True", "False", "True" ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoking a IJsonObject/string parameter delegate using JSON lambda",
+      "source": {
+        "testData": [
+          {
+            "text": "this"
+          },
+          {
+            "text": "is a"
+          },
+          {
+            "text": "test"
+          }
+        ]
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method with IJsonObject/string delegate parameter should be invoked from JSON lambda",
+          "transformer": {
+            "filtered": "#valueOf($.testData)->#customJsonObjectFilterWithLambda(@x: @x.text)"
+          },
+          "result": {
+            "filtered": [ "this", "is a", "test" ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoking a string/long parameter delegate using JSON lambda",
+      "source": {
+        "testStrings": [ "5", "10", "2", "15" ]
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method with string/long delegate parameter should be invoked from JSON lambda",
+          "transformer": {
+            "filtered": "#valueOf($.testStrings)->#customStringToLongFilterWithLambda(@x: #toInteger(@x))"
+          },
+          "result": {
+            "filtered": [ 10, 15 ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "External passthrough methods will accept range variables as parameters",
+      "source": {
+        "stringValue": "test",
+        "integerValue": 5,
+        "doubleValue": 7.12,
+        "booleanValue": true,
+        "jsonObject": {
+          "text": "test"
+        },
+        "jsonArray": [ 1, 2, 3 ]
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method with string/long delegate parameter should be invoked from JSON lambda",
+          "transformer": {
+            "@stringValue": "#valueOf($.stringValue)",
+            "@integerValue": "#valueOf($.integerValue)",
+            "@doubleValue": "#valueOf($.doubleValue)",
+            "@booleanValue": "#valueOf($.booleanValue)",
+            "@jsonObject": "#valueOf($.jsonObject)",
+            "@jsonArray": "#valueOf($.jsonArray)",
+            "stringResult": "#stringPassthrough(@stringValue)",
+            "integerResult": "#integerPassthrough(@integerValue)",
+            "doubleResult": "#doublePassthrough(@doubleValue)",
+            "booleanResult": "#booleanPassthrough(@booleanValue)",
+            "jsonObjectResult": "#jsonObjectPassthrough(@jsonObject)",
+            "jsonArrayResult": "#jsonArrayPassthrough(@jsonArray)",
+            "complexObject": "#returnsComplexObject()"
+          },
+          "result": {
+            "stringResult": "test",
+            "integerResult": 5,
+            "doubleResult": 7.12,
+            "booleanResult": true,
+            "jsonObjectResult": {
+              "text": "test"
+            },
+            "jsonArrayResult": [ 1, 2, 3 ],
+            "complexObject": {
+              "Id": 123,
+              "Name": "Test"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

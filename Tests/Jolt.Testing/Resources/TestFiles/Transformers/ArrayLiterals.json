@@ -1,0 +1,8 @@
+﻿{
+  "ArrayOfIntegerLiterals": "[ 1, 2, 3 ]",
+  "ArrayOfIntegerValues": "[ #valueOf($.integerLiteral), #valueOf($.integerLiteral) ]",
+  "ArrayOfStringLiterals": "[ 'this', 'is', 'a', 'test' ]",
+  "ArrayOfStringValues": "[ #valueOf($.stringLiteral), #valueOf($.stringLiteral) ]",
+  "ArrayOfBooleanLiterals": "[ true, false, true ]",
+  "ArrayOfBooleanValues": "[ #valueOf($.booleanTrueLiteral), #valueOf($.booleanFalseLiteral), #valueOf($.booleanTrueLiteral) ]"
+}

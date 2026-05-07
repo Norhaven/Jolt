@@ -18,6 +18,11 @@ namespace Jolt.Parsing.Readers
 
         public abstract IEnumerable<ExpressionToken> ReadTokenFrom(ITokenStream<char> stream, EvaluationMode mode);
 
+        protected ExpressionToken TokenFrom(string value, ExpressionTokenCategory category)
+        {
+            return new ExpressionToken(value, category);
+        }
+
         protected ExpressionToken TokenFromCurrent(ITokenStream<char> stream, ExpressionTokenCategory category)
         {
             return new ExpressionToken(stream.ConsumeCurrent().ToString(), category);

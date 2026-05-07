@@ -6,10 +6,10 @@ namespace Jolt.Expressions
 {
     public sealed class RangeExpression : Expression
     {
-        public Index StartIndex { get; }
-        public Index EndIndex { get; }
+        public RangeIndexExpression StartIndex { get; }
+        public RangeIndexExpression EndIndex { get; }
 
-        public RangeExpression(Index startIndex, Index endIndex)
+        public RangeExpression(RangeIndexExpression startIndex, RangeIndexExpression endIndex)
         {
             StartIndex = startIndex;
             EndIndex = endIndex;

@@ -75,6 +75,20 @@ namespace Jolt.Exceptions
         ExpectedNullCoalescingOperatorButFoundSingleQuestionMark,
         [Description("JLT132")]
         ExpectedDotAfterQuestionMarkForNullSafePropertyAccessButFoundDifferentToken,
+        [Description("JLT133")]
+        UnableToParseArrayLiteralElementAtPosition,
+        [Description("JLT134")]
+        ExpectedDotForRangeOperatorOrNumericPrecisionButFoundDifferentToken,
+        [Description("JLT135")]
+        UnrecognizedNumericLiteralFormat,
+        [Description("JLT136")]
+        UnableToParseRangeIndexExpressionAtPosition,
+        [Description("JLT137")]
+        UnableToReduceLiteralFollowedByRangeExpression,
+        [Description("JLT138")]
+        UnableToReduceRangeVariableFollowedByRangeExpression,
+        [Description("JLT139")]
+        UnableToReduceMethodCallFollowedByRangeExpression,
 
         // Resolution
 
@@ -182,6 +196,10 @@ namespace Jolt.Exceptions
         [Description("JLT548")]
         AttemptedToIndexOrSliceNullVariableValue,
         [Description("JLT549")]
-        AttemptedToIndexOrSliceNonStringAndNonArrayValue
+        AttemptedToIndexOrSliceNonStringAndNonArrayValue,
+        [Description("JLT550")]
+        UnableToEvaluateRangeWithNullIndex,
+        [Description("JLT551")]
+        UnableToEvaluateRangeWithNonIntegerIndex
     }
 }
