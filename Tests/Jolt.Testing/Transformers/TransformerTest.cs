@@ -28,11 +28,15 @@ namespace Jolt.Testing.Transformers
 
         public override void Deserialize(IXunitSerializationInfo info)
         {
+            base.Deserialize(info);
+
             info.DeserializeInto(this, Messages);
         }
 
         public override void Serialize(IXunitSerializationInfo info)
         {
+            base.Serialize(info);
+
             info.SerializeFrom(this, Messages);
         }
     }

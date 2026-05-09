@@ -9,7 +9,6 @@ namespace Jolt.Testing
 {
     public abstract class TestData : IXunitSerializable
     {
-        public Guid TestDataId { get; set; }
         public ITestContext TestContext { get; set; }
         public TestType TestType { get; set; }
         public string TestGroup { get; set; }
@@ -26,7 +25,6 @@ namespace Jolt.Testing
 
         protected TestData(IMessageSink messages, ITestContext testContext, TestType testType, string testGroup, string testName, int testIndex)
         {
-            TestDataId = Guid.NewGuid();
             Messages = messages;
             TestContext = testContext;
             TestType = testType;
