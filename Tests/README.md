@@ -8,7 +8,7 @@ All of the tests are run with `xUnit 2.9.3`, but the environment may differ to t
 
 ## Jolt.Testing.Harness.DotNetFramework
 
-This test project solely targets `.Net 4.7.2` and verifies against the `.Net Standard 2.0` contract to make sure that older applications are supported. 
+This test project solely targets `.Net 4.7.2` and verifies against the `.Net Standard 2.0` contract to make sure that older applications are supported. It's important to note that this has a reference to a much earlier version of the Xunit test runner that will allow it to still work appropriately, as test discovery with a later version will intermittently skip tests or fail to report errors correctly.
 
 ## Jolt.Testing.Harness
 
@@ -34,4 +34,4 @@ These tests exist in the `./Small` area of the project and are tagged with a `Sm
 
 # So Everything Related To Testing Is In The `Jolt.Testing` Project?
 
-Close. The `Jolt.Testing` project contains all of the attributes, custom exceptions, test files, tests, and test discoverers that are needed by the three different kinds of tests. All of the non-code files are marked as Embedded Resources and will be read in as such during test execution. If it's a part of the testing structures then it belongs here. The only things that don't belong here are the test entry points in the `Jolt.Testing.Harness` and `Jolt.Testing.Harness.DotNetFramework` projects, which just exist to run the tests in a specific environment. If you find yourself writing something that is only relevant to one of those environments then it may be worth putting it in the relevant harness project instead, but otherwise it should probably go here.
+Except for the harness projects, yes. The `Jolt.Testing` project contains all of the attributes, custom exceptions, test files, tests, and test discoverers that are needed by the three different kinds of tests. All of the non-code files are marked as Embedded Resources and will be read in as such during test execution. If it's a part of the testing structures then it belongs here.
