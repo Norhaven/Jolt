@@ -5,11 +5,11 @@
   </ItemGroup>
   
   <ItemGroup Condition="'$(BuildGroup)' == 'CrossPlatform'">
-    <ProjectReference Include="**/*.csproj" Exclude="Tests/Jolt.Json.DotNetFramework.Tests/Jolt.Json.DotNetFramework.Tests.csproj" />
+    <ProjectReference Include="**/*.csproj" Exclude="Tests/Jolt.Testing.Harness.DotNetFramework/Jolt.Testing.Harness.DotNetFramework.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildGroup)' == 'WindowsOnly'">
-    <ProjectReference Include="./Tests/Jolt.Json.DotNetFramework.Tests/Jolt.Json.DotNetFramework.Tests.csproj" />
+    <ProjectReference Include="./Tests/Jolt.Testing.Harness.DotNetFramework/Jolt.Testing.Harness.DotNetFramework.csproj" />
   </ItemGroup>
   
   <Target Name="Build">
