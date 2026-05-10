@@ -75,7 +75,7 @@ jobs:
 
     # Run tests
     - name: Run .NET Framework Tests
-      run: vstest.console.exe Tests/Jolt.Testing.Harness.DotNetFramework/bin/Release/Jolt.Testing.Harness.DotNetFramework.dll /TestAdapterPath:Tests/Jolt.Testing.Harness.DotNetFramework/bin/Release/ --collect:"Code Coverage"
+      run: vstest.console.exe Tests/Jolt.Testing.Harness.DotNetFramework/bin/Release/net472/Jolt.Testing.Harness.DotNetFramework.dll /TestAdapterPath:Tests/Jolt.Testing.Harness.DotNetFramework/bin/Release/ --collect:"Code Coverage"
     - name: Run .NET Cross-platform Tests
       run: |
         dotnet test Tests/Jolt.Testing.Harness/Jolt.Testing.Harness.csproj --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./TestResults/
