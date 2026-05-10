@@ -34,4 +34,4 @@ These tests exist in the `./Small` area of the project and are tagged with a `Sm
 
 # So Everything Related To Testing Is In The `Jolt.Testing` Project?
 
-Except for the harness projects, yes. The `Jolt.Testing` project contains all of the attributes, custom exceptions, test files, tests, and test discoverers that are needed by the three different kinds of tests. All of the non-code files are marked as Embedded Resources and will be read in as such during test execution. If it's a part of the testing structures then it belongs here.
+Except for the entry points in the harness projects, yes. The `Jolt.Testing` project contains all of the attributes, custom exceptions, test files, tests, and test discoverers that are needed by the three different kinds of tests. All of the non-code files are marked as Embedded Resources and will be read in as such during test execution. If it's a part of the testing structures then it belongs here.
