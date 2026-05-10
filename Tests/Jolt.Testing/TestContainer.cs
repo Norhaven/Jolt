@@ -159,7 +159,7 @@ namespace Jolt.Testing
             }
 
             var context = test.JsonContext;
-            var builtContext = context.UseTransformer(test.Transformer.ToTypeOf<string>());
+            var builtContext = context.UseTransformer(test.Transformer);
 
             if (!string.IsNullOrWhiteSpace(test.ExternalMethodSource))
             {
@@ -184,10 +184,10 @@ namespace Jolt.Testing
 
             try
             {
-                var result = transformer.Transform(test.Source.ToTypeOf<string>());
+                var result = transformer.Transform(test.Source);
 
                 var resultToken = context.JsonTokenReader.Read(result);
-                var expectedToken = context.JsonTokenReader.Read(test.Result.ToTypeOf<string>());
+                var expectedToken = context.JsonTokenReader.Read(test.Result);
 
                 var isEqual = expectedToken.DeepEquals(resultToken, new TestDoubleJsonEqualityComparer());
 

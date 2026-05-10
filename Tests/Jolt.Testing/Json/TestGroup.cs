@@ -11,6 +11,6 @@ namespace Jolt.Testing.Json
         public string Name { get; set; }
         public IJsonObject Source { get; set; }
         public string ExternalMethodSource { get; set; }
-        public EndToEndTest[] Tests { get; set; }
+        public TestDefinition[] Tests { get; set; }
     }
 }

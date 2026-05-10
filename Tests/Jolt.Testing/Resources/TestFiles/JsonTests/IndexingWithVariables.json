@@ -125,7 +125,9 @@
       "name": "Indexing works with method return values",
       "source": {
         "text": "this is an example",
-        "numbers": [ 1, 9, 3, 2, 6 ]
+        "numbers": [ 1, 9, 3, 2, 6 ],
+        "singleNumberTwo": 2,
+        "singleNumberThree": 3
       },
       "tests": [
         {
@@ -203,6 +205,42 @@
           "result": {
             "textSubstring": "h",
             "arraySlice": [ 9, 3 ]
+          }
+        },
+        {
+          "name": "Indexer substring using variables works as expected",
+          "transformer": {
+            "@numberTwo": "#valueOf($.singleNumberTwo)",
+            "@numberThree": "#valueOf($.singleNumberThree)",
+            "textSubstring": "#valueOf($.text)[..@numberTwo]->#substring(^1)",
+            "arraySlice": "#valueOf($.numbers)[..@numberThree]->#where(@x: @x >= 3)"
+          },
+          "result": {
+            "textSubstring": "h",
+            "arraySlice": [ 9, 3 ]
+          }
+        },
+        {
+          "name": "Indexer substring and slice both work as expected with range dots at the end and variable at the first index",
+          "transformer": {
+            "@numberThree": "#valueOf($.singleNumberThree)",
+            "textSubstring": "#valueOf($.text)[^@numberThree..]",
+            "arraySlice": "#valueOf($.numbers)[^@numberThree..]"
+          },
+          "result": {
+            "textSubstring": "ple",
+            "arraySlice": [ 3, 2, 6 ]
+          }
+        },
+        {
+          "name": "Indexer substring and slice both work as expected with range dots at the end and method call at the first index",
+          "transformer": {
+            "textSubstring": "#valueOf($.text)[^#valueOf($.singleNumberThree)..]",
+            "arraySlice": "#valueOf($.numbers)[^#valueOf($.singleNumberThree)..]"
+          },
+          "result": {
+            "textSubstring": "ple",
+            "arraySlice": [ 3, 2, 6 ]
           }
         }
       ]

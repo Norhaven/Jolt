@@ -141,7 +141,7 @@ namespace Jolt.Json.Newtonsoft
             // We're explicitly using an empty array to force overload resolution to
             // choose the JToken.ToString(Formatting, JsonConverter[]) overload because
             // the 13.0.4 version of Newtonsoft introduced the overload with the single parameter
-            // and that is not compatible with .Net Framework 4.72 and so it will throw an exception
+            // and that is not compatible with .Net Framework 4.72, so it will throw an exception
             // at runtime because it can't find that particular method.
 
             return _token?.ToString(Formatting.None, Array.Empty<JsonConverter>());

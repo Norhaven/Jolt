@@ -248,6 +248,16 @@ namespace Jolt.Evaluation
                 throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateRangeWithNullIndex, leftResult?.GetType(), rightResult?.GetType());
             }
 
+            if (leftResult is RangeVariable leftVariable)
+            {
+                leftResult = leftVariable.Value?.ToTypeOf<long>();
+            }
+
+            if (rightResult is RangeVariable rightVariable)
+            {
+                rightResult = rightVariable.Value?.ToTypeOf<long>();
+            }
+
             if (leftResult is long left && rightResult is long right)
             {
                 var isIdenticalIndices = range.StartIndex == range.EndIndex;

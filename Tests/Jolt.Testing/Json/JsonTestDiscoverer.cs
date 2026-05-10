@@ -44,20 +44,26 @@ namespace Jolt.Testing.Json
 
             foreach (var testGroup in testJsonData.TestGroups ?? Array.Empty<TestGroup>())
             {
-                foreach (var test in testGroup.Tests ?? Array.Empty<EndToEndTest>())
+                foreach (var test in testGroup.Tests ?? Array.Empty<TestDefinition>())
                 {
                     LogDiagnostic($"[DISCOVERY] Populating test case with data from JSON test");
 
-                    test.TestIndex = testIndex;
-                    test.TestGroup = testGroup.Name;
-                    test.TestContext = testContext;
-                    test.TestType = testType;
-                    test.Source = testGroup.Source;
-                    test.PossibleExceptions = testJsonData.PossibleExceptionCodes;
-                    test.PossibleExternalMethodSources = testJsonData.PossibleExternalMethodSources;
-                    test.ExternalMethodSource = testGroup.ExternalMethodSource;
+                    var endToEndTest = new EndToEndTest(_diagnosticMessageSink, testContext, testType, testGroup.Name, test.Name, testIndex)
+                    {
+                        Source = testGroup.Source.ToTypeOf<string>(),
+                        Transformer = test.Transformer.ToTypeOf<string>(),
+                        Result = test.Result?.ToTypeOf<string>(),
+                        PossibleExceptions = testJsonData.PossibleExceptionCodes,
+                        PossibleExternalMethodSources = testJsonData.PossibleExternalMethodSources,
+                        ExternalMethodSource = testGroup.ExternalMethodSource,
+                        ExceptionCode = test.ExceptionCode,
+                        ExceptionType = test.ExceptionType,
+                        InnerExceptionCode = test.InnerExceptionCode
+                    };
 
-                    yield return test;
+                    LogDiagnostic($"[DISCOVERY] Created test case: '{endToEndTest.Name}' with:\nSource - {endToEndTest.Source}\nTransformer - {endToEndTest.Transformer}\nResult - {endToEndTest.Result}");
+
+                    yield return endToEndTest;
 
                     testIndex++;
                 }

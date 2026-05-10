@@ -151,8 +151,6 @@ namespace Jolt.Json.DotNet
                     PropertyNamingPolicy = NamingPolicy.CamelCase
                 };
 
-                options.Converters.Add(new JoltJsonObjectConverter());
-
                 return JsonSerializer.Deserialize<T>(_token.ToJsonString(), options);
             }
 

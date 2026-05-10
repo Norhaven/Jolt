@@ -11,7 +11,6 @@ namespace Jolt.Testing
 {
     public sealed class JoltTestCase<TData> : XunitTestCase where TData : TestData, IXunitSerializable, new()
     {
-        public Guid TestCaseId { get; set; }
         public TData Data { get; set; }
 
         [Obsolete("Called by the de-serializer; should only be called by deriving classes for de-serialization purposes")]
@@ -30,7 +29,6 @@ namespace Jolt.Testing
                   testMethod, 
                   new object[] { data })
         {
-            TestCaseId = Guid.NewGuid();
             Data = data;
             Data.Messages = diagnosticMessageSink;
             DisplayName = data.TestIndex < 0 ? $"{data.TestGroup} :: {data.Name}" : $"[{data.TestIndex}] {data.TestGroup} :: {data.Name}";
@@ -43,7 +41,6 @@ namespace Jolt.Testing
             
             base.Serialize(info);
 
-            info.AddValue(nameof(TestCaseId), TestCaseId.ToString());
             info.AddValue(nameof(Data), Data);
         }
 
@@ -51,7 +48,6 @@ namespace Jolt.Testing
         {
             base.Deserialize(info);
 
-            TestCaseId = Guid.Parse(info.GetValue<string>(nameof(TestCaseId)));
             Data = info.GetValue<TData>(nameof(Data));
 
             DiagnosticMessageSink.OnMessage(new DiagnosticMessage($"Deserialized test case with data: {Data.TestContext.GetType().Name}::{Data.TestType}::{Data.TestGroup}::{Data.Name}"));

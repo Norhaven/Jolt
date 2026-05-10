@@ -40,8 +40,8 @@ namespace Jolt.Testing.Harness.DotNet.Unit
 
                 deserializedTest.Should().NotBeNull();
                 deserializedTest.Data.Should().NotBeNull();
-                deserializedTest.Data.Source.ToTypeOf<string>().Should().Be(test.Data.Source.ToTypeOf<string>());
-                deserializedTest.Data.Transformer.ToTypeOf<string>().Should().Be(test.Data.Transformer.ToTypeOf<string>());
+                deserializedTest.Data.Source.Should().Be(test.Data.Source);
+                deserializedTest.Data.Transformer.Should().Be(test.Data.Transformer);
             }
         }
 
@@ -58,18 +58,18 @@ namespace Jolt.Testing.Harness.DotNet.Unit
                 "TestName",
                 0)
             {
-                Source = context.ParseAsJsonObject(_currentTestType, "{\"key\": \"value\"}"),
-                Transformer = context.ParseAsJsonObject(_currentTestType, "{\"transformerKey\": \"transformerValue\"}"),
-                Result = context.ParseAsJsonObject(_currentTestType, "{\"resultKey\": \"resultValue\"}"),
+                Source = "{\"key\": \"value\"}",
+                Transformer = "{\"transformerKey\": \"transformerValue\"}",
+                Result = "{\"resultKey\": \"resultValue\"}",
             };
 
             var deserializedTest = SerializeAndDeserialize(test, messages);
 
             deserializedTest.Should().NotBeNull();
-            deserializedTest.Source.ToTypeOf<string>().Should().Be(test.Source.ToTypeOf<string>());
-            deserializedTest.Transformer.ToTypeOf<string>().Should().Be(test.Transformer.ToTypeOf<string>());
+            deserializedTest.Source.Should().Be(test.Source);
+            deserializedTest.Transformer.Should().Be(test.Transformer);
             deserializedTest.Result.Should().NotBeNull();
-            deserializedTest.Result.ToTypeOf<string>().Should().Be(test.Result.ToTypeOf<string>());
+            deserializedTest.Result.Should().Be(test.Result);
         }
 
         [Fact]
@@ -85,15 +85,15 @@ namespace Jolt.Testing.Harness.DotNet.Unit
                 "TestName",
                 0)
             {
-                Source = context.ParseAsJsonObject(_currentTestType, "{\"key\": \"value\"}"),
-                Transformer = context.ParseAsJsonObject(_currentTestType, "{\"transformerKey\": \"transformerValue\"}"),
+                Source = "{\"key\": \"value\"}",
+                Transformer = "{\"transformerKey\": \"transformerValue\"}",
             };
 
             var deserializedTest = SerializeAndDeserialize(test, messages);
 
             deserializedTest.Should().NotBeNull();
-            deserializedTest.Source.ToTypeOf<string>().Should().Be(test.Source.ToTypeOf<string>());
-            deserializedTest.Transformer.ToTypeOf<string>().Should().Be(test.Transformer.ToTypeOf<string>());
+            deserializedTest.Source.Should().Be(test.Source);
+            deserializedTest.Transformer.Should().Be(test.Transformer);
             deserializedTest.PossibleExceptions.Should().BeNull();
             deserializedTest.PossibleExternalMethodSources.Should().BeNull();
         }
@@ -112,8 +112,9 @@ namespace Jolt.Testing.Harness.DotNet.Unit
                 "TestName",
                 0)
             {
-                Source = context.ParseAsJsonObject(_currentTestType, "{\"key\": \"value\"}"),
-                Transformer = context.ParseAsJsonObject(_currentTestType, "{\"transformerKey\": \"transformerValue\"}"),
+                Source = "{\"key\": \"value\"}",
+                Transformer = "{\"transformerKey\": \"transformerValue\"}",
+                Result = "{\"resultKey\": \"resultValue\"}",
                 PossibleExceptions = new Dictionary<string, string>
                 {
                     { "ExceptionCode1", "ExceptionMessage1" },
@@ -129,7 +130,9 @@ namespace Jolt.Testing.Harness.DotNet.Unit
             var deserializedTest = SerializeAndDeserialize(test, messages);
 
             deserializedTest.Should().NotBeNull();
-            deserializedTest.Source.ToTypeOf<string>().Should().Be(test.Source.ToTypeOf<string>());
+            deserializedTest.Source.Should().Be(test.Source);
+            deserializedTest.Transformer.Should().Be(test.Transformer);
+            deserializedTest.Result.Should().Be(test.Result);
             deserializedTest.PossibleExceptions.Should().NotBeNull();
             deserializedTest.PossibleExceptions.Should().ContainKeys(test.PossibleExceptions.Keys);
             deserializedTest.PossibleExternalMethodSources.Should().NotBeNull();

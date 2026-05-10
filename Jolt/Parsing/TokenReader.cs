@@ -189,7 +189,7 @@ namespace Jolt.Parsing
             }
             else if (stream.CurrentToken == ExpressionToken.At)
             {
-                var variable = TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Semicolon, ExpressionToken.Dot, ExpressionToken.ArrowBody, ExpressionToken.OpenSquareBracket, ExpressionToken.QuestionMark);
+                var variable = TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Semicolon, ExpressionToken.Dot, ExpressionToken.ArrowBody, ExpressionToken.OpenSquareBracket, ExpressionToken.CloseSquareBracket, ExpressionToken.QuestionMark);
 
                 var isNullSafeVariableDereference = stream.CurrentToken == ExpressionToken.QuestionMark;
 
@@ -272,15 +272,24 @@ namespace Jolt.Parsing
                         {
                             stream.ConsumeCurrent();
 
-                            var token = TokenUntilMatchedWith(stream, ExpressionTokenCategory.PropertyDereference, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot, ExpressionToken.QuestionMark);
-
-                            if (stream.CurrentToken == ExpressionToken.QuestionMark)
+                            if (stream.CurrentToken == ExpressionToken.Dot)
                             {
-                                yield return new ExpressionToken(token.Value, ExpressionTokenCategory.NullSafePropertyDereference);
+                                stream.ConsumeCurrent();
+
+                                yield return new ExpressionToken("..", ExpressionTokenCategory.RangeExpressionOperator);
                             }
                             else
                             {
-                                yield return token;
+                                var token = TokenUntilMatchedWith(stream, ExpressionTokenCategory.PropertyDereference, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.CloseSquareBracket, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot, ExpressionToken.QuestionMark);
+
+                                if (stream.CurrentToken == ExpressionToken.QuestionMark)
+                                {
+                                    yield return new ExpressionToken(token.Value, ExpressionTokenCategory.NullSafePropertyDereference);
+                                }
+                                else
+                                {
+                                    yield return token;
+                                }
                             }
                         }
                     }
