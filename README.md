@@ -21,6 +21,20 @@ Were you looking for the much older and unrelated .Net port of the Java JSON tra
 | Jolt.Json.DotNet | ![NuGet Version](https://img.shields.io/nuget/v/Jolt.Json.DotNet) |
 | Jolt.Json.Newtonsoft | ![NuGet Version](https://img.shields.io/nuget/v/Jolt.Json.Newtonsoft) |
 
+## That's Great, But What Could I Use It For?
+
+Let's say you have a third-party JSON-based REST API you need to call. Your data may already be in JSON, for instance in a NoSQL database, but the structure of your data doesn't match up with what the API endpoint is expecting. You need to transform your JSON into different JSON! That's an ideal use case for this project. You write a transformer in JSON that will take your data as input, make calls to any transformation business logic in your code to aid in the process, and provide you with the third-party API contract JSON as a result.
+
+Any time you have JSON on hand that needs to be modified, whether it's merely adjusting the values and structure slightly or creating something completely different, that's an opportunity for a JSON transformer that uses Jolt. 
+
+## Okay, So What Stops Me From Doing This Myself All In C#?
+
+Absolutely nothing. If your changes are very minor, it may very well be easier and better to do that than to maintain transformer artifacts. 
+
+I would suggest, however, that there will be some future headaches in doing that as your transformation needs grow. The largest pain points with restructuring JSON are ensuring that 1) The values and structure are easily readable, maintainable, and reusable across time, and that 2) Your business logic is not mixed in with the restructuring logic. It's incredibly easy, especially taking AI into account, to just throw some code together that walks the JSON tree and makes a new thing. It's incredibly difficult to deal with the aftermath of doing that and ensure that you and other developers can understand and work with what you've done.
+
+Let's take a quick tour of the language features and you can decide if this fits your own use case.
+
 # Syntax
 
 The transformation language itself is pretty straightforward and primarily relies on defining and using methods to handle the transformation work needed, both as provided by the library within the package or external methods that you will create and register for use.
@@ -286,7 +300,7 @@ And that will create the resulting JSON:
     "arrayElement": [ 9 ]
 }
 ```
-Range expressions immediately follow a variable and are enclosed in square brackets `[` and `]` which indicate indexing. They behave much the same as C# range expressions that you may already be used to, where a literal integer indicates an offset index from the beginning of the string or array and the caret `^` indicates an index that is offset from the end of it. It's important to note that there are some standard library methods that take a range as a parameter, such as `substring` or `slice`, and in those cases you don't need to use square brackets and can specify the range expression as a first class citizen of the method call parameter, such as `#substring($.some.text, 2..5)` or `#slice($.some.array, ^3..)`.
+Range expressions immediately follow a variable and are enclosed in square brackets `[` and `]` which indicate indexing. They behave much the same as C# range expressions that you may already be used to, where a literal integer, range variable, or method return result indicates an offset index from the beginning of the string or array and the caret `^` indicates an index that is offset from the end of it. It's important to note that there are some standard library methods that take a range as a parameter, such as `substring` or `slice`, and in those cases you don't need to use square brackets and can specify the range expression as a first class citizen of the method call parameter, such as `#substring($.some.text, 2..5)` or `#slice($.some.array, ^3..)`.
 
 It's also worth noting that you can directly index into a string or array result of a method without going through variables at all. For example, `#valueOf($.someString)[..2]` would give the first two characters of the string retrieved by the `valueOf` method.
 
