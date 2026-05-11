@@ -16,7 +16,7 @@ namespace Jolt.Parsing
         {
         }
 
-        public bool StartsWithMethodCallOrOpenParenthesesOrRangeVariable(string expression)
+        public bool StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracket(string expression)
         {
             if (string.IsNullOrWhiteSpace(expression))
             {

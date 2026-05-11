@@ -344,6 +344,32 @@ Lastly, you can take advantage of pre-processing variables with a `using` block 
 }
 ```
 
+# Error Handling
+
+By default, if an error is encountered during the transformation process then the entire transformation will fail and an exception will be thrown. However, there are a few ways that you can handle errors within your transformers to allow for more graceful degradation of results in the case of unexpected input or other issues.
+```json
+{
+    "default": #try(#valueOf($.stringValue)->#toInteger(), @e: #valueOf($.defaultValue))",
+    "nullOnError": "#try(#valueOf($.stringValue)->#toInteger(), @e: null)",
+}
+```
+The `#try` method takes two parameters: the first is the expression to evaluate and the second is a lambda that takes an exception parameter and returns the value to use in the case of an error. In the example above, the `default` property will attempt to convert a string value to an integer and if it fails it will return the value of `$.defaultValue` instead, while the `nullOnError` property will return null in the case of any error.
+
+# Creating Complex Objects
+
+## Array Literals
+
+You can create arrays directly within your transformer by using square brackets `[` and `]` to enclose the array elements, which can be either literal values, range variables, or the results of method calls. For example:
+```json
+{
+    "array": "[ 1, 'two', null, #valueOf($.some.path) ]"
+}
+```
+
+## Object Literals
+
+**This is intended for a subsequent release, but for now you can create objects in JSON and assign to range variables for further use.**
+
 # Additional Operations
 
 As a final note, there are a few additional operations that you can take advantage of in your transformers that don't necessarily fit into the previous categories. The first is the null-coalescing operator `??` which returns the left-hand operand if it is not null, otherwise it returns the right-hand operand. For example:
@@ -406,6 +432,7 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | skipWhile | Returns an array excluding the leading elements of an array that satisfy a specified condition | `#skipWhile($.some.path, @x: @x.propertyName > 5)` | Property Value
 | contains | Returns true when an array or string contains the provided value | `#contains($.some.path, 'some string')` | Property Value
 | roundTo | Returns the value of a provided number rounded to the specified decimal places | `#roundTo($.some.path, 2)` | Property Value
+| try | Evaluates an expression and returns the result, or if an error is encountered it evaluates the provided lambda with the exception as a parameter and returns that result instead | `#try(#valueOf($.some.path)->#toInteger(), @e: 'default value')` | Property Value
 | max | Returns the maximum value found within an array of numbers | `#max($.some.path)` | Property Value
 | min | Returns the minimum value found within an array of numbers | `#min($.some.path)` | Property Value
 | sum | Returns the total value found within an array of numbers | `#sum($.some.path)` | Property Value
