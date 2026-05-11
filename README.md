@@ -382,7 +382,7 @@ You can create arrays directly within your transformer by using square brackets 
 
 ## Object Literals
 
-**This is intended for a subsequent release, but for now you can create objects in JSON and assign to range variables for further use.**
+**This is intended for a subsequent release, but for now you can create objects in JSON assigned to range variables for further use.**
 
 # Additional Operations
 
