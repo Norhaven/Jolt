@@ -363,7 +363,7 @@ Lastly, you can take advantage of pre-processing variables with a `using` block 
 By default, if an error is encountered during the transformation process then the entire transformation will fail and an exception will be thrown. However, there are a few ways that you can handle errors within your transformers to allow for more graceful degradation of results in the case of unexpected input or other issues.
 ```json
 {
-    "default": #try(#valueOf($.stringValue)->#toInteger(), @e: #valueOf($.defaultValue))",
+    "default": "#try(#valueOf($.stringValue)->#toInteger(), @e: #valueOf($.defaultValue))",
     "nullOnError": "#try(#valueOf($.stringValue)->#toInteger(), @e: null)",
 }
 ```
