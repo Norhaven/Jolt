@@ -21,13 +21,13 @@ Were you looking for the much older and unrelated .Net port of the Java JSON tra
 | Jolt.Json.DotNet | ![NuGet Version](https://img.shields.io/nuget/v/Jolt.Json.DotNet) |
 | Jolt.Json.Newtonsoft | ![NuGet Version](https://img.shields.io/nuget/v/Jolt.Json.Newtonsoft) |
 
-# That's Great, But What Could I Use It For?
+## That's Great, But What Could I Use It For?
 
 Let's say you have a third-party JSON-based REST API you need to call. Your data may already be in JSON, for instance in a NoSQL database, but the structure of your data doesn't match up with what the API endpoint is expecting. You need to transform your JSON into different JSON! That's an ideal use case for this project. You write a transformer in JSON that will take your data as input, make calls to any transformation business logic in your code to aid in the process, and provide you with the third-party API contract JSON as a result.
 
 Any time you have JSON on hand that needs to be modified, whether it's merely adjusting the values and structure slightly or creating something completely different, that's an opportunity for a JSON transformer that uses Jolt. 
 
-# Okay, So What Stops Me From Doing This Myself All In C#?
+## Okay, So What Stops Me From Doing This Myself All In C#?
 
 Absolutely nothing. If your changes are very minor, it may very well be easier and better to do that than to maintain transformer artifacts. 
 
