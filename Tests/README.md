@@ -8,7 +8,7 @@ All of the tests are run with `xUnit 2.9.3`, but the environment may differ to t
 
 ## Jolt.Testing.Harness.DotNetFramework
 
-This test project solely targets `.Net 4.7.2` and verifies against the `.Net Standard 2.0` contract to make sure that older applications are supported. It's important to note that this has a reference to a much earlier version of the Xunit test runner that will allow it to still work appropriately, as test discovery with a later version will intermittently skip tests or fail to report errors correctly.
+This test project solely targets `.Net 4.7.2` and verifies against the `.Net Standard 2.0` contract to make sure that older applications are supported. It's important to note that this has a reference to a much earlier version of the Xunit test runner that will allow it to still work appropriately, as test discovery with a later version will intermittently skip tests or fail to report errors correctly. To effectively run these older tests without the unwanted behavior of the later runner versions, please use the `Jolt.DotNetFramework.Tests` solution file at the root of this repo.
 
 ## Jolt.Testing.Harness
 
