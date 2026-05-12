@@ -195,14 +195,15 @@ This is one way to directly declare and use variables in your transformations. A
             "intermediateValue": "@x.someInteger * 2"
         }
     ],
-    "#foreach(@x in @tempResult)->'actualResult'": [
+    "#foreach(@x;i in @tempResult)->'actualResult'": [
         {
-            "finalValue": "@x.intermediateValue + 5"
+            "finalValue": "@x.intermediateValue + 5",
+            "currentIndex": "@i"
         }
     ]
 }
 ```
-The first loop will set the variable `@tempResult` to the value of the transformed array, which will use the provided content template to transform each array element it finds, then removes the node from the output. The second loop takes the variable results as input and loops over that intermediary array, applying additional transformation to the results, naming the final array property as `actualResult`.
+The first loop will set the variable `@tempResult` to the value of the transformed array, which will use the provided content template to transform each array element it finds, then removes the node from the output. The second loop takes the variable results as input and loops over that intermediary array, applying additional transformation to the results, naming the final array property as `actualResult`. Note that you can optionally get both the current value at the current iteration as well as the index by declaring two variables separated by a semicolon, the left is the value and the right is the index.
 
 You can also declare variables within the content template of a loop, but they only exist within it and on a per-iteration basis (meaning that the variable is redeclared, set, and thrown away every time through the loop). Let's see an example of that here.
 ```json
