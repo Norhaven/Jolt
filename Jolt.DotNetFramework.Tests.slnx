@@ -1,6 +1,10 @@
 <Solution>
+  <Folder Name="/Tests/">
+    <File Path="Tests/testing.runsettings" />
+    <Project Path="Tests/Jolt.Testing.Harness.DotNetFramework/Jolt.Testing.Harness.DotNetFramework.csproj" />
+    <Project Path="Tests/Jolt.Testing/Jolt.Testing.csproj" />
+  </Folder>
   <Project Path="Jolt.Json.DotNet/Jolt.Json.DotNet.csproj" />
   <Project Path="Jolt.Json.Newtonsoft/Jolt.Json.Newtonsoft.csproj" />
-  <Project Path="Tests/Jolt.Testing.Harness.DotNetFramework/Jolt.Testing.Harness.DotNetFramework.csproj" />
-  <Project Path="Tests/Jolt.Testing/Jolt.Testing.csproj" />
+  <Project Path="Jolt/Jolt.csproj" />
 </Solution>
