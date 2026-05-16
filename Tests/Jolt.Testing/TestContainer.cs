@@ -226,6 +226,20 @@ namespace Jolt.Testing
                             throw new ArgumentOutOfRangeException($"Expected inner exception to be of type 'JoltException' and contain code '{expectedInnerCode}' but found exception type '{ex.InnerException.GetType()}' instead");
                         }
                     }
+
+                    if (test.RootExceptionCode != null)
+                    {
+                        var expectedRootCode = GetExceptionCodeFrom(test.RootExceptionCode);
+                        var rootException = ex.GetBaseException();
+                        if (rootException is JoltException rootJoltException)
+                        {
+                            rootJoltException.Code.Should().Be(expectedRootCode, "because this root exception code was expected");
+                        }
+                        else
+                        {
+                            throw new ArgumentOutOfRangeException($"Expected root exception to be of type 'JoltException' and contain code '{expectedRootCode}' but found exception type '{rootException.GetType()}' instead");
+                        }
+                    }
                 }
 
                 if (test.ExceptionType != null)

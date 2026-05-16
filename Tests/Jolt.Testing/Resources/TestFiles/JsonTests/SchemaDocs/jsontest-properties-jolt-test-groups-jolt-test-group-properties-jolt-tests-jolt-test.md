@@ -6,9 +6,9 @@ https://github.com/norhaven/schemas/jolt/jsontest.schema.json#/properties/testGr
 
 An individual test.
 
-| Abstract            | Extensible | Status         | Identifiable | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                                   |
-| :------------------ | :--------- | :------------- | :----------- | :---------------- | :-------------------- | :------------------ | :--------------------------------------------------------------------------- |
-| Can be instantiated | No         | Unknown status | No           | Forbidden         | Allowed               | none                | [JsonTest.schema.json\*](../out/JsonTest.schema.json "open original schema") |
+| Abstract            | Extensible | Status         | Identifiable | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                            |
+| :------------------ | :--------- | :------------- | :----------- | :---------------- | :-------------------- | :------------------ | :-------------------------------------------------------------------- |
+| Can be instantiated | No         | Unknown status | No           | Forbidden         | Allowed               | none                | [JsonTest.schema.json\*](JsonTest.schema.json "open original schema") |
 
 ## items Type
 
@@ -29,6 +29,7 @@ one (and only one) of
 | [result](#result)                         | `object` | Optional | cannot be null | [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-jolt-tests-jolt-test-properties-result.md "https://github.com/norhaven/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests/items/properties/result")                           |
 | [exceptionCode](#exceptioncode)           | `string` | Optional | cannot be null | [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-jolt-tests-jolt-test-properties-exception-code.md "https://github.com/norhaven/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests/items/properties/exceptionCode")            |
 | [innerExceptionCode](#innerexceptioncode) | `string` | Optional | cannot be null | [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-jolt-tests-jolt-test-properties-inner-exception-code.md "https://github.com/norhaven/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests/items/properties/innerExceptionCode") |
+| [rootExceptionCode](#rootexceptioncode)   | `string` | Optional | cannot be null | [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-jolt-tests-jolt-test-properties-root-exception-code.md "https://github.com/norhaven/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests/items/properties/rootExceptionCode")   |
 
 ## name
 
@@ -119,3 +120,21 @@ The alias name of an exception code on the expected exception's inner exception 
 ### innerExceptionCode Type
 
 `string` ([Inner Exception Code](jsontest-properties-jolt-test-groups-jolt-test-group-properties-jolt-tests-jolt-test-properties-inner-exception-code.md))
+
+## rootExceptionCode
+
+The alias name of an exception code on the expected exception's root exception that this test expects to receive as a result of this test.
+
+`rootExceptionCode`
+
+* is optional
+
+* Type: `string` ([Root Exception Code](jsontest-properties-jolt-test-groups-jolt-test-group-properties-jolt-tests-jolt-test-properties-root-exception-code.md))
+
+* cannot be null
+
+* defined in: [JSON Test Schema](jsontest-properties-jolt-test-groups-jolt-test-group-properties-jolt-tests-jolt-test-properties-root-exception-code.md "https://github.com/norhaven/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests/items/properties/rootExceptionCode")
+
+### rootExceptionCode Type
+
+`string` ([Root Exception Code](jsontest-properties-jolt-test-groups-jolt-test-group-properties-jolt-tests-jolt-test-properties-root-exception-code.md))

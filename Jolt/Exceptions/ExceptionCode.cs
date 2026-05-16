@@ -218,6 +218,10 @@ namespace Jolt.Exceptions
         [Description("JLT556")]
         ExpectedDoubleEqualForEqualityComparisonButFoundSingleEqual,
         [Description("JLT557")]
-        UnableToEvaluateLogicalNotExpressionWithNonBooleanOperand
+        UnableToEvaluateLogicalNotExpressionWithNonBooleanOperand,
+        [Description("JLT558")]
+        AttemptedToUseNonStatementMethodWithinWhenLibraryCall,
+        [Description("JLT559")]
+        AttemptedToUseNonMethodExpressionWithinWhenLibraryCall
     }
 }

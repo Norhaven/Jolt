@@ -1,15 +1,15 @@
-# Jolt Tests Schema
+# Root Exception Code Schema
 
 ```txt
-https://github.com/norhaven/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests
+https://github.com/norhaven/schemas/jolt/jsontest.schema.json#/properties/testGroups/items/properties/tests/items/properties/rootExceptionCode
 ```
 
-An array of tests that are contained in this group.
+The alias name of an exception code on the expected exception's root exception that this test expects to receive as a result of this test.
 
 | Abstract            | Extensible | Status         | Identifiable            | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                            |
 | :------------------ | :--------- | :------------- | :---------------------- | :---------------- | :-------------------- | :------------------ | :-------------------------------------------------------------------- |
 | Can be instantiated | No         | Unknown status | Unknown identifiability | Forbidden         | Allowed               | none                | [JsonTest.schema.json\*](JsonTest.schema.json "open original schema") |
 
-## tests Type
+## rootExceptionCode Type
 
-`object[]` ([Jolt Test](jsontest-properties-jolt-test-groups-jolt-test-group-properties-jolt-tests-jolt-test.md))
+`string` ([Root Exception Code](jsontest-properties-jolt-test-groups-jolt-test-group-properties-jolt-tests-jolt-test-properties-root-exception-code.md))

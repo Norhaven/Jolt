@@ -18,6 +18,7 @@ namespace Jolt.Testing.Json
         public string Result { get; set; }
         public string ExceptionCode { get; set; }
         public string InnerExceptionCode { get; set; }
+        public string RootExceptionCode { get; set; }
         public string ExceptionType { get; set; }
         public string ExternalMethodSource { get; set; }
 

@@ -1,5 +1,6 @@
 ﻿using Jolt.Evaluation;
 using Jolt.Exceptions;
+using Jolt.Expressions;
 using Jolt.Extensions;
 using Jolt.Structure;
 using System;
@@ -11,6 +12,46 @@ namespace Jolt.Library.StandardLibrary
     [IncludeInStandardLibrary]
     internal sealed class StatementMethods
     {
+        [JoltLibraryMethod("when")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue | LibraryMethodTarget.StatementBlock)]
+        public static EvaluationResult? When(object? result, [LazyEvaluation] Expression? expression, EvaluationContext context)
+        {
+            var resolved = context.ResolveQueryPathIfPresent(result);
+
+            var isTrue = resolved switch
+            {
+                bool value => value,
+                IJsonToken token => token.Type == JsonTokenType.Value && token.AsValue().ValueType == JsonValueType.Boolean && token.AsValue().ToTypeOf<bool>(),
+                _ => false
+            };
+
+            if (!isTrue || expression is null)
+            {
+                return default;
+            }
+
+            if (expression is MethodCallExpression methodCall)
+            {
+                if (!methodCall.Signature.IsAllowedAsStatement)
+                {
+                    throw context.CreateExecutionErrorFor<StatementMethods>(ExceptionCode.AttemptedToUseNonStatementMethodWithinWhenLibraryCall, methodCall.Signature.Name);
+                }
+
+                var evaluationContext = new EvaluationContext(
+                    context.Mode,
+                    expression,
+                    context.JsonContext,
+                    context.Token,
+                    context.Scope,
+                    context.Transform
+                );
+
+                return context.JsonContext.ExpressionEvaluator.Evaluate(evaluationContext);
+            }
+
+            throw context.CreateExecutionErrorFor<StatementMethods>(ExceptionCode.AttemptedToUseNonMethodExpressionWithinWhenLibraryCall, expression.GetType().Name);
+        }
+
         [JoltLibraryMethod("removeAt")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue | LibraryMethodTarget.StatementBlock)]
         public static IJsonToken? RemoveAt(DereferencedPath path, EvaluationContext context)

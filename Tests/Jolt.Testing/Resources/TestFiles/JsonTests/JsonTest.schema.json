@@ -72,6 +72,11 @@
                   "type": "string",
                   "title": "Inner Exception Code",
                   "description": "The alias name of an exception code on the expected exception's inner exception that this test expects to receive as a result of this test."
+                },
+                "rootExceptionCode": {
+                  "type": "string",
+                  "title": "Root Exception Code",
+                  "description": "The alias name of an exception code on the expected exception's root exception that this test expects to receive as a result of this test."
                 }
               },
               "required": [

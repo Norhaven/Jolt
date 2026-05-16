@@ -119,6 +119,8 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToEvaluateLogicalExpressionWithNonBooleanArgument] = "Unable to evaluate logical expression operator '{1}' with non-boolean argument of type '{0}'",
             [ExceptionCode.UnableToEvaluateBooleanExpressionWithCurrentOperator] = "Unable to evaluate boolean expression '{0} {1} {2}' with operator '{1}'",
             [ExceptionCode.UnableToEvaluateLogicalNotExpressionWithNonBooleanOperand] = "Unable to evaluate logical NOT expression '!' with non-boolean operand of type '{0}'",
+            [ExceptionCode.AttemptedToUseNonStatementMethodWithinWhenLibraryCall] = "Attempted to use method '{0}' that is not a statement as the condition within a #when() library call",
+            [ExceptionCode.AttemptedToUseNonMethodExpressionWithinWhenLibraryCall] = "Attempted to use expression '{0}' that is not a statement method call as the condition within a #when() library call",
         };
 
         public static JoltException CreateParsingErrorFrom(ExceptionCode code, JoltException? innerException, params object[] parameters)

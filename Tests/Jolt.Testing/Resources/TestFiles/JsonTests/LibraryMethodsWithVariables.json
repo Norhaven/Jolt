@@ -4,7 +4,9 @@
     "invalidMethodUseInPropertyName": "UnableToUseMethodWithinPropertyName",
     "lambdaUsedForNonDelegate": "UnableToUseLambdaAsArgumentForNonDelegateParameter",
     "nonLambdaUsedForDelegate": "DelegateParameterRequiresLambdaArgument",
-    "unableToConvertArrayToType": "UnableToConvertJsonArrayToRequiredParameterType"
+    "unableToConvertArrayToType": "UnableToConvertJsonArrayToRequiredParameterType",
+    "usedNonStatementMethodInWhen": "AttemptedToUseNonStatementMethodWithinWhenLibraryCall",
+    "externalMethodException": "ExternalMethodInvocationCausedAnException"
   },
   "testGroups": [
     {
@@ -537,6 +539,48 @@
               }
             ]
           }
+        },
+        {
+          "name": "#when method works with #setAt/#removeAt when condition is true",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [
+              "#when(#valueOf($.booleanValue), #setAt(@x.addedProperty, 'new value'))",
+              "#when(#valueOf($.integerValue) == 1, #removeAt(@x.first))"
+            ]
+          },
+          "result": {
+            "resultObject": {
+              "second": 2,
+              "third": [ 1, 2, 3 ],
+              "addedProperty": "new value"
+            }
+          }
+        },
+        {
+          "name": "#when method works with #setAt/#removeAt when condition is false",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [
+              "#when(!#valueOf($.booleanValue), #setAt(@x.addedProperty, 'new value'))",
+              "#when(#valueOf($.integerValue) == 2, #removeAt(@x.first))"
+            ]
+          },
+          "result": {
+            "resultObject": {
+              "first": "value",
+              "second": 2,
+              "third": [ 1, 2, 3 ]
+            }
+          }
+        },
+        {
+          "name": "#when method fails with non-statement method call when condition is true",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [
+              "#when(#valueOf($.booleanValue), #valueOf($.integerValue))"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "usedNonStatementMethodInWhen"
         },
         {
           "name": "SetAt/RemoveAt works with a range variable containing an object",
