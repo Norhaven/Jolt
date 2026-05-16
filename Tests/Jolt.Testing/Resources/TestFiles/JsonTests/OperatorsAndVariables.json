@@ -194,9 +194,46 @@
         "two": 2,
         "three": 3,
         "trueValue": true,
-        "falseValue": false
+        "falseValue": false,
+        "text": "this is an example"
       },
       "tests": [
+        {
+          "name": "Logical NOT operator evaluates as true when applied to a literal boolean with a false value on the other side of the piped method",
+          "transformer": {
+            "value": "!#valueOf($.text)->#isInteger()"
+          },
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "name": "Logical NOT operator evaluates as false when applied to a literal boolean with a true value on the other side of the piped method",
+          "transformer": {
+            "value": "!#valueOf($.two)->#isInteger()"
+          },
+          "result": {
+            "value": false
+          }
+        },
+        {
+          "name": "Logical NOT operator evaluates as false when applied to a literal boolean with a true value",
+          "transformer": {
+            "value": "!#valueOf($.trueValue)"
+          },
+          "result": {
+            "value": false
+          }
+        },
+        {
+          "name": "Logical NOT operator evaluates as true when applied to a literal boolean with a false value",
+          "transformer": {
+            "value": "!#valueOf($.falseValue)"
+          },
+          "result": {
+            "value": true
+          }
+        },
         {
           "name": "Logical AND operator evaluates as true when both sides are literal booleans with a true value",
           "transformer": {

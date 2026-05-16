@@ -16,7 +16,7 @@ namespace Jolt.Parsing
         {
         }
 
-        public bool StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracket(string expression)
+        public bool StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracketOrLogicalNot(string expression)
         {
             if (string.IsNullOrWhiteSpace(expression))
             {
@@ -38,7 +38,8 @@ namespace Jolt.Parsing
             return stream.CurrentToken == ExpressionToken.Hash ||
                    stream.CurrentToken == ExpressionToken.OpenParentheses ||
                    stream.CurrentToken == ExpressionToken.At ||
-                   stream.CurrentToken == ExpressionToken.OpenSquareBracket;
+                   stream.CurrentToken == ExpressionToken.OpenSquareBracket ||
+                   stream.CurrentToken == ExpressionToken.Not;
         }
 
         public IEnumerable<ExpressionToken> ReadToEnd(string expression, EvaluationMode mode)
@@ -89,6 +90,10 @@ namespace Jolt.Parsing
                 if (stream.CurrentToken == ExpressionToken.Equal)
                 {
                     yield return TokenFromCurrent(stream, ExpressionTokenCategory.NotEqualComparison);
+                }
+                else
+                {
+                    yield return TokenFrom(ExpressionToken.Not.ToString(), ExpressionTokenCategory.LogicalNot);
                 }
             }
             else if (stream.CurrentToken == ExpressionToken.LessThan)

@@ -350,7 +350,7 @@ A final use for range variables is in the case where you have a path or variable
 In this example, let's create a transformer that will take the properties from the `some` node, remove the `integerArray` property, add a property to the `complexObject` object, and change the value of the `path` property.
 ```json
 {
-    "#using($.some as @x)->'result'": [
+    "#using($.some as @x) into 'result'": [
         "#removeAt(@x.integerArray)",
         "#setAt(@x.complexObject.new.value, 3)",
         "#setAt(@x.complexObject.some.path, 20)"
@@ -377,10 +377,10 @@ It's worth noting that statements are only allowed within a `using` block and mu
 Lastly, you can take advantage of pre-processing variables with a `using` block much the same way as a `foreach` loop does by assigning the output to a variable instead of a named property, which can be used either in a subsequent `using` block or other valid variable uses.
 ```json
 {
-    "#using($.some.path as @x)->@tempResult": [
+    "#using($.some.path as @x) into @tempResult": [
         "#removeAt(@x.integerArray)"
     ],
-    "#using(@tempResult as @x)->'actualResult'": [
+    "#using(@tempResult as @x) into 'actualResult'": [
         "#setAt(@x.some.path, 'text')"
     ]
 }

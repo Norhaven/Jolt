@@ -55,6 +55,8 @@ namespace Jolt.Parsing
         LogicalAnd,
         [Description("a logical OR operator")]
         LogicalOr,
+        [Description("a logical NOT operator")]
+        LogicalNot,
         [Description("an open parentheses group")]
         OpenParenthesesGroup,
         [Description("a close parentheses group")]

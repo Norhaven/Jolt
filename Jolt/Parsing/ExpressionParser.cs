@@ -26,6 +26,7 @@ namespace Jolt.Parsing
 
             var availableParsers = new ISpecializedExpressionParser[]
             {
+                new LogicalNotExpressionParser(reader, atomParser),
                 new ParenthesizedExpressionParser(reader, atomParser),
                 new MethodCallExpressionParser(reader, atomParser),
                 new JsonPathExpressionParser(reader, atomParser),

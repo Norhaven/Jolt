@@ -68,8 +68,21 @@ namespace Jolt.Evaluation
                 BinaryExpression binary => EvaluateBinaryExpression(binary, context),
                 LambdaMethodExpression lambda => EvaluateLambdaExpression(lambda, context),
                 ArrayLiteralExpression array => EvaluateArrayLiteral(array, context),
+                LogicalNotExpression not => EvaluateLogicalNotExpression(not, context),
                 _ => default
             };
+        }
+
+        private object? EvaluateLogicalNotExpression(LogicalNotExpression not, EvaluationContext context)
+        {
+            var expressionResult = EvaluateExpression(not.Operand, context).UnwrapWith(context.JsonContext.JsonTokenReader);
+
+            if (!(expressionResult is bool value))
+            {
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateLogicalNotExpressionWithNonBooleanOperand, expressionResult?.GetType());
+            }
+
+            return !value;
         }
 
         private object? EvaluateArrayLiteral(ArrayLiteralExpression array, EvaluationContext context)

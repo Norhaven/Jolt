@@ -117,7 +117,8 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToEvaluateRangeWithNullIndex] = "Unable to evaluate range expression '{0}..{1}' with null index value",
             [ExceptionCode.UnableToEvaluateRangeWithNonIntegerIndex] = "Unable to evaluate range expression '{0}..{1}' with non-integer index value",
             [ExceptionCode.UnableToEvaluateLogicalExpressionWithNonBooleanArgument] = "Unable to evaluate logical expression operator '{1}' with non-boolean argument of type '{0}'",
-            [ExceptionCode.UnableToEvaluateBooleanExpressionWithCurrentOperator] = "Unable to evaluate boolean expression '{0} {1} {2}' with operator '{1}'"
+            [ExceptionCode.UnableToEvaluateBooleanExpressionWithCurrentOperator] = "Unable to evaluate boolean expression '{0} {1} {2}' with operator '{1}'",
+            [ExceptionCode.UnableToEvaluateLogicalNotExpressionWithNonBooleanOperand] = "Unable to evaluate logical NOT expression '!' with non-boolean operand of type '{0}'",
         };
 
         public static JoltException CreateParsingErrorFrom(ExceptionCode code, JoltException? innerException, params object[] parameters)

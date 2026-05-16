@@ -216,6 +216,8 @@ namespace Jolt.Exceptions
         [Description("JLT555")]
         UnableToEvaluateBooleanExpressionWithCurrentOperator,
         [Description("JLT556")]
-        ExpectedDoubleEqualForEqualityComparisonButFoundSingleEqual
+        ExpectedDoubleEqualForEqualityComparisonButFoundSingleEqual,
+        [Description("JLT557")]
+        UnableToEvaluateLogicalNotExpressionWithNonBooleanOperand
     }
 }

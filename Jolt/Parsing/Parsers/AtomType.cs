@@ -14,6 +14,7 @@ namespace Jolt.Parsing.Parsers
         RangeExpression,
         RangeVariable,
         ArrayLiteral,
-        Literal
+        Literal,
+        LogicalNot
     }
 }
