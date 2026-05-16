@@ -185,6 +185,24 @@ namespace Jolt.Evaluation
             {
                 return leftResult ?? rightResult;
             }
+            else if (binary.Operator == Operator.LogicalAnd || binary.Operator == Operator.LogicalOr)
+            {
+                if (!(leftResult is bool leftBool))
+                {
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateLogicalExpressionWithNonBooleanArgument, leftResult?.GetType(), binary.Operator);
+                }
+                if (!(rightResult is bool rightBool))
+                {
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateLogicalExpressionWithNonBooleanArgument, rightResult?.GetType(), binary.Operator);
+                }
+
+                return binary.Operator switch
+                {
+                    Operator.LogicalAnd => leftBool && rightBool,
+                    Operator.LogicalOr => leftBool || rightBool,
+                    _ => throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateBooleanExpressionWithCurrentOperator, leftResult, binary.Operator, rightResult)
+                };
+            }
             else
             {
                 if (leftResult is null || rightResult is null)

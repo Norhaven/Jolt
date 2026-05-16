@@ -163,7 +163,7 @@ namespace Jolt.Testing.Harness.DotNet
         [TransformerTest(Transformer.Math, SourceDocument.Math, typeof(TestContext), TestType.DotNet)]
         public void Math_IsSuccessful_WithOperatorPrecedence(TransformerTest test)
         {
-            var equation = "2 + 3 * 4 + 5 = 19";
+            var equation = "2 + 3 * 4 + 5 == 19";
 
             var json = ExecuteTest(test);
 

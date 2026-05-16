@@ -1,24 +1,24 @@
 ﻿{
-  "#foreach(@x;@i in $.array)->'Array'": [
+  "#foreach(@x;@i in $.array) into 'Array'": [
     {
       "ArrayElementId": "@x.arrayElementId",
       "GlobalId": "#valueOf($.integerLiteral)",
       "Index": "@i"
     }
   ],
-  "#foreach(@x in $.exampleBaseProperty)->'Object'": {
+  "#foreach(@x in $.exampleBaseProperty) into 'Object'": {
     "#nameOf(@x)": "@x.value"
   },
-  "#foreach(@x in $.exampleBaseProperty)->'ArrayFromObject'": [
+  "#foreach(@x in $.exampleBaseProperty) into 'ArrayFromObject'": [
     {
       "#nameOf(@x)": "@x.value"
     }
   ],
-  "#foreach(@x in $.array)->'ObjectFromArray'": {
+  "#foreach(@x in $.array) into 'ObjectFromArray'": {
     "Result": "@x.arrayElementId"
   },
-  "#foreach(@x in $.exampleBaseProperty)->'RootObject'": {
-    "#foreach(@y in @x.testArray)->@temp": [
+  "#foreach(@x in $.exampleBaseProperty) into 'RootObject'": {
+    "#foreach(@y in @x.testArray) into @temp": [
         {
           "#nameOf(@x)": "@y.text",
           "#nameOf(@y)": "@x.value"

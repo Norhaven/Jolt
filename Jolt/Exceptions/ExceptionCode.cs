@@ -89,6 +89,12 @@ namespace Jolt.Exceptions
         UnableToReduceRangeVariableFollowedByRangeExpression,
         [Description("JLT139")]
         UnableToReduceMethodCallFollowedByRangeExpression,
+        [Description("JLT140")]
+        ExpectedIntoKeywordButFoundUnexpectedToken,
+        [Description("JLT141")]
+        ExpectedNamedPropertyOrRangeVariableButFoundUnexpectedToken,
+        [Description("JLT142")]
+        ExpectedPipedMethodCallAfterArrowOperatorButFoundDifferentToken,
 
         // Resolution
 
@@ -200,6 +206,16 @@ namespace Jolt.Exceptions
         [Description("JLT550")]
         UnableToEvaluateRangeWithNullIndex,
         [Description("JLT551")]
-        UnableToEvaluateRangeWithNonIntegerIndex
+        UnableToEvaluateRangeWithNonIntegerIndex,
+        [Description("JLT552")]
+        ExpectedLogicalAndOperatorButFoundSingleAmpersand,
+        [Description("JLT553")]
+        ExpectedLogicalOrOperatorButFoundSinglePipe,
+        [Description("JLT554")]
+        UnableToEvaluateLogicalExpressionWithNonBooleanArgument,
+        [Description("JLT555")]
+        UnableToEvaluateBooleanExpressionWithCurrentOperator,
+        [Description("JLT556")]
+        ExpectedDoubleEqualForEqualityComparisonButFoundSingleEqual
     }
 }

@@ -51,6 +51,10 @@ namespace Jolt.Parsing
         Division,
         [Description("an inequality comparison")]
         NotEqualComparison,
+        [Description("a logical AND operator")]
+        LogicalAnd,
+        [Description("a logical OR operator")]
+        LogicalOr,
         [Description("an open parentheses group")]
         OpenParenthesesGroup,
         [Description("a close parentheses group")]
@@ -71,6 +75,8 @@ namespace Jolt.Parsing
         In,
         [Description("the 'as' keyword")]
         As,
+        [Description("the 'into' keyword")]
+        Into,
         [Description("the start of an indexer group or array literal")]
         StartOfIndexerOrArrayLiteral,
         [Description("the end of an indexer group or array literal")]

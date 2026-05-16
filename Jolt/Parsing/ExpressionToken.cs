@@ -30,6 +30,7 @@ namespace Jolt.Parsing
         public const char Dot = '.';
         public const string In = "in";
         public const string As = "as";
+        public const string Into = "into";
         public const char LetterI = 'i';
         public const char LetterA = 'a';
         public const char Semicolon = ';';
@@ -38,6 +39,8 @@ namespace Jolt.Parsing
         public const char Caret = '^';
         public const char QuestionMark = '?';
         public const string NullLiteral = null;
+        public const char And = '&';
+        public const char Or = '|';
 
         public string Value { get; }
         public ExpressionTokenCategory Category { get; }

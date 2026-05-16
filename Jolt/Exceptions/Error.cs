@@ -47,6 +47,12 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToReduceLiteralFollowedByRangeExpression] = "Unable to reduce literal expression followed by range expression, found literal value '{0}' followed by range operator",
             [ExceptionCode.UnableToReduceRangeVariableFollowedByRangeExpression] = "Unable to reduce range variable expression followed by range expression, found variable '{0}' followed by range operator",
             [ExceptionCode.UnableToReduceMethodCallFollowedByRangeExpression] = "Unable to reduce method call expression followed by range expression, found method call '{0}' followed by range operator",
+            [ExceptionCode.ExpectedLogicalAndOperatorButFoundSingleAmpersand] = "Expected '&&' logical AND operator but found single '&' character instead",
+            [ExceptionCode.ExpectedLogicalOrOperatorButFoundSinglePipe] = "Expected '||' logical OR operator but found single '|' character instead",
+            [ExceptionCode.ExpectedDoubleEqualForEqualityComparisonButFoundSingleEqual] = "Expected '==' equality comparison operator but found single '=' character instead",
+            [ExceptionCode.ExpectedIntoKeywordButFoundUnexpectedToken] = "Expected 'into' keyword but found '{0}' instead",
+            [ExceptionCode.ExpectedNamedPropertyOrRangeVariableButFoundUnexpectedToken] = "Expected a named property or range variable but found '{0}' instead",
+            [ExceptionCode.ExpectedPipedMethodCallAfterArrowOperatorButFoundDifferentToken] = "Expected piped method call after '->' operator but found token '{0}' instead"
         };
 
         private static readonly Dictionary<ExceptionCode, string> _resolutionErrorsByCode = new Dictionary<ExceptionCode, string>
@@ -109,7 +115,9 @@ namespace Jolt.Exceptions
             [ExceptionCode.AttemptedToIndexOrSliceNullVariableValue] = "Attempted to index or slice into a null value stored in variable '{0}'",
             [ExceptionCode.AttemptedToIndexOrSliceNonStringAndNonArrayValue] = "Attempted to index or slice a non-string and non-array value of type '{0}'",
             [ExceptionCode.UnableToEvaluateRangeWithNullIndex] = "Unable to evaluate range expression '{0}..{1}' with null index value",
-            [ExceptionCode.UnableToEvaluateRangeWithNonIntegerIndex] = "Unable to evaluate range expression '{0}..{1}' with non-integer index value"
+            [ExceptionCode.UnableToEvaluateRangeWithNonIntegerIndex] = "Unable to evaluate range expression '{0}..{1}' with non-integer index value",
+            [ExceptionCode.UnableToEvaluateLogicalExpressionWithNonBooleanArgument] = "Unable to evaluate logical expression operator '{1}' with non-boolean argument of type '{0}'",
+            [ExceptionCode.UnableToEvaluateBooleanExpressionWithCurrentOperator] = "Unable to evaluate boolean expression '{0} {1} {2}' with operator '{1}'"
         };
 
         public static JoltException CreateParsingErrorFrom(ExceptionCode code, JoltException? innerException, params object[] parameters)

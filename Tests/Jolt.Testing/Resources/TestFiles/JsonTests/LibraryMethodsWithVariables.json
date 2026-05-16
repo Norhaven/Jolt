@@ -541,7 +541,7 @@
         {
           "name": "SetAt/RemoveAt works with a range variable containing an object",
           "transformer": {
-            "#using($.testObject as @x)->'resultObject'": [
+            "#using($.testObject as @x) into 'resultObject'": [
               "#setAt(@x.addedProperty, 'new value')",
               "#removeAt(@x.first)"
             ]
@@ -557,7 +557,7 @@
         {
           "name": "SetAt/RemoveAt works with a range variable containing a root object",
           "transformer": {
-            "#using($ as @x)->'newObject'": [
+            "#using($ as @x) into 'newObject'": [
               "#setAt(@x.addedProperty, 'new value')",
               "#removeAt(@x.testObject.first)"
             ]
@@ -1242,7 +1242,7 @@
           "transformer": {
             "@numbers": [ "1", "2", "invalid", "4" ],
             "results": {
-              "#foreach(@num in @numbers)->@parsed": [
+              "#foreach(@num in @numbers) into @parsed": [
                 {
                   "value": "#try(#toInteger(@num), @e: 0)"
                 }

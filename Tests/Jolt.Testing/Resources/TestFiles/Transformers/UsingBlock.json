@@ -1,9 +1,9 @@
 ﻿{
-  "#using($.exampleBaseProperty as @x)->@tempResult": [
+  "#using($.exampleBaseProperty as @x) into @tempResult": [
     "#setAt(@x.third.deep.value, 3)",
     "#removeAt(@x.first)"
   ],
-  "#using(@tempResult as @x)->'Result'": [
+  "#using(@tempResult as @x) into 'Result'": [
     "#setAt(@x.fourth.id, 4 * @x.third.deep.value)",
     "#removeAt(@x.second.value)"
   ]

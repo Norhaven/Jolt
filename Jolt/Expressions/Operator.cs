@@ -19,6 +19,8 @@ namespace Jolt.Expressions
         Division,
         OpenGroup,
         CloseGroup,
-        NullCoalescing
+        NullCoalescing,
+        LogicalAnd,
+        LogicalOr
     }
 }

@@ -147,7 +147,7 @@ The usual basic math operators are implemented, namely addition, subtraction, mu
 You could create a transformer that would look something like this:
 ```json
 {
-    "result": "#valueOf($.first) * #valueOf($.second) - #valueOf($.third) + #valueOf($.fourth) / #valueOf($.fifth) = 19"
+    "result": "#valueOf($.first) * #valueOf($.second) - #valueOf($.third) + #valueOf($.fourth) / #valueOf($.fifth) == 19"
 }
 ```
 And after transformation it would look like this:
@@ -175,6 +175,33 @@ The output would look like this:
 }
 ```
 
+# Logical Operations
+
+The logical operators `&&` and `||` are also implemented for use in your transformers. They take boolean operands and return a boolean result. For example, assuming the following source JSON:
+```json
+{
+    "first": true,
+    "second": false,
+    "third": true
+}
+```
+The logical OR operator `||` will return `true` if at least one of the operands is `true`, and `false` otherwise. The logical AND operator `&&` will return `true` if both operands are `true`, and `false` otherwise. For example:
+```json
+{
+    "orResult": "#valueOf($.first) || #valueOf($.second) || #valueOf($.third)",
+    "andResult": "#valueOf($.first) && #valueOf($.second) && #valueOf($.third)",
+    "combinedResult": "(#valueOf($.first) && #valueOf($.second)) || #valueOf($.third)"
+}
+```
+The `orResult` property will evaluate to `true` because at least one of the operands is `true`, while the `andResult` property will evaluate to `false` because not all of the operands are `true`, and the `combinedResult` property will be `true` because the logical AND operators will be evaluated before the OR operator. The resulting JSON would look like this:
+```json
+{
+    "orResult": true,
+    "andResult": false,
+    "combinedResult": true
+}
+```
+
 # Range Variables
 
 There are times that you may want to perform a particular transform and then do something additional to it, whether that's simple math or looping over it. Most of the time, you'd also rather that the intermediary transform not stick around in the final JSON output, it's just there to do some preprocessing. This is an area where you may find that range variables work for your needs.
@@ -190,12 +217,12 @@ You can declare and set a variable in the property name one of two ways, either 
 This is one way to directly declare and use variables in your transformations. All variables are prefixed with the `@` symbol and specifying it in the property name indicates that you would like to set it and also remove that JSON node from the transformed result. Let's see how you would be able to do some preprocessing on an array now.
 ```json
 {
-    "#foreach(@x in $.someArray)->@tempResult": [
+    "#foreach(@x in $.someArray) into @tempResult": [
         {
             "intermediateValue": "@x.someInteger * 2"
         }
     ],
-    "#foreach(@x;i in @tempResult)->'actualResult'": [
+    "#foreach(@x;i in @tempResult) into 'actualResult'": [
         {
             "finalValue": "@x.intermediateValue + 5",
             "currentIndex": "@i"
@@ -208,7 +235,7 @@ The first loop will set the variable `@tempResult` to the value of the transform
 You can also declare variables within the content template of a loop, but they only exist within it and on a per-iteration basis (meaning that the variable is redeclared, set, and thrown away every time through the loop). Let's see an example of that here.
 ```json
 {
-    "#foreach(@x in $.someArray)->'finalResult'": [
+    "#foreach(@x in $.someArray) into 'finalResult'": [
         {
             "@scopedVar": "@x.someInteger / 2",
             "subtractedValue": "@scopedVar - 3"

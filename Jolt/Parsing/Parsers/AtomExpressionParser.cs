@@ -81,6 +81,8 @@ namespace Jolt.Parsing.Parsers
                 Operator.Multiplication => 2,
                 Operator.Division => 2,
                 Operator.NullCoalescing => 3,
+                Operator.LogicalAnd => 4,
+                Operator.LogicalOr => 5,
                 _ => -1
             };
         }
@@ -133,6 +135,8 @@ namespace Jolt.Parsing.Parsers
                 ExpressionTokenCategory.Division => Operator.Division,
                 ExpressionTokenCategory.NotEqualComparison => Operator.NotEquals,
                 ExpressionTokenCategory.NullCoalescing => Operator.NullCoalescing,
+                ExpressionTokenCategory.LogicalAnd => Operator.LogicalAnd,
+                ExpressionTokenCategory.LogicalOr => Operator.LogicalOr,
                 _ => Operator.Unknown
             };
         }

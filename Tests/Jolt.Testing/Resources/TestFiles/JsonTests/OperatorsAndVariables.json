@@ -97,6 +97,67 @@
       ]
     },
     {
+      "name": "Use of the 'into' operator for property or variable assignment",
+      "source": {
+        "values": [ "this", "is", "a", "test" ]
+      },
+      "tests": [
+        {
+          "name": "Into operator assigns value to property",
+          "transformer": {
+            "#foreach(@x in $.values) into 'collectedValues'": [
+              {
+                "value": "@x"
+              }
+            ]
+          },
+          "result": {
+            "collectedValues": [
+              {
+                "value": "this"
+              },
+              {
+                "value": "is"
+              },
+              {
+                "value": "a"
+              },
+              {
+                "value": "test"
+              }
+            ]            
+          }
+        },
+        {
+          "name": "Into operator assigns value to variable",
+          "transformer": {
+            "#foreach(@x in $.values) into @collected": [
+              {
+                "value": "@x"
+              }
+            ],
+            "collectedValues": "@collected"
+          },
+          "result": {
+            "collectedValues": [
+              {
+                "value": "this"
+              },
+              {
+                "value": "is"
+              },
+              {
+                "value": "a"
+              },
+              {
+                "value": "test"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Null coalescing operator usage",
       "source": {
         "nullValue": null,
@@ -127,6 +188,90 @@
       ]
     },
     {
+      "name": "Logical operator usage",
+      "source": {
+        "one": 1,
+        "two": 2,
+        "three": 3,
+        "trueValue": true,
+        "falseValue": false
+      },
+      "tests": [
+        {
+          "name": "Logical AND operator evaluates as true when both sides are literal booleans with a true value",
+          "transformer": {
+            "value": "#valueOf($.trueValue) && #valueOf($.trueValue)"
+          },
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "name": "Logical AND operator evaluates as false when both sides are literal booleans with a true value on the left and a false value on the right",
+          "transformer": {
+            "value": "#valueOf($.trueValue) && #valueOf($.falseValue)"
+          },
+          "result": {
+            "value": false
+          }
+        },
+        {
+          "name": "Logical AND operator evaluates as false when both sides are literal booleans with a false value on the left and a true value on the right",
+          "transformer": {
+            "value": "#valueOf($.falseValue) && #valueOf($.trueValue)"
+          },
+          "result": {
+            "value": false
+          }
+        },
+        {
+          "name": "Logical OR operator evaluates as true when both sides are a literal boolean with a true value",
+          "transformer": {
+            "value": "#valueOf($.trueValue) || #valueOf($.trueValue)"
+          },
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "name": "Logical OR operator evaluates as true when both sides are a literal boolean with a true value on the left side and a false value on the right",
+          "transformer": {
+            "value": "#valueOf($.trueValue) || #valueOf($.falseValue)"
+          },
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "name": "Logical OR operator evaluates as true when both sides are a literal boolean with a false value on the left side and a true value on the right",
+          "transformer": {
+            "value": "#valueOf($.falseValue) || #valueOf($.trueValue)"
+          },
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "name": "Logical OR operator evaluates as false when both sides are a literal boolean with a false value",
+          "transformer": {
+            "value": "#valueOf($.falseValue) || #valueOf($.falseValue)"
+          },
+          "result": {
+            "value": false
+          }
+        },
+        {
+          "name": "Logical AND and OR operator combination evaluates as true because the AND operators are evaluated prior to the OR operator",
+          "transformer": {
+            "value": "#valueOf($.trueValue) && #valueOf($.falseValue) || #valueOf($.trueValue)"
+          },
+          "result": {
+            "value": true
+          }
+        }
+      ]
+    },
+    {
       "name": "Math expressions",
       "source": {
         "one": 1,
@@ -146,7 +291,7 @@
         {
           "name": "Addition with valueOf() produces correct result when compared for equality",
           "transformer": {
-            "value": "#valueOf($.one) + #valueOf($.two) + #valueOf($.three) = 6"
+            "value": "#valueOf($.one) + #valueOf($.two) + #valueOf($.three) == 6"
           },
           "result": {
             "value": true
@@ -164,7 +309,7 @@
         {
           "name": "Multiplication with valueOf() produces correct result when compared for equality",
           "transformer": {
-            "value": "#valueOf($.one) * #valueOf($.two) * #valueOf($.three) = 6"
+            "value": "#valueOf($.one) * #valueOf($.two) * #valueOf($.three) == 6"
           },
           "result": {
             "value": true
@@ -182,7 +327,7 @@
         {
           "name": "Subtraction with valueOf() produces correct result when compared for equality",
           "transformer": {
-            "value": "#valueOf($.one) - #valueOf($.two) - #valueOf($.three) = -4"
+            "value": "#valueOf($.one) - #valueOf($.two) - #valueOf($.three) == -4"
           },
           "result": {
             "value": true
@@ -200,7 +345,7 @@
         {
           "name": "Division with valueOf() produces correct result when compared for equality",
           "transformer": {
-            "value": "#valueOf($.one) / #valueOf($.two) / #valueOf($.three) = 0.16666666666666666"
+            "value": "#valueOf($.one) / #valueOf($.two) / #valueOf($.three) == 0.16666666666666666"
           },
           "result": {
             "value": true
@@ -264,8 +409,8 @@
         {
           "name": "Comparison expressions will evaluate literals correctly",
           "transformer": {
-            "equality1": "#eval('1 = 1')",
-            "equality2": "#eval('1 = 2')",
+            "equality1": "#eval('1 == 1')",
+            "equality2": "#eval('1 == 2')",
             "inequality1": "#eval('1 != 2')",
             "inequality2": "#eval('1 != 1')",
             "lessThan1": "#eval('1 < 2')",
@@ -368,7 +513,7 @@
         {
           "name": "Multiple equals signs present in expression",
           "transformer": {
-            "value": "#eval('1 = 1 = 1')"
+            "value": "#eval('1 == 1 == 1')"
           },
           "exceptionCode": "externalMethodException",
           "innerExceptionCode": "tooManyComparisons"
@@ -376,7 +521,7 @@
         {
           "name": "Multiple distinct comparison signs present in expression",
           "transformer": {
-            "value": "#eval('1 = 1 < 1 > 1 >= 1 <= 1')"
+            "value": "#eval('1 == 1 < 1 > 1 >= 1 <= 1')"
           },
           "exceptionCode": "externalMethodException",
           "innerExceptionCode": "tooManyComparisons"
