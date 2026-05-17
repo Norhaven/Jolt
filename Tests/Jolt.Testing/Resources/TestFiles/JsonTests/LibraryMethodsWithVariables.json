@@ -10,6 +10,72 @@
   },
   "testGroups": [
     {
+      "name": "Standard library null/empty/missing checks work with JSON paths and range variables",
+      "source": {
+        "stringValue": "this is a test",
+        "emptyStringValue": "",
+        "nullValue": null,
+        "stringArray": [ "this", "is", "a", "test" ],
+        "emptyArray": []
+      },
+      "tests": [
+        {
+          "name": "IsMissing returns false for a JSON path that exists with a non-null value",
+          "transformer": {
+            "resultValue": "#isMissing($.stringValue)"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "IsMissing returns true for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#isMissing($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "IsMissing returns false for a JSON path that exists with a null value",
+          "transformer": {
+            "resultValue": "#isMissing($.nullValue)"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "IsNull returns true for a JSON path that exists with a null value",
+          "transformer": {
+            "resultValue": "#isNull($.nullValue)"
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "IsNull returns false for a JSON path that exists with a non-null value",
+          "transformer": {
+            "resultValue": "#isNull($.stringValue)"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "IsNull returns false for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#isNull($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": false
+          }
+        }
+      ]
+    },
+    {
       "name": "Standard library regex methods work when standard library classes are discrete",
       "source": {
         "stringValue": "this is a test",

@@ -174,7 +174,8 @@ namespace Jolt.Testing.Harness.DotNetFramework.Newtonsoft
             json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
 
             json.PropertyValueFor<bool>(TargetProperty.StringLiteral).Should().BeTrue("because the document had content in this property");
-            json.PropertyValueFor<bool>(TargetProperty.Empty).Should().BeFalse("because the document had a null value in this property");
+            json.PropertyValueFor<bool>(TargetProperty.Empty).Should().BeTrue("because the document had a literal null value in this property");
+            json.PropertyValueFor<object>(TargetProperty.IsString).Should().BeNull("because the value in the document does not exist");
         }
 
         [TransformerTest(Transformer.Conditions, SourceDocument.Conditions, typeof(TestContext), TestType.Newtonsoft)]

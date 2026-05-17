@@ -33,7 +33,7 @@ namespace Jolt.Json.Newtonsoft
         }
 
         public bool IsObject<T>() => ((JValue)_token).Value?.GetType() == typeof(T);
-        public T ToTypeOf<T>() => _token.ToObject<T>();
+        public T ToTypeOf<T>() => _token is null ? default : _token.ToObject<T>();
 
         public override void Clear()
         {

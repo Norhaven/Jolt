@@ -82,7 +82,17 @@ namespace Jolt.Json.DotNet
         public IJsonObject AsObject() => (JsonObject)this;
         public IJsonValue AsValue() => (JsonValue)this;
 
-        public IJsonToken SelectTokenAtPath(string path) => FromObject(SelectToken(path));
+        public IJsonToken SelectTokenAtPath(string path)
+        {
+            var tokenResult = SelectToken(path);
+
+            return tokenResult switch
+            {
+                (var node, true) when node is null => new JsonValue(default),
+                (var node, true) => FromObject(node),
+                (_, false) => default
+            };
+        }
 
         public IJsonToken? Copy()
         {
@@ -104,6 +114,11 @@ namespace Jolt.Json.DotNet
 
         public T ToTypeOf<T>()
         {
+            if (_token is null)
+            {
+                return default;
+            }
+
             if (typeof(T) == typeof(object))
             {
                 if (_token is Nodes.JsonObject || _token is Nodes.JsonArray)
@@ -159,7 +174,7 @@ namespace Jolt.Json.DotNet
 
         public override string ToString() => _token?.ToJsonString(new JsonSerializerOptions { WriteIndented = false });
 
-        private Nodes.JsonNode? SelectToken(string path)
+        private (Nodes.JsonNode? Node, bool Exists) SelectToken(string path)
         {
             if (!JsonPath.TryParse(path, out var query))
             {
@@ -170,10 +185,12 @@ namespace Jolt.Json.DotNet
 
             if (result.Matches.Count == 0)
             {
-                return default;
+                return (default, false);
             }
 
-            return result.Matches[0].Value;
+            var value = result.Matches[0].Value;
+
+            return (value, true);
         }
 
         public override bool Equals(object obj)

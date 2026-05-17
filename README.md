@@ -201,6 +201,13 @@ The `orResult` property will evaluate to `true` because at least one of the oper
     "combinedResult": true
 }
 ```
+And lastly, as you may be used to, you can also use a logical NOT operator `!` to negate a boolean value. For example:
+```json
+{
+    "notFirst": "!#valueOf($.first)",
+    "notSecond": "!#valueOf($.second)"
+}
+```
 
 # Range Variables
 
@@ -374,6 +381,15 @@ This would output the following JSON:
 ```
 It's worth noting that statements are only allowed within a `using` block and must operate on the scoped range variable specified there. You may also notice that the `#setAt()` call was allowed to take a path that did not actually exist at the time of use. This is because that particular method will take care of creating the missing pieces of the JSON hierarchy for you if they don't currently exist.
 
+You can also conditionally execute statements within a `using` block by using the `#when` method, which takes a boolean expression and a statement method.
+```json
+{
+    "#using($.some as @x) into 'result'": [
+        "#when(#exists(@x.integerArray), #removeAt(@x.integerArray))",
+        "#when(#valueOf(@x.complexObject.some.path) > 3, #setAt(@x.complexObject.some.other.path, 20))"
+    ]
+}
+```
 Lastly, you can take advantage of pre-processing variables with a `using` block much the same way as a `foreach` loop does by assigning the output to a variable instead of a named property, which can be used either in a subsequent `using` block or other valid variable uses.
 ```json
 {
@@ -505,6 +521,7 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | using | Assigns a specific path to a range variable and allows statements to operate on it | `"#using($.some.path as @x)->'result'":[ "#setAt(@x.other.path, 5)" ]` | Property Name
 | removeAt | Removes a JSON node from the provided variable-based path | `#removeAt(@x.some.path)` | Statement
 | setAt | Adds or modifies a JSON node specified with the provided variable-based path | `#setAt(@x.some.path, 5)` | Statement
+| when | Conditionally executes a statement based on a boolean expression | `#when(#exists(@x.integerArray), #removeAt(@x.integerArray))` | Statement
 
 # Alternate External Method Registrations
 

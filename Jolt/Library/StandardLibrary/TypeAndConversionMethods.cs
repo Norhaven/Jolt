@@ -10,6 +10,50 @@ namespace Jolt.Library.StandardLibrary
     [IncludeInStandardLibrary]
     internal static class TypeAndConversionMethods
     {
+        [JoltLibraryMethod("isMissing")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? IsMissing(object? pathOrValue, EvaluationContext context)
+        {
+            var valueExists = pathOrValue != null;
+
+            if (pathOrValue is DereferencedPath dereferenced)
+            {
+                return context.CreateTokenFrom(dereferenced.MissingPaths.Length > 0);
+            }
+
+            if (pathOrValue is string path && context.JsonContext.QueryPathProvider.IsQueryPath(path))
+            {
+                var tokenValue = context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, path, JsonQueryMode.StartFromRoot);
+                var tokenMissing = tokenValue == null;
+
+                return context.CreateTokenFrom(tokenMissing);
+            }
+
+            return context.CreateTokenFrom(!valueExists);
+        }
+
+        [JoltLibraryMethod("isNull")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? IsNull(object? pathOrValue, EvaluationContext context)
+        {
+            var valueExists = pathOrValue != null;
+
+            if (pathOrValue is DereferencedPath dereferenced)
+            {
+                return context.CreateTokenFrom(dereferenced.MissingPaths.Length == 0 && dereferenced.ObtainableToken.AsValue().ValueType == JsonValueType.Null);
+            }
+
+            if (pathOrValue is string path && context.JsonContext.QueryPathProvider.IsQueryPath(path))
+            {
+                var tokenValue = context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, path, JsonQueryMode.StartFromRoot);
+                var tokenNull = tokenValue != null && tokenValue.Type == JsonTokenType.Value && tokenValue.AsValue().ValueType == JsonValueType.Null;
+
+                return context.CreateTokenFrom(tokenNull);
+            }
+
+            return context.CreateTokenFrom(!valueExists);
+        }
+
         [JoltLibraryMethod("exists")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Exists(object? pathOrValue, EvaluationContext context)
