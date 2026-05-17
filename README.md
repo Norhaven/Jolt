@@ -208,6 +208,25 @@ And lastly, as you may be used to, you can also use a logical NOT operator `!` t
     "notSecond": "!#valueOf($.second)"
 }
 ```
+# Conditional Logic
+
+The library also provides a few ways to approach conditional logic in your transformers. The first is the `#if` method, which takes three parameters: a boolean condition, an expression to evaluate when that condition is true, and an expression to evaluate when false. For example:
+```json
+{
+    "result": "#if(#valueOf($.someValue) > 5, 'Greater than 5', 'Less than or equal to 5')"
+}
+```
+The `result` property will evaluate to "Greater than 5" if the value of `$.someValue` is greater than 5, and "Less than or equal to 5" otherwise.
+
+Secondly, there is the `#includeIf` method, which takes a path or boolean condition and will evaluate and include the property's object if true, returning null otherwise. For example:
+```json
+{
+    "#includeIf($.someValue > 5) into 'result'": {
+        "message": "Greater than 5"
+    }
+}
+```
+This will include the `result` property with the nested `message` property if the value of `$.someValue` is greater than 5, and will return null for `result` otherwise.
 
 # Range Variables
 
@@ -461,8 +480,10 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | ------ | ----------- | ------- | --------
 | valueOf | Gets the value of a property at the specified path | `#valueOf($.some.path)` | Property Value
 | exists | Returns true if the provided value is not null, false otherwise | `#exists($.some.path)` | Property Value
+| isNull | Returns true if the provided value is null, false otherwise | `#isNull($.some.path)` | Property Value
+| isMissing | Returns true if the provided path does not exist in the source document, false otherwise | `#isMissing($.some.path)` | Property Value
 | if | Takes three parameters: a boolean condition, an expression to evaluate when that condition is true, and an expression to evaluate when false | `#if(#valueOf($.some.path), 'Yes', 'No')` | Property Value
-| includeIf | Takes a path or boolean condition and will evaluate and include the property's object if true, returning null otherwise | `"#includeIf($.some.path)->'someName'": { "nestedValue": "#valueOf($.other.path)" }` | Property Name
+| includeIf | Takes a path or boolean condition and will evaluate and include the property's object if true, returning null otherwise | `"#includeIf($.some.path) into 'someName'": { "nestedValue": "#valueOf($.other.path)" }` | Property Name
 | eval | Evaluates an arbitrary expression, either from a path or literal value, and returns the result | `#eval('1 + 2 = 3')` | Property Name/Value
 | foreach | Evaluates a path and loops over the array elements or object properties it finds there to create its property values, naming the property as the string literal referred to by the arrow | `"#foreach(@x in $.some.path)->'result'": [ { "templateValue": "#valueOf($.other.path)" } ]` | Property Name
 | nameOf | Returns the name of the property being evaluated by the provided loop variable | `"#nameOf(@x)": "#valueOf($.some.path)"` | Property Name
