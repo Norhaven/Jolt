@@ -134,7 +134,7 @@ This will create the following output when used to transform the same source JSO
 
 # Math And Equality
 
-The usual basic math operators are implemented, namely addition, subtraction, multiplication, and division, using `+`, `-`, `*`, and `/` respectively, along with comparison and equality as `=`, `!=`, `>`, `>=`, `<`, and `<=`. Operations can be parenthesized as well. These are all used much like you're used to and can take the results of methods as operands. For example, assuming the following source JSON:
+The usual basic math operators are implemented, namely addition, subtraction, multiplication, and division, using `+`, `-`, `*`, and `/` respectively, along with comparison and equality as `==`, `!=`, `>`, `>=`, `<`, and `<=`. Operations can be parenthesized as well. These are all used much like you're used to and can take the results of methods as operands. For example, assuming the following source JSON:
 ```json
 {
     "first": 5,
@@ -208,6 +208,7 @@ And lastly, as you may be used to, you can also use a logical NOT operator `!` t
     "notSecond": "!#valueOf($.second)"
 }
 ```
+
 # Conditional Logic
 
 The library also provides a few ways to approach conditional logic in your transformers. The first is the `#if` method, which takes three parameters: a boolean condition, an expression to evaluate when that condition is true, and an expression to evaluate when false. For example:
@@ -270,7 +271,28 @@ You can also declare variables within the content template of a loop, but they o
     "invalidValue": "@scopedVar"
 }
 ```
-In the resulting JSON output, the `finalResult` property will be populated by the array loop but the `invalidValue` property will be null due to accessing a variable which has already been destroyed.
+In the resulting JSON output, the `finalResult` property will be populated by the array loop but the `invalidValue` property will be null due to accessing a variable which has already been destroyed. Variables of the same name as outer variables will shadow them, so you may want to avoid that.
+
+Looping over an object's properties with a range variable is also possible, and in that case the variable will be set to the property value for each iteration. For example:
+```json
+{
+    "#foreach(@x in $.someObject) into 'result'": [
+        {
+            "propertyValue": "@x"
+        }
+    ]
+}
+```
+You may want to keep the original property name as well in that case, and you can do that by using the `#nameOf` method with the range variable as its parameter, which will return the name of the property currently being iterated on. For example:
+```json
+{
+    "#foreach(@x in $.someObject) into 'result'": [
+        {
+            "#nameOf(@x)": "@x"
+        }
+    ]
+}
+```
 
 ### Range Variables: Lambda Expressions
 
@@ -400,11 +422,11 @@ This would output the following JSON:
 ```
 It's worth noting that statements are only allowed within a `using` block and must operate on the scoped range variable specified there. You may also notice that the `#setAt()` call was allowed to take a path that did not actually exist at the time of use. This is because that particular method will take care of creating the missing pieces of the JSON hierarchy for you if they don't currently exist.
 
-You can also conditionally execute statements within a `using` block by using the `#when` method, which takes a boolean expression and a statement method.
+You can also conditionally execute statements within a `using` block by using the `#when` method, which takes a boolean expression and at least one statement method.
 ```json
 {
     "#using($.some as @x) into 'result'": [
-        "#when(#exists(@x.integerArray), #removeAt(@x.integerArray))",
+        "#when(#exists(@x.integerArray), #removeAt(@x.integerArray), #removeAt(@.otherComplexObject))",
         "#when(#valueOf(@x.complexObject.some.path) > 3, #setAt(@x.complexObject.some.other.path, 20))"
     ]
 }
@@ -443,10 +465,6 @@ You can create arrays directly within your transformer by using square brackets 
 }
 ```
 
-## Object Literals
-
-**This is intended for a subsequent release, but for now you can create objects in JSON assigned to range variables for further use.**
-
 # Additional Operations
 
 As a final note, there are a few additional operations that you can take advantage of in your transformers that don't necessarily fit into the previous categories. The first is the null-coalescing operator `??` which returns the left-hand operand if it is not null, otherwise it returns the right-hand operand. For example:
@@ -484,8 +502,8 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | isMissing | Returns true if the provided path does not exist in the source document, false otherwise | `#isMissing($.some.path)` | Property Value
 | if | Takes three parameters: a boolean condition, an expression to evaluate when that condition is true, and an expression to evaluate when false | `#if(#valueOf($.some.path), 'Yes', 'No')` | Property Value
 | includeIf | Takes a path or boolean condition and will evaluate and include the property's object if true, returning null otherwise | `"#includeIf($.some.path) into 'someName'": { "nestedValue": "#valueOf($.other.path)" }` | Property Name
-| eval | Evaluates an arbitrary expression, either from a path or literal value, and returns the result | `#eval('1 + 2 = 3')` | Property Name/Value
-| foreach | Evaluates a path and loops over the array elements or object properties it finds there to create its property values, naming the property as the string literal referred to by the arrow | `"#foreach(@x in $.some.path)->'result'": [ { "templateValue": "#valueOf($.other.path)" } ]` | Property Name
+| eval | Evaluates an arbitrary expression, either from a path or literal value, and returns the result | `#eval('1 + 2 == 3')` | Property Name/Value, Unsafe*
+| foreach | Evaluates a path and loops over the array elements or object properties it finds there to create its property values, naming the property as the string literal referred to by the arrow | `"#foreach(@x in $.some.path) into 'result'": [ { "templateValue": "#valueOf($.other.path)" } ]` | Property Name
 | nameOf | Returns the name of the property being evaluated by the provided loop variable | `"#nameOf(@x)": "#valueOf($.some.path)"` | Property Name
 | indexOf | Returns the zero-based index value of the first occurrence of the provided value | `#indexOf(#valueOf($.some.path), 'some string')` | Property Value
 | length | Returns the length of a string or array value | `#length($.some.path)` | Property Value
@@ -509,6 +527,7 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | orderByDesc | Returns an array in descending order as determined by its individual property values | `#orderByDesc($.some.path, @x: @x.propertyName)` | Property Value
 | takeWhile | Returns an array containing the leading elements of an array that satisfy a specified condition | `#takeWhile($.some.path, @x: @x.propertyName > 5)` | Property Value
 | skipWhile | Returns an array excluding the leading elements of an array that satisfy a specified condition | `#skipWhile($.some.path, @x: @x.propertyName > 5)` | Property Value
+| distinct | Returns an array of items associated with distinct values of a specified property | `#distinct($.some.path, @x: @x.propertyName)` | Property Value
 | contains | Returns true when an array or string contains the provided value | `#contains($.some.path, 'some string')` | Property Value
 | roundTo | Returns the value of a provided number rounded to the specified decimal places | `#roundTo($.some.path, 2)` | Property Value
 | try | Evaluates an expression and returns the result, or if an error is encountered it evaluates the provided lambda with the exception as a parameter and returns that result instead | `#try(#valueOf($.some.path)->#toInteger(), @e: 'default value')` | Property Value
@@ -536,13 +555,36 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | toString | Returns the string representation of a value | `#toString($.some.path)` | Property Value
 | toDecimal | Returns a value converted to a floating point number | `#toDecimal($.some.path)` | Property Value
 | toBoolean | Returns a value converted to a boolean | `#toBoolean($.some.path)` | Property Value
+| merge | Returns an object that is the result of merging two or more objects together, with later values taking precedence over earlier ones | `#merge($.some.path, $.some.other.path)` | Property Value
 | any | Returns true if the value is an array or string with contents, false otherwise (lambda parameter is optional) | `#any($.some.path)` | Property Value
 | where | Returns an array of objects that match a predicate | `#where($.some.path, @x: @x.other.path > 2)` | Property Value
 | select | Returns an array of objects that are the result of a projection | `#select($.some.path, @x: @x.other.path)` | Property Value
-| using | Assigns a specific path to a range variable and allows statements to operate on it | `"#using($.some.path as @x)->'result'":[ "#setAt(@x.other.path, 5)" ]` | Property Name
+| using | Assigns a specific path to a range variable and allows statements to operate on it | `"#using($.some.path as @x) into 'result'":[ "#setAt(@x.other.path, 5)" ]` | Property Name
 | removeAt | Removes a JSON node from the provided variable-based path | `#removeAt(@x.some.path)` | Statement
 | setAt | Adds or modifies a JSON node specified with the provided variable-based path | `#setAt(@x.some.path, 5)` | Statement
 | when | Conditionally executes a statement based on a boolean expression | `#when(#exists(@x.integerArray), #removeAt(@x.integerArray))` | Statement
+
+<h6>* The `eval` method is considered unsafe because it can execute any expression, including ones that may have unwanted side effects or security implications. It should be used with caution and only with trusted input. In order to enable unsafe method usage, the `JoltOptions` instance that can be passed into your JoltJsonTransformer has a method called `WithUnsafeAllowed` that will enable this. Use with caution!</h6>
+
+# Operator Precedence
+
+Also, here is a small table of how Jolt regards levels of operator precedence for binary expressions to help you understand how your expressions may be evaluated at runtime. The higher the precedence level, the tighter it binds (e.g. `*` binds tighter than `+` and so multiplication is performed first).
+
+| Operator | Description | Level
+| -------- | ----------- | -----
+| Null Coalescing | `??` | 0
+| Logical Or | `||` | 1
+| Logical And | `&&` | 2
+| Equals | `==` | 4
+| Not Equals | `!=` | 4
+| Less Than | `<` | 5
+| Greater Than | `>` | 5
+| Less Than Or Equals | `<=` | 5
+| Greater Than Or Equals | `>=` | 5
+| Addition | `+` | 6
+| Subtraction | `-` | 6
+| Multiplication | `*` | 7
+| Division | `/` | 7
 
 # Alternate External Method Registrations
 

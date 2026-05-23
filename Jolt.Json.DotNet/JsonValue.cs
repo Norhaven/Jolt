@@ -46,5 +46,18 @@ namespace Jolt.Json.DotNet
         // special case built into it for that.
 
         public override string ToString() => _token?.ToString();
+
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj) &&
+                obj is JsonValue other &&
+                ValueType == other.ValueType &&
+                ToTypeOf<object>()?.Equals(other.ToTypeOf<object>()) == true;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode() ^ ValueType.GetHashCode() ^ ToTypeOf<object>().GetHashCode();
+        }
     }
 }

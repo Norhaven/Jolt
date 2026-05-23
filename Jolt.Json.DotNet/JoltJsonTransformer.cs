@@ -57,7 +57,7 @@ namespace Jolt.Json.DotNet
             var context = new JoltContext(
                 jsonTransformer,
                 new ExpressionParser(),
-                new ExpressionEvaluator(),
+                new ExpressionEvaluator(options),
                 new TokenReader(messageProvider),
                 new JsonTokenReader(),
                 new JsonPathQueryPathProvider(),

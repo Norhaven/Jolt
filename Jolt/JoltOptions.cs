@@ -31,6 +31,12 @@ namespace Jolt
         /// </summary>
         public bool IsLoggingEnabled => LoggerFactory != null;
 
+        /// <summary>
+        /// Gets whether Jolt should allow evaluations that may be unsafe, such as those 
+        /// that could potentially cause unwanted side effects or security vulnerabilities.
+        /// </summary>
+        public bool AllowUnsafeEvaluations { get; private set; }
+
         private JoltOptions() 
         { 
         }
@@ -54,6 +60,20 @@ namespace Jolt
         public JoltOptions WithLogging(ILoggerFactory loggerFactory)
         {
             LoggerFactory = loggerFactory;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Specifies that Jolt should allow evaluations that may be unsafe, such as those 
+        /// that could potentially cause unwanted side effects or security vulnerabilities.
+        /// This setting is false by default and should only be enabled if you are sure that your
+        /// use cases are actually safe.
+        /// </summary>
+        /// <returns>An instance of <see cref="JoltOptions"/> with the unsafe evaluation setting applied.</returns>
+        public JoltOptions WithUnsafeAllowed()
+        {
+            AllowUnsafeEvaluations = true;
 
             return this;
         }

@@ -18,7 +18,7 @@ namespace Jolt.Testing.Harness.DotNetFramework
             return new JoltContext(
                 default,
                 new ExpressionParser(),
-                new ExpressionEvaluator(),
+                new ExpressionEvaluator(JoltOptions.Default.WithUnsafeAllowed()),
                 new TokenReader(messageProvider),
                 new Jolt.Json.Newtonsoft.JsonTokenReader(),
                 new Jolt.Json.Newtonsoft.JsonPathQueryPathProvider(),
@@ -35,7 +35,7 @@ namespace Jolt.Testing.Harness.DotNetFramework
             return new JoltContext(
                 default,
                 new ExpressionParser(),
-                new ExpressionEvaluator(),
+                new ExpressionEvaluator(JoltOptions.Default.WithUnsafeAllowed()),
                 new TokenReader(messageProvider),
                 new Jolt.Json.DotNet.JsonTokenReader(),
                 new Jolt.Json.DotNet.JsonPathQueryPathProvider(),

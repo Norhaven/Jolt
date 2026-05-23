@@ -1,12 +1,13 @@
-﻿using Jolt.Structure;
+﻿using Jolt.Extensions;
+using Jolt.Structure;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Nodes = System.Text.Json.Nodes;
-using Jolt.Extensions;
 
 namespace Jolt.Json.DotNet
 {
@@ -137,6 +138,75 @@ namespace Jolt.Json.DotNet
         {
             _properties.Clear();
             ((Nodes.JsonObject)_token).Clear();
+        }
+
+        public IJsonObject? MergeWith(IJsonObject? otherObject)
+        {
+            if (otherObject is null)
+            {
+                return this;
+            }
+
+            if (!(otherObject is JsonObject otherJsonObject))
+            {
+                throw new ArgumentOutOfRangeException(nameof(otherObject), $"Unable to merge with provided object of type '{otherObject.GetType().FullName}' - expected type was '{typeof(JsonObject).FullName}'");
+            }
+
+            var buffer = new System.IO.MemoryStream();
+
+            using (var writer = new Utf8JsonWriter(buffer))
+            {
+                MergeObjects(_token.Deserialize<JsonElement>(), otherJsonObject._token.Deserialize<JsonElement>(), writer);
+            }
+
+            buffer.Seek(0, System.IO.SeekOrigin.Begin);
+            
+            var node = JsonNode.Parse(buffer);
+
+            return new JsonObject(node);
+        }
+
+        private static void MergeObjects(JsonElement source, JsonElement overrides, Utf8JsonWriter writer)
+        {
+            writer.WriteStartObject();
+
+            // Write all properties from source, merging with overrides where keys match.
+            foreach (var sourceProperty in source.EnumerateObject())
+            {
+                writer.WritePropertyName(sourceProperty.Name);
+
+                if (overrides.TryGetProperty(sourceProperty.Name, out var overrideValue))
+                {
+                    // Both sides have this key — recurse if both are objects,
+                    // otherwise the override wins outright.
+                    if (sourceProperty.Value.ValueKind == JsonValueKind.Object
+                        && overrideValue.ValueKind == JsonValueKind.Object)
+                    {
+                        MergeObjects(sourceProperty.Value, overrideValue, writer);
+                    }
+                    else
+                    {
+                        overrideValue.WriteTo(writer);
+                    }
+                }
+                else
+                {
+                    // Key only exists in source — deep copy it as-is.
+                    sourceProperty.Value.WriteTo(writer);
+                }
+            }
+
+            // Write any properties that exist only in overrides.
+            foreach (var overrideProperty in overrides.EnumerateObject())
+            {
+                if (!source.TryGetProperty(overrideProperty.Name, out _))
+                {
+                    writer.WritePropertyName(overrideProperty.Name);
+                    overrideProperty.Value.WriteTo(writer);
+                }
+            }
+
+            writer.WriteEndObject();
         }
     }
 }

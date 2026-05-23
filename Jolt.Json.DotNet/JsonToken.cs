@@ -205,7 +205,7 @@ namespace Jolt.Json.DotNet
 
         public override int GetHashCode()
         {
-            return _token.GetHashCode();
+            return 17 ^ Type.GetHashCode();
         }
 
         public virtual bool DeepEquals(IJsonToken otherToken, params IJsonEqualityComparer[] comparers)

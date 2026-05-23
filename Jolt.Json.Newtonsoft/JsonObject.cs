@@ -14,7 +14,7 @@ namespace Jolt.Json.Newtonsoft
     {
         private readonly IDictionary<string, IJsonToken> _properties = new Dictionary<string, IJsonToken>();
 
-        public IJsonToken? this[string propertyName] 
+        public IJsonToken? this[string propertyName]
         {
             get
             {
@@ -32,7 +32,7 @@ namespace Jolt.Json.Newtonsoft
             }
         }
 
-        public JsonObject(JToken? token) 
+        public JsonObject(JToken? token)
             : base(token)
         {
             _properties = ((JObject)_token).Properties().ToDictionary(x => x.Name, x => FromObject(x.Value));
@@ -129,6 +129,44 @@ namespace Jolt.Json.Newtonsoft
         {
             _properties.Clear();
             ((JObject)_token).RemoveAll();
+        }
+
+        public IJsonObject? MergeWith(IJsonObject? otherObject)
+        {
+            if (otherObject is null)
+            {
+                return this;
+            }
+
+            if (!(otherObject is JsonObject otherJsonObject))
+            {
+                throw new ArgumentOutOfRangeException(nameof(otherObject), $"Unable to merge with provided object of type '{otherObject.GetType().FullName}' - expected type was '{typeof(JsonObject).FullName}'");
+            }
+
+            var result = (JObject)_token.DeepClone();
+
+            MergeInto(result, (JObject)otherJsonObject._token);
+
+            return new JsonObject(result);
+        }
+
+        private static void MergeInto(JObject target, JObject overrides)
+        {
+            foreach (var property in overrides.Properties())
+            {
+                if (target.TryGetValue(property.Name, out var existingValue)
+                    && existingValue.Type == JTokenType.Object
+                    && property.Value.Type == JTokenType.Object)
+                {
+                    // Both sides are objects — recurse rather than replace.
+                    MergeInto((JObject)existingValue, (JObject)property.Value);
+                }
+                else
+                {
+                    // Override wins: scalar, array, type mismatch, or new key.
+                    target[property.Name] = property.Value.DeepClone();
+                }
+            }
         }
     }
 }

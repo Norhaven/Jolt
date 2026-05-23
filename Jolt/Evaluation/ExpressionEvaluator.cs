@@ -16,6 +16,13 @@ namespace Jolt.Evaluation
 {
     public sealed class ExpressionEvaluator : IExpressionEvaluator
     {
+        private readonly JoltOptions _options;
+
+        public ExpressionEvaluator(JoltOptions options)
+        {
+            _options = options;
+        }
+
         public EvaluationResult Evaluate(EvaluationContext context)
         {
             var result = EvaluateExpression(context.Expression, context, isRootExpression: true);
@@ -482,6 +489,11 @@ namespace Jolt.Evaluation
 
         private object? ExecuteMethodCall(MethodCallExpression call, EvaluationContext context, bool isRootExpression)
         {
+            if (call.Signature.IsUnsafe && !_options.AllowUnsafeEvaluations)
+            {
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnsafeMethodCallNotAllowed, call.Signature.Name);
+            }
+
             if (context.Mode == EvaluationMode.PropertyName && !call.Signature.IsAllowedAsPropertyName)
             {
                 throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMethodWithinPropertyName, call.Signature.Alias);

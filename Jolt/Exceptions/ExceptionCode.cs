@@ -95,6 +95,8 @@ namespace Jolt.Exceptions
         ExpectedNamedPropertyOrRangeVariableButFoundUnexpectedToken,
         [Description("JLT142")]
         ExpectedPipedMethodCallAfterArrowOperatorButFoundDifferentToken,
+        [Description("JLT143")]
+        ExpectedZeroOrOneEqualitySymbolsInExpressionButFoundMoreThanOne,
 
         // Resolution
 
@@ -222,6 +224,8 @@ namespace Jolt.Exceptions
         [Description("JLT558")]
         AttemptedToUseNonStatementMethodWithinWhenLibraryCall,
         [Description("JLT559")]
-        AttemptedToUseNonMethodExpressionWithinWhenLibraryCall
+        AttemptedToUseNonMethodExpressionWithinWhenLibraryCall,
+        [Description("JLT560")]
+        UnsafeMethodCallNotAllowed
     }
 }

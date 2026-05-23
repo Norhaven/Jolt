@@ -593,7 +593,7 @@
           "name": "SummarizeWith works with a range variable containing a string array",
           "transformer": {
             "@x": "#valueOf($.stringArray)->#groupBy(@y: #contains(@y, 'is'))",
-            "resultArray": "#summarizeWith(@x, @y: #length(@y))"
+            "resultArray": "#summarizeWith(@x, @seq: #length(@seq))"
           },
           "result": {
             "resultArray": [
@@ -639,7 +639,7 @@
           }
         },
         {
-          "name": "#when method fails with non-statement method call when condition is true",
+          "name": "#when method fails with non-statement method call error when condition is true",
           "transformer": {
             "#using($.testObject as @x) into 'resultObject'": [
               "#when(#valueOf($.booleanValue), #valueOf($.integerValue))"
@@ -649,11 +649,26 @@
           "rootExceptionCode": "usedNonStatementMethodInWhen"
         },
         {
-          "name": "SetAt/RemoveAt works with a range variable containing an object",
+          "name": "#when method works with #setAt/#removeAt when condition is true",
           "transformer": {
             "#using($.testObject as @x) into 'resultObject'": [
-              "#setAt(@x.addedProperty, 'new value')",
-              "#removeAt(@x.first)"
+              "#when(#valueOf($.booleanValue), #setAt(@x.addedProperty, 'new value'))",
+              "#when(#valueOf($.integerValue) == 1, #removeAt(@x.first))"
+            ]
+          },
+          "result": {
+            "resultObject": {
+              "second": 2,
+              "third": [ 1, 2, 3 ],
+              "addedProperty": "new value"
+            }
+          }
+        },
+        {
+          "name": "#when method works with multiple statements",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [
+              "#when(#valueOf($.booleanValue), #setAt(@x.addedProperty, 'new value'), #removeAt(@x.first))"
             ]
           },
           "result": {
@@ -1384,6 +1399,134 @@
           },
           "result": {
             "results": [ 10, 20, 30 ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "SummarizeWith method works with range variables and lambda expressions",
+      "source": {
+        "stringArray": [ "this", "is", "an", "example", "test" ]
+      },
+      "tests": [
+        {
+          "name": "SummarizeWith can group by a condition and count elements in each group",
+          "transformer": {
+            "results": "#valueOf($.stringArray)->#groupBy(@x: #contains(@x, 'is'))->#summarizeWith(@seq: #length(@seq))"
+          },
+          "result": {
+            "results": [
+              {
+                "True": 2
+              },
+              {
+                "False": 3
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Distinct method works with range variables and lambda expressions",
+      "source": {
+        "objectArray": [
+          { "value": 2 },
+          { "value": 3 },
+          { "value": 2 },
+          { "value": 1 },
+          { "value": 3 },
+          { "value": 1 }
+        ],
+        "integerArray": [ 1, 2, 3, 3, 2, 1 ]
+      },
+      "tests": [
+        {
+          "name": "Distinct can return an array of items associated with distinct values",
+          "transformer": {
+            "results": "#valueOf($.integerArray)->#distinct(@x: @x)"
+          },
+          "result": {
+            "results": [ 1, 2, 3 ]
+          }
+        },
+        {
+          "name": "Distinct can return an array of items associated with distinct values of a specified property",
+          "transformer": {
+            "results": "#valueOf($.objectArray)->#distinct(@x: @x.value)"
+          },
+          "result": {
+            "results": [
+              { "value": 2 },
+              { "value": 3 },
+              { "value": 1 }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Merge method works with range variables",
+      "source": {
+        "sourceObject": {
+          "a": 1,
+          "b": 2,
+          "c": [ 1, 2, 3 ],
+          "d": {
+            "nested": "value"
+          }
+        },
+        "overrideObject": {
+          "a": 10,
+          "b": 20,
+          "c": [ 4, 5, 6 ],
+          "d": {
+            "nested": "newValue"
+          }
+        },
+        "overridePartialObject": {
+          "a": 12,
+          "bb": 20,
+          "cc": [ 4, 5, 6 ],
+          "d": {
+            "value": 123
+          }
+        }
+      },
+      "tests": [
+        {
+          "name": "Merge can return a combined JSON object from two JSON objects",
+          "transformer": {
+            "resultObject": "#valueOf($.sourceObject)->#merge($.overrideObject)"
+          },
+          "result": {
+            "resultObject": {
+              "a": 10,
+              "b": 20,
+              "c": [ 4, 5, 6 ],
+              "d": {
+                "nested": "newValue"
+              }
+            }
+          }
+        },
+        {
+          "name": "Merge can return a combined JSON object from two partial JSON objects",
+          "transformer": {
+            "resultObject": "#valueOf($.sourceObject)->#merge($.overridePartialObject)"
+          },
+          "result": {
+            "resultObject": {
+              "a": 12,
+              "b": 2,
+              "bb": 20,
+              "c": [ 1, 2, 3 ],
+              "cc": [ 4, 5, 6 ],
+              "d": {
+                "value": 123,
+                "nested": "value"
+              }
+            }
           }
         }
       ]

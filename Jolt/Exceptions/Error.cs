@@ -52,7 +52,8 @@ namespace Jolt.Exceptions
             [ExceptionCode.ExpectedDoubleEqualForEqualityComparisonButFoundSingleEqual] = "Expected '==' equality comparison operator but found single '=' character instead",
             [ExceptionCode.ExpectedIntoKeywordButFoundUnexpectedToken] = "Expected 'into' keyword but found '{0}' instead",
             [ExceptionCode.ExpectedNamedPropertyOrRangeVariableButFoundUnexpectedToken] = "Expected a named property or range variable but found '{0}' instead",
-            [ExceptionCode.ExpectedPipedMethodCallAfterArrowOperatorButFoundDifferentToken] = "Expected piped method call after '->' operator but found token '{0}' instead"
+            [ExceptionCode.ExpectedPipedMethodCallAfterArrowOperatorButFoundDifferentToken] = "Expected piped method call after '->' operator but found token '{0}' instead",
+            [ExceptionCode.ExpectedZeroOrOneEqualitySymbolsInExpressionButFoundMoreThanOne] = "Expected zero or one equality operators in expression but found '{0}' instead",
         };
 
         private static readonly Dictionary<ExceptionCode, string> _resolutionErrorsByCode = new Dictionary<ExceptionCode, string>
@@ -121,6 +122,7 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToEvaluateLogicalNotExpressionWithNonBooleanOperand] = "Unable to evaluate logical NOT expression '!' with non-boolean operand of type '{0}'",
             [ExceptionCode.AttemptedToUseNonStatementMethodWithinWhenLibraryCall] = "Attempted to use method '{0}' that is not a statement as the condition within a #when() library call",
             [ExceptionCode.AttemptedToUseNonMethodExpressionWithinWhenLibraryCall] = "Attempted to use expression '{0}' that is not a statement method call as the condition within a #when() library call",
+            [ExceptionCode.UnsafeMethodCallNotAllowed] = "Unsafe method calls are not allowed in the current evaluation mode, unable to call unsafe method '{0}'"
         };
 
         public static JoltException CreateParsingErrorFrom(ExceptionCode code, JoltException? innerException, params object[] parameters)

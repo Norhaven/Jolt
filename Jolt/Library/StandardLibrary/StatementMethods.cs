@@ -14,7 +14,7 @@ namespace Jolt.Library.StandardLibrary
     {
         [JoltLibraryMethod("when")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue | LibraryMethodTarget.StatementBlock)]
-        public static EvaluationResult? When(object? result, [LazyEvaluation] Expression? expression, EvaluationContext context)
+        public static EvaluationResult? When(object? result, [LazyEvaluation][VariadicEvaluation] object[]? expressions, EvaluationContext context)
         {
             var resolved = context.ResolveQueryPathIfPresent(result);
 
@@ -25,31 +25,40 @@ namespace Jolt.Library.StandardLibrary
                 _ => false
             };
 
-            if (!isTrue || expression is null)
+            if (!isTrue || expressions is null)
             {
                 return default;
             }
 
-            if (expression is MethodCallExpression methodCall)
+            EvaluationResult? currentResult = default;
+
+            foreach (var expression in expressions)
             {
-                if (!methodCall.Signature.IsAllowedAsStatement)
+                if (expression is MethodCallExpression methodCall)
                 {
-                    throw context.CreateExecutionErrorFor<StatementMethods>(ExceptionCode.AttemptedToUseNonStatementMethodWithinWhenLibraryCall, methodCall.Signature.Name);
+                    if (!methodCall.Signature.IsAllowedAsStatement)
+                    {
+                        throw context.CreateExecutionErrorFor<StatementMethods>(ExceptionCode.AttemptedToUseNonStatementMethodWithinWhenLibraryCall, methodCall.Signature.Name);
+                    }
+
+                    var evaluationContext = new EvaluationContext(
+                        context.Mode,
+                        methodCall,
+                        context.JsonContext,
+                        context.Token,
+                        context.Scope,
+                        context.Transform
+                    );
+
+                    currentResult = context.JsonContext.ExpressionEvaluator.Evaluate(evaluationContext);
+
+                    continue;
                 }
 
-                var evaluationContext = new EvaluationContext(
-                    context.Mode,
-                    expression,
-                    context.JsonContext,
-                    context.Token,
-                    context.Scope,
-                    context.Transform
-                );
-
-                return context.JsonContext.ExpressionEvaluator.Evaluate(evaluationContext);
+                throw context.CreateExecutionErrorFor<StatementMethods>(ExceptionCode.AttemptedToUseNonMethodExpressionWithinWhenLibraryCall, expression.GetType().Name);
             }
 
-            throw context.CreateExecutionErrorFor<StatementMethods>(ExceptionCode.AttemptedToUseNonMethodExpressionWithinWhenLibraryCall, expression.GetType().Name);
+            return currentResult;
         }
 
         [JoltLibraryMethod("removeAt")]

@@ -11,7 +11,7 @@ using System.Text;
 namespace Jolt.Library.StandardLibrary
 {
     [IncludeInStandardLibrary]
-    internal sealed class LoopAndQueryMethods : UnderlyingExecutionMethods
+    internal sealed class LoopAndQueryMethods
     {
         [JoltLibraryMethod("foreach", true)]
         [MethodIsValidOn(LibraryMethodTarget.PropertyName)]
@@ -128,7 +128,7 @@ namespace Jolt.Library.StandardLibrary
 
             var grouping = resolved switch
             {
-                IJsonArray array => array.GroupBy(x => ProjectAs(x, keySelectorLambda, context)?.ToTypeOf<object>()),
+                IJsonArray array => array.GroupBy(x => new QueryMethods(keySelectorLambda).ExecuteLambda(x, context)?.ToTypeOf<object>()),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to perform a group by using unsupported object type '{value?.GetType()}'")
             };
 
@@ -145,7 +145,7 @@ namespace Jolt.Library.StandardLibrary
             {
                 IJsonArray array when array.ContainsOnlyNumbers() && array.ContainsAtLeastOneDecimal() => array.OrderBy(x => x.ToTypeOf<double>()),
                 IJsonArray array when array.ContainsOnlyNumbers() => array.OrderBy(x => x.ToTypeOf<long>()),
-                IJsonArray array => array.OrderBy(x => ProjectAs(x, lambda, context)?.ToTypeOf<object>()),
+                IJsonArray array => array.OrderBy(x => new QueryMethods(array,lambda).ExecuteLambda(x, context)?.ToTypeOf<object>()),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to perform an order by using unsupported object type '{value?.GetType()}'")
             };
 
@@ -162,7 +162,7 @@ namespace Jolt.Library.StandardLibrary
             {
                 IJsonArray array when array.ContainsOnlyNumbers() && array.ContainsAtLeastOneDecimal() => array.OrderByDescending(x => x.ToTypeOf<double>()),
                 IJsonArray array when array.ContainsOnlyNumbers() => array.OrderByDescending(x => x.ToTypeOf<long>()),
-                IJsonArray array => array.OrderByDescending(x => ProjectAs(x, lambda, context)?.ToTypeOf<object>()),
+                IJsonArray array => array.OrderByDescending(x => new QueryMethods(array, lambda).ExecuteLambda(x, context)?.ToTypeOf<object>()),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to perform an order by using unsupported object type '{value?.GetType()}'")
             };
 
@@ -264,13 +264,33 @@ namespace Jolt.Library.StandardLibrary
 
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
-            var empty = resolved switch
+            var results = resolved switch
             {
-                IJsonArray array => LambdaOrDefault(array, lambda, Select, context),
-                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for any with unsupported object type '{value?.GetType()}'")
+                IJsonArray array => new QueryMethods(array, lambda).Select(context),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for #select with unsupported object type '{value?.GetType()}'")
             };
 
-            return context.CreateTokenFrom(empty);
+            return context.CreateTokenFrom(results);
+        }
+
+        [JoltLibraryMethod("distinct")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? Distinct(object? value, LambdaMethod lambda, EvaluationContext context)
+        {
+            if (value is null)
+            {
+                return context.CreateTokenFrom(false);
+            }
+
+            var resolved = context.ResolveValueOf<IJsonArray>(value);
+
+            var results = resolved switch
+            {
+                IJsonArray array => new QueryMethods(array, lambda).Distinct(context),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for #distinct with unsupported object type '{value?.GetType()}'")
+            };
+
+            return context.CreateTokenFrom(results);
         }
 
         [JoltLibraryMethod("any")]
@@ -286,8 +306,8 @@ namespace Jolt.Library.StandardLibrary
 
             var empty = resolved switch
             {
-                IJsonArray array => LambdaOrDefault<IJsonToken, IJsonToken>(array, lambda, Any, context, () => context.CreateTokenFrom(array.Length > 0)),
-                IJsonValue val when val.IsString() => LambdaOrDefault<char, IJsonToken>(val.ToTypeOf<string>(), lambda, Any, context, () => context.CreateTokenFrom(val.ToTypeOf<string>().Length > 0)),
+                IJsonArray array => new QueryMethods(array, lambda).Any(context),
+                IJsonValue val when val.IsString() => lambda is null ? context.CreateTokenFrom(val.ToTypeOf<string>()?.Length > 0) : new QueryMethods(val.ToTypeOf<string>().ToCharArray().Select(x => context.CreateTokenFrom(x)), lambda).Any(context),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for any with unsupported object type '{value?.GetType()}'")
             };
 
@@ -307,7 +327,7 @@ namespace Jolt.Library.StandardLibrary
 
             var empty = resolved switch
             {
-                IJsonArray array => LambdaOrDefault(array, lambda, Where, context),
+                IJsonArray array => new QueryMethods(array, lambda).Where(context),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for any with unsupported object type '{value?.GetType()}'")
             };
 
@@ -327,7 +347,7 @@ namespace Jolt.Library.StandardLibrary
 
             var takenItems = resolved switch
             {
-                IJsonArray array => TakeWhile(array, lambda, x => ExecuteLambdaBody(x, context)?.ToTypeOf<bool>() == true, context),
+                IJsonArray array => new QueryMethods(array, lambda).TakeWhile(context),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for any with unsupported object type '{value?.GetType()}'")
             };
 
@@ -347,7 +367,7 @@ namespace Jolt.Library.StandardLibrary
 
             var takenItems = resolved switch
             {
-                IJsonArray array => SkipWhile(array, lambda, x => ExecuteLambdaBody(x, context)?.ToTypeOf<bool>() == true, context),
+                IJsonArray array => new QueryMethods(array, lambda).SkipWhile(context),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for any with unsupported object type '{value?.GetType()}'")
             };
 
@@ -377,7 +397,7 @@ namespace Jolt.Library.StandardLibrary
                 {
                     var token = context.CreateTokenFrom(new object()).AsObject();
 
-                    var result = ProjectAs(group.Results, lambda, context);
+                    var result = new QueryMethods(group.Results, lambda).ExecuteLambda(group.Results, context);
 
                     token[group.Key?.ToString()] = result;
 
@@ -431,120 +451,6 @@ namespace Jolt.Library.StandardLibrary
             };
 
             return context.CreateTokenFrom(decimalValue);
-        }
-        
-        private static IEnumerable<IJsonToken> TakeWhile<T>(IEnumerable<T> sequence, LambdaMethod lambda, Func<Expression, bool> shouldInclude, EvaluationContext context)
-        {
-            foreach (var item in sequence)
-            {
-                var itemToken = context.CreateTokenFrom(item);
-                var loopVariable = new RangeVariable(lambda.Variable.Name, itemToken);
-
-                context.Scope.AddOrUpdateVariable(loopVariable);
-
-                try
-                {
-                    if (shouldInclude(lambda.Body))
-                    {
-                        yield return itemToken;
-                    }
-                    else
-                    {
-                        yield break;
-                    }
-                }
-                finally
-                {
-                    context.Scope.RemoveCurrentVariablesLayer();
-                }
-            }
-        }
-
-        private static IEnumerable<IJsonToken> SkipWhile<T>(IEnumerable<T> sequence, LambdaMethod lambda, Func<Expression, bool> shouldSkip, EvaluationContext context)
-        {
-            var isSkipping = true;
-
-            foreach (var item in sequence)
-            {
-                var itemToken = context.CreateTokenFrom(item);
-                var loopVariable = new RangeVariable(lambda.Variable.Name, itemToken);
-
-                context.Scope.AddOrUpdateVariable(loopVariable);
-
-                try
-                {
-                    if (isSkipping && shouldSkip(lambda.Body))
-                    {
-                        continue;
-                    }
-
-                    isSkipping = false;
-
-                    yield return itemToken;
-                }
-                finally
-                {
-                    context.Scope.RemoveCurrentVariablesLayer();
-                }
-            }
-        }
-
-
-        private static IEnumerable<IJsonToken> ProjectInto<T>(IEnumerable<T> sequence, LambdaMethod lambda, Func<Expression, bool> shouldInclude, Func<IJsonToken, IJsonToken> createProjection, EvaluationContext context)
-        {
-            foreach (var item in sequence)
-            {
-                var itemToken = context.CreateTokenFrom(item);
-                var loopVariable = new RangeVariable(lambda.Variable.Name, itemToken);
-
-                context.Scope.AddOrUpdateVariable(loopVariable);
-
-                try
-                {
-                    if (shouldInclude(lambda.Body))
-                    {
-                        yield return createProjection(itemToken);
-                    }
-                }
-                finally
-                {
-                    context.Scope.RemoveCurrentVariablesLayer();
-                }
-            }
-        }
-
-        private static IJsonToken? ProjectAs<T>(T value, LambdaMethod lambda, EvaluationContext context)
-        {
-            var itemToken = context.CreateTokenFrom(value);
-            var loopVariable = new RangeVariable(lambda.Variable.Name, itemToken);
-
-            context.Scope.AddOrUpdateVariable(loopVariable);
-
-            try
-            {
-                return ExecuteLambdaBody(lambda.Body, context);
-            }
-            finally
-            {
-                context.Scope.RemoveCurrentVariablesLayer();
-            }
-        }
-
-        private static IEnumerable<IJsonToken> Select<T>(IEnumerable<T> sequence, LambdaMethod lambda, Func<Expression, IJsonToken> getSelection, EvaluationContext context)
-        {
-            return ProjectInto(sequence, lambda, x => true, x => ExecuteLambdaBody(lambda.Body, context), context);
-        }
-
-        private static IEnumerable<IJsonToken> Where<T>(IEnumerable<T> sequence, LambdaMethod lambda, Func<Expression, IJsonToken> isMatch, EvaluationContext context)
-        {
-            return ProjectInto(sequence, lambda, x => isMatch(x).ToTypeOf<bool>(), x => x, context);
-        }
-
-        private static IJsonToken Any<T>(IEnumerable<T> sequence, LambdaMethod lambda, Func<Expression, IJsonToken> isMatch, EvaluationContext context)
-        {
-            var isAny = Where(sequence, lambda, isMatch, context).Any();
-
-            return context.CreateTokenFrom(isAny);
         }
     }
 }

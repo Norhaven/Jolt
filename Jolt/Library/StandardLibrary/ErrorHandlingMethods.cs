@@ -9,7 +9,7 @@ using System.Text;
 namespace Jolt.Library.StandardLibrary
 {
     [IncludeInStandardLibrary]
-    internal sealed class ErrorHandlingMethods : UnderlyingExecutionMethods
+    internal sealed class ErrorHandlingMethods
     {
         [JoltLibraryMethod("try")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyName | LibraryMethodTarget.PropertyValue)]
@@ -32,20 +32,11 @@ namespace Jolt.Library.StandardLibrary
             catch (Exception ex)
             {
                 var error = new EvaluationError(ex);
-
                 var itemToken = context.CreateTokenFrom(error);
-                var errorVariable = new RangeVariable(handleError.Variable.Name, itemToken);
+                
+                var queries = new QueryMethods(handleError);
 
-                context.Scope.AddOrUpdateVariable(errorVariable);
-
-                try
-                {
-                    return ExecuteLambdaBody(handleError.Body, context);
-                }
-                finally
-                {
-                    context.Scope.RemoveCurrentVariablesLayer();
-                }
+                return queries.ExecuteLambda(itemToken, context);
             }
         }
     }

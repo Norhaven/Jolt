@@ -20,7 +20,7 @@ namespace Jolt.Library.StandardLibrary
             return context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, path, JsonQueryMode.StartFromRoot);
         }
 
-        [JoltLibraryMethod("eval")]
+        [JoltLibraryMethod("eval", isUnsafe: true)]
         [MethodIsValidOn(LibraryMethodTarget.PropertyName | LibraryMethodTarget.PropertyValue)]
         public static EvaluationResult? Evaluate(string pathOrLiteral, EvaluationContext context)
         {

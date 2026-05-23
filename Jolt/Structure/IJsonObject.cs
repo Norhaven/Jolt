@@ -44,5 +44,12 @@ namespace Jolt.Structure
         /// <param name="propertyName">The property name to check for.</param>
         /// <returns>True if the property exists, false otherwise.</returns>
         bool HasProperty(string propertyName);
+
+        /// <summary>
+        /// Merges the properties of another JSON object into this JSON object. If a property exists in both objects, the value from the other object will overwrite the value in this object.
+        /// </summary>
+        /// <param name="otherObject">The other JSON object to merge with.</param>
+        /// <returns>An instance of <see cref="IJsonToken"/> which is the merged JSON structure, if present, null otherwise.</returns>
+        IJsonObject? MergeWith(IJsonObject? otherObject);
     }
 }

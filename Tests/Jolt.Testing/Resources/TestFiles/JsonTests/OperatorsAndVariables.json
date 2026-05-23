@@ -9,7 +9,8 @@
     "tooManyComparisons": "ExpectedZeroOrOneComparisonSymbolsInExpressionButFoundMoreThanOne",
     "externalMethodException": "ExternalMethodInvocationCausedAnException",
     "dereferencedNonObject": "EncounteredNonObjectInDereferenceChainButExpectedObject",
-    "dereferencedMissingProperty": "AttemptedToDereferenceMissingPath"
+    "dereferencedMissingProperty": "AttemptedToDereferenceMissingPath",
+    "tooManyEqualitySymbols": "ExpectedZeroOrOneEqualitySymbolsInExpressionButFoundMoreThanOne"
   },
   "possibleExternalMethodSources": {
     "ExternalMixedMethods": "Jolt.Testing.Resources.TestMethods.ExternalMixedMethods, Jolt.Testing.Resources, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
@@ -309,6 +310,63 @@
       ]
     },
     {
+      "name": "Math expressions mixed with different operators to test operator precedence",
+      "source": {
+        "one": 1,
+        "two": 2,
+        "three": 3,
+        "text": "this is an example",
+        "trueValue": true
+      },
+      "tests": [
+        {
+          "name": "Equality comparison for math expression with AND logical operators produces correct result",
+          "transformer": {
+            "value": "#valueOf($.one) + #valueOf($.two) * #valueOf($.three) == 7 && #valueOf($.one) - #valueOf($.one) == 0"
+          },
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "name": "Equality comparison for math expression with OR logical operators produces correct result",
+          "transformer": {
+            "value": "#valueOf($.one) + #valueOf($.two) * #valueOf($.three) == 6 || #valueOf($.one) - #valueOf($.one) == 0"
+          },
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "name": "Equality comparison for math expression with null coalescing operator produces correct result",
+          "transformer": {
+            "value": "#valueOf($.one) + #valueOf($.two) * #valueOf($.three) == 7 ?? #valueOf($.one) - #valueOf($.one) == 0"
+          },
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "name": "Equality comparison for math expression with logical AND operator and coalescing operator produces correct result",
+          "transformer": {
+            "value": "#valueOf($.one) + #valueOf($.two) == 3 && #valueOf($.two) * #valueOf($.three) == 6 ?? #valueOf($.one) - #valueOf($.one) == 0"
+          },
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "name": "Equality comparison for math expression with logical AND operator and coalescing operator produces correct result",
+          "transformer": {
+            "value": "#valueOf($.one) < #valueOf($.two) && #valueOf($.three) >= #valueOf($.two) == true"
+          },
+          "result": {
+            "value": true
+          }
+        }
+      ]
+    },
+    {
       "name": "Math expressions",
       "source": {
         "one": 1,
@@ -553,7 +611,7 @@
             "value": "#eval('1 == 1 == 1')"
           },
           "exceptionCode": "externalMethodException",
-          "innerExceptionCode": "tooManyComparisons"
+          "innerExceptionCode": "tooManyEqualitySymbols"
         },
         {
           "name": "Multiple distinct comparison signs present in expression",

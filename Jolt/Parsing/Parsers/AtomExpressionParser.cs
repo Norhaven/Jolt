@@ -3,6 +3,7 @@ using Jolt.Expressions;
 using Jolt.Extensions;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 
@@ -51,11 +52,18 @@ namespace Jolt.Parsing.Parsers
 
             expression = ParsePrecedenceExpression(leftExpression, 0, context);
 
-            var comparisonOperatorCount = GetComparisonOperatorCount(expression);
+            var comparisonOperatorCount = VerifyOperatorCount(expression, context, ExceptionCode.ExpectedZeroOrOneComparisonSymbolsInExpressionButFoundMoreThanOne, Operator.LessThan, Operator.GreaterThan, Operator.LessThanOrEquals, Operator.GreaterThanOrEquals);
 
             if (comparisonOperatorCount > 1)
             {
                 throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.ExpectedZeroOrOneComparisonSymbolsInExpressionButFoundMoreThanOne, comparisonOperatorCount);
+            }
+
+            var equalityOperatorCount = VerifyOperatorCount(expression, context, ExceptionCode.ExpectedZeroOrOneEqualitySymbolsInExpressionButFoundMoreThanOne, Operator.Equals, Operator.NotEquals);
+
+            if (equalityOperatorCount > 1)
+            {
+                throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.ExpectedZeroOrOneEqualitySymbolsInExpressionButFoundMoreThanOne, equalityOperatorCount);
             }
 
             return true;
@@ -70,19 +78,19 @@ namespace Jolt.Parsing.Parsers
         {
             return @operator switch
             {
-                Operator.Equals => 0,
-                Operator.NotEquals => 0,
-                Operator.LessThan => 0,
-                Operator.GreaterThan => 0,
-                Operator.LessThanOrEquals => 0,
-                Operator.GreaterThanOrEquals => 0,
-                Operator.Addition => 1,
-                Operator.Subtraction => 1,
-                Operator.Multiplication => 2,
-                Operator.Division => 2,
-                Operator.NullCoalescing => 3,
-                Operator.LogicalAnd => 4,
-                Operator.LogicalOr => 5,
+                Operator.Multiplication => 6,
+                Operator.Division => 6,
+                Operator.Addition => 5,
+                Operator.Subtraction => 5,
+                Operator.LessThan => 4,
+                Operator.GreaterThan => 4,
+                Operator.LessThanOrEquals => 4,
+                Operator.GreaterThanOrEquals => 4,
+                Operator.Equals => 3,
+                Operator.NotEquals => 3,
+                Operator.LogicalAnd => 2,
+                Operator.LogicalOr => 1,
+                Operator.NullCoalescing => 0,
                 _ => -1
             };
         }
@@ -106,7 +114,8 @@ namespace Jolt.Parsing.Parsers
 
                 while (lookaheadPrecedence > operatorPrecedence)
                 {
-                    var adjustedMinimumPrecedence = operatorPrecedence + (lookaheadPrecedence > operatorPrecedence ? 1 : 0);
+                    var isRightAssociative = @operator == Operator.NullCoalescing;
+                    var adjustedMinimumPrecedence = isRightAssociative ? operatorPrecedence : operatorPrecedence + 1;
 
                     rightExpression = ParsePrecedenceExpression(rightExpression, adjustedMinimumPrecedence, context);
 
@@ -141,17 +150,34 @@ namespace Jolt.Parsing.Parsers
             };
         }
 
-        private int GetComparisonOperatorCount(Expression expression)
+        private int VerifyOperatorCount(Expression expression, IJsonContext context, ExceptionCode raisedErrorCode, params Operator[] operators)
         {
             if (expression is BinaryExpression binary)
             {
-                var leftCount = GetComparisonOperatorCount(binary.Left);
-                var rightCount = GetComparisonOperatorCount(binary.Right);
+                var leftCount = VerifyOperatorCount(binary.Left, context, raisedErrorCode, operators);
+                var rightCount = VerifyOperatorCount(binary.Right, context, raisedErrorCode, operators);
 
-                var isComparisonOperator = binary.Operator.IsAnyOf(Operator.NotEquals, Operator.Equals, Operator.LessThan, Operator.GreaterThan, Operator.LessThanOrEquals, Operator.GreaterThanOrEquals);
-                var comparisonCount = isComparisonOperator ? 1 : 0;
+                if (binary.Operator.IsAnyOf(Operator.LogicalAnd, Operator.LogicalOr, Operator.NullCoalescing))
+                {
+                    if (leftCount > 1)
+                    {
+                        throw context.CreateParsingErrorFor<ExpressionParser>(raisedErrorCode, leftCount);
+                    }
 
-                return comparisonCount + leftCount + rightCount;
+                    if (rightCount > 1)
+                    {
+                        throw context.CreateParsingErrorFor<ExpressionParser>(raisedErrorCode, rightCount);
+                    }
+
+                    // Subtrees are fully validated above; report 0 upward so the
+                    // parent doesn't accumulate counts that have already been checked.
+
+                    return 0;
+                }
+
+                var isTargetOperator = binary.Operator.IsAnyOf(operators);
+                
+                return (isTargetOperator ? 1 : 0) + leftCount + rightCount;
             }
 
             return 0;

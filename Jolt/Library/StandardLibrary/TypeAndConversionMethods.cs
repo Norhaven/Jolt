@@ -10,6 +10,21 @@ namespace Jolt.Library.StandardLibrary
     [IncludeInStandardLibrary]
     internal static class TypeAndConversionMethods
     {
+        [JoltLibraryMethod("merge")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? Merge(object? first, object? second, EvaluationContext context)
+        {
+            var firstToken = context.ResolveQueryPathIfPresent(first) as IJsonObject;
+            var secondToken = context.ResolveQueryPathIfPresent(second) as IJsonObject;
+
+            if (firstToken == null || secondToken == null)
+            {
+                throw new ArgumentOutOfRangeException(nameof(first), $"Unable to merge non-object types. Received types '{first?.GetType()}' and '{second?.GetType()}'");
+            }
+
+            return firstToken.MergeWith(secondToken);
+        }
+
         [JoltLibraryMethod("isMissing")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsMissing(object? pathOrValue, EvaluationContext context)
