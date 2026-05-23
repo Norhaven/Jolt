@@ -185,6 +185,15 @@
           "result": {
             "value": "value"
           }
+        },
+        {
+          "name": "Null coalescing operator is right associative and will take the entire left-hand expression as the left-hand operand",
+          "transformer": {
+            "value": "@x ?? #valueOf($.nullValue) ?? 'default'"
+          },
+          "result": {
+            "value": "default"
+          }
         }
       ]
     },

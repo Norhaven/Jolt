@@ -283,7 +283,7 @@ Looping over an object's properties with a range variable is also possible, and 
     ]
 }
 ```
-You may want to keep the original property name as well in that case, and you can do that by using the `#nameOf` method with the range variable as its parameter, which will return the name of the property currently being iterated on. For example:
+If you hardcode the property name like that, however, you will overwrite the same property with the current value each iteration through. You may want to keep the original property name as well in that case, and you can do that by using the `#nameOf` method with the range variable as its parameter, which will return the name of the property currently being iterated on. For example:
 ```json
 {
     "#foreach(@x in $.someObject) into 'result'": [
@@ -527,7 +527,7 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | orderByDesc | Returns an array in descending order as determined by its individual property values | `#orderByDesc($.some.path, @x: @x.propertyName)` | Property Value
 | takeWhile | Returns an array containing the leading elements of an array that satisfy a specified condition | `#takeWhile($.some.path, @x: @x.propertyName > 5)` | Property Value
 | skipWhile | Returns an array excluding the leading elements of an array that satisfy a specified condition | `#skipWhile($.some.path, @x: @x.propertyName > 5)` | Property Value
-| distinct | Returns an array of items associated with distinct values of a specified property | `#distinct($.some.path, @x: @x.propertyName)` | Property Value
+| distinct | Returns an array of items associated with distinct values of a specified property or scalar values | `#distinct($.some.path, @x: @x.propertyName)` | Property Value
 | contains | Returns true when an array or string contains the provided value | `#contains($.some.path, 'some string')` | Property Value
 | roundTo | Returns the value of a provided number rounded to the specified decimal places | `#roundTo($.some.path, 2)` | Property Value
 | try | Evaluates an expression and returns the result, or if an error is encountered it evaluates the provided lambda with the exception as a parameter and returns that result instead | `#try(#valueOf($.some.path)->#toInteger(), @e: 'default value')` | Property Value
@@ -555,7 +555,7 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | toString | Returns the string representation of a value | `#toString($.some.path)` | Property Value
 | toDecimal | Returns a value converted to a floating point number | `#toDecimal($.some.path)` | Property Value
 | toBoolean | Returns a value converted to a boolean | `#toBoolean($.some.path)` | Property Value
-| merge | Returns an object that is the result of merging two or more objects together, with later values taking precedence over earlier ones | `#merge($.some.path, $.some.other.path)` | Property Value
+| merge | Returns an object that is the result of merging two or more objects together with a deep copy, with later values taking precedence over earlier ones | `#merge($.some.path, $.some.other.path)` | Property Value
 | any | Returns true if the value is an array or string with contents, false otherwise (lambda parameter is optional) | `#any($.some.path)` | Property Value
 | where | Returns an array of objects that match a predicate | `#where($.some.path, @x: @x.other.path > 2)` | Property Value
 | select | Returns an array of objects that are the result of a projection | `#select($.some.path, @x: @x.other.path)` | Property Value
