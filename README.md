@@ -575,16 +575,16 @@ Also, here is a small table of how Jolt regards levels of operator precedence fo
 | Null Coalescing | `??` | 0
 | Logical Or | `||` | 1
 | Logical And | `&&` | 2
-| Equals | `==` | 4
-| Not Equals | `!=` | 4
-| Less Than | `<` | 5
-| Greater Than | `>` | 5
-| Less Than Or Equals | `<=` | 5
-| Greater Than Or Equals | `>=` | 5
-| Addition | `+` | 6
-| Subtraction | `-` | 6
-| Multiplication | `*` | 7
-| Division | `/` | 7
+| Equals | `==` | 3
+| Not Equals | `!=` | 3
+| Less Than | `<` | 4
+| Greater Than | `>` | 4
+| Less Than Or Equals | `<=` | 4
+| Greater Than Or Equals | `>=` | 4
+| Addition | `+` | 5
+| Subtraction | `-` | 5
+| Multiplication | `*` | 6
+| Division | `/` | 6
 
 # Alternate External Method Registrations
 
