@@ -226,6 +226,10 @@ namespace Jolt.Exceptions
         [Description("JLT559")]
         AttemptedToUseNonMethodExpressionWithinWhenLibraryCall,
         [Description("JLT560")]
-        UnsafeMethodCallNotAllowed
+        UnsafeMethodCallNotAllowed,
+        [Description("JLT561")]
+        UnableToLocateReferencedTransformer,
+        [Description("JLT562")]
+        AttemptedToUseUndeclaredVariable
     }
 }

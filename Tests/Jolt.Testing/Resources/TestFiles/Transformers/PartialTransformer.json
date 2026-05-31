@@ -1,0 +1,6 @@
+﻿{
+  "sourceVariableX": "@x",
+  "sourcePathValue": "#valueOf($.sourcePath)",
+  "@value": "@x->#toString()",
+  "indirectValue": "@value"
+}

@@ -10,6 +10,11 @@ namespace Jolt.Structure
     public interface IJsonToken
     {
         /// <summary>
+        /// Gets the full path of this JSON structure from the root of the JSON document. This will be a JSONPath-like string with property names separated by dots and array indices denoted by square brackets.
+        /// </summary>
+        string FullPath { get; }
+
+        /// <summary>
         /// Gets the immediate parent JSON structure of this one, returning null if none was found.
         /// </summary>
         IJsonToken? Parent { get; }

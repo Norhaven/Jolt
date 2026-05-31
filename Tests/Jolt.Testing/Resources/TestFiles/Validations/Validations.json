@@ -1,0 +1,269 @@
+{
+  "validations": [
+    {
+      "name": "Variable declaration with literal will succeed",
+      "transformer": {
+        "@x": "1"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Method call in property value will succeed",
+      "transformer": {
+        "result": "#valueOf($.path)"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Variable declared before sibling use will succeed",
+      "transformer": {
+        "@x": "#valueOf($.path)",
+        "result": "@x"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Foreach loop with valid loop variable in template will succeed",
+      "transformer": {
+        "#foreach(@x in $.someArray) into 'result'": [
+          {
+            "value": "@x.field"
+          }
+        ]
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Foreach loop output to generated variable used by sibling will succeed",
+      "transformer": {
+        "#foreach(@x in $.someArray) into @temp": [
+          {
+            "value": "@x.field"
+          }
+        ],
+        "result": "@temp"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Using block with path alias will succeed",
+      "transformer": {
+        "#using($.someObject as @x) into 'result'": [
+          "#setAt(@x.field, 5)"
+        ]
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Using block with declared variable alias will succeed",
+      "transformer": {
+        "@src": "#valueOf($.someObject)",
+        "#using(@src as @x) into 'result'": [
+          "#removeAt(@x.oldField)"
+        ]
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Lambda expression with valid lambda variable will succeed",
+      "transformer": {
+        "result": "#valueOf($.someArray)->#any(@x: @x > 5)"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Conditional if expression will succeed",
+      "transformer": {
+        "result": "#if(#exists($.someValue), 'yes', 'no')"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Piped method calls will succeed",
+      "transformer": {
+        "result": "#valueOf($.path)->#exists()"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Nested object with valid method call will succeed",
+      "transformer": {
+        "outer": {
+          "inner": "#valueOf($.path)"
+        }
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Binary expression with paths and literals will succeed",
+      "transformer": {
+        "result": "#valueOf($.first) + #valueOf($.second)"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Null coalescing expression will succeed",
+      "transformer": {
+        "result": "#valueOf($.nullable) ?? 'default'"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Issue: Variable usage before declaration",
+      "transformer": {
+        "@x": "@y",
+        "@y": "1"
+      },
+      "expectedIssues": [
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    },
+    {
+      "name": "Issue: Undeclared standalone variable reference fails",
+      "transformer": {
+        "result": "@x"
+      },
+      "expectedIssues": [
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    },
+    {
+      "name": "Issue: Undeclared variable property dereference fails",
+      "transformer": {
+        "result": "@x.field"
+      },
+      "expectedIssues": [
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    },
+    {
+      "name": "Issue: Sliced access of undeclared variable fails",
+      "transformer": {
+        "result": "@x[0..2]"
+      },
+      "expectedIssues": [
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    },
+    {
+      "name": "Issue: Undeclared variable used in foreach template fails",
+      "transformer": {
+        "#foreach(@x in $.someArray) into 'result'": [
+          {
+            "value": "@y.field"
+          }
+        ]
+      },
+      "expectedIssues": [
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    },
+    {
+      "name": "Issue: Undeclared variable used in using block statement fails",
+      "transformer": {
+        "#using($.someObject as @x) into 'result'": [
+          "#removeAt(@y.field)"
+        ]
+      },
+      "expectedIssues": [
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    },
+    {
+      "name": "Issue: Undeclared variable in lambda body fails",
+      "transformer": {
+        "result": "#valueOf($.someArray)->#any(@x: @y > 5)"
+      },
+      "expectedIssues": [
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    },
+    {
+      "name": "Issue: Undeclared variable inside nested object fails",
+      "transformer": {
+        "outer": {
+          "inner": "@x"
+        }
+      },
+      "expectedIssues": [
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    },
+    {
+      "name": "Issue: Undeclared source variable in using alias fails",
+      "transformer": {
+        "#using(@undeclared as @x) into 'result'": [
+          "#setAt(@x.field, 5)"
+        ]
+      },
+      "expectedIssues": [
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    },
+    {
+      "name": "Issue: Unknown method name causes a syntax error",
+      "transformer": {
+        "result": "#thisMethodDoesNotExist($.path)"
+      },
+      "expectedIssues": [
+        "UnableToFindMethodImplementation"
+      ]
+    },
+    {
+      "name": "Issue: Property value only method used in property name fails",
+      "transformer": {
+        "#exists($.path)": "someValue"
+      },
+      "expectedIssues": [
+        "UnableToUseMethodWithinPropertyName"
+      ]
+    },
+    {
+      "name": "Issue: Property name only method used in property value fails",
+      "transformer": {
+        "@x": "1",
+        "result": "#nameOf(@x)"
+      },
+      "expectedIssues": [
+        "UnableToUseMethodWithinPropertyValue"
+      ]
+    },
+    {
+      "name": "Issue: Unsafe eval method usage fails",
+      "transformer": {
+        "result": "#eval('1 + 2 == 3')"
+      },
+      "expectedIssues": [
+        "UnsafeMethodCallNotAllowed"
+      ]
+    },
+    {
+      "name": "Issue: Method called with too few arguments fails",
+      "transformer": {
+        "result": "#valueOf()"
+      },
+      "expectedIssues": [
+        "MissingRequiredMethodParameter"
+      ]
+    },
+    {
+      "name": "Issue: Method called with too many arguments fails",
+      "transformer": {
+        "result": "#currentDateTime('extra')"
+      },
+      "expectedIssues": [
+        "MethodCallActualParameterCountExceedsFormalParameterCount"
+      ]
+    },
+    {
+      "name": "Issue: Multiple undeclared variables in one expression each produce an issue",
+      "transformer": {
+        "result": "@x + @y"
+      },
+      "expectedIssues": [
+        "AttemptedToUseUndeclaredVariable",
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    }
+  ]
+}

@@ -115,5 +115,20 @@ namespace Jolt.Evaluation
 
             return this;
         }
+
+        public IEvaluationScope CopyWithVariablesAndNoClosures()
+        {
+            var newScope = Empty;
+
+            foreach(var variableLayer in _variables.Reverse())
+            {
+                foreach (var variable in variableLayer)
+                {
+                    newScope.AddOrUpdateVariable(variable, forceApplyToCurrentLayer: true);
+                }
+            }
+
+            return newScope;
+        }
     }
 }

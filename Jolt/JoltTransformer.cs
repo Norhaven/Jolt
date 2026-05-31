@@ -35,16 +35,28 @@ namespace Jolt
                 throw new InvalidOperationException("The source document could not be read as valid JSON, please verify that your source document is valid.");
             }
 
-            var transformedJson = _context.JsonTokenReader.Read(_context.JsonTransformer);
+            var transformer = _context.JsonTokenReader.Read(_context.JsonTransformer);
 
-            if (transformedJson is null)
+            if (transformer is null)
             {
                 throw new InvalidOperationException("The transformer could not be read as valid JSON, please verify that your transformer is valid");
             }
 
-            var transformation = EvaluationToken.From(transformedJson);
+            var transformation = EvaluationToken.From(transformer);
 
             return TransformToken(transformation, EvaluationScope.Empty.CreateClosureOver(source))?.ToString();
+        }
+
+        public IEnumerable<ValidationIssue> Validate()
+        {
+            var transformer = _context.JsonTokenReader.Read(_context.JsonTransformer);
+
+            if (transformer is null)
+            {
+                throw new InvalidOperationException("The transformer could not be read as valid JSON, please verify that your transformer is valid");
+            }
+
+            return new JoltTransformerValidator<TContext>(_context).Validate(transformer);
         }
 
         private IJsonToken? TransformToken(EvaluationToken token, IEvaluationScope scope)
@@ -113,8 +125,8 @@ namespace Jolt
 
                         if (!_context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracketOrLogicalNot(transformerPropertyValue))
                         {
-                            // All transformable expressions need to be rooted in a method call, parenthesized expression,
-                            // or a range variable otherwise we may transform things that the user intended to be literal values.
+                            // All transformable expressions need to be rooted in a method call, parenthesized expression, array literal,
+                            // range variable, or logical NOT operator otherwise we may transform things that the user intended to be literal values.
 
                             continue;
                         }

@@ -109,6 +109,10 @@ namespace Jolt.Testing
 
             public const string First = "first";
             public const string Second = "second";
+
+            public const string SourceVariableX = "sourceVariableX";
+            public const string SourcePathValue = "sourcePathValue";
+            public const string IndirectValue = "indirectValue";
         }
 
         public static class SourceDocument
@@ -122,6 +126,7 @@ namespace Jolt.Testing
             public const string PipedMethods = "PipedMethodsDocument";
             public const string ExternalMethods = "ExternalMethodsDocument";
             public const string Lambdas = "LambdasDocument";
+            public const string PartialReferenceDocument = "PartialReferenceDocument";
         }
 
         public static class Transformer
@@ -139,6 +144,8 @@ namespace Jolt.Testing
             public const string RangeVariables = "RangeVariables";
             public const string Lambdas = "Lambdas";
             public const string UsingBlock = "UsingBlock";
+            public const string PartialTransformer = "PartialTransformer";
+            public const string PartialTransformerReference = "PartialTransformerReference";
         }
 
         protected void Execute(EndToEndTest test)

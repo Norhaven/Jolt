@@ -52,6 +52,8 @@ namespace Jolt.Json.DotNet
 
         public Nodes.JsonNode? UnderlyingNode => _token;
 
+        public string FullPath => _token?.GetPath() ?? string.Empty;
+
         public JsonToken(Nodes.JsonNode? token)
         {
             _token = token;

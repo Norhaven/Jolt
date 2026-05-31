@@ -53,6 +53,11 @@ namespace Jolt
         MethodRegistration[] MethodRegistrations { get; }
 
         /// <summary>
+        /// External transformer registrations. These are user-defined and can be invoked during the transformation process by referencing their name.
+        /// </summary>
+        TransformerRegistration[] TransformerRegistrations { get; }
+
+        /// <summary>
         /// Maintains all method registrations in order to allow easier lookup of method signatures during evaluation. 
         /// </summary>
         IMethodReferenceResolver ReferenceResolver { get; }
@@ -71,6 +76,20 @@ namespace Jolt
         /// An instance that will be used to invoke any external instance methods that have been registered and called from the transformer.
         /// </summary>
         object? MethodContext { get; }
+
+        /// <summary>
+        /// Registers a single partial transformer that may be used during the transformation process.
+        /// </summary>
+        /// <param name="registration">The partial transformer registration.</param>
+        /// <returns>An instance of <see cref="IJsonContext"/> with the registration applied to it.</returns>
+        IJsonContext RegisterTransformer(TransformerRegistration registration);
+
+        /// <summary>
+        /// Registers a series of partial transformers that may be used during the transformation process.
+        /// </summary>
+        /// <param name="registrations">The partial transformer registrations.</param>
+        /// <returns>An instance of <see cref="IJsonContext"/> with the registrations applied to it.</returns>
+        IJsonContext RegisterAllTransformers(IEnumerable<TransformerRegistration> registrations);
 
         /// <summary>
         /// Registers a single external method for use.

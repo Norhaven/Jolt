@@ -9,11 +9,27 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Jolt.Testing.Resources.Extensions;
+using Jolt.Testing.Resources;
 
 namespace Jolt.Testing.Harness.DotNet
 {
     public sealed class TransformationTests : TransformerTests
     {
+        [TransformerTest(Transformer.PartialTransformerReference, SourceDocument.PartialReferenceDocument, typeof(TestContext), TestType.DotNet)]
+        public void PartialTransformerReference_IsSuccessful(TransformerTest test)
+        {
+            var json = ExecuteTest(test, partialTransformerNames: Transformer.PartialTransformer);
+
+            json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
+
+            var reference = json["transformerReference"] as IJsonObject;
+            
+            reference.Should().NotBeNull("because the transformer should have been included and executed successfully");
+            reference.PropertyValueFor<int>(TargetProperty.SourceVariableX).Should().Be(1, "because that is the value in the original transformer");
+            reference.PropertyValueFor<string>(TargetProperty.SourcePathValue).Should().Be("test.source.path", "because that is the value at the source path in the selected document sub-path");
+            reference.PropertyValueFor<string>(TargetProperty.IndirectValue).Should().Be("1", "because that is the string value of the original numeric variable in the context of the partial transformer");
+        }
+
         [TransformerTest(Transformer.ArrayLiterals, SourceDocument.SingleLevel, typeof(TestContext), TestType.DotNet)]
         public void ArrayLiteral_IsSuccessful_AtSingleLevel(TransformerTest test)
         {

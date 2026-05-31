@@ -83,7 +83,7 @@ namespace Jolt.Parsing.Parsers
             methodCall = default;
 
             if (!_reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.StartOfMethodCall ||
-                                                    x.Category == ExpressionTokenCategory.StartOfPipedMethodCall))
+                                                     x.Category == ExpressionTokenCategory.StartOfPipedMethodCall))
             {
                 return false;
             }

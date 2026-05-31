@@ -29,5 +29,10 @@ namespace Jolt.Evaluation
             ParentRangeVariable = parentRangeVariable;
             IsWithinStatementBlock = isWithinStatementBlock;
         }
+
+        public EvaluationToken(EvaluationToken token, IJsonToken currentTransformerToken, SourceToken? currentSource = null)
+            : this(token.PropertyName, token.ResolvedPropertyName, token.ParentToken, currentTransformerToken, currentSource, token.IsPendingValueEvaluation, token.ParentRangeVariable, token.IsWithinStatementBlock)
+        {
+        }
     }
 }

@@ -24,6 +24,7 @@ namespace Jolt.Testing.Resources
 
         public static string ReadDocument(string fileName) => ReadTestFile($"Documents.{fileName}");
         public static string ReadTransformer(string fileName) => ReadTestFile($"Transformers.{fileName}");
+        public static string ReadValidations(string fileName) => ReadTestFile($"Validations.{fileName}");
 
         public static string ReadTestFile(string fileName) => GetByName($"Jolt.Testing.Resources.TestFiles.{fileName}.json");
     }

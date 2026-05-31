@@ -62,6 +62,8 @@ namespace Jolt.Json.Newtonsoft
 
         public JToken UnderlyingNode => _token;
 
+        public string FullPath => _token?.Path ?? string.Empty;
+
         public JsonToken(JToken? token)
         {
             _token = token;

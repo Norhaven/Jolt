@@ -12,12 +12,12 @@ namespace Jolt.Testing.Harness
 {
     public abstract class TransformerTests : TestContainer
     {
-        protected IJsonObject ExecuteTest(TransformerTest test, Func<IJsonContext, IJsonContext> configureContext = default, [CallerMemberName] string testMethodName = default)
+        protected IJsonObject ExecuteTest(TransformerTest test, Func<IJsonContext, IJsonContext> configureContext = default, [CallerMemberName] string testMethodName = default, params string[] partialTransformerNames)
         {
-            return ExecuteTestIfPossible(test, configureContext, testMethodName);
+            return ExecuteTestIfPossible(test, configureContext, testMethodName, partialTransformerNames);
         }
 
-        private IJsonObject ExecuteTestIfPossible(TransformerTest test, Func<IJsonContext, IJsonContext> configureContext, string testMethodName)
+        private IJsonObject ExecuteTestIfPossible(TransformerTest test, Func<IJsonContext, IJsonContext> configureContext, string testMethodName, string[] partialTransformerNames)
         {
             var method = GetType().GetMethod(testMethodName);
 
@@ -33,6 +33,15 @@ namespace Jolt.Testing.Harness
             context = context
                 .UseTransformer(test.Transformer)
                 .RegisterAllMethodsFrom(test.ExternalMethodsType);
+            
+            if (partialTransformerNames != null)
+            {
+                foreach (var partialTransformerName in partialTransformerNames)
+                {
+                    var partialTransformer = TestResource.ReadTransformer(partialTransformerName);
+                    context = context.RegisterTransformer(new TransformerRegistration(partialTransformerName, partialTransformer));
+                }
+            }
 
             var type = test.ExternalMethodsType;
 

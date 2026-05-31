@@ -28,6 +28,8 @@ namespace Jolt
 
         public MethodRegistration[] MethodRegistrations { get; private set; } = Array.Empty<MethodRegistration>();
 
+        public TransformerRegistration[] TransformerRegistrations { get; private set; } = Array.Empty<TransformerRegistration>();
+
         public IMethodReferenceResolver ReferenceResolver { get; }
 
         public IMessageProvider MessageProvider { get; }
@@ -57,6 +59,30 @@ namespace Jolt
             MessageProvider = messageProvider;
             ErrorHandler = errorHandler;
             MethodContext = methodContext;
+        }
+
+        public IJsonContext RegisterTransformer(TransformerRegistration registration)
+        {
+            if (registration is null)
+            {
+                return this;
+            }
+
+            TransformerRegistrations = TransformerRegistrations.Concat(new[] { registration }).ToArray();
+
+            return this;
+        }
+
+        public IJsonContext RegisterAllTransformers(IEnumerable<TransformerRegistration> registrations)
+        {
+            if (registrations is null)
+            {
+                return this;
+            }
+
+            TransformerRegistrations = TransformerRegistrations.Concat(registrations).ToArray();
+
+            return this;
         }
 
         public IJsonContext RegisterMethod(MethodRegistration method)
