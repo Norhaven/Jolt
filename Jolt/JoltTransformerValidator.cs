@@ -7,15 +7,28 @@ using System.Collections.Generic;
 
 namespace Jolt
 {
+    /// <summary>
+    /// Represents a way of using static analysis to validate the correctness of a given JSON transformer without needing actual data to transform.
+    /// </summary>
+    /// <typeparam name="TContext">The JSON context used in this validation.</typeparam>
     public sealed class JoltTransformerValidator<TContext> where TContext : IJsonContext
     {
         private readonly TContext _context;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JoltTransformerValidator{TContext}"/> class with the specified JSON context.
+        /// </summary>
+        /// <param name="context">The JSON context used in this validation.</param>
         public JoltTransformerValidator(TContext context)
         {
             _context = context;
         }
 
+        /// <summary>
+        /// Validates the given JSON transformer and returns a sequence of any issues found during validation.
+        /// </summary>
+        /// <param name="jsonTransformer">The JSON transformer.</param>
+        /// <returns>A sequence of validation issues, empty if no issues were found.</returns>
         public IEnumerable<ValidationIssue> Validate(IJsonToken jsonTransformer)
         {
             var rootScope = ValidationScope.Empty;
@@ -34,6 +47,7 @@ namespace Jolt
 
                 // After each property is validated, update the running scope with any sibling-visible
                 // variable it declares so subsequent properties can reference them.
+
                 runningScope = CollectSiblingScope(property, runningScope);
             }
         }
@@ -53,6 +67,7 @@ namespace Jolt
                 {
                     // A standalone range variable on the property name side is a variable declaration
                     // (@varName), not a use — skip the scope check for the name expression itself.
+
                     if (!(nameExpression is RangeVariableExpression))
                     {
                         foreach (var issue in ValidateExpression(nameExpression, EvaluationMode.PropertyName, scope))
@@ -62,6 +77,7 @@ namespace Jolt
                     // Value-generating methods (#foreach, #using, #includeIf, …) own the property value:
                     // they may introduce a child scope for loop or alias variables, and the property value
                     // (template array / statement list / conditional object) must be validated inside that scope.
+
                     if (nameExpression is MethodCallExpression nameMethodCall && nameMethodCall.Signature.IsValueGenerator)
                     {
                         var childScope = BuildChildScope(nameMethodCall, scope);
@@ -79,6 +95,7 @@ namespace Jolt
 
             // For all other cases (plain nested objects/arrays, string expressions, or non-value-generating
             // property names) let ValidateValue recurse into the property value as appropriate.
+
             if (!valueAlreadyHandled && property.Value != null)
             {
                 foreach (var issue in ValidateValue(property.Value, scope))
@@ -86,10 +103,11 @@ namespace Jolt
             }
         }
 
-        // Builds the child scope for a value-generator method call by extracting loop or alias variables
-        // from its parameters.  Covers @x (and optionally @i) from #foreach and @x from #using.
         private static ValidationScope BuildChildScope(MethodCallExpression methodCall, ValidationScope scope)
         {
+            // Builds the child scope for a value-generator method call by extracting loop or alias variables
+            // from its parameters.  Covers @x (and optionally @i) from #foreach and @x from #using.
+
             var names = new List<string>();
 
             foreach (var parameter in methodCall.ParameterValues)
@@ -114,11 +132,13 @@ namespace Jolt
         // Checks whether a property's name declares a sibling-visible variable and, if so, adds it to the
         // scope.  Two cases: a bare @varName declaration, or a value-generator method whose output is
         // assigned to a variable via "into @varName".
+
         private ValidationScope CollectSiblingScope(IJsonProperty property, ValidationScope scope)
         {
             var name = property.PropertyName;
 
             // Fast path: @varName declarations need no parsing — the name IS the variable.
+
             if (name.Length > 1 && name[0] == '@')
                 return scope.With(name);
 
@@ -126,6 +146,7 @@ namespace Jolt
                 return scope;
 
             // Check for "into @varName" on a value-generator method (e.g., #foreach(...) into @temp).
+
             if (TryReadAndParseExpression(property.FullPath, name, EvaluationMode.PropertyName, out var expr, out _)
                 && expr is MethodCallExpression methodCall
                 && methodCall.GeneratedVariable != null)
@@ -237,6 +258,7 @@ namespace Jolt
                     break;
 
                 // IndexOrSliceMethodResultExpression must precede MethodCallExpression since it extends it.
+
                 case IndexOrSliceMethodResultExpression indexOrSlice:
                     foreach (var issue in ValidateMethodCall(indexOrSlice, mode, scope))
                         yield return issue;
@@ -269,6 +291,7 @@ namespace Jolt
 
                 // SlicedVariableExpression and PropertyDereferenceExpression must precede RangeVariableExpression
                 // since they both extend it.
+
                 case SlicedVariableExpression sliced:
                     if (!scope.IsVariableDeclared(sliced.Variable.Name))
                         yield return UndeclaredVariableIssue(sliced.Variable.Name);
@@ -282,25 +305,32 @@ namespace Jolt
                     break;
 
                 // RangeVariablePairExpression also extends RangeVariableExpression; its .Name is the first variable.
+
                 case RangeVariableExpression variable:
                     if (!scope.IsVariableDeclared(variable.Name))
                         yield return UndeclaredVariableIssue(variable.Name);
                     break;
 
                 case EnumerateAsVariableExpression enumerate:
+
                     // The variable is being introduced here, not consumed — only validate the source.
+
                     foreach (var issue in ValidateExpression(enumerate.EnumerationSource, mode, scope))
                         yield return issue;
                     break;
 
                 case VariableAliasExpression alias:
+
                     // The alias variable is being introduced; only the source variable needs to be in scope.
+
                     if (!alias.IsSourceFromPath && alias.SourceVariable != null && !scope.IsVariableDeclared(alias.SourceVariable.Name))
                         yield return UndeclaredVariableIssue(alias.SourceVariable.Name);
                     break;
 
                 case LambdaMethodExpression lambda:
+
                     // Lambda variable is scoped to the body only — create a child scope for it.
+
                     var lambdaScope = scope.With(lambda.Variable.Name);
                     foreach (var issue in ValidateExpression(lambda.Body, mode, lambdaScope))
                         yield return issue;
@@ -325,34 +355,42 @@ namespace Jolt
             var signature = methodCall.Signature;
 
             if (mode == EvaluationMode.PropertyName && !signature.IsAllowedAsPropertyName)
+            {
                 yield return new ValidationIssue(
                     ValidationIssueType.InvalidMethodContext,
                     ExceptionCode.UnableToUseMethodWithinPropertyName,
                     $"Method '{signature.Alias}' is not valid in a property name context.",
                     null,
                     signature.Alias);
+            }
 
             // Statement-only methods are exempt from the property-value check because they legitimately
             // appear in property-value position inside a #using block's statement array.
+
             if (mode == EvaluationMode.PropertyValue && !signature.IsAllowedAsPropertyValue && !signature.IsAllowedAsStatement)
+            {
                 yield return new ValidationIssue(
                     ValidationIssueType.InvalidMethodContext,
                     ExceptionCode.UnableToUseMethodWithinPropertyValue,
                     $"Method '{signature.Alias}' is not valid in a property value context.",
                     null,
                     signature.Alias);
+            }
 
             if (signature.IsUnsafe)
+            {
                 yield return new ValidationIssue(
                     ValidationIssueType.UnsafeMethodUsage,
                     ExceptionCode.UnsafeMethodCallNotAllowed,
                     $"Method '{signature.Alias}' is unsafe. Enable unsafe evaluations via JoltOptions.WithUnsafeAllowed() if this is intentional.",
                     null,
                     signature.Alias);
+            }
 
             // Arity check: mirrors the parameter-counting logic in ExpressionEvaluator.
             // System methods append an EvaluationContext as the final formal parameter; exclude it from
             // the user-visible count. The last user parameter may be variadic (0 or more) or optional.
+
             var formalCount = signature.Parameters.Length;
             var hasEvaluationContext = formalCount > 0 && signature.Parameters[^1].Type == typeof(EvaluationContext);
             var userParamCount = hasEvaluationContext ? formalCount - 1 : formalCount;
@@ -361,12 +399,14 @@ namespace Jolt
             if (userParamCount == 0)
             {
                 if (actualCount > 0)
+                {
                     yield return new ValidationIssue(
                         ValidationIssueType.ArgumentCountMismatch,
                         ExceptionCode.MethodCallActualParameterCountExceedsFormalParameterCount,
                         $"Method '{signature.Alias}' expects no arguments but received {actualCount}.",
                         null,
                         signature.Alias);
+                }
             }
             else
             {
@@ -399,8 +439,12 @@ namespace Jolt
             }
 
             foreach (var parameter in methodCall.ParameterValues)
+            {
                 foreach (var issue in ValidateExpression(parameter, mode, scope))
+                {
                     yield return issue;
+                }
+            }
         }
 
         private static ValidationIssue UndeclaredVariableIssue(string variableName) =>
