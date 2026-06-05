@@ -476,7 +476,7 @@ As a final note, there are a few additional operations that you can take advanta
 You can also use the null-safe path dereferencing operator `?.` in your JSON paths to prevent null reference errors when traversing the source document, as below, which will return null when the property is null instead of throwing an error.
 ```json
 {
-    "@x": "#valueOf($.some.nullableObject.property)",
+    "@x": "#valueOf($.some.nullableObject)",
     "safeDereference": "@x.some.nullableObject?.property"
 }
 ```
