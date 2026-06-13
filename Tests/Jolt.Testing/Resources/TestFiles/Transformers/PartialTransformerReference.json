@@ -1,4 +1,5 @@
 ﻿{
   "@x": 1,
-  "transformerReference": "#transformWith($.subPath, 'PartialTransformer')"
+  "transformerReference": "#transformWith($.subPath, 'PartialTransformer')",
+  "transformerWithParams": "#transformWith($.subPath, 'PartialTransformer', { 'textValue': 'value1', 'integerValue': 2 })"
 }

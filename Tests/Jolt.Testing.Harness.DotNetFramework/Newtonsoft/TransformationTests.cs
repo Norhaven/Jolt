@@ -14,6 +14,30 @@ namespace Jolt.Testing.Harness.DotNetFramework.Newtonsoft
 {
     public sealed class TransformationTests : TransformerTests
     {
+        [TransformerTest(Transformer.PartialTransformerReference, SourceDocument.PartialReferenceDocument, typeof(TestContext), TestType.Newtonsoft)]
+        public void PartialTransformerReference_IsSuccessful(TransformerTest test)
+        {
+            var json = ExecuteTest(test, partialTransformerNames: Transformer.PartialTransformer);
+
+            json.Should().NotBeNull("because a valid document was sent in and used by a valid transformer");
+
+            var reference = json["transformerReference"] as IJsonObject;
+
+            reference.Should().NotBeNull("because the transformer should have been included and executed successfully");
+            reference[TargetProperty.SourceVariableX].Should().BeNull("because the secondary transformer does not have access to its callers variables");
+            reference.PropertyValueFor<string>(TargetProperty.SourcePathValue).Should().Be("test.source.path", "because that is the value at the source path in the selected document sub-path");
+            reference[TargetProperty.IntegerValue].Should().BeNull("because no parameters were provided to the secondary transformer");
+            reference[TargetProperty.TextValue].Should().BeNull("because no parameters were provided to the secondary transformer");
+
+            var transformerWithParams = json["transformerWithParams"] as IJsonObject;
+
+            transformerWithParams.Should().NotBeNull("because the transformer should have been included and executed successfully");
+            transformerWithParams[TargetProperty.SourceVariableX].Should().BeNull("because the secondary transformer does not have access to its callers variables");
+            transformerWithParams.PropertyValueFor<string>(TargetProperty.SourcePathValue).Should().Be("test.source.path", "because that is the value at the source path in the selected document sub-path");
+            transformerWithParams[TargetProperty.IntegerValue].ToTypeOf<int>().Should().Be(2, "because that parameter was provided to the secondary transformer");
+            transformerWithParams[TargetProperty.TextValue].ToTypeOf<string>().Should().Be("value1", "because that parameter was provided to the secondary transformer");
+        }
+
         [TransformerTest(Transformer.ArrayLiterals, SourceDocument.SingleLevel, typeof(TestContext), TestType.Newtonsoft)]
         public void ArrayLiteral_IsSuccessful_AtSingleLevel(TransformerTest test)
         {

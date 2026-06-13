@@ -57,11 +57,5 @@ namespace Jolt.Evaluation
         /// </summary>
         /// <returns>An instance of <see cref="IEvaluationScope"/> with the most recent layer of variables removed.</returns>
         IEvaluationScope RemoveCurrentVariablesLayer();
-
-        /// <summary>
-        /// Creates a copy of the current scope with all variables but no closures. This is used to create a new scope for evaluating a nested expression that should have access to the same variables but not the same closures.
-        /// </summary>
-        /// <returns>An instance of <see cref="IEvaluationScope"/> with all variables but no closures.</returns>
-        IEvaluationScope CopyWithVariablesAndNoClosures();
     }
 }

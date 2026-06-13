@@ -397,7 +397,7 @@ namespace Jolt.Evaluation
             var currentProperty = rangeVariable?.Value;
             var hasDereferenceChain = dereference.DereferenceChain.Length > 0;
 
-            if (rangeVariable?.ProvidesNullSafeAccess == true && hasDereferenceChain && currentProperty is null)
+            if (dereference.Variable.ProvidesNullSafeAccess == true && hasDereferenceChain && currentProperty is null)
             {
                 var missingDereferencePaths = dereference.DereferenceChain.Select(x => x.PropertyName).ToArray();
                 return new DereferencedPath(rangeVariable, null, missingDereferencePaths);
@@ -443,6 +443,10 @@ namespace Jolt.Evaluation
                     }
 
                     return new DereferencedPath(rangeVariable, value);
+                }
+                else if (currentProperty is null)
+                {
+
                 }
                 else
                 {

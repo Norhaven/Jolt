@@ -112,7 +112,8 @@ namespace Jolt.Testing
 
             public const string SourceVariableX = "sourceVariableX";
             public const string SourcePathValue = "sourcePathValue";
-            public const string IndirectValue = "indirectValue";
+            public const string IntegerValue = "integerValue";
+            public const string TextValue = "textValue";
         }
 
         public static class SourceDocument

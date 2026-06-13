@@ -20,7 +20,13 @@ namespace Jolt.Json.Newtonsoft
             {
                 if (_properties.TryGetValue(propertyName, out var token))
                 {
-                    return token;
+                    // The System.Text.Json property retrieval returns a null value in the case of a null JSON value,
+                    // so we will do the same here for consistency.
+
+                    if (token.Type != JsonTokenType.Null)
+                    {
+                        return token;
+                    }
                 }
 
                 return default;

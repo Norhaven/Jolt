@@ -14,7 +14,7 @@ namespace Jolt.Library.StandardLibrary
     {
         [JoltLibraryMethod("transformWith")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? Transform(object? content, object? transformerName, EvaluationContext context)
+        public static IJsonToken? Transform(object? content, object? transformerName, [OptionalParameter(default)] IJsonObject parameters, EvaluationContext context)
         {
             var source = (IJsonToken)context.ResolveValueOf<object?>(content);
             var name = (string)context.ResolveValueOf<string>(transformerName);
@@ -28,7 +28,9 @@ namespace Jolt.Library.StandardLibrary
             var jsonTransformer = context.JsonContext.JsonTokenReader.Read(transformer.Transformer);
 
             var transformationToken = EvaluationToken.From(jsonTransformer);
-            var newScope = context.Scope.CopyWithVariablesAndNoClosures().CreateClosureOver(source);
+            var newScope = EvaluationScope.Empty
+                .AddOrUpdateVariable(new RangeVariable("@params", parameters), forceApplyToCurrentLayer: true)
+                .CreateClosureOver(source);
 
             return context.Transform(transformationToken, newScope);
         }
