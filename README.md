@@ -613,7 +613,7 @@ You'll notice that you don't have to provide an instance type for the instance m
 ```csharp
 var transformer = JoltJsonTransformer.DefaultWith(transformerJson, new[] { staticRegistration, instanceRegistration }, new TransformerMethods());
 ```
-That's it! You can pass in your source JSON document to the `Transform` method call just like before and collect the transformed result.
+That's it! You can pass in your source JSON document to the `transform` method call just like before and collect the transformed result.
 
 ## Transformer Registration
 
