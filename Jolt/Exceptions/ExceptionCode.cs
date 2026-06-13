@@ -97,6 +97,14 @@ namespace Jolt.Exceptions
         ExpectedPipedMethodCallAfterArrowOperatorButFoundDifferentToken,
         [Description("JLT143")]
         ExpectedZeroOrOneEqualitySymbolsInExpressionButFoundMoreThanOne,
+        [Description("JLT144")]
+        UnableToParseObjectLiteralPropertyNameAtPosition,
+        [Description("JLT145")]
+        ObjectLiteralPropertyNameCannotBeNullEmptyOrWhitespaceAtPosition,
+        [Description("JLT146")]
+        ObjectLiteralPropertyNameMustBeStringAtPosition,
+        [Description("JLT147")]
+        UnableToParseObjectLiteralPropertyValueAtPosition,
 
         // Resolution
 

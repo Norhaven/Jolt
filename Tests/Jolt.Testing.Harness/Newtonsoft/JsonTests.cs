@@ -16,5 +16,8 @@ namespace Jolt.Testing.Harness.Newtonsoft
 
         [JsonTest("OperatorsAndVariables", typeof(TestContext), TestType.Newtonsoft)]
         public void OperatorsAndVariables(EndToEndTest test) { Execute(test); }
+
+        [JsonTest("Literals", typeof(TestContext), TestType.Newtonsoft)]
+        public void Literals(EndToEndTest test) { Execute(test); }
     }
 }

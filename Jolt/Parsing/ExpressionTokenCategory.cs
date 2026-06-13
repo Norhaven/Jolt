@@ -69,8 +69,8 @@ namespace Jolt.Parsing
         IndexFromEndOperator,
         [Description("a range variable")]
         RangeVariable,
-        [Description("a lambda function separator")]
-        LambdaSeparator,
+        [Description("a lambda function separator or object literal property separator")]
+        LambdaSeparatorOrObjectLiteralPropertySeparator,
         [Description("a property dereference")]
         PropertyDereference,
         [Description("the 'in' keyword")]
@@ -83,6 +83,10 @@ namespace Jolt.Parsing
         StartOfIndexerOrArrayLiteral,
         [Description("the end of an indexer group or array literal")]
         EndOfIndexerOrArrayLiteral,
+        [Description("the start of an object literal")]
+        StartOfObjectLiteral,
+        [Description("the end of an object literal")]
+        EndOfObjectLiteral,
         [Description("the index-from-end character for a range")]
         RangeEndIndexer,
         [Description("the null coalescing operator")]

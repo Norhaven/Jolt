@@ -54,7 +54,7 @@ namespace Jolt
 
         private IEnumerable<ValidationIssue> ValidateExpressionProperty(IJsonProperty property, ValidationScope scope)
         {
-            var isPropertyNameAnExpression = _context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracketOrLogicalNot(property.PropertyName);
+            var isPropertyNameAnExpression = _context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracketOrOpenCurlyBraceOrLogicalNot(property.PropertyName);
             var valueAlreadyHandled = false;
 
             if (isPropertyNameAnExpression)
@@ -142,7 +142,7 @@ namespace Jolt
             if (name.Length > 1 && name[0] == '@')
                 return scope.With(name);
 
-            if (!_context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracketOrLogicalNot(name))
+            if (!_context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracketOrOpenCurlyBraceOrLogicalNot(name))
                 return scope;
 
             // Check for "into @varName" on a value-generator method (e.g., #foreach(...) into @temp).
@@ -226,7 +226,7 @@ namespace Jolt
                     {
                         var str = value.ToTypeOf<string>();
 
-                        if (str != null && _context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracketOrLogicalNot(str))
+                        if (str != null && _context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracketOrOpenCurlyBraceOrLogicalNot(str))
                         {
                             if (!TryReadAndParseExpression(token.FullPath, str, EvaluationMode.PropertyValue, out var expr, out var issue))
                                 yield return issue!;

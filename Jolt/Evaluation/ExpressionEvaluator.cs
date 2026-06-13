@@ -75,6 +75,7 @@ namespace Jolt.Evaluation
                 BinaryExpression binary => EvaluateBinaryExpression(binary, context),
                 LambdaMethodExpression lambda => EvaluateLambdaExpression(lambda, context),
                 ArrayLiteralExpression array => EvaluateArrayLiteral(array, context),
+                ObjectLiteralExpression obj => EvaluateObjectLiteral(obj, context),
                 LogicalNotExpression not => EvaluateLogicalNotExpression(not, context),
                 _ => default
             };
@@ -104,6 +105,16 @@ namespace Jolt.Evaluation
                                select context.CreateTokenFrom(evaluatedElement);
 
             return context.CreateArrayFrom(jsonElements.ToArray());
+        }
+
+        private object? EvaluateObjectLiteral(ObjectLiteralExpression obj, EvaluationContext context)
+        {
+            var jsonProperties = from property in obj.Properties
+                                 let propertyName = property.PropertyName
+                                 let propertyValue = EvaluateExpression(property.PropertyValue, context)
+                                 select new KeyValuePair<string, IJsonToken>(propertyName, context.CreateTokenFrom(propertyValue));
+
+            return context.CreateTokenFrom(jsonProperties.ToDictionary(x => x.Key, x => x.Value));
         }
 
         private object? UnwrapEnumeration(EnumerateAsVariableExpression enumerate, EvaluationContext context)

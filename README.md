@@ -454,16 +454,24 @@ By default, if an error is encountered during the transformation process then th
 ```
 The `#try` method takes two parameters: the first is the expression to evaluate and the second is a lambda that takes an exception parameter and returns the value to use in the case of an error. In the example above, the `default` property will attempt to convert a string value to an integer and if it fails it will return the value of `$.defaultValue` instead, while the `nullOnError` property will return null in the case of any error.
 
-# Creating Complex Objects
+# Creating Complex Literals
 
-## Array Literals
-
-You can create arrays directly within your transformer by using square brackets `[` and `]` to enclose the array elements, which can be either literal values, range variables, or the results of method calls. For example:
+You can create arrays directly within your transformer by using square brackets `[` and `]` to enclose the array elements, which can be either literal values (including nested object and array literals), range variables, or the results of method calls. For example:
 ```json
 {
-    "array": "[ 1, 'two', null, #valueOf($.some.path) ]"
+    "@x": "#valueOf($.some.path)",
+    "array": "[ 1, 'two', null, @x, #valueOf($.some.path) ]"
 }
 ```
+Creating complex objects directly within the transformer is also possible by using curly braces `{` and `}` to enclose the object properties and values, which can also be literal values (including nested object and array literals), range variables, or method call results. For example:
+```json
+{
+    "@x": "#valueOf($.some.path)",
+    "object": "{ 'integerValue': 5, 'stringValue': 'test', 'booleanValue': true, 'rangeVariable': @x, 'methodCallResult': #valueOf($.some.path) }",
+    "nestedObject": "{ 'nested': { 'array': [ 1, 2, 3 ], 'object': { 'key': @x } } }"
+}
+```
+These features allow you to construct complex JSON structures directly within your transformer without needing to rely on the shape of the input JSON document. These are available anywhere an expression in a property value is supported.
 
 # Additional Operations
 
@@ -559,6 +567,7 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | any | Returns true if the value is an array or string with contents, false otherwise (lambda parameter is optional) | `#any($.some.path)` | Property Value
 | where | Returns an array of objects that match a predicate | `#where($.some.path, @x: @x.other.path > 2)` | Property Value
 | select | Returns an array of objects that are the result of a projection | `#select($.some.path, @x: @x.other.path)` | Property Value
+| transform | Returns an object that is the result of transforming a document sub-path using a standalone transformer | `#transform($.some.path, 'SomeNamedTransformer')` | Property Value
 | using | Assigns a specific path to a range variable and allows statements to operate on it | `"#using($.some.path as @x) into 'result'":[ "#setAt(@x.other.path, 5)" ]` | Property Name
 | removeAt | Removes a JSON node from the provided variable-based path | `#removeAt(@x.some.path)` | Statement
 | setAt | Adds or modifies a JSON node specified with the provided variable-based path | `#setAt(@x.some.path, 5)` | Statement
@@ -605,6 +614,23 @@ You'll notice that you don't have to provide an instance type for the instance m
 var transformer = JoltJsonTransformer.DefaultWith(transformerJson, new[] { staticRegistration, instanceRegistration }, new TransformerMethods());
 ```
 That's it! You can pass in your source JSON document to the `Transform` method call just like before and collect the transformed result.
+
+## Transformer Registration
+
+As you go, you may run into the issue where the transformer is ultimately too complex to reason about in a single file. In that case, you can break it up into multiple transformers and then call them from each other using the `#transform` method. This method takes a path to the sub-document to transform and the name of the transformer to use, which must be registered with the `JoltJsonTransformer` instance. Let's see how we can register a transformer and then call it from another one.
+
+Registration is fairly straightforward, you need a name and the transformer JSON that will be used.
+```csharp
+var registration = new TransformerRegistration("PartialTransformer", partialTransformerJson);
+context.RegisterTransformer(registration);
+```
+And then in your primary transformer, on the property value side you can call `#transform($.some.path, 'PartialTransformer')` to execute the registered transformer against the sub-document at `$.some.path` and return the result as the value of that evaluation.
+
+This is definitely recommended for composability and readability as your transforms grow larger and become unwieldy.
+
+# Validating Your Transformer Syntax
+
+As a final note, transformers may prove difficult to test for correctness without actually obtaining a source document and running through it, which can take time and be specific to a source document. There is a way, however, to get a quick sanity check on your syntax and expression shapes and that's through the `Validate()` method on the `JoltTransformer`. First, you create the `JoltJsonTransformer` instance, using the `IJsonContext` that contains the transformer string you'd like to validate, and then call `Validate()` and iterate through the issues that come back, if any. This will not execute any evaluations against a source document, rather it would identify issues (such as syntax misuse) in how you've constructed your transformer.
 
 # How To Contribute To This Project
 

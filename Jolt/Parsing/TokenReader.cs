@@ -16,7 +16,7 @@ namespace Jolt.Parsing
         {
         }
 
-        public bool StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracketOrLogicalNot(string expression)
+        public bool StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracketOrOpenCurlyBraceOrLogicalNot(string expression)
         {
             if (string.IsNullOrWhiteSpace(expression))
             {
@@ -39,6 +39,7 @@ namespace Jolt.Parsing
                    stream.CurrentToken == ExpressionToken.OpenParentheses ||
                    stream.CurrentToken == ExpressionToken.At ||
                    stream.CurrentToken == ExpressionToken.OpenSquareBracket ||
+                   stream.CurrentToken == ExpressionToken.OpenCurlyBrace ||
                    stream.CurrentToken == ExpressionToken.Not;
         }
 
@@ -175,6 +176,20 @@ namespace Jolt.Parsing
                 }
                 
                 yield return TokenFromCurrent(stream, ExpressionTokenCategory.EndOfIndexerOrArrayLiteral);
+            }
+            else if (stream.CurrentToken == ExpressionToken.OpenCurlyBrace)
+            {
+                yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfObjectLiteral);
+
+                while (stream.CurrentToken != ExpressionToken.CloseCurlyBrace)
+                {
+                    foreach(var token in ReadTokenFrom(stream, mode))
+                    {
+                        yield return token;
+                    }
+                }
+                
+                yield return TokenFromCurrent(stream, ExpressionTokenCategory.EndOfObjectLiteral);
             }
             else if (stream.CurrentToken == ExpressionToken.ArrowBody || stream.CurrentToken == ExpressionToken.Minus)
             {
@@ -363,7 +378,7 @@ namespace Jolt.Parsing
             }
             else if (stream.CurrentToken == ExpressionToken.Colon)
             {
-                yield return TokenFromCurrent(stream, ExpressionTokenCategory.LambdaSeparator);
+                yield return TokenFromCurrent(stream, ExpressionTokenCategory.LambdaSeparatorOrObjectLiteralPropertySeparator);
             }
             else if (stream.CurrentToken == ExpressionToken.Comma)
             {

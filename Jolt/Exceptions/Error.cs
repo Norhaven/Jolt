@@ -54,6 +54,10 @@ namespace Jolt.Exceptions
             [ExceptionCode.ExpectedNamedPropertyOrRangeVariableButFoundUnexpectedToken] = "Expected a named property or range variable but found '{0}' instead",
             [ExceptionCode.ExpectedPipedMethodCallAfterArrowOperatorButFoundDifferentToken] = "Expected piped method call after '->' operator but found token '{0}' instead",
             [ExceptionCode.ExpectedZeroOrOneEqualitySymbolsInExpressionButFoundMoreThanOne] = "Expected zero or one equality operators in expression but found '{0}' instead",
+            [ExceptionCode.UnableToParseObjectLiteralPropertyNameAtPosition] = "Unable to parse object literal property name at position '{0}'",
+            [ExceptionCode.ObjectLiteralPropertyNameMustBeStringAtPosition] = "Object literal property name must be a string at position '{0}'",
+            [ExceptionCode.ObjectLiteralPropertyNameCannotBeNullEmptyOrWhitespaceAtPosition] = "Object literal property name cannot be null, empty, or whitespace at position '{0}'",
+            [ExceptionCode.UnableToParseObjectLiteralPropertyValueAtPosition] = "Unable to parse object literal property value at position '{0}'"
         };
 
         private static readonly Dictionary<ExceptionCode, string> _resolutionErrorsByCode = new Dictionary<ExceptionCode, string>

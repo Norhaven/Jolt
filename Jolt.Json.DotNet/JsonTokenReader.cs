@@ -1,4 +1,5 @@
-﻿using Jolt.Exceptions;
+﻿using Jolt.Evaluation;
+using Jolt.Exceptions;
 using Jolt.Structure;
 using System;
 using System.Collections.Generic;
@@ -110,7 +111,25 @@ namespace Jolt.Json.DotNet
             {
                 return JsonValue.Parse(d.ToString());
             }
-            
+            else if (value is Dictionary<string, IJsonToken> dictionary)
+            {
+                var obj = new Nodes.JsonObject();
+
+                foreach (var pair in dictionary)
+                {
+                    if (pair.Value is JsonToken propertyToken)
+                    {
+                        obj[pair.Key] = propertyToken.UnderlyingNode?.DeepClone();
+                    }
+                }
+
+                return JsonToken.FromObject(obj);
+            }
+            else if (value is RangeVariable variable)
+            {
+                return variable.Value;
+            }
+
             return JsonToken.FromObject(JsonSerializer.SerializeToNode(value));
         }
 

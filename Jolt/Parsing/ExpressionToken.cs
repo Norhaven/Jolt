@@ -41,6 +41,8 @@ namespace Jolt.Parsing
         public const string NullLiteral = null;
         public const char And = '&';
         public const char Or = '|';
+        public const char OpenCurlyBrace = '{';
+        public const char CloseCurlyBrace = '}';
 
         public string Value { get; }
         public ExpressionTokenCategory Category { get; }

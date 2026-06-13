@@ -33,6 +33,7 @@ namespace Jolt.Parsing
                 new RangeExpressionParser(reader, atomParser),
                 new RangeVariableExpressionParser(reader, atomParser),
                 new ArrayLiteralExpressionParser(reader, atomParser),
+                new ObjectLiteralExpressionParser(reader, atomParser),
                 new LiteralExpressionParser(reader, atomParser)
             };
 

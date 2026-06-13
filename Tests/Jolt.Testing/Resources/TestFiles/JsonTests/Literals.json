@@ -1,0 +1,86 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "possibleExceptionCodes": {
+    "invalidMethodUseInPropertyName": "UnableToUseMethodWithinPropertyName",
+    "lambdaUsedForNonDelegate": "UnableToUseLambdaAsArgumentForNonDelegateParameter",
+    "nonLambdaUsedForDelegate": "DelegateParameterRequiresLambdaArgument",
+    "unableToConvertArrayToType": "UnableToConvertJsonArrayToRequiredParameterType"
+  },
+  "testGroups": [
+    {
+      "name": "Correctly defined object literals with primitive values accessed through literals and variables",
+      "source": {
+        "one": 1,
+        "two": "2",
+        "three": true
+      },
+      "tests": [
+        {
+          "name": "New object literal can be defined using only literal values",
+          "transformer": {
+            "instance": "{ 'integerValue': 5, 'stringValue': 'test', 'booleanValue': true }"
+          },
+          "result": {
+            "instance": {
+              "integerValue": 5,
+              "stringValue": "test",
+              "booleanValue": true
+            }
+          }
+        },
+        {
+          "name": "New object literal can be defined using only variables",
+          "transformer": {
+            "@integerValue": "#valueOf($.one)",
+            "@stringValue": "#valueOf($.two)",
+            "@booleanValue": "#valueOf($.three)",
+            "instance": "{ 'integerValue': @integerValue, 'stringValue': @stringValue, 'booleanValue': @booleanValue }"
+          },
+          "result": {
+            "instance": {
+              "integerValue": 1,
+              "stringValue": "2",
+              "booleanValue": true
+            }
+          }
+        },
+        {
+          "name": "New object literal can be defined with nested object literals",
+          "transformer": {
+            "@integerValue": "#valueOf($.one)",
+            "@stringValue": "#valueOf($.two)",
+            "@booleanValue": "#valueOf($.three)",
+            "instance": "{ 'nestedObject': { 'integerValue': @integerValue, 'stringValue': @stringValue, 'booleanValue': @booleanValue } }"
+          },
+          "result": {
+            "instance": {
+              "nestedObject": {
+                "integerValue": 1,
+                "stringValue": "2",
+                "booleanValue": true
+              }
+            }
+          }
+        },
+        {
+          "name": "New object literal can be defined with nested array literals",
+          "transformer": {
+            "@integerValue": "#valueOf($.one)",
+            "@stringValue": "#valueOf($.two)",
+            "@booleanValue": "#valueOf($.three)",
+            "instance": "{ 'nestedArray': [ @integerValue, @stringValue, @booleanValue ] }"
+          },
+          "result": {
+            "instance": {
+              "nestedArray": [
+                1,
+                "2",
+                true
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

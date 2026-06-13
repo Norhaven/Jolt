@@ -77,7 +77,7 @@ namespace Jolt.Parsing.Parsers
 
                 return true;
             }
-            else if (_reader.CurrentToken?.Category == ExpressionTokenCategory.LambdaSeparator)
+            else if (_reader.CurrentToken?.Category == ExpressionTokenCategory.LambdaSeparatorOrObjectLiteralPropertySeparator)
             {
                 _reader.ConsumeCurrent();
 

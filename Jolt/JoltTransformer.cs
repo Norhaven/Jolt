@@ -77,7 +77,7 @@ namespace Jolt
                     // introducing cycles and evaluating the name again.
 
                     if (!current.IsPendingValueEvaluation &&
-                        _context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracketOrLogicalNot(current.PropertyName) &&
+                        _context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracketOrOpenCurlyBraceOrLogicalNot(current.PropertyName) &&
                         !scope.TryGetVariable(current.PropertyName, out var _))
                     {
                         var result = TransformExpression(current, current.PropertyName, EvaluationMode.PropertyName, scope);
@@ -123,7 +123,7 @@ namespace Jolt
                     {
                         var transformerPropertyValue = value.ToTypeOf<string>();
 
-                        if (!_context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracketOrLogicalNot(transformerPropertyValue))
+                        if (!_context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracketOrOpenCurlyBraceOrLogicalNot(transformerPropertyValue))
                         {
                             // All transformable expressions need to be rooted in a method call, parenthesized expression, array literal,
                             // range variable, or logical NOT operator otherwise we may transform things that the user intended to be literal values.

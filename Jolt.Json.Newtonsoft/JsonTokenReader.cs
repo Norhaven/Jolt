@@ -1,4 +1,5 @@
-﻿using Jolt.Exceptions;
+﻿using Jolt.Evaluation;
+using Jolt.Exceptions;
 using Jolt.Structure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -100,7 +101,25 @@ namespace Jolt.Json.Newtonsoft
             {
                 return CreateArrayFrom(sequence);
             }
-            
+            else if (value is Dictionary<string, IJsonToken> dictionary)
+            {
+                var obj = new JObject();
+
+                foreach(var pair in dictionary)
+                {
+                    if (pair.Value is JsonToken propertyToken)
+                    {
+                        obj[pair.Key] = propertyToken.UnderlyingNode?.DeepClone();
+                    }
+                }
+
+                return JsonToken.FromObject(obj);
+            }
+            else if (value is RangeVariable variable)
+            {
+                return variable.Value;
+            }
+
             return JsonToken.FromObject(JToken.FromObject(value));
         }
 

@@ -27,6 +27,7 @@
     <EmbeddedResource Include="Resources\TestFiles\Documents\PartialReferenceDocument.json" />
     <EmbeddedResource Include="Resources\TestFiles\Documents\PipedMethodsDocument.json" />
     <EmbeddedResource Include="Resources\TestFiles\Documents\SingleLevelDocument.json" />
+    <EmbeddedResource Include="Resources\TestFiles\JsonTests\Literals.json" />
     <EmbeddedResource Include="Resources\TestFiles\JsonTests\ExternalMethods.json" />
     <EmbeddedResource Include="Resources\TestFiles\JsonTests\IndexingWithVariables.json" />
     <EmbeddedResource Include="Resources\TestFiles\JsonTests\JsonTest.schema.json" />
