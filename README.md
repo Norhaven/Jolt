@@ -640,6 +640,13 @@ And the referenced transformer could access the `format` property from the `@par
 ```
 This is definitely recommended for composability and readability as your transforms grow larger and become unwieldy.
 
+Also, a recommended pattern that's possible using these referenced transformers is to use the `#merge` method to enrich the results of the referenced transformer with additional properties from the primary transformer. This allows you to keep your transformers focused and reusable while still being able to add context-specific information as needed. For example:
+```json
+{
+    "enrichedResult": "#merge(#transform($.some.path, 'PartialTransformer'), { 'source': 'local', 'processedAt': #currentDateTimeUtc() })"
+}
+```
+
 # Validating Your Transformer Syntax
 
 As a final note, transformers may prove difficult to test for correctness without actually obtaining a source document and running through it, which can take time and be specific to a source document. There is a way, however, to get a quick sanity check on your syntax and expression shapes and that's through the `Validate()` method on the `JoltTransformer`. First, you create the `JoltJsonTransformer` instance, using the `IJsonContext` that contains the transformer string you'd like to validate, and then call `Validate()` and iterate through the issues that come back, if any. This will not execute any evaluations against a source document and so you won't get errors (such as an incorrect variable value) that would appear at runtime, rather it would identify issues (such as syntax misuse) in how you've constructed your transformer. It will also verify that any calls to `#transform` will resolve to registered transformers.
