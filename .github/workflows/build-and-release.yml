@@ -66,6 +66,10 @@ jobs:
     - name: .NET Cross-platform Package Restore
       run: dotnet restore Jolt.sln
 
+    # Restore packages
+    - name: .NET Windows-specific Package Restore
+      run: dotnet restore Jolt.DotNetFramework.Tests.slnx
+      
     # Build projects
     # NOTE: The .NET Framework step is required to directly use msbuild due to its age, dotnet build doesn't support it well.
     - name: .NET Framework Build
