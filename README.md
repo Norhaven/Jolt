@@ -582,6 +582,7 @@ Also, here is a small table of how Jolt regards levels of operator precedence fo
 | Operator | Description | Level
 | -------- | ----------- | -----
 | Null Coalescing | `??` | 0
+| Logical Not (Unary) | `!` | 0
 | Logical Or | `||` | 1
 | Logical And | `&&` | 2
 | Equals | `==` | 3
