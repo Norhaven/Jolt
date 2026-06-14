@@ -639,12 +639,22 @@ And the referenced transformer could access the `format` property from the `@par
     "date": "#formatDateTime($.some.date, @params.format)"
 }
 ```
-This is definitely recommended for composability and readability as your transforms grow larger and become unwieldy.
+This is definitely recommended for composability and readability as your transforms grow larger and become unwieldy. And don't worry about `@params` being null when no parameter object is provided, it will default to an empty JSON object. It's also local to the transformer execution and only exists for the lifetime of that execution.
 
 Also, a recommended pattern that's possible using these referenced transformers is to use the `#merge` method to enrich the results of the referenced transformer with additional properties from the primary transformer. This allows you to keep your transformers focused and reusable while still being able to add context-specific information as needed. For example:
 ```json
 {
     "enrichedResult": "#merge(#transform($.some.path, 'PartialTransformer'), { 'source': 'local', 'processedAt': #currentDateTimeUtc() })"
+}
+```
+Here's a final pattern that may prove useful. Last example and we'll move on!
+```json
+{
+    "#foreach(@x in $.order.items) into 'lineItems'": [
+        {
+            "item": "#transform(@x, 'LineItemTransformer', { 'currency': #valueOf($.order.currency) })"
+        }
+    ]
 }
 ```
 

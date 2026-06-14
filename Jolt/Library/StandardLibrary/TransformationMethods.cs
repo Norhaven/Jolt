@@ -29,7 +29,7 @@ namespace Jolt.Library.StandardLibrary
 
             var transformationToken = EvaluationToken.From(jsonTransformer);
             var newScope = EvaluationScope.Empty
-                .AddOrUpdateVariable(new RangeVariable("@params", parameters), forceApplyToCurrentLayer: true)
+                .AddOrUpdateVariable(new RangeVariable("@params", parameters ?? context.JsonContext.JsonTokenReader.Read("{}")), forceApplyToCurrentLayer: true)
                 .CreateClosureOver(source);
 
             return context.Transform(transformationToken, newScope);

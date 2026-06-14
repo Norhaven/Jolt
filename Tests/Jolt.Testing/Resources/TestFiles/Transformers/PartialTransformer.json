@@ -1,6 +1,6 @@
 ﻿{
   "sourceVariableX": "@x",
   "sourcePathValue": "#valueOf($.sourcePath)",
-  "integerValue": "@params?.integerValue",
-  "textValue": "@params?.textValue"
+  "integerValue": "@params.integerValue",
+  "textValue": "@params.textValue"
 }
