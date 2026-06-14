@@ -484,8 +484,8 @@ As a final note, there are a few additional operations that you can take advanta
 You can also use the null-safe path dereferencing operator `?.` in your JSON paths to prevent null reference errors when traversing the source document, as below, which will return null when the property is null instead of throwing an error.
 ```json
 {
-    "@x": "#valueOf($.some.nullableObject.property)",
-    "safeDereference": "@x.some.nullableObject?.property"
+    "@x": "#valueOf($.some)",
+    "safeDereference": "@x.nullableObject?.property"
 }
 ```
 
@@ -573,7 +573,7 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | setAt | Adds or modifies a JSON node specified with the provided variable-based path | `#setAt(@x.some.path, 5)` | Statement
 | when | Conditionally executes a statement based on a boolean expression | `#when(#exists(@x.integerArray), #removeAt(@x.integerArray))` | Statement
 
-<h6>* The `eval` method is considered unsafe because it can execute any expression, including ones that may have unwanted side effects or security implications. It should be used with caution and only with trusted input. In order to enable unsafe method usage, the `JoltOptions` instance that can be passed into your JoltJsonTransformer has a method called `WithUnsafeAllowed` that will enable this. Use with caution!</h6>
+<h6>* The #eval method is considered unsafe because it can execute any expression, including ones that may have unwanted side effects or security implications. It should be used with caution and only with trusted input. In order to enable unsafe method usage, the JoltOptions instance that can be passed into your JoltJsonTransformer has a method called WithUnsafeAllowed that will enable this. Use with caution!</h6>
 
 # Operator Precedence
 
@@ -583,7 +583,7 @@ Also, here is a small table of how Jolt regards levels of operator precedence fo
 | -------- | ----------- | -----
 | Null Coalescing | `??` | 0
 | Logical Not (Unary) | `!` | 0
-| Logical Or | `||` | 1
+| Logical Or | `\|\|` | 1
 | Logical And | `&&` | 2
 | Equals | `==` | 3
 | Not Equals | `!=` | 3
