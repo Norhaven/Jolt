@@ -642,7 +642,9 @@ This is definitely recommended for composability and readability as your transfo
 
 # Validating Your Transformer Syntax
 
-As a final note, transformers may prove difficult to test for correctness without actually obtaining a source document and running through it, which can take time and be specific to a source document. There is a way, however, to get a quick sanity check on your syntax and expression shapes and that's through the `Validate()` method on the `JoltTransformer`. First, you create the `JoltJsonTransformer` instance, using the `IJsonContext` that contains the transformer string you'd like to validate, and then call `Validate()` and iterate through the issues that come back, if any. This will not execute any evaluations against a source document, rather it would identify issues (such as syntax misuse) in how you've constructed your transformer.
+As a final note, transformers may prove difficult to test for correctness without actually obtaining a source document and running through it, which can take time and be specific to a source document. There is a way, however, to get a quick sanity check on your syntax and expression shapes and that's through the `Validate()` method on the `JoltTransformer`. First, you create the `JoltJsonTransformer` instance, using the `IJsonContext` that contains the transformer string you'd like to validate, and then call `Validate()` and iterate through the issues that come back, if any. This will not execute any evaluations against a source document, rather it would identify issues (such as syntax misuse) in how you've constructed your transformer. It will also verify that any calls to `#transform` will resolve to registered transformers.
+
+Issues will be returned as instances of `Jolt.Structure.ValidationIssue` and will contain information about the issue that was found, such as the type of issue, a message describing the issue, and the path to the part of the transformer where the issue was found. This can be a great way to catch mistakes early on in development before you even have a source document to test against.
 
 # How To Contribute To This Project
 
