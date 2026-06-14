@@ -626,7 +626,7 @@ context.RegisterTransformer(registration);
 ```
 And then in your primary transformer, on the property value side you can call `#transform($.some.path, 'PartialTransformer')` to execute the registered transformer against the sub-document at `$.some.path` and return the result as the value of that evaluation.
 
-The referenced transformer can also receive a JSON object as parameters through the `#transform` method, which will store the object in an implicitly created variable called `@params` and allow access to the properties from there. This allows you to create more dynamic and reusable transformers that can be configured at runtime with different parameters. For example, you could have a transformer that formats a date according to a provided format string, and then call it with different format strings as needed. Here's an example using the object literal syntax.
+Variables from the primary transformer will not be available in the referenced transformer, although it can receive a JSON object as parameters through the `#transform` method, which will store the object in an implicitly created variable called `@params` and allow access to the properties from there. This allows you to create more dynamic and reusable transformers that can be configured at runtime with different parameters. For example, you could have a transformer that formats a date according to a provided format string, and then call it with different format strings as needed. Here's an example using the object literal syntax.
 ```json
 {
     "formattedDate": "#transform($.date, 'DateFormatter', { 'format': 'MM/dd/yyyy' })"
