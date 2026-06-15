@@ -11,8 +11,10 @@
 
   <ItemGroup>
     <None Remove="Resources\TestFiles\Documents\PartialReferenceDocument.json" />
+    <None Remove="Resources\TestFiles\Documents\StreamingDocument.json" />
     <None Remove="Resources\TestFiles\Transformers\PartialTransformer.json" />
     <None Remove="Resources\TestFiles\Transformers\PartialTransformerReference.json" />
+    <None Remove="Resources\TestFiles\Transformers\StreamingTransformer.json" />
     <None Remove="Resources\TestFiles\Validations\Validations.json" />
   </ItemGroup>
 
@@ -27,6 +29,7 @@
     <EmbeddedResource Include="Resources\TestFiles\Documents\PartialReferenceDocument.json" />
     <EmbeddedResource Include="Resources\TestFiles\Documents\PipedMethodsDocument.json" />
     <EmbeddedResource Include="Resources\TestFiles\Documents\SingleLevelDocument.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Documents\StreamingDocument.json" />
     <EmbeddedResource Include="Resources\TestFiles\JsonTests\Literals.json" />
     <EmbeddedResource Include="Resources\TestFiles\JsonTests\ExternalMethods.json" />
     <EmbeddedResource Include="Resources\TestFiles\JsonTests\IndexingWithVariables.json" />
@@ -47,6 +50,7 @@
     <EmbeddedResource Include="Resources\TestFiles\Transformers\PipedMethods.json" />
     <EmbeddedResource Include="Resources\TestFiles\Transformers\RangeVariables.json" />
     <EmbeddedResource Include="Resources\TestFiles\Transformers\SingleLevelValueOf.json" />
+    <EmbeddedResource Include="Resources\TestFiles\Transformers\StreamingTransformer.json" />
     <EmbeddedResource Include="Resources\TestFiles\Transformers\UsingBlock.json" />
     <EmbeddedResource Include="Resources\TestFiles\Validations\Validations.json" />
   </ItemGroup>

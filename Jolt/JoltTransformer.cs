@@ -8,9 +8,12 @@ using Jolt.Structure;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Jolt
 {
@@ -45,6 +48,108 @@ namespace Jolt
             var transformation = EvaluationToken.From(transformer);
 
             return TransformToken(transformation, EvaluationScope.Empty.CreateClosureOver(source))?.ToString();
+        }
+
+        public void Transform(Stream input, Stream output)
+        {
+            using var reader = new StreamReader(input);
+            using var writer = new StreamWriter(output, Encoding.UTF8, bufferSize: 1024, leaveOpen: true);
+
+            while (!reader.EndOfStream)
+            {
+                var line = reader.ReadLine();
+
+                if (line is null)
+                {
+                    continue;
+                }
+
+                var transformed = Transform(line);
+
+                if (transformed is null)
+                {
+                    continue;
+                }
+
+                writer.WriteLine(transformed);
+            }
+        }
+
+        public void Transform(TextReader input, TextWriter output)
+        {
+            while (input.Peek() != -1)
+            {
+                var line = input.ReadLine();
+
+                if (line is null)
+                {
+                    continue;
+                }
+
+                var transformed = Transform(line);
+
+                if (transformed is null)
+                {
+                    continue;
+                }
+
+                output.WriteLine(transformed);
+            }
+        }
+
+        public async Task TransformAsync(Stream input, Stream output, CancellationToken? cancellationToken = default)
+        {
+            cancellationToken = cancellationToken ?? CancellationToken.None;
+
+            using var reader = new StreamReader(input);
+            using var writer = new StreamWriter(output, Encoding.UTF8, bufferSize: 1024, leaveOpen: true);
+
+            var currentLine = await reader.ReadLineAsync();
+
+            while(currentLine != null)
+            {
+                var transformed = Transform(currentLine);
+
+                if (transformed is null)
+                {
+                    continue;
+                }
+
+                await writer.WriteLineAsync(transformed);
+                
+                if (cancellationToken.Value.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                currentLine = await reader.ReadLineAsync();
+            }
+        }
+
+        public async Task TransformAsync(TextReader input, TextWriter output, CancellationToken? cancellationToken = default)
+        {
+            cancellationToken = cancellationToken ?? CancellationToken.None;
+
+            var currentLine = await input.ReadLineAsync();
+
+            while (currentLine != null)
+            {
+                var transformed = Transform(currentLine);
+
+                if (transformed is null)
+                {
+                    continue;
+                }
+
+                await output.WriteLineAsync(transformed);
+
+                if (cancellationToken.Value.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                currentLine = await input.ReadLineAsync();
+            }
         }
 
         public IEnumerable<ValidationIssue> Validate()

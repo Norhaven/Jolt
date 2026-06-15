@@ -128,6 +128,7 @@ namespace Jolt.Testing
             public const string ExternalMethods = "ExternalMethodsDocument";
             public const string Lambdas = "LambdasDocument";
             public const string PartialReferenceDocument = "PartialReferenceDocument";
+            public const string StreamingDocument = "StreamingDocument";
         }
 
         public static class Transformer
@@ -147,6 +148,7 @@ namespace Jolt.Testing
             public const string UsingBlock = "UsingBlock";
             public const string PartialTransformer = "PartialTransformer";
             public const string PartialTransformerReference = "PartialTransformerReference";
+            public const string StreamingTransformer = "StreamingTransformer";
         }
 
         protected void Execute(EndToEndTest test)
