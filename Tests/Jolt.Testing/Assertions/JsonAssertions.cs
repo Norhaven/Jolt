@@ -9,8 +9,95 @@ using System.Text;
 
 namespace Jolt.Testing.Assertions
 {
-    internal static class JsonAssertions
+    public static class JsonAssertions
     {
+        public static ShouldRequireAssertion<T> Should<T>(this T actualValue)
+        {
+            return new ShouldRequireAssertion<T>(actualValue);
+        }
+
+        public static void Be<T>(this ShouldRequireAssertion<T> assertion, T expectedValue, string because = "")
+        {
+            if (!EqualityComparer<T>.Default.Equals(assertion.ActualValue, expectedValue))
+            {
+                throw new EqualityExpectationFailureException(expectedValue, $"Expected value to be {expectedValue}");
+            }
+        }
+
+        public static void BeTrue(this ShouldRequireAssertion<bool> assertion, string because = "")
+        {
+            if (!assertion.ActualValue)
+            {
+                throw new EqualityExpectationFailureException(true, $"Expected value to be true");
+            }
+        }
+
+        public static void BeGreaterThan<T>(this ShouldRequireAssertion<T> assertion, T threshold, string because = "") where T : IComparable<T>
+        {
+            if (assertion.ActualValue.CompareTo(threshold) <= 0)
+            {
+                throw new GreaterThanExpectationFailureException(threshold, $"Expected value to be greater than {threshold}");
+            }
+        }
+
+        public static void NotBeNullOrWhiteSpace(this ShouldRequireAssertion<string> assertion, string because = "")
+        {
+            if (string.IsNullOrWhiteSpace(assertion.ActualValue))
+            {
+                throw new EqualityExpectationFailureException(null, $"Expected value to not be null or whitespace");
+            }
+        }
+
+        public static void NotBeNull<T>(this ShouldRequireAssertion<T> assertion, string because = "")
+        {
+            if (assertion.ActualValue == null)
+            {
+                throw new NullExpectationFailedException($"Expected value to not be null");
+            }
+        }
+
+        public static void BeNull<T>(this ShouldRequireAssertion<T> assertion, string because = "")
+        {
+            if (assertion.ActualValue != null)
+            {
+                throw new NonNullExpectationFailedException($"Expected value to be null");
+            }
+        }
+
+        public static void BeFalse(this ShouldRequireAssertion<bool> assertion, string because = "")
+        {
+            if (assertion.ActualValue)
+            {
+                throw new EqualityExpectationFailureException(false, $"Expected value to be false");
+            }
+        }
+
+        public static void ContainKeyAndValue<TKey, TValue>(this ShouldRequireAssertion<Dictionary<TKey, TValue>> assertion, TKey key, TValue value, string because = "")
+        {
+            if (!assertion.ActualValue.ContainsKey(key))
+            {
+                throw new KeyNotFoundException($"Expected dictionary to contain key '{key}'");
+            }
+
+            var actualValue = assertion.ActualValue[key];
+
+            if (!EqualityComparer<TValue>.Default.Equals(actualValue, value))
+            {
+                throw new EqualityExpectationFailureException(value, $"Expected dictionary to contain key '{key}' with value '{value}'");
+            }
+        }
+
+        public static void ContainKeys<TKey, TValue>(this ShouldRequireAssertion<Dictionary<TKey, TValue>> assertion, Dictionary<TKey, TValue>.KeyCollection keys)
+        {
+            foreach (var key in keys)
+            {
+                if (!assertion.ActualValue.ContainsKey(key))
+                {
+                    throw new KeyNotFoundException($"Expected dictionary to contain key '{key}'");
+                }
+            }
+        }
+
         public static void ExpectsNull(this object obj, string because)
         {
             if (obj != null)

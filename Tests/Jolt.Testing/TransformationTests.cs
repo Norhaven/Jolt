@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Jolt.Library;
+﻿using Jolt.Library;
 using Jolt.Structure;
 using Jolt.Testing.Assertions;
 using Jolt.Testing.Json;

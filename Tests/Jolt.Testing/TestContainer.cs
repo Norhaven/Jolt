@@ -1,5 +1,5 @@
-﻿using FluentAssertions;
-using Jolt.Exceptions;
+﻿using Jolt.Exceptions;
+using Jolt.Testing.Assertions;
 using Jolt.Testing.Json;
 using Jolt.Testing.Json.Comparers;
 using System;

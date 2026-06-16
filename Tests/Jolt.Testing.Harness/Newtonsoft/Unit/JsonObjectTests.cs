@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using Jolt.Testing.Assertions;
 using Jolt.Testing.Unit;
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ namespace Jolt.Testing.Harness.Newtonsoft.Unit
             var dictionary = CreateDictionaryFromObject(jsonObject);
 
             dictionary.Should().NotBeNull("because the JSON object can be converted to a dictionary");
-            dictionary.Should().ContainKey("key").WhoseValue.Should().Be("value", "because the dictionary should contain the key 'key' with value 'value'");
+            dictionary.Should().ContainKeyAndValue("key", "value", "because the dictionary should contain the key 'key' with value 'value'");
         }
 
         [Fact]

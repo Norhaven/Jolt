@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using Jolt.Testing.Assertions;
 using Jolt.Exceptions;
 using Jolt.Structure;
 using Jolt.Testing.Resources;
@@ -51,7 +51,7 @@ namespace Jolt.Testing.Unit
 
                 if (test.ExpectedIssues.Length == 0)
                 {
-                    issues.Should().BeEmpty("because no issues were expected");
+                    issues.Length.Should().Be(0, "because no issues were expected");
                 }
                 else
                 {

@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Jolt.Library;
+﻿using Jolt.Library;
 using Jolt.Structure;
 using Jolt.Testing.Resources.Extensions;
 using Jolt.Testing.Resources.TestMethods;

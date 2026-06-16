@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using Jolt.Testing.Assertions;
 using Jolt.Exceptions;
 using Jolt.Json.Tests.Resources.TestAttributes;
 using Jolt.Structure;
@@ -33,7 +33,7 @@ namespace Jolt.Testing.Harness.DotNetFramework
 
         [SourceHasInteger(1)]
         [TransformerIs(ValueTransformer.Default)]
-        [ExpectsResult(1)]
+        [ExpectsResult(1L)]
         public void ValueOf_IsSuccessful_WithIntegerLiteral() { }
 
         [SourceHasBoolean(true)]

@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using Jolt.Testing.Assertions;
 using Jolt.Json.Tests.Resources.TestAttributes;
 using Jolt.Testing.Small;
 using Jolt.Testing.Unit;

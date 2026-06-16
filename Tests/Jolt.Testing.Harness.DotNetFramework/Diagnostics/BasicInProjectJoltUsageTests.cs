@@ -1,5 +1,5 @@
-﻿using FluentAssertions;
-using Jolt.Json.DotNet;
+﻿using Jolt.Json.DotNet;
+using Jolt.Testing.Assertions;
 using System;
 using System.Collections.Generic;
 using System.Linq;

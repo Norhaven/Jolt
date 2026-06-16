@@ -1,9 +1,9 @@
-﻿using FluentAssertions;
-using Jolt.Exceptions;
+﻿using Jolt.Exceptions;
 using Jolt.Json.Tests.Resources.TestAttributes;
 using Jolt.Structure;
 using Jolt.Testing.Small;
 using Jolt.Testing.Small.Attributes;
+using Jolt.Testing.Assertions;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -33,7 +33,7 @@ namespace Jolt.Testing.Harness
 
         [SourceHasInteger(1)]
         [TransformerIs(ValueTransformer.Default)]
-        [ExpectsResult(1)]
+        [ExpectsResult(1L)]
         public void ValueOf_IsSuccessful_WithIntegerLiteral() { }
 
         [SourceHasBoolean(true)]

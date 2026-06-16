@@ -1,5 +1,5 @@
-﻿using FluentAssertions;
-using Jolt.Json.Tests.Resources.TestAttributes;
+﻿using Jolt.Json.Tests.Resources.TestAttributes;
+using Jolt.Testing.Assertions;
 using Jolt.Testing.Small;
 using Jolt.Testing.Unit;
 using System;
