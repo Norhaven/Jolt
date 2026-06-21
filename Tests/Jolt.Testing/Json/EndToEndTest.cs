@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Jolt.Testing.Json
 {
@@ -34,7 +35,14 @@ namespace Jolt.Testing.Json
 
         public override void Serialize(IXunitSerializationInfo info)
         {
-            info.SerializeFrom(this, Messages);
+            try
+            {
+                info.SerializeFrom(this, Messages);
+            }
+            catch(Exception ex)
+            {
+                Messages?.OnMessage(new DiagnosticMessage(ex.Message));
+            }
         }
 
         public override void Deserialize(IXunitSerializationInfo info)

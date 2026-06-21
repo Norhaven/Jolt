@@ -31,8 +31,25 @@ namespace Jolt.Json.Newtonsoft
 
         public void Add(IJsonToken? token)
         {
+            if (token is null)
+            {
+                return;
+            }
+
             _arrayElements.Add(token);
-            ((JArray)_token).Add(token.ToTypeOf<object>());
+
+            if (token.Type == JsonTokenType.Object)
+            {
+                ((JArray)_token).Add(((JsonObject)token).UnderlyingNode);
+            }
+            else if (token.Type == JsonTokenType.Array)
+            {
+                ((JArray)_token).Add(((JsonArray)token).UnderlyingNode);
+            }
+            else
+            {
+                ((JArray)_token).Add(((JsonValue)token).UnderlyingNode);
+            }
         }
 
         public IEnumerator<IJsonToken> GetEnumerator() => _arrayElements.GetEnumerator();

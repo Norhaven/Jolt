@@ -575,7 +575,7 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 
 <h6>* The #eval method is considered unsafe because it can execute any expression, including ones that may have unwanted side effects or security implications. It should be used with caution and only with trusted input. In order to enable unsafe method usage, the JoltOptions instance that can be passed into your JoltJsonTransformer has a method called WithUnsafeAllowed that will enable this. Use with caution!</h6>
 
-# Operator Precedence
+# Operator Precedence And Grammar
 
 Also, here is a small table of how Jolt regards levels of operator precedence for binary expressions to help you understand how your expressions may be evaluated at runtime. The higher the precedence level, the tighter it binds (e.g. `*` binds tighter than `+` and so multiplication is performed first).
 
@@ -595,6 +595,8 @@ Also, here is a small table of how Jolt regards levels of operator precedence fo
 | Subtraction | `-` | 5
 | Multiplication | `*` | 6
 | Division | `/` | 6
+
+For reference, the full EBNF grammar lives [over here.](https://github.com/Norhaven/Jolt/Jolt-EBNF-Grammar.md)
 
 # Alternate External Method Registrations
 
@@ -658,9 +660,15 @@ Here's a final pattern that may prove useful. Last example and we'll move on!
 }
 ```
 
+## Additional Transformer Uses
+
+You may notice that the `Transform` method on the `JoltJsonTransformer` has a few overloads for convenience when working through larger datasets. The first is a streaming option with the method signature `void Transform(Stream input, Stream output)` and the second is a reader/writer option with this signature `void Transform(TextReader input, TextWriter output)`.
+
+The only difference between these and the string-oriented overload is that these will read the stream or reader one line at a time and expect it to be a complete JSON object, transform that object as per usual, and write it to the other stream or writer. This allows you to handle a series of JSON objects that need to be transformed in a way that's more friendly to your application's memory usage as only one object at a time will be actually loaded and used.
+
 # Validating Your Transformer Syntax
 
-As a final note, transformers may prove difficult to test for correctness without actually obtaining a source document and running through it, which can take time and be specific to a source document. There is a way, however, to get a quick sanity check on your syntax and expression shapes and that's through the `Validate()` method on the `JoltTransformer`. First, you create the `JoltJsonTransformer` instance, using the `IJsonContext` that contains the transformer string you'd like to validate, and then call `Validate()` and iterate through the issues that come back, if any. This will not execute any evaluations against a source document and so you won't get errors (such as an incorrect variable value) that would appear at runtime, rather it would identify issues (such as syntax misuse) in how you've constructed your transformer. It will also verify that any calls to `#transform` will resolve to registered transformers.
+Additionally, transformers may prove difficult to test for correctness without actually obtaining a source document and running through it, which can take time and be specific to a source document. There is a way, however, to get a quick sanity check on your syntax and expression shapes and that's through the `Validate()` method on the `JoltTransformer`. First, you create the `JoltJsonTransformer` instance, using the `IJsonContext` that contains the transformer string you'd like to validate, and then call `Validate()` and iterate through the issues that come back, if any. This will not execute any evaluations against a source document and so you won't get errors (such as an incorrect variable value) that would appear at runtime, rather it would identify issues (such as syntax misuse) in how you've constructed your transformer. It will also verify that any calls to `#transform` will resolve to registered transformers.
 
 Issues will be returned as instances of `Jolt.Structure.ValidationIssue` and will contain information about the issue that was found, such as the type of issue, a message describing the issue, and the path to the part of the transformer where the issue was found. This can be a great way to catch mistakes early on in development before you even have a source document to test against. The issue contract is below:
 ```csharp
@@ -672,6 +680,41 @@ public sealed class ValidationIssue
     public string TransformerExpressionPath { get; }
     public string ExpressionText { get; }
 }
+```
+
+# Verifying Performance
+
+As a part of the `JoltOptions` instance passed into the transformer when creating it, you can call the `WithExecutionTracing` method on it to enable performance measuring. Each transformer method call will be timed and checkpointed, giving you an opportunity to monitor how performant your transformation operations are.
+
+Performance results will be available after a given transformer run as a part of the `IMessageProvider` instance that's accessible through the `JoltContext` instance, specifically through the `ExecutionTraces` property. The results will be ordered by the time that the operation started, as measured in the number of ticks since it (or its earliest parent) started.
+```csharp
+public sealed class ExecutionTraceEntry
+{
+    public string TransformerName { get; }
+    public string? InputValue { get; }
+    public string? OutputValue { get; }
+    public DateTimeOffset Timestamp { get; }
+    public long ExecutionStartedAtTicks { get; }
+    public TimeSpan ExecutionTimeElapsed { get; }
+    public ExecutionTraceCheckpoint[] Checkpoints { get; }
+    public string Message { get; }
+}
+
+public sealed class ExecutionTraceCheckpoint
+{
+    public string Name { get; }
+    public TimeSpan TimeSinceLastCheckpoint { get; }
+    public long TicksSinceScopeOpened { get; }
+    public string[] InputValues { get; }
+    public string? OutputValue { get; }
+}
+```
+Calling `ToString` on an `ExecutionTraceEntry` instance will provide a more friendly and formatted overview of the data inside. For example, using the timing output of one of the tests:
+```
+6/20/2026 10:10:46 PM +00:00 [Transformer: PartialTransformer] Scope completed
+[Checkpoint: Invoking method 'Transform'] at 00:00:00.0004497
+[Checkpoint: Method input '$.subPath,PartialTransformer,null,Jolt.Evaluation.EvaluationContext'] at 00:00:00.0001654
+[Checkpoint: Method invocation completed with '{"sourceVariableX":null,"sourcePathValue":"test.source.path","integerValue":null,"textValue":null}'] at 00:00:00.0084322
 ```
 
 # How To Contribute To This Project

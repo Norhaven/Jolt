@@ -36,21 +36,35 @@ namespace Jolt.Testing
 
         public override void Serialize(IXunitSerializationInfo info)
         {
-            DiagnosticMessageSink.OnMessage(new DiagnosticMessage($"Serializing into type '{info.GetType()}'"));
-            DiagnosticMessageSink.OnMessage(new DiagnosticMessage($"Serializing test case with data: {Data.TestContext.GetType().Name}::{Data.TestType}::{Data.TestGroup}::{Data.Name}"));
-            
-            base.Serialize(info);
+            try
+            {
+                DiagnosticMessageSink?.OnMessage(new DiagnosticMessage($"Serializing into type '{info.GetType()}'"));
+                DiagnosticMessageSink?.OnMessage(new DiagnosticMessage($"Serializing test case with data: {Data.TestContext.GetType().Name}::{Data.TestType}::{Data.TestGroup}::{Data.Name}"));
 
-            info.AddValue(nameof(Data), Data);
+                base.Serialize(info);
+
+                info.AddValue(nameof(Data), Data);
+            }
+            catch(Exception ex)
+            {
+                DiagnosticMessageSink?.OnMessage(new DiagnosticMessage(ex.Message));
+            }
         }
 
         public override void Deserialize(IXunitSerializationInfo info)
         {
-            base.Deserialize(info);
+            try
+            {
+                base.Deserialize(info);
 
-            Data = info.GetValue<TData>(nameof(Data));
+                Data = info.GetValue<TData>(nameof(Data));
 
-            DiagnosticMessageSink.OnMessage(new DiagnosticMessage($"Deserialized test case with data: {Data.TestContext.GetType().Name}::{Data.TestType}::{Data.TestGroup}::{Data.Name}"));
-        }
+                DiagnosticMessageSink?.OnMessage(new DiagnosticMessage($"Deserialized test case with data: {Data.TestContext.GetType().Name}::{Data.TestType}::{Data.TestGroup}::{Data.Name}"));
+            }
+            catch(Exception ex)
+            {
+                DiagnosticMessageSink?.OnMessage(new DiagnosticMessage(ex.Message));
+            }
+}
     }
 }

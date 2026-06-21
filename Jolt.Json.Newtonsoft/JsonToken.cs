@@ -49,6 +49,7 @@ namespace Jolt.Json.Newtonsoft
                 JTokenType.Float => new JsonValue(token),
                 JTokenType.Null => new JsonValue(token),
                 JTokenType.Date => new JsonValue(token),
+                JTokenType.TimeSpan => new JsonValue(token),
                 _ => throw new ArgumentOutOfRangeException(nameof(token), $"Unable to parse JSON token from object with unsupported type '{token.Type}'"),
             };
         }
@@ -85,6 +86,7 @@ namespace Jolt.Json.Newtonsoft
                     JTokenType.Float => JsonTokenType.Value,
                     JTokenType.Null => JsonTokenType.Null,
                     JTokenType.Date => JsonTokenType.Value,
+                    JTokenType.TimeSpan => JsonTokenType.Value,
                     _ => throw new ArgumentOutOfRangeException(nameof(token), $"Unable to determine best JSON token type for unsupported type '{token.Type}'")
                 };
             }

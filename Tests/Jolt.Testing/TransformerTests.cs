@@ -23,19 +23,19 @@ namespace Jolt.Testing
             AsynchronousReaderWriter
         }
 
-        protected async Task<IJsonObject> ExecuteTestForObjectResult(TransformerTest test, Func<IJsonContext, IJsonContext> configureContext = default, [CallerMemberName] string testMethodName = default, params string[] partialTransformerNames)
+        protected async Task<IJsonObject> ExecuteTestForObjectResult(TransformerTest test, Func<IJsonContext, IJsonContext> configureContext = default, [CallerMemberName] string testMethodName = default, JoltOptions options = default, params string[] partialTransformerNames)
         {
-            var result = await ExecuteTestIfPossible(test, configureContext, testMethodName, partialTransformerNames, TestExecutionType.SynchronousString);
+            var result = await ExecuteTestIfPossible(test, configureContext, testMethodName, partialTransformerNames, TestExecutionType.SynchronousString, options);
 
             return result.AsObject();
         }
 
-        protected Task<IJsonToken> ExecuteTest(TransformerTest test, Func<IJsonContext, IJsonContext> configureContext = default, [CallerMemberName] string testMethodName = default, TestExecutionType executionType = TestExecutionType.SynchronousString, params string[] partialTransformerNames)
+        protected Task<IJsonToken> ExecuteTest(TransformerTest test, Func<IJsonContext, IJsonContext> configureContext = default, [CallerMemberName] string testMethodName = default, TestExecutionType executionType = TestExecutionType.SynchronousString, JoltOptions options = default, params string[] partialTransformerNames)
         {
-            return ExecuteTestIfPossible(test, configureContext, testMethodName, partialTransformerNames, executionType);
+            return ExecuteTestIfPossible(test, configureContext, testMethodName, partialTransformerNames, executionType, options);
         }
 
-        private async Task<IJsonToken> ExecuteTestIfPossible(TransformerTest test, Func<IJsonContext, IJsonContext> configureContext, string testMethodName, string[] partialTransformerNames, TestExecutionType executionType)
+        private async Task<IJsonToken> ExecuteTestIfPossible(TransformerTest test, Func<IJsonContext, IJsonContext> configureContext, string testMethodName, string[] partialTransformerNames, TestExecutionType executionType, JoltOptions options)
         {
             var method = GetType().GetMethod(testMethodName);
 
@@ -44,7 +44,7 @@ namespace Jolt.Testing
                 throw new ArgumentNullException(nameof(testMethodName), $"Unable to locate test method '{testMethodName}'");
             }
 
-            var jsonContext = test.TestContext.CreateJsonContext(test.TestType);
+            var jsonContext = test.TestContext.CreateJsonContext(test.TestType, options);
 
             var context = configureContext == null ? jsonContext : configureContext(jsonContext);
 
@@ -83,6 +83,29 @@ namespace Jolt.Testing
             if (transformedDocument == null)
             {
                 throw new ArgumentException("Expected a transformed document because a valid test document was sent in and used by a valid transformer but found null");
+            }
+
+            if (options?.IsExecutionTracingEnabled == true)
+            {
+                var traceResults = context.JsonTokenReader.Read("[]");
+
+                foreach (var trace in context.MessageProvider.ExecutionTraces.OrderBy(x => x.ExecutionStartedAtTicks))
+                {
+                    var traceResult = context.JsonTokenReader.Read("{}").AsObject();
+
+                    var traceEntries = from property in trace.GetType().GetProperties()
+                                       let value = property.GetValue(trace)
+                                       select (property.Name, context.JsonTokenReader.CreateTokenFrom(value));
+
+                    foreach (var (name, value) in traceEntries)
+                    {
+                        traceResult[name] = value;
+                    }
+
+                    traceResults.AsArray().Add(traceResult);
+                }
+
+                return traceResults;
             }
 
             if (executionType == TestExecutionType.SynchronousString)

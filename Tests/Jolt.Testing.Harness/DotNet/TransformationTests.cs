@@ -14,6 +14,12 @@ namespace Jolt.Testing.Harness.DotNet
 {
     public sealed class TransformationTests : Testing.TransformationTests
     {
+        [TransformerTest(Transformer.PartialTransformerReference, SourceDocument.PartialReferenceDocument, typeof(TestContext), TestType.DotNet)]
+        public override Task PartialTransformerReference_WithExecutionTrace_IsSuccessful(TransformerTest test)
+        {
+            return base.PartialTransformerReference_WithExecutionTrace_IsSuccessful(test);
+        }
+
         [TransformerTest(Transformer.StreamingTransformer, SourceDocument.StreamingDocument, typeof(TestContext), TestType.DotNet)]
         public override Task ReaderWriterTransformations_AreSuccessful(TransformerTest test)
         {

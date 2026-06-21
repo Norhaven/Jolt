@@ -32,6 +32,11 @@ namespace Jolt
         public bool IsLoggingEnabled => LoggerFactory != null;
 
         /// <summary>
+        /// Gets whether execution tracing is enabled for Jolt.
+        /// </summary>
+        public bool IsExecutionTracingEnabled { get; private set; }
+
+        /// <summary>
         /// Gets whether Jolt should allow evaluations that may be unsafe, such as those 
         /// that could potentially cause unwanted side effects or security vulnerabilities.
         /// </summary>
@@ -74,6 +79,18 @@ namespace Jolt
         public JoltOptions WithUnsafeAllowed()
         {
             AllowUnsafeEvaluations = true;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Specifies that Jolt should include detailed tracing information during its execution, 
+        /// which can be useful for debugging and understanding the transformation process.
+        /// </summary>
+        /// <returns>An instance of <see cref="JoltOptions"/> with the unsafe evaluation setting applied.</returns>
+        public JoltOptions WithExecutionTracing()
+        {
+            IsExecutionTracingEnabled = true;
 
             return this;
         }

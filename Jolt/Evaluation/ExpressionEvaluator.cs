@@ -712,6 +712,14 @@ namespace Jolt.Evaluation
                 throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.MethodCallActualParameterCountExceedsFormalParameterCount, call.Signature.Name, call.Signature.Parameters.Length);
             }
 
+            using var traceScope = call.Signature.Name == nameof(TransformationMethods.Transform) ? context.JsonContext.CreateExecutionTraceScope(actualParameterValues[1]?.ToString()) : context.JsonContext.CreateExecutionTraceScope();
+
+            var parameterStrings = actualParameterValues.Select(v => v?.ToString() ?? "null").ToArray();
+            var input = string.Join(",", parameterStrings);
+
+            traceScope.WriteExpressionTextCheckpoint($"Invoking method '{call.Signature.Name}'", context.Token.CurrentTransformerToken.ToTypeOf<string>());
+            traceScope.WriteInputCheckpoint($"Method input '{input}'", parameterStrings);
+
             var resultValue = InvokeMethod(call.Signature, actualParameterValues, context);
 
             // An enumerable sequence of JSON tokens is possible to get back from a method call, such as the
@@ -737,22 +745,17 @@ namespace Jolt.Evaluation
                     resultValue = context.JsonContext.JsonTokenReader.CreateObjectFrom((IEnumerable<IJsonToken>?)resultValue);
                 }
             }
-            else if (!isResultJsonObjectOrArray && typeof(IEnumerable<object>).IsAssignableFrom(resultValue?.GetType()))
+            else if (!isResultJsonObjectOrArray && IsEnumerableAsPrimitiveType(resultValue, out var sequence))
             {
-                var sequence = resultValue.GetType() switch
-                {
-                    var x when typeof(IEnumerable<string>).IsAssignableFrom(x) ||
-                               typeof(IEnumerable<long>).IsAssignableFrom(x) ||
-                               typeof(IEnumerable<double>).IsAssignableFrom(x) ||
-                               typeof(IEnumerable<bool>).IsAssignableFrom(x) => (IEnumerable<object>)resultValue,
-                    _ => throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToConvertToSupportedEnumerableType, call.Signature.Name)
-                };
-
                 var tokenSequence = sequence.Select(x => context.JsonContext.JsonTokenReader.CreateTokenFrom(x));
 
                 resultValue = context.JsonContext.JsonTokenReader.CreateArrayFrom(tokenSequence);
             }
             
+            var resultString = resultValue?.ToString();
+
+            traceScope.WriteOutputCheckpoint($"Method invocation completed with '{resultString}'", resultString);
+
             if (context.Mode == EvaluationMode.PropertyName)
             {
                 // The method may have been a value generator, meaning that evaluating the property name will
@@ -790,6 +793,32 @@ namespace Jolt.Evaluation
             }
 
             throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToApplyMethodResultsWithUnknownEvaluationMode, context.Mode);
+        }
+
+        private static bool IsEnumerableAsPrimitiveType(object? obj, out IEnumerable<object> result)
+        {
+            if (obj is null)
+            {
+                result = Array.Empty<object>();
+                return false;
+            }
+
+            var type = obj.GetType();
+
+            var isAssignable = typeof(IEnumerable<string>).IsAssignableFrom(type) ||
+                               typeof(IEnumerable<long>).IsAssignableFrom(type) ||
+                               typeof(IEnumerable<double>).IsAssignableFrom(type) ||
+                               typeof(IEnumerable<bool>).IsAssignableFrom(type);
+            
+            if (!isAssignable)
+            {
+                result = Array.Empty<object>();
+                return false;
+            }
+
+            result = ((IEnumerable)obj).OfType<object>();
+
+            return true;
         }
 
         private static object? InvokeMethod(MethodSignature method, IEnumerable<object?> actualParameterValues, EvaluationContext context)

@@ -1,16 +1,17 @@
 ﻿using Jolt.Structure;
+using Json.Path;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Nodes = System.Text.Json.Nodes;
-using JsonValueKind = System.Text.Json.JsonValueKind;
-using NamingPolicy = System.Text.Json.JsonNamingPolicy;
 using System.Linq;
+using System.Text;
+using System.Text.Json.Serialization.Metadata;
 using System.Xml.Linq;
-using Json.Path;
 using JsonElement = System.Text.Json.JsonElement;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using JsonSerializerOptions = System.Text.Json.JsonSerializerOptions;
+using JsonValueKind = System.Text.Json.JsonValueKind;
+using NamingPolicy = System.Text.Json.JsonNamingPolicy;
+using Nodes = System.Text.Json.Nodes;
 
 namespace Jolt.Json.DotNet
 {
@@ -174,7 +175,7 @@ namespace Jolt.Json.DotNet
             return _token.GetValue<T>();
         }
 
-        public override string ToString() => _token?.ToJsonString(new JsonSerializerOptions { WriteIndented = false });
+        public override string ToString() => _token?.ToJsonString(new JsonSerializerOptions { TypeInfoResolver = new DefaultJsonTypeInfoResolver(), WriteIndented = false });
 
         private (Nodes.JsonNode? Node, bool Exists) SelectToken(string path)
         {

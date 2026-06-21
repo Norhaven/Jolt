@@ -1,4 +1,5 @@
 ﻿using Jolt.Exceptions;
+using Jolt.Structure;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -30,6 +31,11 @@ namespace Jolt.Extensions
         public static void WriteWarningFor<T>(this IJsonContext context, string message, params object[] parameters)
         {
             context.MessageProvider.WriteWarningFor<T>(message, parameters);
+        }
+
+        public static ExecutionTraceScope CreateExecutionTraceScope(this IJsonContext context, string? transformerName = default)
+        {
+            return context.MessageProvider.CreateExecutionTraceScope(transformerName);
         }
     }
 }

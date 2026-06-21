@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Jolt.Structure;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -9,6 +10,16 @@ namespace Jolt.Exceptions
     /// </summary>
     public interface IMessageProvider
     {
+        /// <summary>
+        /// Gets the execution trace messages that have been recorded during the transformation process, if any.
+        /// </summary>
+        public ExecutionTraceEntry[] ExecutionTraces { get; }
+
+        /// <summary>
+        /// Gets the current execution trace scope, if any.
+        /// </summary>
+        public ExecutionTraceScope? CurrentScope { get; }
+
         /// <summary>
         /// Creates a method resolution error for the provided type and method name.
         /// </summary>
@@ -63,5 +74,29 @@ namespace Jolt.Exceptions
         /// <param name="message">The message template to use.</param>
         /// <param name="parameters">Parameters to apply to the message template.</param>
         void WriteWarningFor<T>(string message, params object[] parameters);
+
+        /// <summary>
+        /// Writes an execution trace for a transformer, including the expression path, input value, and output value.
+        /// </summary>
+        /// <param name="traceEntry">The execution trace entry to write.</param>
+        void WriteExecutionTraceFor(ExecutionTraceEntry traceEntry);
+
+        /// <summary>
+        /// Creates a root execution trace scope for the current transformation process, which can be used to track execution traces throughout the transformation.
+        /// </summary>
+        /// <returns>An instance of <see cref="ExecutionTraceScope"/> representing the root scope.</returns>
+        ExecutionTraceScope CreateRootExecutionTraceScope();
+
+        /// <summary>
+        /// Creates an execution trace scope for the current transformation process.
+        /// </summary>
+        /// <param name="transformerName">The name of the transformer, if any.</param>
+        /// <returns>An instance of <see cref="ExecutionTraceScope"/> representing the scope.</returns>
+        ExecutionTraceScope CreateExecutionTraceScope(string? transformerName = default);
+
+        /// <summary>
+        /// Removes the current execution trace scope, if any, from the message provider. This is typically called when exiting a scope to ensure that subsequent messages are not associated with the previous scope.
+        /// </summary>
+        void RemoveCurrentScope();
     }
 }

@@ -28,19 +28,19 @@ namespace Jolt.Testing.Json
 
         protected override IEnumerable<EndToEndTest> ReadTestCaseDataFromSource(ITestContext testContext, TestType testType, IAttributeInfo attribute, ITestMethod testMethod)
         {
-            var testJsonFile = GetProperty<string>(nameof(JsonTestAttribute.TestJsonFile), attribute);
+                var testJsonFile = GetProperty<string>(nameof(JsonTestAttribute.TestJsonFile), attribute);
 
-            if (string.IsNullOrWhiteSpace(testJsonFile))
-            {
-                throw new InvalidOperationException($"Test file '{nameof(JsonTestAttribute.TestJsonFile)}' should specify a file name");
-            }
+                if (string.IsNullOrWhiteSpace(testJsonFile))
+                {
+                    throw new InvalidOperationException($"Test file '{nameof(JsonTestAttribute.TestJsonFile)}' should specify a file name");
+                }
 
-            LogDiagnostic($"[DISCOVERY] Reading and parsing test file: '{testJsonFile}'");
+                LogDiagnostic($"[DISCOVERY] Reading and parsing test file: '{testJsonFile}'");
 
-            var context = testContext.CreateJsonContext(testType);
-            var testJsonData = ReadAndParseTestFile(testJsonFile, context);
+                var context = testContext.CreateJsonContext(testType);
+                var testJsonData = ReadAndParseTestFile(testJsonFile, context);
 
-            var testIndex = 1;
+                var testIndex = 1;
 
             foreach (var testGroup in testJsonData.TestGroups ?? Array.Empty<TestGroup>())
             {
@@ -48,20 +48,29 @@ namespace Jolt.Testing.Json
                 {
                     LogDiagnostic($"[DISCOVERY] Populating test case with data from JSON test");
 
-                    var endToEndTest = new EndToEndTest(_diagnosticMessageSink, testContext, testType, testGroup.Name, test.Name, testIndex)
-                    {
-                        Source = testGroup.Source.ToTypeOf<string>(),
-                        Transformer = test.Transformer.ToTypeOf<string>(),
-                        Result = test.Result?.ToTypeOf<string>(),
-                        PossibleExceptions = testJsonData.PossibleExceptionCodes,
-                        PossibleExternalMethodSources = testJsonData.PossibleExternalMethodSources,
-                        ExternalMethodSource = testGroup.ExternalMethodSource,
-                        ExceptionCode = test.ExceptionCode,
-                        ExceptionType = test.ExceptionType,
-                        InnerExceptionCode = test.InnerExceptionCode
-                    };
+                    EndToEndTest endToEndTest = default;
 
-                    LogDiagnostic($"[DISCOVERY] Created test case: '{endToEndTest.Name}' with:\nSource - {endToEndTest.Source}\nTransformer - {endToEndTest.Transformer}\nResult - {endToEndTest.Result}");
+                    try
+                    {
+                        endToEndTest = new EndToEndTest(_diagnosticMessageSink, testContext, testType, testGroup.Name, test.Name, testIndex)
+                        {
+                            Source = testGroup.Source.ToTypeOf<string>(),
+                            Transformer = test.Transformer.ToTypeOf<string>(),
+                            Result = test.Result?.ToTypeOf<string>(),
+                            PossibleExceptions = testJsonData.PossibleExceptionCodes,
+                            PossibleExternalMethodSources = testJsonData.PossibleExternalMethodSources,
+                            ExternalMethodSource = testGroup.ExternalMethodSource,
+                            ExceptionCode = test.ExceptionCode,
+                            ExceptionType = test.ExceptionType,
+                            InnerExceptionCode = test.InnerExceptionCode
+                        };
+
+                        LogDiagnostic($"[DISCOVERY] Created test case: '{endToEndTest.Name}' with:\nSource - {endToEndTest.Source}\nTransformer - {endToEndTest.Transformer}\nResult - {endToEndTest.Result}");
+                    }
+                    catch (Exception ex)
+                    {
+                        LogDiagnostic(ex.Message);
+                    }
 
                     yield return endToEndTest;
 
@@ -75,7 +84,7 @@ namespace Jolt.Testing.Json
         private void LogDiagnostic(string message)
         {
             Trace.WriteLine(message);
-            _diagnosticMessageSink.OnMessage(new DiagnosticMessage(message));
+            _diagnosticMessageSink?.OnMessage(new DiagnosticMessage(message));
         }
 
         private TestFile ReadAndParseTestFile(string testFileName, IJsonContext context)

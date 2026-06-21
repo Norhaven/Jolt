@@ -13,6 +13,12 @@ namespace Jolt.Testing.Harness.Newtonsoft
 {
     public sealed class TransformationTests : Testing.TransformationTests
     {
+        [TransformerTest(Transformer.PartialTransformerReference, SourceDocument.PartialReferenceDocument, typeof(TestContext), TestType.Newtonsoft)]
+        public override Task PartialTransformerReference_WithExecutionTrace_IsSuccessful(TransformerTest test)
+        {
+            return base.PartialTransformerReference_WithExecutionTrace_IsSuccessful(test);
+        }
+
         [TransformerTest(Transformer.StreamingTransformer, SourceDocument.StreamingDocument, typeof(TestContext), TestType.Newtonsoft)]
         public override Task ReaderWriterTransformations_AreSuccessful(TransformerTest test)
         {

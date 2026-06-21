@@ -18,6 +18,13 @@ namespace Jolt.Testing
 {
     public abstract class TransformationTests : TransformerTests
     {
+        public virtual async Task PartialTransformerReference_WithExecutionTrace_IsSuccessful(TransformerTest test)
+        {
+            var tracesArray = await ExecuteTest(test, options: JoltOptions.Default.WithExecutionTracing(), partialTransformerNames: Transformer.PartialTransformer);
+            
+            tracesArray.Should().NotBeNull("because the execution trace should be generated for the partial transformer reference");
+        }
+
         public virtual async Task ReaderWriterTransformations_AreSuccessful(TransformerTest test)
         {
             var synchronousJson = await ExecuteTest(test, executionType: TestExecutionType.SynchronousReaderWriter);

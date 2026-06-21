@@ -11,58 +11,52 @@ namespace Jolt.Testing.Harness
 {
     public class TestContext : ITestContext
     {
-        public static IJsonContext CreateNewtonsoftContext()
+        public static IJsonContext CreateNewtonsoftContext(JoltOptions options = default)
         {
-            var messageProvider = new MessageProvider(JoltOptions.Default);
+            options = options is null ? JoltOptions.Default : options;
+
+            var messageProvider = new MessageProvider(options);
 
             return new JoltContext(
                 default,
                 new ExpressionParser(),
-                new ExpressionEvaluator(JoltOptions.Default.WithUnsafeAllowed()),
+                new ExpressionEvaluator(options.WithUnsafeAllowed()),
                 new TokenReader(messageProvider),
                 new Jolt.Json.Newtonsoft.JsonTokenReader(),
                 new Jolt.Json.Newtonsoft.JsonPathQueryPathProvider(),
                 new MethodReferenceResolver(messageProvider),
                 messageProvider,
-                new ErrorHandler(default)
+                new ErrorHandler(options)
             );
         }
 
-        public static IJsonContext CreateDotNetContext()
+        public static IJsonContext CreateDotNetContext(JoltOptions options = default)
         {
-            var messageProvider = new MessageProvider(JoltOptions.Default);
+            options = options is null ? JoltOptions.Default : options;
+
+            var messageProvider = new MessageProvider(options);
 
             return new JoltContext(
                 default,
                 new ExpressionParser(),
-                new ExpressionEvaluator(JoltOptions.Default.WithUnsafeAllowed()),
+                new ExpressionEvaluator(options.WithUnsafeAllowed()),
                 new TokenReader(messageProvider),
                 new Jolt.Json.DotNet.JsonTokenReader(),
                 new Jolt.Json.DotNet.JsonPathQueryPathProvider(),
                 new MethodReferenceResolver(messageProvider),
                 messageProvider,
-                new ErrorHandler(default)
+                new ErrorHandler(options)
             );
         }
 
-        public IJsonContext CreateJsonContext(TestType testType)
+        public IJsonContext CreateJsonContext(TestType testType, JoltOptions? options = default)
         {
             switch (testType)
             {
-                case TestType.Newtonsoft: return CreateNewtonsoftContext();
-                case TestType.DotNet: return CreateDotNetContext();
+                case TestType.Newtonsoft: return CreateNewtonsoftContext(options);
+                case TestType.DotNet: return CreateDotNetContext(options);
                 default: throw new ArgumentOutOfRangeException(nameof(testType), testType, null);
             }
-        }
-
-        public IJsonObject? ParseAsJsonObject(TestType testType, string json)
-        {
-            return testType switch
-            {
-                TestType.Newtonsoft => CreateNewtonsoftContext().JsonTokenReader.Read(json) as IJsonObject,
-                TestType.DotNet => CreateDotNetContext().JsonTokenReader.Read(json) as IJsonObject,
-                _ => throw new ArgumentOutOfRangeException(nameof(testType), testType, null)
-            };
         }
     }
 }

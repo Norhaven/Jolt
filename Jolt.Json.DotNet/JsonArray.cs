@@ -32,7 +32,19 @@ namespace Jolt.Json.DotNet
         public void Add(IJsonToken? token)
         {
             _arrayElements.Add(token);
-            _token.AsArray().Add(token.ToTypeOf<object>());
+
+            if (token.Type == JsonTokenType.Object)
+            {
+                _token.AsArray().Add(((JsonObject)token).UnderlyingNode);
+            }
+            else if (token.Type == JsonTokenType.Array)
+            {
+                _token.AsArray().Add(((JsonArray)token).UnderlyingNode);
+            }
+            else
+            {
+                _token.AsArray().Add(((JsonValue)token).UnderlyingNode);
+            }
         }
 
         public IEnumerator<IJsonToken> GetEnumerator() => _arrayElements.GetEnumerator();

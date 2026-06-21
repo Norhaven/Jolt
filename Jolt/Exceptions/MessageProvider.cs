@@ -1,13 +1,20 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Jolt.Structure;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace Jolt.Exceptions
 {
     public sealed class MessageProvider : IMessageProvider
     {
         private readonly JoltOptions _options;
+        private readonly List<ExecutionTraceEntry> _executionTraces = new List<ExecutionTraceEntry>();
+        private readonly Stack<ExecutionTraceScope> _executionTraceScopes = new Stack<ExecutionTraceScope>();
+
+        public ExecutionTraceScope? CurrentScope => _executionTraceScopes.Count > 0 ? _executionTraceScopes.Peek() : default;
+        public ExecutionTraceEntry[] ExecutionTraces => _executionTraces.OrderBy(x => x.ExecutionStartedAtTicks).ToArray();
 
         public MessageProvider(JoltOptions options)
         {
@@ -81,6 +88,46 @@ namespace Jolt.Exceptions
             var logger = _options.LoggerFactory?.CreateLogger<T>();
 
             logger?.LogWarning(message, parameters);
+        }
+
+        public void WriteExecutionTraceFor(ExecutionTraceEntry traceEntry)
+        {
+            if (!_options.IsExecutionTracingEnabled)
+            {
+                return;
+            }
+
+            _executionTraces.Add(traceEntry);
+        }
+
+        public ExecutionTraceScope CreateExecutionTraceScope(string? transformerName = default)
+        {
+            var scope = CurrentScope switch
+            {
+                null => transformerName is null ? ExecutionTraceScope.CreateRootScopeWith(this) : new ExecutionTraceScope(this, transformerName),
+                var x => x.OpenTransformerScopeFor(transformerName)
+            };
+
+            _executionTraceScopes.Push(scope);
+            
+            return scope;
+        }
+
+        public ExecutionTraceScope CreateRootExecutionTraceScope()
+        {
+            var scope = ExecutionTraceScope.CreateRootScopeWith(this);
+            
+            _executionTraceScopes.Push(scope);
+            
+            return scope;
+        }
+
+        public void RemoveCurrentScope()
+        {
+            if (_executionTraceScopes.Count > 0)
+            {
+                _executionTraceScopes.Pop();
+            }
         }
     }
 }
