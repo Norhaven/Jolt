@@ -13,6 +13,7 @@ namespace Jolt.Structure
         private readonly IMessageProvider _messageProvider;
         private readonly Stopwatch _scopeTimeTracker = new Stopwatch();
         private readonly Queue<ExecutionTraceCheckpoint> _checkpoints = new Queue<ExecutionTraceCheckpoint>();
+        private readonly Queue<ExecutionTraceEntry> _traceEntries = new Queue<ExecutionTraceEntry>();
         private readonly long _executionStartedAtTicks;
         private bool _isDisposed;
 
@@ -43,22 +44,22 @@ namespace Jolt.Structure
             return new ExecutionTraceScope(_messageProvider, transformerName ?? TransformerName, this);
         }
 
-        public void WriteExpressionTextCheckpoint(string name, string expressionText)
+        public void WriteMethodInvocationCheckpoint(string name)
         {
-            WriteCheckpoint(name, expressionText, Array.Empty<string>(), default);
+            WriteCheckpoint(name, Array.Empty<string>(), default);
         }
 
         public void WriteInputCheckpoint(string name, params string[] inputValues)
         {
-            WriteCheckpoint(name, default, inputValues ?? Array.Empty<string>(), default);
+            WriteCheckpoint(name,  inputValues ?? Array.Empty<string>(), default);
         }
 
         public void WriteOutputCheckpoint(string name, string outputValue)
         {
-            WriteCheckpoint(name, default, Array.Empty<string>(), outputValue);
+            WriteCheckpoint(name, Array.Empty<string>(), outputValue);
         }
 
-        private void WriteCheckpoint(string name, string expressionText, string[] inputValues, string outputValue)
+        private void WriteCheckpoint(string name, string[] inputValues, string outputValue)
         {
             var currentTicks = _scopeTimeTracker.ElapsedTicks;
             var previousTicks = _checkpoints.Count > 0 ? _checkpoints.Peek().TicksSinceScopeOpened : 0L;
@@ -74,9 +75,10 @@ namespace Jolt.Structure
             {
                 if (disposing)
                 {
-                    var scopeClosedEntry = new ExecutionTraceEntry(TransformerName, _executionStartedAtTicks, ScopeTimeElapsed, _checkpoints, "Scope completed");
+                    var scopeClosedEntry = new ExecutionTraceEntry(TransformerName, _executionStartedAtTicks, ScopeTimeElapsed, _checkpoints, "Scope completed", _traceEntries);
 
                     _messageProvider.WriteExecutionTraceFor(scopeClosedEntry);
+                    ParentScope?._traceEntries.Enqueue(scopeClosedEntry);
 
                     _scopeTimeTracker.Stop();
                     _messageProvider.RemoveCurrentScope();

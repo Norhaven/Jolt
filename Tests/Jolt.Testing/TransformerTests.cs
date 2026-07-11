@@ -17,10 +17,14 @@ namespace Jolt.Testing
         protected enum TestExecutionType
         {
             SynchronousString,
-            SynchronousStream,
-            AsynchronousStream,
-            SynchronousReaderWriter,
-            AsynchronousReaderWriter
+            SynchronousStreamWithLines,
+            AsynchronousStreamWithLines,
+            SynchronousReaderWriterWithLines,
+            AsynchronousReaderWriterWithLines,
+            SynchronousStreamWithSequences,
+            SynchronousReaderWriterWithSequences,
+            AsynchronousStreamWithSequences,
+            AsynchronousReaderWriterWithSequences
         }
 
         protected async Task<IJsonObject> ExecuteTestForObjectResult(TransformerTest test, Func<IJsonContext, IJsonContext> configureContext = default, [CallerMemberName] string testMethodName = default, JoltOptions options = default, params string[] partialTransformerNames)
@@ -30,12 +34,12 @@ namespace Jolt.Testing
             return result.AsObject();
         }
 
-        protected Task<IJsonToken> ExecuteTest(TransformerTest test, Func<IJsonContext, IJsonContext> configureContext = default, [CallerMemberName] string testMethodName = default, TestExecutionType executionType = TestExecutionType.SynchronousString, JoltOptions options = default, params string[] partialTransformerNames)
+        protected Task<IJsonToken> ExecuteTest(TransformerTest test, Func<IJsonContext, IJsonContext> configureContext = default, [CallerMemberName] string testMethodName = default, TestExecutionType executionType = TestExecutionType.SynchronousString, JoltOptions options = default, string customSource = default, params string[] partialTransformerNames)
         {
-            return ExecuteTestIfPossible(test, configureContext, testMethodName, partialTransformerNames, executionType, options);
+            return ExecuteTestIfPossible(test, configureContext, testMethodName, partialTransformerNames, executionType, options, customSource);
         }
 
-        private async Task<IJsonToken> ExecuteTestIfPossible(TransformerTest test, Func<IJsonContext, IJsonContext> configureContext, string testMethodName, string[] partialTransformerNames, TestExecutionType executionType, JoltOptions options)
+        private async Task<IJsonToken> ExecuteTestIfPossible(TransformerTest test, Func<IJsonContext, IJsonContext> configureContext, string testMethodName, string[] partialTransformerNames, TestExecutionType executionType, JoltOptions options, string customSource = default)
         {
             var method = GetType().GetMethod(testMethodName);
 
@@ -78,7 +82,7 @@ namespace Jolt.Testing
 
             var transformer = new JoltTransformer<IJsonContext>(context);
 
-            var transformedDocument = await TransformWith(transformer, test.Source, executionType);
+            var transformedDocument = await TransformWith(transformer, customSource ?? test.Source, executionType);
 
             if (transformedDocument == null)
             {
@@ -125,20 +129,64 @@ namespace Jolt.Testing
             switch (executionType)
             {
                 case TestExecutionType.SynchronousString: return transformer.Transform(sourceJson);
-                case TestExecutionType.SynchronousStream: return TransformWithStream(transformer, sourceJson);
-                case TestExecutionType.AsynchronousStream: return await TransformWithStreamAsync(transformer, sourceJson);
-                case TestExecutionType.SynchronousReaderWriter: return TransformWithReaderWriter(transformer, sourceJson);
-                case TestExecutionType.AsynchronousReaderWriter: return await TransformWithReaderWriterAsync(transformer, sourceJson);
+                case TestExecutionType.SynchronousStreamWithLines: return TransformLinesWithStream(transformer, sourceJson);
+                case TestExecutionType.AsynchronousStreamWithLines: return await TransformLinesWithStreamAsync(transformer, sourceJson);
+                case TestExecutionType.SynchronousReaderWriterWithLines: return TransformLinesWithReaderWriter(transformer, sourceJson);
+                case TestExecutionType.AsynchronousReaderWriterWithLines: return await TransformLinesWithReaderWriterAsync(transformer, sourceJson);
+                case TestExecutionType.SynchronousStreamWithSequences: return TransformSequenceWithStream(transformer, sourceJson);
+                case TestExecutionType.AsynchronousStreamWithSequences: return await TransformSequenceWithStreamAsync(transformer, sourceJson);
+                case TestExecutionType.SynchronousReaderWriterWithSequences: return TransformSequenceWithReaderWriter(transformer, sourceJson);
+                case TestExecutionType.AsynchronousReaderWriterWithSequences: return await TransformSequenceWithReaderWriterAsync(transformer, sourceJson);
                 default: throw new NotSupportedException($"The specified execution type '{executionType}' is not supported.");
             }
         }
 
-        private string TransformWithStream(IJsonTransformer<IJsonContext> transformer, string sourceJson)
+        private string TransformLinesWithStream(IJsonTransformer<IJsonContext> transformer, string sourceJson)
+        {
+            return TransformWithStream(sourceJson, (input, output) => transformer.TransformLines(input, output));
+        }
+
+        private Task<string> TransformLinesWithStreamAsync(IJsonTransformer<IJsonContext> transformer, string sourceJson)
+        {
+            return TransformWithStreamAsync(sourceJson, (input, output) => transformer.TransformLinesAsync(input, output));
+        }
+
+        private string TransformLinesWithReaderWriter(IJsonTransformer<IJsonContext> transformer, string sourceJson)
+        {
+            return TransformWithReaderWriter(sourceJson, (reader, writer) => transformer.TransformLines(reader, writer));
+        }
+
+        private Task<string> TransformLinesWithReaderWriterAsync(IJsonTransformer<IJsonContext> transformer, string sourceJson)
+        {
+            return TransformWithReaderWriterAsync(sourceJson, (reader, writer) => transformer.TransformLinesAsync(reader, writer));
+        }
+
+        private string TransformSequenceWithStream(IJsonTransformer<IJsonContext> transformer, string sourceJson)
+        {
+            return TransformWithStream(sourceJson, (input, output) => transformer.TransformSequence(input, output));
+        }
+
+        private Task<string> TransformSequenceWithStreamAsync(IJsonTransformer<IJsonContext> transformer, string sourceJson)
+        {
+            return TransformWithStreamAsync(sourceJson, (input, output) => transformer.TransformSequenceAsync(input, output));
+        }
+
+        private string TransformSequenceWithReaderWriter(IJsonTransformer<IJsonContext> transformer, string sourceJson)
+        {
+            return TransformWithReaderWriter(sourceJson, (reader, writer) => transformer.TransformSequence(reader, writer));
+        }
+
+        private Task<string> TransformSequenceWithReaderWriterAsync(IJsonTransformer<IJsonContext> transformer, string sourceJson)
+        {
+            return TransformWithReaderWriterAsync(sourceJson, (reader, writer) => transformer.TransformSequenceAsync(reader, writer));
+        }
+
+        private string TransformWithStream(string sourceJson, Action<Stream, Stream> transformStream)
         {
             using (var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(sourceJson)))
             using (var outputStream = new MemoryStream())
             {
-                transformer.Transform(inputStream, outputStream);
+                transformStream(inputStream, outputStream);
 
                 outputStream.Seek(0, SeekOrigin.Begin);
 
@@ -149,12 +197,12 @@ namespace Jolt.Testing
             }
         }
 
-        private async Task<string> TransformWithStreamAsync(IJsonTransformer<IJsonContext> transformer, string sourceJson)
+        private async Task<string> TransformWithStreamAsync(string sourceJson, Func<Stream, Stream, Task> transformStreamAsync)
         {
             using (var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(sourceJson)))
             using (var outputStream = new MemoryStream())
             {
-                await transformer.TransformAsync(inputStream, outputStream);
+                await transformStreamAsync(inputStream, outputStream);
 
                 outputStream.Seek(0, SeekOrigin.Begin);
 
@@ -165,22 +213,23 @@ namespace Jolt.Testing
             }
         }
 
-        private string TransformWithReaderWriter(IJsonTransformer<IJsonContext> transformer, string sourceJson)
+        private string TransformWithReaderWriter(string sourceJson, Action<TextReader, TextWriter> transformReaderWriter)
         {
             using (var inputReader = new StringReader(sourceJson))
             using (var outputWriter = new StringWriter())
             {
-                transformer.Transform(inputReader, outputWriter);
+                transformReaderWriter(inputReader, outputWriter);
+
                 return outputWriter.ToString();
             }
         }
 
-        private async Task<string> TransformWithReaderWriterAsync(IJsonTransformer<IJsonContext> transformer, string sourceJson)
+        private async Task<string> TransformWithReaderWriterAsync(string sourceJson, Func<TextReader, TextWriter, Task> transformReaderWriterAsync)
         {
             using (var inputReader = new StringReader(sourceJson))
             using (var outputWriter = new StringWriter())
             {
-                await transformer.TransformAsync(inputReader, outputWriter);
+                await transformReaderWriterAsync(inputReader, outputWriter);
 
                 return outputWriter.ToString();
             }

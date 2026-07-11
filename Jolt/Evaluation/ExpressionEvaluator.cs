@@ -717,7 +717,7 @@ namespace Jolt.Evaluation
             var parameterStrings = actualParameterValues.Select(v => v?.ToString() ?? "null").ToArray();
             var input = string.Join(",", parameterStrings);
 
-            traceScope.WriteExpressionTextCheckpoint($"Invoking method '{call.Signature.Name}'", context.Token.CurrentTransformerToken.ToTypeOf<string>());
+            traceScope.WriteMethodInvocationCheckpoint($"Invoking method '{call.Signature.Name}'");
             traceScope.WriteInputCheckpoint($"Method input '{input}'", parameterStrings);
 
             var resultValue = InvokeMethod(call.Signature, actualParameterValues, context);

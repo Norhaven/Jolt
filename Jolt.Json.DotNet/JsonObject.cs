@@ -166,6 +166,11 @@ namespace Jolt.Json.DotNet
             return new JsonObject(node);
         }
 
+        public string? ToMinifiedString()
+        {
+            return _token?.ToJsonString();
+        }
+
         private static void MergeObjects(JsonElement source, JsonElement overrides, Utf8JsonWriter writer)
         {
             writer.WriteStartObject();

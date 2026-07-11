@@ -16,16 +16,6 @@ namespace Jolt.Structure
         public string TransformerName { get; }
 
         /// <summary>
-        /// Gets the input values used for the method.
-        /// </summary>
-        public string? InputValue { get; }
-
-        /// <summary>
-        /// Gets the output value from the method.
-        /// </summary>
-        public string? OutputValue { get; }
-
-        /// <summary>
         /// The timestamp in UTC that the entry was created.
         /// </summary>
         public DateTimeOffset Timestamp { get; } = DateTimeOffset.UtcNow;
@@ -46,6 +36,11 @@ namespace Jolt.Structure
         public ExecutionTraceCheckpoint[] Checkpoints { get; } = Array.Empty<ExecutionTraceCheckpoint>();
 
         /// <summary>
+        /// Gets the child trace entries that occurred and are nested within this particular trace.
+        /// </summary>
+        public ExecutionTraceEntry[] ChildEntries { get; }
+
+        /// <summary>
         /// The message associated with this particular trace operation.
         /// </summary>
         public string Message { get; }
@@ -58,35 +53,41 @@ namespace Jolt.Structure
         /// <param name="executionTimeElapsed">The total execution time elapsed during this trace.</param>
         /// <param name="checkpoints">The checkpoints that occurred within this trace.</param>
         /// <param name="message">The message associated with this trace.</param>
-        internal ExecutionTraceEntry(string transformerName, long executionStartedAtTicks, TimeSpan executionTimeElapsed, IEnumerable<ExecutionTraceCheckpoint> checkpoints, string message)
+        /// <param name="executionTraceEntries">The sub-entries that are nested under this entry.</param>
+        internal ExecutionTraceEntry(string transformerName, long executionStartedAtTicks, TimeSpan executionTimeElapsed, IEnumerable<ExecutionTraceCheckpoint> checkpoints, string message, IEnumerable<ExecutionTraceEntry>? executionTraceEntries = default)
         {
             TransformerName = transformerName;
             ExecutionStartedAtTicks = executionStartedAtTicks;
             ExecutionTimeElapsed = executionTimeElapsed;
             Checkpoints = checkpoints.ToArray();
+            ChildEntries = executionTraceEntries?.ToArray() ?? Array.Empty<ExecutionTraceEntry>();
             Message = message;
         }
 
         public override string ToString()
         {
+            return ToString(0);
+        }
+
+        private string ToString(int indentCount)
+        {
+            const int PaddingPerIndent = 2;
+
+            var indent = new string(Enumerable.Repeat(' ', PaddingPerIndent * indentCount).ToArray());
+
             var builder = new StringBuilder();
 
-            builder.AppendLine($"{Timestamp} [Transformer: {TransformerName}] {Message}");
+            builder.AppendLine($"{indent}{Timestamp} [Transformer: {TransformerName}] {Message}");
 
             foreach(var checkpoint in Checkpoints)
             {
-                builder.AppendLine($"[Checkpoint: {checkpoint.Name}] at {checkpoint.TimeSinceLastCheckpoint}");
+                builder.AppendLine($"{indent}[Checkpoint: {checkpoint.Name}] at {checkpoint.TimeSinceLastCheckpoint}");
+            }
 
-                if (InputValue != null)
-                {
-                    var input = string.Join(",", checkpoint.InputValues);
-                    builder.AppendLine($"[Input: {input}]");
-                }
-
-                if (OutputValue != null)
-                {
-                    builder.AppendLine($"[Output: {OutputValue}]");
-                }
+            foreach(var entry in ChildEntries)
+            {
+                var entryString = entry.ToString(indentCount + 1);
+                builder.AppendLine(entryString);
             }
 
             return builder.ToString();

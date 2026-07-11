@@ -5,6 +5,7 @@ using Jolt.Extensions;
 using Jolt.Library;
 using Jolt.Parsing;
 using Jolt.Structure;
+using Jolt.Structure.Streaming;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -21,6 +22,8 @@ namespace Jolt
     {
         private readonly TContext _context;
 
+        internal TContext Context => _context;
+        
         public JoltTransformer(TContext context)
         {
             _context = context;
@@ -33,7 +36,7 @@ namespace Jolt
         {
             var source = _context.JsonTokenReader.Read(json);
 
-            if (source == null)
+            if (source is null)
             {
                 throw new InvalidOperationException("The source document could not be read as valid JSON, please verify that your source document is valid.");
             }
@@ -50,106 +53,44 @@ namespace Jolt
             return TransformToken(transformation, EvaluationScope.Empty.CreateClosureOver(source))?.ToString();
         }
 
-        public void Transform(Stream input, Stream output)
+        public void TransformSequence(Stream input, Stream output, StreamingOptions? options = default)
         {
-            using var reader = new StreamReader(input);
-            using var writer = new StreamWriter(output, Encoding.UTF8, bufferSize: 1024, leaveOpen: true);
-
-            while (!reader.EndOfStream)
-            {
-                var line = reader.ReadLine();
-
-                if (line is null)
-                {
-                    continue;
-                }
-
-                var transformed = Transform(line);
-
-                if (transformed is null)
-                {
-                    continue;
-                }
-
-                writer.WriteLine(transformed);
-            }
+            OpenStreamingTransformer(options, x => x.TransformSequence(input, output));
         }
 
-        public void Transform(TextReader input, TextWriter output)
+        public void TransformLines(Stream input, Stream output, StreamingOptions? options = default)
         {
-            while (input.Peek() != -1)
-            {
-                var line = input.ReadLine();
-
-                if (line is null)
-                {
-                    continue;
-                }
-
-                var transformed = Transform(line);
-
-                if (transformed is null)
-                {
-                    continue;
-                }
-
-                output.WriteLine(transformed);
-            }
+            OpenStreamingTransformer(options, x => x.TransformLines(input, output));
         }
 
-        public async Task TransformAsync(Stream input, Stream output, CancellationToken? cancellationToken = default)
+        public void TransformLines(TextReader input, TextWriter output, StreamingOptions? options = default)
         {
-            cancellationToken = cancellationToken ?? CancellationToken.None;
-
-            using var reader = new StreamReader(input);
-            using var writer = new StreamWriter(output, Encoding.UTF8, bufferSize: 1024, leaveOpen: true);
-
-            var currentLine = await reader.ReadLineAsync();
-
-            while(currentLine != null)
-            {
-                var transformed = Transform(currentLine);
-
-                if (transformed is null)
-                {
-                    continue;
-                }
-
-                await writer.WriteLineAsync(transformed);
-                
-                if (cancellationToken.Value.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                currentLine = await reader.ReadLineAsync();
-            }
+            OpenStreamingTransformer(options, x => x.TransformLines(input, output));
         }
 
-        public async Task TransformAsync(TextReader input, TextWriter output, CancellationToken? cancellationToken = default)
+        public Task TransformLinesAsync(Stream input, Stream output, CancellationToken? cancellationToken = default, StreamingOptions? options = default)
         {
-            cancellationToken = cancellationToken ?? CancellationToken.None;
+            return OpenStreamingTransformerAsync(options, async x => x.TransformLinesAsync(input, output, cancellationToken).ConfigureAwait(continueOnCapturedContext: false));
+        }
 
-            var currentLine = await input.ReadLineAsync();
+        public Task TransformLinesAsync(TextReader input, TextWriter output, CancellationToken? cancellationToken = null, StreamingOptions? options = default)
+        {
+            return OpenStreamingTransformerAsync(options, async x => await x.TransformLinesAsync(input, output, cancellationToken).ConfigureAwait(continueOnCapturedContext: false));
+        }
 
-            while (currentLine != null)
-            {
-                var transformed = Transform(currentLine);
+        public void TransformSequence(TextReader reader, TextWriter writer, StreamingOptions? options = default)
+        {
+            OpenStreamingTransformer(options, x => x.TransformSequence(reader, writer));
+        }
 
-                if (transformed is null)
-                {
-                    continue;
-                }
+        public Task TransformSequenceAsync(Stream input, Stream output, CancellationToken? cancellationToken = null, StreamingOptions? options = default)
+        {
+            return OpenStreamingTransformerAsync(options, async x => await x.TransformSequenceAsync(input, output, cancellationToken).ConfigureAwait(continueOnCapturedContext: false));
+        }
 
-                await output.WriteLineAsync(transformed);
-
-                if (cancellationToken.Value.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                currentLine = await input.ReadLineAsync();
-            }
+        public Task TransformSequenceAsync(TextReader reader, TextWriter writer, CancellationToken? cancellationToken = null, StreamingOptions? options = default)
+        {
+            return OpenStreamingTransformerAsync(options, async x => await x.TransformSequenceAsync(reader, writer, cancellationToken).ConfigureAwait(continueOnCapturedContext: false));
         }
 
         public IEnumerable<ValidationIssue> Validate()
@@ -380,6 +321,18 @@ namespace Jolt
                    let attribute = method.GetCustomAttribute<JoltExternalMethodAttribute>()
                    where attribute != null
                    select method.IsStatic ? MethodRegistration.FromStaticMethod(type, method.Name, attribute.Name) : MethodRegistration.FromInstanceMethod(method.Name, attribute.Name);
+        }
+
+        private void OpenStreamingTransformer(StreamingOptions? streamingOptions, Action<JoltStreamingTransformer<TContext>> useTransformer)
+        {
+            var transformer = new JoltStreamingTransformer<TContext>(this, streamingOptions);
+            useTransformer(transformer);
+        }
+
+        private Task OpenStreamingTransformerAsync(StreamingOptions? streamingOptions, Func<JoltStreamingTransformer<TContext>, Task> useTransformer)
+        {
+            var transformer = new JoltStreamingTransformer<TContext>(this, streamingOptions);
+            return useTransformer(transformer);
         }
     }
 }

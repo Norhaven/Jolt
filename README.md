@@ -660,7 +660,7 @@ Here's a final pattern that may prove useful. Last example and we'll move on!
 }
 ```
 
-## Additional Transformer Uses
+## Additional Transformer Usages
 
 You may notice that the `Transform` method on the `JoltJsonTransformer` has a few overloads for convenience when working through larger datasets. The first is a streaming option with the method signature `void Transform(Stream input, Stream output)` and the second is a reader/writer option with this signature `void Transform(TextReader input, TextWriter output)`.
 
@@ -682,21 +682,46 @@ public sealed class ValidationIssue
 }
 ```
 
+# Streaming Large Amounts Of Documents
+
+The `JoltTransformer` class that the `JsonJoltTransformer` types inherit from allows several different ways of interacting with sequences of source data beyond the default `string` input which assumes that it contains only a single object.
+
+First, when you have a series of JSON objects, condensed so that each line has a single complete object, you may find the following methods useful:
+
+| Method | Description 
+| ------ | ----------- 
+| TransformLines(TextReader reader, TextWriter writerStreamingOptions? options) | Reads a single line at a time from the reader, transforms each, and writes the output to the provided writer.
+| TransformLines(Stream input, Stream output, StreamingOptions? options) | Reads a single line at a time from the given stream, transforms each, and writes the output to the provided stream.
+| TransformLinesAsync(TextReader reader, TextWriter writer, CancellationToken? cancellationToken, StreamingOptions? options) | Asynchronously reads a single line at a time from the reader, transforms eacch, and asynchronously writes the output to the provided writer. 
+| TransformLinesAsync(Stream input, Stream output, CancellationToken? cancellationToken, StreamingOptions? options) | Asynchronously reads a single line at a time from the given stream, transforms each, and asynchronously writes the output to the provided stream.
+
+And that's great, but what about when you have a different format than just a single JSON object per line? That's where the following methods come in:
+
+| Method | Description
+| ------ | -----------
+| TransformSequence(TextReader reader, TextWriter writer, StreamingOptions? options) | Reads a single JSON object at a time from the provided reader, transforms each, and writes the output to the provided writer. 
+| TransformSequence(Stream input, Stream output, StreamingOptions? options) | Reads a single JSON object at a time from the provided reader, transforms each, and writes the output to the provided writer. 
+| TransformSequenceAsync(TextReader reader, TextWriter writer, CancellationToken? cancellationToken, StreamingOptions? options) | Asynchronously reads a single JSON object at a time from the provided reader, transforms each, and asynchronously writes the output to the provided writer. 
+| TransformSequenceAsync(Stream input, Stream output, CancellationToken? cancellationToken, StreamingOptions? options) | Asynchronously reads a single JSON object at a time from the provided reader, transforms each, and asynchronously writes the output to the provided writer. 
+
+The `TransformSequence` methods will try to automatically determine the format you're using. They support, in order: RFC7464 JSON Sequences (JSON objects separated by a 0x1E Record Separator byte), JSON objects separated by newlines/whitespace (prettified or not), or a JSON array of JSON objects. The last one will degrade to reading the entire array into memory before processing, so using one of the previous methods that are better supported by streaming would generally be more ideal to preserve application memory.
+
 # Verifying Performance
 
 As a part of the `JoltOptions` instance passed into the transformer when creating it, you can call the `WithExecutionTracing` method on it to enable performance measuring. Each transformer method call will be timed and checkpointed, giving you an opportunity to monitor how performant your transformation operations are.
 
-Performance results will be available after a given transformer run as a part of the `IMessageProvider` instance that's accessible through the `JoltContext` instance, specifically through the `ExecutionTraces` property. The results will be ordered by the time that the operation started, as measured in the number of ticks since it (or its earliest parent) started.
+Performance results will be available after a given transformer run as a part of the `IMessageProvider` instance that's accessible through the `JoltContext` instance, specifically through the `ExecutionTraces` property. Every trace entry will be in this collection, no matter where or when it occurred to give a complete overview of all trace operations, but you can also drill into a given trace entry using the `ChildEntries` property and obtain a tree-style view instead. The overall results will be ordered by the time that an entry's scope (or root-level enclosing scope) started and go from there.
+
+Speaking of scopes, you should know that each entry has its own scope, which marks when that particular trace entry started, any checkpoints that occurred within it, and when it completed.
 ```csharp
 public sealed class ExecutionTraceEntry
 {
     public string TransformerName { get; }
-    public string? InputValue { get; }
-    public string? OutputValue { get; }
     public DateTimeOffset Timestamp { get; }
     public long ExecutionStartedAtTicks { get; }
     public TimeSpan ExecutionTimeElapsed { get; }
     public ExecutionTraceCheckpoint[] Checkpoints { get; }
+    public ExecutionTraceEntry[] ChildEntries { get; } 
     public string Message { get; }
 }
 
@@ -709,12 +734,16 @@ public sealed class ExecutionTraceCheckpoint
     public string? OutputValue { get; }
 }
 ```
-Calling `ToString` on an `ExecutionTraceEntry` instance will provide a more friendly and formatted overview of the data inside. For example, using the timing output of one of the tests:
+Calling `ToString` on a given `ExecutionTraceEntry` instance will provide a more friendly and formatted overview of the data inside it and all of its child entries, if any. For example, using the timing output of one of the tests, you'll notice that the outer scope calling into a partial transformer had a child scope opened within it (which is indented in the output string):
 ```
-6/20/2026 10:10:46 PM +00:00 [Transformer: PartialTransformer] Scope completed
-[Checkpoint: Invoking method 'Transform'] at 00:00:00.0004497
-[Checkpoint: Method input '$.subPath,PartialTransformer,null,Jolt.Evaluation.EvaluationContext'] at 00:00:00.0001654
-[Checkpoint: Method invocation completed with '{"sourceVariableX":null,"sourcePathValue":"test.source.path","integerValue":null,"textValue":null}'] at 00:00:00.0084322
+6/21/2026 5:47:04 PM +00:00 [Transformer: PartialTransformer] Scope completed
+[Checkpoint: Invoking method 'Transform'] at 00:00:00.0004170
+[Checkpoint: Method input '$.subPath,PartialTransformer,null,Jolt.Evaluation.EvaluationContext'] at 00:00:00.0001476
+[Checkpoint: Method invocation completed with '{"sourceVariableX":null,"sourcePathValue":"test.source.path","integerValue":null,"textValue":null}'] at 00:00:04.1448826
+  6/21/2026 5:46:59 PM +00:00 [Transformer: PartialTransformer] Scope completed
+  [Checkpoint: Invoking method 'ValueOf'] at 00:00:00.0115538
+  [Checkpoint: Method input '$.sourcePath,Jolt.Evaluation.EvaluationContext'] at 00:00:00.0000006
+  [Checkpoint: Method invocation completed with 'test.source.path'] at 00:00:00.0006045
 ```
 
 # How To Contribute To This Project

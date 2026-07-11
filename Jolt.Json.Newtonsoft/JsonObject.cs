@@ -1,5 +1,6 @@
 ﻿using Jolt.Structure;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -154,6 +155,11 @@ namespace Jolt.Json.Newtonsoft
             MergeInto(result, (JObject)otherJsonObject._token);
 
             return new JsonObject(result);
+        }
+
+        public string? ToMinifiedString()
+        {
+            return _token?.ToString(Formatting.None);
         }
 
         private static void MergeInto(JObject target, JObject overrides)

@@ -18,6 +18,18 @@ namespace Jolt.Testing
 {
     public abstract class TransformationTests : TransformerTests
     {
+        public virtual async Task PipedMethods_WithTransformingSeriesByLines_IsSuccessful(TransformerTest test)
+        {
+            var sourceDocument = test.JsonContext.JsonTokenReader.Read(test.Source);
+            var flattenedSourceDocument = sourceDocument.AsObject().ToMinifiedString();
+
+            flattenedSourceDocument.Should().NotBeNull("because a valid document was used");
+
+            var lines = $"{flattenedSourceDocument}{Environment.NewLine}{flattenedSourceDocument}";
+
+            await ExecuteTest(test, customSource: lines, executionType: TestExecutionType.SynchronousStreamWithLines);
+        }
+
         public virtual async Task PartialTransformerReference_WithExecutionTrace_IsSuccessful(TransformerTest test)
         {
             var tracesArray = await ExecuteTest(test, options: JoltOptions.Default.WithExecutionTracing(), partialTransformerNames: Transformer.PartialTransformer);
@@ -27,16 +39,16 @@ namespace Jolt.Testing
 
         public virtual async Task ReaderWriterTransformations_AreSuccessful(TransformerTest test)
         {
-            var synchronousJson = await ExecuteTest(test, executionType: TestExecutionType.SynchronousReaderWriter);
-            var asynchronousJson = await ExecuteTest(test, executionType: TestExecutionType.AsynchronousReaderWriter);
+            var synchronousJson = await ExecuteTest(test, executionType: TestExecutionType.SynchronousReaderWriterWithLines);
+            var asynchronousJson = await ExecuteTest(test, executionType: TestExecutionType.AsynchronousReaderWriterWithLines);
 
             synchronousJson.AsArray().ExpectsContentsEqualTo(asynchronousJson.AsArray(), "because both synchronous and asynchronous transformations should produce the same result");
         }
 
         public virtual async Task StreamingTransformations_AreSuccessful(TransformerTest test)
         {
-            var synchronousJson = await ExecuteTest(test, executionType: TestExecutionType.SynchronousStream);
-            var asynchronousJson = await ExecuteTest(test, executionType: TestExecutionType.AsynchronousStream);
+            var synchronousJson = await ExecuteTest(test, executionType: TestExecutionType.SynchronousStreamWithLines);
+            var asynchronousJson = await ExecuteTest(test, executionType: TestExecutionType.AsynchronousStreamWithLines);
 
             synchronousJson.AsArray().ExpectsContentsEqualTo(asynchronousJson.AsArray(), "because both synchronous and asynchronous transformations should produce the same result");
         }

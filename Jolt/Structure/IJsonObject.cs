@@ -51,5 +51,11 @@ namespace Jolt.Structure
         /// <param name="otherObject">The other JSON object to merge with.</param>
         /// <returns>An instance of <see cref="IJsonToken"/> which is the merged JSON structure, if present, null otherwise.</returns>
         IJsonObject? MergeWith(IJsonObject? otherObject);
+
+        /// <summary>
+        /// Gets the single line string representation of the JSON object with all extraneous whitespace, tabs, carriage returns, and line feeds removed.
+        /// </summary>
+        /// <returns>The minified string, if available, otherwise null.</returns>
+        string? ToMinifiedString();
     }
 }

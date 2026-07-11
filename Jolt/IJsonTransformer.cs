@@ -1,4 +1,5 @@
 ﻿using Jolt.Structure;
+using Jolt.Structure.Streaming;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -26,14 +27,16 @@ namespace Jolt
         /// </summary>
         /// <param name="input">The input stream containing the JSON to be transformed.</param>
         /// <param name="output">The output stream where the transformed JSON will be written.</param>
-        void Transform(Stream input, Stream output);
+        /// <param name="options">The streaming options for the transformation.</param>
+        void TransformLines(Stream input, Stream output, StreamingOptions? options = default);
 
         /// <summary>
         /// Transforms JSON input from a reader and writes the result into a JSON writer.
         /// </summary>
         /// <param name="input">The input reader containing the JSON to be transformed.</param>
         /// <param name="output">The output writer where the transformed JSON will be written.</param>
-        void Transform(TextReader input, TextWriter output);
+        ///     
+        void TransformLines(TextReader input, TextWriter output, StreamingOptions? options = default);
 
         /// <summary>
         /// Asynchronously transforms JSON input from a stream into a different JSON output stream.
@@ -41,8 +44,9 @@ namespace Jolt
         /// <param name="input">The input stream containing the JSON to be transformed.</param>
         /// <param name="output">The output stream where the transformed JSON will be written.</param>
         /// <param name="cancellationToken">A token to cancel the transformation operation.</param>
+        /// <param name="options">The streaming options for the transformation.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        Task TransformAsync(Stream input, Stream output, CancellationToken? cancellationToken = default);
+        Task TransformLinesAsync(Stream input, Stream output, CancellationToken? cancellationToken = default, StreamingOptions? options = default);
 
         /// <summary>
         /// Asynchronously transforms JSON input from a reader and writes the result into a JSON writer.
@@ -50,8 +54,53 @@ namespace Jolt
         /// <param name="input">The input reader containing the JSON to be transformed.</param>
         /// <param name="output">The output writer where the transformed JSON will be written.</param>
         /// <param name="cancellationToken">A token to cancel the transformation operation.</param>
+        /// <param name="options">The streaming options for the transformation.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        Task TransformAsync(TextReader input, TextWriter output, CancellationToken? cancellationToken = default);
+        Task TransformLinesAsync(TextReader input, TextWriter output, CancellationToken? cancellationToken = default, StreamingOptions? options = default);
+
+        /// <summary>
+        /// Transforms a sequence of JSON input. This will automatically choose the most applicable means of transforming the individual entries, such as
+        /// using objects separated by an RFC7464 record separator character which will efficiently manage the stream, whereas the worst case scenario (such as
+        /// a single large array containing objects) will involve reading the entire source document into memory at once for processing.
+        /// </summary>
+        /// <param name="input">The input stream containing the JSON sequence to be transformed.</param>
+        /// <param name="output">The output stream where the transformed JSON will be written.</param>
+        /// <param name="options">The streaming options for the transformation.</param>
+        void TransformSequence(Stream input, Stream output, StreamingOptions? options = default);
+
+        /// <summary>
+        /// Transforms a sequence of JSON input. This will automatically choose the most applicable means of transforming the individual entries, such as
+        /// using objects separated by an RFC7464 record separator character which will efficiently manage the stream, whereas the worst case scenario (such as
+        /// a single large array containing objects) will involve reading the entire source document into memory at once for processing.
+        /// </summary>
+        /// <param name="input">The input stream containing the JSON sequence to be transformed.</param>
+        /// <param name="output">The output stream where the transformed JSON will be written.</param>
+        /// <param name="options">The streaming options for the transformation.</param>
+        void TransformSequence(TextReader reader, TextWriter writer, StreamingOptions? options = default);
+
+        /// <summary>
+        /// Transforms a sequence of JSON input. This will automatically choose the most applicable means of transforming the individual entries, such as
+        /// using objects separated by an RFC7464 record separator character which will efficiently manage the stream, whereas the worst case scenario (such as
+        /// a single large array containing objects) will involve reading the entire source document into memory at once for processing.
+        /// </summary>
+        /// <param name="input">The input stream containing the JSON sequence to be transformed.</param>
+        /// <param name="output">The output stream where the transformed JSON will be written.</param>
+        /// <param name="cancellationToken">A token to cancel the transformation operation.</param>
+        /// <param name="options">The streaming options for the transformation.</param>
+        /// <returns>A task representing the asynchronous execution.</returns>
+        Task TransformSequenceAsync(Stream input, Stream output, CancellationToken? cancellationToken = default, StreamingOptions? options = default);
+
+        /// <summary>
+        /// Transforms a sequence of JSON input. This will automatically choose the most applicable means of transforming the individual entries, such as
+        /// using objects separated by an RFC7464 record separator character which will efficiently manage the stream, whereas the worst case scenario (such as
+        /// a single large array containing objects) will involve reading the entire source document into memory at once for processing.
+        /// </summary>
+        /// <param name="input">The input stream containing the JSON sequence to be transformed.</param>
+        /// <param name="output">The output stream where the transformed JSON will be written.</param>
+        /// <param name="cancellationToken">A token to cancel the transformation operation.</param>
+        /// <param name="options">The streaming options for the transformation.</param>
+        /// <returns>A task representing the asynchronous execution.</returns>
+        Task TransformSequenceAsync(TextReader reader, TextWriter writer, CancellationToken? cancellationToken = default, StreamingOptions? options = default);
 
         /// <summary>
         /// Validates the current transformer to ensure it is properly configured and can perform transformations 
