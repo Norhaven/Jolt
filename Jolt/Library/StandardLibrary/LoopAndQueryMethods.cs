@@ -348,7 +348,7 @@ namespace Jolt.Library.StandardLibrary
                 return context.CreateTokenFrom(new Dictionary<string, IJsonToken?>
                 {
                     { "key", keyToken },
-                    { "values", resultsToken }
+                    { "results", resultsToken }
                 }).AsObject();
             }
 

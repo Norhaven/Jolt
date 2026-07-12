@@ -530,7 +530,7 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | reverse | Returns the string or array value with its elements in reverse order | `#reverse($.some.path)` | Property Value
 | flatten | Returns a single array that is the result of recursively flattening an array of nested arrays | `#flatten($.some.path)` | Property Value
 | groupBy | Returns a JSON object that represents the grouping of an array's contents by its individual property values | `#groupBy($.some.path, @x: @x.propertyName)` | Property Value
-| summarizeWith | Returns an object array that's the result of applying an aggregate method to a grouped array's results | `#summarizeWith($.some.group, @seq: #someAggregateMethod(@seq))` | Property Value **
+| summarizeWith | Returns an object array that's the result of applying an aggregate method to a grouped array's key and/or results | `#summarizeWith($.some.group, @group: #someAggregateMethod(@group.key, @group.results))` | Property Value **
 | orderBy | Returns an array in ascending order as determined by its individual property values | `#orderBy($.some.path, @x: @x.propertyName)` | Property Value
 | orderByDesc | Returns an array in descending order as determined by its individual property values | `#orderByDesc($.some.path, @x: @x.propertyName)` | Property Value
 | takeWhile | Returns an array containing the leading elements of an array that satisfy a specified condition | `#takeWhile($.some.path, @x: @x.propertyName > 5)` | Property Value
@@ -634,7 +634,26 @@ The result of that `groupBy` operation would be:
 That grouped things all right, but it's a bit verbose and tries to keep all of the original data. Let's say that we just want to get an idea of the totals for the `valueProperty` for each group. We can use the `summarizeWith` method to do that.
 ```json
 {
-  "summarizedArray": "@valueOf($.groupedArray)->#summarizeWith(@seq: { 'key': @seq.key, 'totalValue': #sum(@seq.results, @y: @y.valueProperty) })"
+  "summarizedArray": "#valueOf($.someArray)->#groupBy(@x: @x.groupingProperty)->#summarizeWith(@group: { 'name': @group.key + ' total', 'totalValue': #sum(@group.results, @y: @y.valueProperty) })"
+}
+```
+You'll notice that `summarizeWith` takes a lambda which will give us access to each group, both the key and the results, and store the summarized data in a property named with the group key. In the example above, for each grouping we're creating an object that contains both a name that incorporates the group key as well as the sum of the results. This will give us a summarized array that looks like this:
+```json
+{
+  "summarizedArray": [
+    {
+      "A": {
+        "name": "A total",
+        "totalValue": 3
+      }
+    },
+    {
+      "B": {
+        "name": "B total",
+        "totalValue": 3
+      }
+    }
+  ]
 }
 ```
 # Operator Precedence And Grammar

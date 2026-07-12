@@ -593,7 +593,7 @@
           "name": "SummarizeWith works with a range variable containing a string array",
           "transformer": {
             "@x": "#valueOf($.stringArray)->#groupBy(@y: #contains(@y, 'is'))",
-            "resultArray": "#summarizeWith(@x, @group: #length(@group.values))"
+            "resultArray": "#summarizeWith(@x, @group: #length(@group.results))"
           },
           "result": {
             "resultArray": [
@@ -1406,13 +1406,27 @@
     {
       "name": "SummarizeWith method works with range variables and lambda expressions",
       "source": {
-        "stringArray": [ "this", "is", "an", "example", "test" ]
+        "stringArray": [ "this", "is", "an", "example", "test" ],        
+        "groupableArray": [
+          {
+            "groupingProperty": "A",
+            "valueProperty": 1
+          },
+          {
+            "groupingProperty": "A",
+            "valueProperty": 2
+          },
+          {
+            "groupingProperty": "B",
+            "valueProperty": 3
+          }
+        ]
       },
       "tests": [
         {
           "name": "SummarizeWith can group by a condition and count elements in each group",
           "transformer": {
-            "results": "#valueOf($.stringArray)->#groupBy(@x: #contains(@x, 'is'))->#summarizeWith(@group: #length(@group.values))"
+            "results": "#valueOf($.stringArray)->#groupBy(@x: #contains(@x, 'is'))->#summarizeWith(@group: #length(@group.results))"
           },
           "result": {
             "results": [
@@ -1421,6 +1435,28 @@
               },
               {
                 "false": 3
+              }
+            ]
+          }
+        },
+        {
+          "name": "SummarizeWith can summarize with a custom aggregation function",
+          "transformer": {
+            "summarizedArray": "#valueOf($.groupableArray)->#groupBy(@x: @x.groupingProperty)->#summarizeWith(@group: { 'name': @group.key + ' total', 'totalValue': #sum(@group.results, @y: @y.valueProperty) })"
+          },
+          "result": {
+            "summarizedArray": [
+              {
+                "A": {
+                  "name": "A total",
+                  "totalValue": 3
+                }
+              },
+              {
+                "B": {
+                  "name": "B total",
+                  "totalValue": 3
+                }
               }
             ]
           }
