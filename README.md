@@ -656,6 +656,19 @@ You'll notice that `summarizeWith` takes a lambda which will give us access to e
   ]
 }
 ```
+It doesn't need to be an object, you could just directly apply some method to the `@group.results`. If, for example, we'd done `#summarizeWith(@group: #sum(@group.results))` on the grouping call above, it would have just produced this:
+```json
+{
+  "summarizedArray": [
+    {
+        "A": 3
+    },
+    {
+        "B": 3
+    }
+  ]
+}
+```
 # Operator Precedence And Grammar
 
 Also, here is a small table of how Jolt regards levels of operator precedence for binary expressions to help you understand how your expressions may be evaluated at runtime. The higher the precedence level, the tighter it binds (e.g. `*` binds tighter than `+` and so multiplication is performed first).
