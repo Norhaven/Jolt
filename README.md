@@ -637,7 +637,7 @@ That grouped things all right, but it's a bit verbose and tries to keep all of t
   "summarizedArray": "#valueOf($.someArray)->#groupBy(@x: @x.groupingProperty)->#summarizeWith(@group: { 'name': @group.key + ' total', 'totalValue': #sum(@group.results, @y: @y.valueProperty) })"
 }
 ```
-You'll notice that `summarizeWith` takes a lambda which will give us access to each group, both the key and the results, and store the summarized data in a property named with the group key. In the example above, for each grouping we're creating an object that contains both a name that incorporates the group key as well as the sum of the results. This will give us a summarized array that looks like this:
+You'll notice that `summarizeWith` takes a lambda which will give us access to each group, both the key and the results, and store the summarized data with a property for the key and one for the summary value. In the example above, for each grouping we're creating an object that contains both a name that incorporates the group key as well as the sum of the results. This will give us a summarized array that looks like this:
 ```json
 {
   "summarizedArray": [
