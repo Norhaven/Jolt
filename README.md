@@ -539,10 +539,10 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | contains | Returns true when an array or string contains the provided value | `#contains($.some.path, 'some string')` | Property Value
 | roundTo | Returns the value of a provided number rounded to the specified decimal places | `#roundTo($.some.path, 2)` | Property Value
 | try | Evaluates an expression and returns the result, or if an error is encountered it evaluates the provided lambda with the exception as a parameter and returns that result instead | `#try(#valueOf($.some.path)->#toInteger(), @e: 'default value')` | Property Value
-| max | Returns the maximum value found within an array of numbers | `#max($.some.path)` | Property Value
-| min | Returns the minimum value found within an array of numbers | `#min($.some.path)` | Property Value
-| sum | Returns the total value found within an array of numbers | `#sum($.some.path)` | Property Value
-| average | Returns the average value found within an array of numbers | `#average($.some.path)` | Property Value
+| max | Returns the maximum value found within an array of numbers  (optionally with a projection lambda) | `#max($.some.path, @x: @x.someValue)` | Property Value
+| min | Returns the minimum value found within an array of numbers  (optionally with a projection lambda) | `#min($.some.path, @x: @x.someValue)` | Property Value
+| sum | Returns the total value found within an array of numbers (optionally with a projection lambda) | `#sum($.some.path, @x: @x.someValue)` | Property Value
+| average | Returns the average value found within an array of numbers  (optionally with a projection lambda) | `#average($.some.path, @x: @x.someValue)` | Property Value
 | joinWith | Returns a string that joins all elements of an array with the provided delimiter | `#joinWith($.some.path, ',')` | Property Name/Value
 | splitOn | Returns an array of substrings from a string value splitting on the provided delimiter | `#splitOn($.some.path, ',')` | Property Value
 | append | Returns a string or array made from appending one or more strings or arrays onto them | `#append($.some.path, 'one', 'two')` | Property Value
@@ -642,13 +642,15 @@ You'll notice that `summarizeWith` takes a lambda which will give us access to e
 {
   "summarizedArray": [
     {
-      "A": {
+      "key": "A",
+      "value": {
         "name": "A total",
         "totalValue": 3
       }
     },
     {
-      "B": {
+      "key": "B",
+      "value": {
         "name": "B total",
         "totalValue": 3
       }
@@ -661,10 +663,12 @@ It doesn't need to be an object, you could just directly apply some method to th
 {
   "summarizedArray": [
     {
-        "A": 3
+        "key": "A",
+        "value": 3
     },
     {
-        "B": 3
+        "key": "B",
+        "value": 3
     }
   ]
 }
@@ -797,6 +801,8 @@ And that's great, but what about when you have a different format than just a si
 | TransformSequenceAsync(Stream input, Stream output, CancellationToken? cancellationToken, StreamingOptions? options) | Asynchronously reads a single JSON object at a time from the provided reader, transforms each, and asynchronously writes the output to the provided writer. 
 
 The `TransformSequence` methods will try to automatically determine the format you're using. They support, in order: RFC7464 JSON Sequences (JSON objects separated by a 0x1E Record Separator byte), JSON objects separated by newlines/whitespace (prettified or not), or a JSON array of JSON objects. The last one will degrade to reading the entire array into memory before processing, so using one of the previous methods that are better supported by streaming would generally be more ideal to preserve application memory.
+
+By default, the output will use the same output format and delimiter as the incoming stream uses. For more control, though, see the `StreamingOptions` class which allows you to choose how the output format is written (e.g. single line per object, multi-line, and others) and which delimiter to use (e.g. RFC7464, newline, and so on).
 
 # Verifying Performance
 
