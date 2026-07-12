@@ -782,7 +782,7 @@ First, when you have a series of JSON objects, condensed so that each line has a
 
 | Method | Description 
 | ------ | ----------- 
-| TransformLines(TextReader reader, TextWriter writerStreamingOptions? options) | Reads a single line at a time from the reader, transforms each, and writes the output to the provided writer.
+| TransformLines(TextReader reader, TextWriter writer, StreamingOptions? options) | Reads a single line at a time from the reader, transforms each, and writes the output to the provided writer.
 | TransformLines(Stream input, Stream output, StreamingOptions? options) | Reads a single line at a time from the given stream, transforms each, and writes the output to the provided stream.
 | TransformLinesAsync(TextReader reader, TextWriter writer, CancellationToken? cancellationToken, StreamingOptions? options) | Asynchronously reads a single line at a time from the reader, transforms eacch, and asynchronously writes the output to the provided writer. 
 | TransformLinesAsync(Stream input, Stream output, CancellationToken? cancellationToken, StreamingOptions? options) | Asynchronously reads a single line at a time from the given stream, transforms each, and asynchronously writes the output to the provided stream.
