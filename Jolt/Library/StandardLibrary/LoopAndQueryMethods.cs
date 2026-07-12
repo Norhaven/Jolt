@@ -360,7 +360,8 @@ namespace Jolt.Library.StandardLibrary
 
                     var result = new QueryMethods(lambda).ExecuteLambda(group, context);
 
-                    token[group["key"]?.ToString()] = result;
+                    token["key"] = group?["key"];
+                    token["value"] = result;
 
                     yield return token;
                 }

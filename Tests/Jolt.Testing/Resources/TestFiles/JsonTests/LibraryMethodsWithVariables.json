@@ -598,10 +598,12 @@
           "result": {
             "resultArray": [
               {
-                "true": 2
+                "key": true,
+                "value": 2
               },
               {
-                "false": 2
+                "key": false,
+                "value": 2
               }
             ]
           }
@@ -1431,10 +1433,12 @@
           "result": {
             "results": [
               {
-                "true": 2
+                "key": true,
+                "value": 2
               },
               {
-                "false": 3
+                "key": false,
+                "value": 3
               }
             ]
           }
@@ -1447,13 +1451,15 @@
           "result": {
             "summarizedArray": [
               {
-                "A": {
+                "key": "A",
+                "value": {
                   "name": "A total",
                   "totalValue": 3
                 }
               },
               {
-                "B": {
+                "key": "B",
+                "value": {
                   "name": "B total",
                   "totalValue": 3
                 }

@@ -8,13 +8,11 @@ namespace Jolt.Structure.Streaming
     {
         public StreamingOutputFormat OutputFormat { get; }
         public StreamingDelimiter Delimiter { get; }
-        public bool IsAsync { get; }
 
-        public StreamingOptions(StreamingOutputFormat outputFormat = StreamingOutputFormat.Default, StreamingDelimiter delimiter = StreamingDelimiter.Default, bool isAsync = true)
+        public StreamingOptions(StreamingOutputFormat outputFormat = StreamingOutputFormat.Default, StreamingDelimiter delimiter = StreamingDelimiter.Default)
         {
             OutputFormat = outputFormat;
             Delimiter = delimiter;
-            IsAsync = isAsync;
         }
     }
 }

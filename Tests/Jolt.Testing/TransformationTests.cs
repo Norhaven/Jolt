@@ -287,7 +287,8 @@ namespace Jolt.Testing
             json[TargetProperty.AppendedArray].AsArray().ExpectsContains("one", "two", "three", "one", "two", "three");
             json[TargetProperty.AppendedObject].AsObject().ExpectsContainsProperties(("first", 1), ("second", 2));
             json[TargetProperty.Group].AsArray().ExpectsContainsProperties((0, "key", "one"), (1, "key", "two"));
-            json[TargetProperty.Summary].AsArray().ExpectsContainsProperties((0, "one", 6), (1, "two", 2));
+            json[TargetProperty.Summary].AsArray().ExpectsContainsProperties((0, "key", "one"), (1, "key", "two"));
+            json[TargetProperty.Summary].AsArray().ExpectsContainsProperties((0, "value", 6), (1, "value", 2));
             json[TargetProperty.Order].AsArray().ExpectsContainsProperties((0, "type", "one"), (1, "type", "one"), (2, "type", "two"));
             json[TargetProperty.Order1].AsArray().ExpectsContains(1, 2, 3);
             json[TargetProperty.OrderDesc].AsArray().ExpectsContainsProperties((0, "type", "two"), (1, "type", "one"), (2, "type", "one"));
