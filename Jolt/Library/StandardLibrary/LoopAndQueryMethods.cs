@@ -173,72 +173,34 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Maximum(object? value, [OptionalParameter(default)] LambdaMethod? lambda, EvaluationContext context)
         {
-            if (value is RangeVariable variable)
-            {
-                value = variable.Value;
+            var resolved = ResolveValueWithOptionalProjection(value, lambda, context);
 
-                if (lambda != null)
-                {
-                    value = Select(value, lambda, context);
-                }
-            }
-
-            return AsIntegerOrFloatingPoint(value, x => x.Max(), x => x.Max(), context);
+            return AsIntegerOrFloatingPoint(resolved, x => x.Max(), x => x.Max(), context);
         }
 
         [JoltLibraryMethod("min")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Minimum(object? value, [OptionalParameter(default)] LambdaMethod? lambda, EvaluationContext context)
         {
-            if (value is RangeVariable variable)
-            {
-                value = variable.Value;
+            var resolved = ResolveValueWithOptionalProjection(value, lambda, context);
 
-                if (lambda != null)
-                {
-                    value = Select(value, lambda, context);
-                }
-            }
-
-            return AsIntegerOrFloatingPoint(value, x => x.Min(), x => x.Min(), context);
+            return AsIntegerOrFloatingPoint(resolved, x => x.Min(), x => x.Min(), context);
         }
 
         [JoltLibraryMethod("sum")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Sum(object? value, [OptionalParameter(default)] LambdaMethod? lambda, EvaluationContext context)
         {
-            if (value is RangeVariable variable)
-            {
-                value = variable.Value;
+            var resolved = ResolveValueWithOptionalProjection(value, lambda, context);
 
-                if (lambda != null)
-                {
-                    value = Select(value, lambda, context);
-                }
-            }
-
-            return AsIntegerOrFloatingPoint(value, x => x.Sum(), x => x.Sum(), context);
+            return AsIntegerOrFloatingPoint(resolved, x => x.Sum(), x => x.Sum(), context);
         }
 
         [JoltLibraryMethod("average")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Average(object? value, [OptionalParameter(default)] LambdaMethod? lambda, EvaluationContext context)
         {
-            var resolved = context.ResolveQueryPathIfPresent(value);
-
-            if (value is RangeVariable variable)
-            {
-                value = variable.Value;
-
-                if (lambda != null)
-                {
-                    resolved = Select(value, lambda, context);
-                }
-                else
-                {
-                    resolved = value;
-                }
-            }
+            var resolved = ResolveValueWithOptionalProjection(value, lambda, context);
 
             object? average = resolved switch
             {
@@ -378,17 +340,16 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? SummarizeWith(object? value, LambdaMethod lambda, EvaluationContext context)
         {
-            (object Key, IJsonArray? Results) ConvertToGroup(IJsonToken? groupToken)
+            IJsonObject? ConvertToGroup(IJsonToken? groupToken)
             {
                 var keyToken = groupToken?.AsObject()["key"];
                 var resultsToken = groupToken?.AsObject()["results"].AsArray();
 
-                if (keyToken is null || resultsToken is null)
+                return context.CreateTokenFrom(new Dictionary<string, IJsonToken?>
                 {
-                    return (default, context.CreateArrayFrom(Array.Empty<IJsonToken>()).AsArray());
-                }
-
-                return (keyToken.ToTypeOf<object>(), resultsToken);
+                    { "key", keyToken },
+                    { "values", resultsToken }
+                }).AsObject();
             }
 
             IEnumerable<IJsonToken> CreateSummaryFor(IJsonArray array)
@@ -397,9 +358,9 @@ namespace Jolt.Library.StandardLibrary
                 {
                     var token = context.CreateTokenFrom(new object()).AsObject();
 
-                    var result = new QueryMethods(group.Results, lambda).ExecuteLambda(group.Results, context);
+                    var result = new QueryMethods(lambda).ExecuteLambda(group, context);
 
-                    token[group.Key?.ToString()] = result;
+                    token[group["key"]?.ToString()] = result;
 
                     yield return token;
                 }
@@ -422,14 +383,41 @@ namespace Jolt.Library.StandardLibrary
             return resultToken;
         }
 
+        private static object? ResolveValueWithOptionalProjection(object? value, LambdaMethod? projection, EvaluationContext context)
+        {
+            var resolved = context.ResolveValueOf<object>(value);
+
+            if (resolved is DereferencedPath path)
+            {
+                if (path.MissingPaths.Length > 0)
+                {
+                    throw context.CreateExecutionErrorFor<LoopAndQueryMethods>(ExceptionCode.UnableToPerformLibraryCallOnMissingPath, path.MissingPaths[0]);
+                }
+
+                if (projection != null)
+                {
+                    value = Select(path.ObtainableToken, projection, context);
+                }
+            }
+            else if (value is RangeVariable variable)
+            {
+                value = variable.Value;
+
+                if (projection != null)
+                {
+                    value = Select(value, projection, context);
+                }
+            }
+
+            return value;
+        }
+
         private static IJsonToken? AsIntegerOrFloatingPoint(object? value, Func<IEnumerable<long>, long?> asInt64, Func<IEnumerable<double>, double> asDecimal, EvaluationContext context)
         {
-            var resolved = context.ResolveQueryPathIfPresent(value);
-
             // We're separating out the integer sum from the floating point so we won't
             // potentially get a rounding representation error by always defaulting to double.
 
-            var integerValue = resolved switch
+            var integerValue = value switch
             {
                 IEnumerable<int> integers => asInt64(integers.Cast<long>()),
                 IEnumerable<long> integers => asInt64(integers),

@@ -128,7 +128,8 @@ namespace Jolt.Exceptions
             [ExceptionCode.AttemptedToUseNonMethodExpressionWithinWhenLibraryCall] = "Attempted to use expression '{0}' that is not a statement method call as the condition within a #when() library call",
             [ExceptionCode.UnsafeMethodCallNotAllowed] = "Unsafe method calls are not allowed in the current evaluation mode, unable to call unsafe method '{0}'",
             [ExceptionCode.UnableToLocateReferencedTransformer] = "Unable to locate referenced transformer '{0}' for use within #transformWith() library call",
-            [ExceptionCode.AttemptedToUseUndeclaredVariable] = "Attempted to use undeclared variable '{0}'"
+            [ExceptionCode.AttemptedToUseUndeclaredVariable] = "Attempted to use undeclared variable '{0}'",
+            [ExceptionCode.UnableToPerformLibraryCallOnMissingPath] = "Unable to perform library call using missing path '{0}'",
         };
 
         public static JoltException CreateParsingErrorFrom(ExceptionCode code, JoltException? innerException, params object[] parameters)

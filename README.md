@@ -530,7 +530,7 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | reverse | Returns the string or array value with its elements in reverse order | `#reverse($.some.path)` | Property Value
 | flatten | Returns a single array that is the result of recursively flattening an array of nested arrays | `#flatten($.some.path)` | Property Value
 | groupBy | Returns a JSON object that represents the grouping of an array's contents by its individual property values | `#groupBy($.some.path, @x: @x.propertyName)` | Property Value
-| summarizeWith | Returns an object array that's the result of applying an aggregate method to a grouped array's results | `#summarizeWith($.some.group, @seq: #someAggregateMethod(@seq))` | Property Value
+| summarizeWith | Returns an object array that's the result of applying an aggregate method to a grouped array's results | `#summarizeWith($.some.group, @seq: #someAggregateMethod(@seq))` | Property Value **
 | orderBy | Returns an array in ascending order as determined by its individual property values | `#orderBy($.some.path, @x: @x.propertyName)` | Property Value
 | orderByDesc | Returns an array in descending order as determined by its individual property values | `#orderByDesc($.some.path, @x: @x.propertyName)` | Property Value
 | takeWhile | Returns an array containing the leading elements of an array that satisfy a specified condition | `#takeWhile($.some.path, @x: @x.propertyName > 5)` | Property Value
@@ -575,6 +575,68 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 
 <h6>* The #eval method is considered unsafe because it can execute any expression, including ones that may have unwanted side effects or security implications. It should be used with caution and only with trusted input. In order to enable unsafe method usage, the JoltOptions instance that can be passed into your JoltJsonTransformer has a method called WithUnsafeAllowed that will enable this. Use with caution!</h6>
 
+<h6>** I'd also like to call out the summarizeWith method, which on its surface can be a little confusing, so let's break it apart a little bit.</h6>
+
+The `summarizeWith` method is a powerful tool that allows you to perform aggregation operations on a grouped array of objects. It takes a path or value to the group, and a lambda function that defines how to summarize the group. Let's take a look at some objects in an array that could be grouped.
+```json
+{
+  "someArray": [
+    {
+      "groupingProperty": "A",
+      "valueProperty": 1
+    },
+    {
+      "groupingProperty": "A",
+      "valueProperty": 2
+    },
+    {
+      "groupingProperty": "B",
+      "valueProperty": 3
+    }
+  ]
+}
+```
+Let's do a simple grouping and see what that outputs.
+```json
+{
+  "groupedArray": "#groupBy($.someArray, @x: @x.groupingProperty)"
+}
+```
+The result of that `groupBy` operation would be:
+```json
+{
+  "groupedArray": [
+    {
+      "key": "A",
+      "results": [
+        {
+          "groupingProperty": "A",
+          "valueProperty": 1
+        },
+        {
+          "groupingProperty": "A",
+          "valueProperty": 2
+        }
+      ]
+    },
+    {
+      "key": "B",
+      "results": [
+        {
+          "groupingProperty": "B",
+          "valueProperty": 3
+        }
+      ]
+    }
+  ]
+}
+```
+That grouped things all right, but it's a bit verbose and tries to keep all of the original data. Let's say that we just want to get an idea of the totals for the `valueProperty` for each group. We can use the `summarizeWith` method to do that.
+```json
+{
+  "summarizedArray": "@valueOf($.groupedArray)->#summarizeWith(@seq: { 'key': @seq.key, 'totalValue': #sum(@seq.results, @y: @y.valueProperty) })"
+}
+```
 # Operator Precedence And Grammar
 
 Also, here is a small table of how Jolt regards levels of operator precedence for binary expressions to help you understand how your expressions may be evaluated at runtime. The higher the precedence level, the tighter it binds (e.g. `*` binds tighter than `+` and so multiplication is performed first).
@@ -662,9 +724,7 @@ Here's a final pattern that may prove useful. Last example and we'll move on!
 
 ## Additional Transformer Usages
 
-You may notice that the `Transform` method on the `JoltJsonTransformer` has a few overloads for convenience when working through larger datasets. The first is a streaming option with the method signature `void Transform(Stream input, Stream output)` and the second is a reader/writer option with this signature `void Transform(TextReader input, TextWriter output)`.
-
-The only difference between these and the string-oriented overload is that these will read the stream or reader one line at a time and expect it to be a complete JSON object, transform that object as per usual, and write it to the other stream or writer. This allows you to handle a series of JSON objects that need to be transformed in a way that's more friendly to your application's memory usage as only one object at a time will be actually loaded and used.
+Let's talk about a few different options you have for interacting with your data that may help you out in certain scenarios.
 
 # Validating Your Transformer Syntax
 
@@ -686,7 +746,7 @@ public sealed class ValidationIssue
 
 The `JoltTransformer` class that the `JsonJoltTransformer` types inherit from allows several different ways of interacting with sequences of source data beyond the default `string` input which assumes that it contains only a single object.
 
-First, when you have a series of JSON objects, condensed so that each line has a single complete object, you may find the following methods useful:
+First, when you have a series of JSON objects, condensed so that each line has a single complete object such as in NDJSON / JSON Lines, you may find the following methods useful:
 
 | Method | Description 
 | ------ | ----------- 

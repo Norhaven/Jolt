@@ -130,6 +130,15 @@ namespace Jolt.Json.DotNet
             {
                 return variable.Value;
             }
+            else if (value is DereferencedPath path)
+            {
+                if (path.MissingPaths.Length > 0)
+                {
+                    return default;
+                }
+
+                return path.ObtainableToken;
+            }
 
             return JsonToken.FromObject(JsonSerializer.SerializeToNode(value));
         }

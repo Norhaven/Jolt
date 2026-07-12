@@ -238,6 +238,8 @@ namespace Jolt.Exceptions
         [Description("JLT561")]
         UnableToLocateReferencedTransformer,
         [Description("JLT562")]
-        AttemptedToUseUndeclaredVariable
+        AttemptedToUseUndeclaredVariable,
+        [Description("JLT563")]
+        UnableToPerformLibraryCallOnMissingPath
     }
 }

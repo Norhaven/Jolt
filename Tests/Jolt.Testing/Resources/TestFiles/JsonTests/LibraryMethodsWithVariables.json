@@ -593,15 +593,15 @@
           "name": "SummarizeWith works with a range variable containing a string array",
           "transformer": {
             "@x": "#valueOf($.stringArray)->#groupBy(@y: #contains(@y, 'is'))",
-            "resultArray": "#summarizeWith(@x, @seq: #length(@seq))"
+            "resultArray": "#summarizeWith(@x, @group: #length(@group.values))"
           },
           "result": {
             "resultArray": [
               {
-                "True": 2
+                "true": 2
               },
               {
-                "False": 2
+                "false": 2
               }
             ]
           }
@@ -1412,15 +1412,15 @@
         {
           "name": "SummarizeWith can group by a condition and count elements in each group",
           "transformer": {
-            "results": "#valueOf($.stringArray)->#groupBy(@x: #contains(@x, 'is'))->#summarizeWith(@seq: #length(@seq))"
+            "results": "#valueOf($.stringArray)->#groupBy(@x: #contains(@x, 'is'))->#summarizeWith(@group: #length(@group.values))"
           },
           "result": {
             "results": [
               {
-                "True": 2
+                "true": 2
               },
               {
-                "False": 3
+                "false": 3
               }
             ]
           }
