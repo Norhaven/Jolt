@@ -316,6 +316,27 @@ namespace Jolt.Library.StandardLibrary
             return context.CreateArrayFrom(takenItems.ToArray());
         }
 
+        [JoltLibraryMethod("take")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? Take(object value, object amountToTake, EvaluationContext context)
+        {
+            if (value is null)
+            {
+                return context.CreateArrayFrom(Array.Empty<IJsonToken>());
+            }
+
+            var resolved = context.ResolveValueOf<IJsonArray>(value);
+            var resolvedAmount = context.ResolveValueOf(amountToTake, typeof(int));
+
+            var takenItems = resolved switch
+            {
+                IJsonArray array => new QueryMethods(array).Take(context, (int)resolvedAmount),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for any with unsupported object type '{value?.GetType()}'")
+            };
+
+            return context.CreateArrayFrom(takenItems.ToArray());
+        }
+
         [JoltLibraryMethod("skipWhile")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? SkipWhile(object? value, LambdaMethod lambda, EvaluationContext context)
@@ -334,6 +355,102 @@ namespace Jolt.Library.StandardLibrary
             };
 
             return context.CreateArrayFrom(takenItems.ToArray());
+        }
+
+        [JoltLibraryMethod("skip")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? Skip(object? value, object amountToSkip, EvaluationContext context)
+        {
+            if (value is null)
+            {
+                return context.CreateArrayFrom(Array.Empty<IJsonToken>());
+            }
+
+            var resolved = context.ResolveValueOf<IJsonArray>(value);
+            var resolvedAmount = context.ResolveValueOf(amountToSkip, typeof(int));
+
+            var takenItems = resolved switch
+            {
+                IJsonArray array => new QueryMethods(array).Skip(context, (int)resolvedAmount),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for any with unsupported object type '{value?.GetType()}'")
+            };
+
+            return context.CreateArrayFrom(takenItems.ToArray());
+        }
+
+        [JoltLibraryMethod("keysFrom")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? KeysFrom(object? value, EvaluationContext context)
+        {
+            if (value is null)
+            {
+                return context.CreateArrayFrom(Array.Empty<IJsonToken>());
+            }
+
+            var resolved = (IJsonObject)context.ResolveValueOf<IJsonObject>(value);
+
+            return context.CreateArrayFrom(resolved.Select(k => context.CreateTokenFrom(k.PropertyName)).ToArray());
+        }
+
+        [JoltLibraryMethod("valuesFrom")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? ValuesFrom(object? value, EvaluationContext context)
+        {
+            if (value is null)
+            {
+                return context.CreateArrayFrom(Array.Empty<IJsonToken>());
+            }
+
+            var resolved = (IJsonObject)context.ResolveValueOf<IJsonObject>(value);
+
+            return context.CreateArrayFrom(resolved.Select(k => k.Value).ToArray());
+        }
+
+        [JoltLibraryMethod("reduce")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? Reduce(object? value, LambdaMethod lambda, EvaluationContext context)
+        {
+            var resolved = context.ResolveValueOf<IJsonArray>(value);
+
+            var query = resolved switch
+            {
+                IJsonArray array => new QueryMethods(array, lambda),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for reduce with unsupported object type '{value?.GetType()}'")
+            };
+
+            // When we don't have enough to reduce, just early out and ignore the lambda.
+
+            var startingElements = query.Sequence.Take(2).ToArray();
+
+            if (startingElements.Length == 0 || startingElements.Length == 1)
+            {
+                return startingElements.FirstOrDefault();
+            }
+
+            IJsonToken? accumulator = startingElements[0];
+
+            foreach (var item in query.Sequence.Skip(1))
+            {
+                accumulator = query.ExecuteLambda(accumulator, item, context);
+            }
+
+            return accumulator;
+        }
+
+        [JoltLibraryMethod("zip")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? Zip(object? first, object? second, LambdaMethod lambda, EvaluationContext context)
+        {
+            var resolvedFirst = context.ResolveValueOf<IJsonArray>(first);
+            var resolvedSecond = context.ResolveValueOf<IJsonArray>(second);
+
+            var zipped = (resolvedFirst, resolvedSecond) switch
+            {
+                (IJsonArray array1, IJsonArray array2) => new QueryMethods(array1, lambda).Zip(array2, context),
+                _ => throw new ArgumentOutOfRangeException(nameof(first), $"Unable to check contents for zip with unsupported object type '{first?.GetType()}'")
+            };
+
+            return context.CreateArrayFrom(zipped.ToArray());
         }
 
         [JoltLibraryMethod("summarizeWith")]

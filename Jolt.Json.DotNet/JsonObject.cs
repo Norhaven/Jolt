@@ -104,7 +104,7 @@ namespace Jolt.Json.DotNet
                     var property = pathParts[i];
                     var isFinalProperty = i == pathParts.Length - 1;
 
-                    var newObject = isFinalProperty ? underlyingValue : new Nodes.JsonObject();
+                    var newObject = isFinalProperty ? underlyingValue.DeepClone() : new Nodes.JsonObject();
 
                     current[property] = newObject;
 

@@ -278,8 +278,9 @@ namespace Jolt.Evaluation
         private LambdaMethod EvaluateLambdaExpression(LambdaMethodExpression lambda, EvaluationContext context)
         {
             var variable = UnwrapRangeVariable(lambda.Variable, context);
+            var secondVariable = lambda.Variable is RangeVariablePairExpression pair ? UnwrapRangeVariable(pair.SecondVariable, context) : null;
 
-            return new LambdaMethod(variable, lambda.Body);
+            return new LambdaMethod(variable, secondVariable, lambda.Body);
         }
 
         private object ExtractPath(PathExpression path, EvaluationContext context)

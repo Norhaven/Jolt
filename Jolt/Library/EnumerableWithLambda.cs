@@ -26,8 +26,8 @@ namespace Jolt.Library
             }
         }
 
-        protected IEnumerable<IJsonToken> Sequence { get; }
-        protected LambdaMethod Lambda { get; }
+        public IEnumerable<IJsonToken> Sequence { get; }
+        public LambdaMethod Lambda { get; }
 
         public EnumerableWithLambda(IEnumerable<IJsonToken> sequence, LambdaMethod lambda)
         {
@@ -41,6 +41,27 @@ namespace Jolt.Library
             var loopVariable = new RangeVariable(Lambda.Variable.Name, itemToken);
 
             context.Scope.AddOrUpdateVariable(loopVariable);
+
+            try
+            {
+                return execute(Lambda.Body, context);
+            }
+            finally
+            {
+                context.Scope.RemoveCurrentVariablesLayer();
+            }
+        }
+
+        public QueryResult<IJsonToken> ExecuteLambdaWith(IJsonToken value, IJsonToken secondValue, EvaluationContext context, Func<Expression, EvaluationContext, QueryResult<IJsonToken>> execute)
+        {
+            var itemToken = context.CreateTokenFrom(value);
+            var secondItemToken = context.CreateTokenFrom(secondValue);
+
+            var variable = new RangeVariable(Lambda.Variable.Name, itemToken);
+            var secondVariable = new RangeVariable(Lambda.SecondVariable.Name, secondItemToken);
+
+            context.Scope.AddOrUpdateVariable(variable);
+            context.Scope.AddOrUpdateVariable(secondVariable);
 
             try
             {
@@ -85,7 +106,29 @@ namespace Jolt.Library
             }
         }
 
-        protected IEnumerable<IJsonToken> TakeWhile(EvaluationContext context)
+        protected IEnumerable<IJsonToken> ProjectZip(IJsonArray secondSequence, EvaluationContext context)
+        {
+            var enumerator = secondSequence.GetEnumerator();
+
+            foreach (var item in Sequence)
+            {
+                if (!enumerator.MoveNext())
+                {
+                    yield break;
+                }
+
+                var secondItem = enumerator.Current;
+
+                var zippedToken = ExecuteLambdaWith(item, secondItem, context, (body, ctx) => QueryResult<IJsonToken>.Some(ExecuteLambdaBody(body, ctx)));
+
+                if (zippedToken.HasResult)
+                {
+                    yield return zippedToken.Result;
+                }
+            }
+        }
+
+        protected virtual IEnumerable<IJsonToken> TakeWhile(EvaluationContext context)
         {
             foreach (var item in Sequence)
             {
@@ -107,6 +150,23 @@ namespace Jolt.Library
                 {
                     yield break;
                 }
+            }
+        }
+
+        protected virtual IEnumerable<IJsonToken> Take(EvaluationContext context, int count)
+        {
+            var taken = 0;
+
+            foreach (var item in Sequence)
+            {
+                if (taken >= count)
+                {
+                    yield break;
+                }
+
+                yield return item;
+
+                taken++;
             }
         }
 
@@ -132,6 +192,22 @@ namespace Jolt.Library
                 {
                     yield return result.Result;
                 }
+            }
+        }
+
+        protected virtual IEnumerable<IJsonToken> Skip(EvaluationContext context, int count)
+        {
+            var skipped = 0;
+
+            foreach (var item in Sequence)
+            {
+                if (skipped < count)
+                {
+                    skipped++;
+                    continue;
+                }
+
+                yield return item;
             }
         }
 

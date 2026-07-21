@@ -115,6 +115,7 @@ namespace Jolt.Library.StandardLibrary
             {
                 DereferencedPath pathValue when pathValue.MissingPaths.Length == 0 => pathValue.ObtainableToken,
                 DereferencedPath pathValue => throw context.CreateExecutionErrorFor<StatementMethods>(ExceptionCode.AttemptedToDereferenceMissingPath, pathValue.MissingPaths.Join('.'), pathValue.ObtainableToken.PropertyName),
+                RangeVariable variable => context.CreateTokenFrom(variable.Value),
                 string pathValue => context.ResolveQueryPathIfPresent(pathValue) is IJsonToken pathToken ? pathToken : context.CreateTokenFrom(pathValue),
                 object obj => context.CreateTokenFrom(obj),
                 null => context.CreateTokenFrom(null)

@@ -426,12 +426,12 @@ You can also conditionally execute statements within a `using` block by using th
 ```json
 {
     "#using($.some as @x) into 'result'": [
-        "#when(#exists(@x.integerArray), #removeAt(@x.integerArray), #removeAt(@.otherComplexObject))",
+        "#when(#exists(@x.integerArray), #removeAt(@x.integerArray), #removeAt(@x.otherComplexObject))",
         "#when(#valueOf(@x.complexObject.some.path) > 3, #setAt(@x.complexObject.some.other.path, 20))"
     ]
 }
 ```
-Lastly, you can take advantage of pre-processing variables with a `using` block much the same way as a `foreach` loop does by assigning the output to a variable instead of a named property, which can be used either in a subsequent `using` block or other valid variable uses.
+Following that up, you can also take advantage of pre-processing variables with a `using` block much the same way as a `foreach` loop does by assigning the output to a variable instead of a named property, which can be used either in a subsequent `using` block or other valid variable uses.
 ```json
 {
     "#using($.some.path as @x) into @tempResult": [
@@ -439,6 +439,17 @@ Lastly, you can take advantage of pre-processing variables with a `using` block 
     ],
     "#using(@tempResult as @x) into 'actualResult'": [
         "#setAt(@x.some.path, 'text')"
+    ]
+}
+```
+And lastly, the `#setAt` method can take a value that's derived from an outer-scoped range variable or non-statement method call, much as you would with a `when` condition. Rewriting the previous example that used literal values to demonstrate this, we could do:
+```json
+{
+    "@newValue": "#valueOf($.some.newValue)",
+    "#using($.some as @x) into 'result'": [
+        "#removeAt(@x.integerArray)",
+        "#setAt(@x.complexObject.new.value, @newValue)",
+        "#setAt(@x.complexObject.some.path, #valueOf($.someOtherValue))"
     ]
 }
 ```
@@ -533,9 +544,15 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | summarizeWith | Returns an object array that's the result of applying an aggregate method to a grouped array's key and/or results | `#summarizeWith($.some.group, @group: #someAggregateMethod(@group.key, @group.results))` | Property Value **
 | orderBy | Returns an array in ascending order as determined by its individual property values | `#orderBy($.some.path, @x: @x.propertyName)` | Property Value
 | orderByDesc | Returns an array in descending order as determined by its individual property values | `#orderByDesc($.some.path, @x: @x.propertyName)` | Property Value
+| take | Returns an array containing the leading elements of an array up to the specified count | `#take($.some.path, 5)` | Property Value
+| skip | Returns an array excluding the leading elements of an array up to the specified count | `#skip($.some.path, 5)` | Property Value
 | takeWhile | Returns an array containing the leading elements of an array that satisfy a specified condition | `#takeWhile($.some.path, @x: @x.propertyName > 5)` | Property Value
 | skipWhile | Returns an array excluding the leading elements of an array that satisfy a specified condition | `#skipWhile($.some.path, @x: @x.propertyName > 5)` | Property Value
 | distinct | Returns an array of items associated with distinct values of a specified property or scalar values | `#distinct($.some.path, @x: @x.propertyName)` | Property Value
+| reduce | Returns a single value that is the accumulated result of applying a two-parameter lambda (the accumulated value and the current value) to each element of an array | `#reduce($.some.path, @acc;@current: @acc + @current)` | Property Value
+| zip | Returns a single array that is the result of combining two arrays by pairs with a two-parameter lambda (the first element and the second element) | `#zip($.some.path, $some.other.path, @x;@y: { 'first': @x, 'second': @y })` | Property Value
+| keysFrom | Returns an array of the property names of an object | `#keysFrom($.some.path)` | Property Value
+| valuesFrom | Returns an array of the property values of an object | `#valuesFrom($.some.path)` | Property Value
 | contains | Returns true when an array or string contains the provided value | `#contains($.some.path, 'some string')` | Property Value
 | roundTo | Returns the value of a provided number rounded to the specified decimal places | `#roundTo($.some.path, 2)` | Property Value
 | try | Evaluates an expression and returns the result, or if an error is encountered it evaluates the provided lambda with the exception as a parameter and returns that result instead | `#try(#valueOf($.some.path)->#toInteger(), @e: 'default value')` | Property Value
@@ -673,6 +690,8 @@ It doesn't need to be an object, you could just directly apply some method to th
   ]
 }
 ```
+It's also worth noting that the `summarizeWith` method does not explicitly need to be called off of a `groupBy` method, as long as what you are feeding it is in the shape of what the `groupBy` method outputs (namely a key and a results array). The `groupBy` method just takes some of that work out of the process for you.
+
 # Operator Precedence And Grammar
 
 Also, here is a small table of how Jolt regards levels of operator precedence for binary expressions to help you understand how your expressions may be evaluated at runtime. The higher the precedence level, the tighter it binds (e.g. `*` binds tighter than `+` and so multiplication is performed first).

@@ -12,5 +12,10 @@ namespace Jolt.Extensions
         {
             return value is RangeVariable variable ? variable.Value?.ToTypeOf<T>() : context.ResolveQueryPathIfPresent(value);
         }
+
+        public static object? ResolveValueOf(this EvaluationContext context, object? value, Type type)
+        {
+            return value is RangeVariable variable ? variable.Value?.ToTypeOf(type) : context.ResolveQueryPathIfPresent(value);
+        }
     }
 }

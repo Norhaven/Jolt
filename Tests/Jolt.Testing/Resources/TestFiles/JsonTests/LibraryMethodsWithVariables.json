@@ -607,7 +607,28 @@
               }
             ]
           }
-        },
+        }
+      ]
+    },
+    {
+      "name": "Standard library methods that are statement-oriented work with range variables",
+      "source": {
+        "integerValue": 1,
+        "doubleValue": 3.1415,
+        "stringValue": "3",
+        "booleanValue": true,
+        "booleanStringValue": "true",
+        "stringText": "this is a test",
+        "stringArray": [ "this", "is", "a", "test" ],
+        "integerArray": [ 0, 5, 1, 9 ],
+        "emptyArray": [],
+        "testObject": {
+          "first": "value",
+          "second": 2,
+          "third": [ 1, 2, 3 ]
+        }
+      },
+      "tests": [
         {
           "name": "#when method works with #setAt/#removeAt when condition is true",
           "transformer": {
@@ -682,6 +703,39 @@
           }
         },
         {
+          "name": "#setAt works with a range variable declared outside of the current using scope as a new value",
+          "transformer": {
+            "@value": "#valueOf($.stringValue)",
+            "#using($.testObject as @x) into 'resultObject'": [
+              "#setAt(@x.addedProperty, @value)"
+            ]
+          },
+          "result": {
+            "resultObject": {
+              "first": "value",
+              "second": 2,
+              "third": [ 1, 2, 3 ],
+              "addedProperty": "3"
+            }
+          }
+        },
+        {
+          "name": "#setAt works with a calculated non-statement method call as its value",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [
+              "#setAt(@x.addedProperty, #valueOf($.stringValue))"
+            ]
+          },
+          "result": {
+            "resultObject": {
+              "first": "value",
+              "second": 2,
+              "third": [ 1, 2, 3 ],
+              "addedProperty": "3"
+            }
+          }
+        },
+        {
           "name": "SetAt/RemoveAt works with a range variable containing a root object",
           "transformer": {
             "#using($ as @x) into 'newObject'": [
@@ -706,6 +760,40 @@
               },
               "addedProperty": "new value"
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "keysFrom/valuesFrom work with a path",
+      "source": {
+        "testObject": {
+          "first": "value",
+          "second": 2,
+          "third": [ 1, 2, 3 ]
+        }
+      },
+      "tests": [
+        {
+          "name": "keysFrom works with a path",
+          "transformer": {
+            "resultArray": "#keysFrom($.testObject)"
+          },
+          "result": {
+            "resultArray": [ "first", "second", "third" ]
+          }
+        },
+        {
+          "name": "valuesFrom works with a path",
+          "transformer": {
+            "resultArray": "#valuesFrom($.testObject)"
+          },
+          "result": {
+            "resultArray": [
+              "value",
+              2,
+              [ 1, 2, 3 ]
+            ]
           }
         }
       ]
@@ -1502,6 +1590,39 @@
               { "value": 2 },
               { "value": 3 },
               { "value": 1 }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reduce/Zip methods work with range variables and lambda expressions",
+      "source": {
+        "integerArray": [ 1, 2, 3, 4, 5 ],
+        "otherIntegerArray": [ 10, 20, 30, 40, 50 ]
+      },
+      "tests": [
+        {
+          "name": "Reduce can sum all elements in an array",
+          "transformer": {
+            "result": "#valueOf($.integerArray)->#reduce(@x;@y: @x + @y)"
+          },
+          "result": {
+            "result": 15
+          }
+        },
+        {
+          "name": "Zip can combine two arrays into an array of pairs",
+          "transformer": {
+            "result": "#valueOf($.integerArray)->#zip($.otherIntegerArray, @x;@y: { 'first': @x, 'second': @y })"
+          },
+          "result": {
+            "result": [
+              { "first": 1, "second": 10 },
+              { "first": 2, "second": 20 },
+              { "first": 3, "second": 30 },
+              { "first": 4, "second": 40 },
+              { "first": 5, "second": 50 }
             ]
           }
         }
