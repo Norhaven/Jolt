@@ -6,6 +6,7 @@ using Jolt.Structure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Jolt.Library.StandardLibrary
@@ -408,7 +409,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("reduce")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? Reduce(object? value, LambdaMethod lambda, EvaluationContext context)
+        public static IJsonToken? Reduce(object? value, LambdaMethod lambda, [OptionalParameter(default)] object? seed, EvaluationContext context)
         {
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
@@ -420,16 +421,20 @@ namespace Jolt.Library.StandardLibrary
 
             // When we don't have enough to reduce, just early out and ignore the lambda.
 
+            var hasSeed = !(seed is null);
             var startingElements = query.Sequence.Take(2).ToArray();
 
-            if (startingElements.Length == 0 || startingElements.Length == 1)
+            if (startingElements.Length == 0 || (startingElements.Length == 1 && !hasSeed))
             {
                 return startingElements.FirstOrDefault();
             }
 
-            IJsonToken? accumulator = startingElements[0];
+            object? seedValue = hasSeed ? context.ResolveValueOf<object>(seed) : seed;
+            IJsonToken? seedToken = seedValue is IJsonToken token ? token : context.CreateTokenFrom(seedValue);
+            IJsonToken? accumulator = hasSeed ? seedToken : startingElements[0];
+            var sequence = hasSeed ? query.Sequence : query.Sequence.Skip(1);
 
-            foreach (var item in query.Sequence.Skip(1))
+            foreach (var item in sequence)
             {
                 accumulator = query.ExecuteLambda(accumulator, item, context);
             }

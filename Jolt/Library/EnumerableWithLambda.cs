@@ -38,7 +38,7 @@ namespace Jolt.Library
         public QueryResult<IJsonToken> ExecuteLambdaWith(IJsonToken value, EvaluationContext context, Func<Expression, EvaluationContext, QueryResult<IJsonToken>> execute)
         {
             var itemToken = context.CreateTokenFrom(value);
-            var loopVariable = new RangeVariable(Lambda.Variable.Name, itemToken);
+            var loopVariable = new RangeVariable(Lambda.Variables[0].Name, itemToken);
 
             context.Scope.AddOrUpdateVariable(loopVariable);
 
@@ -57,8 +57,8 @@ namespace Jolt.Library
             var itemToken = context.CreateTokenFrom(value);
             var secondItemToken = context.CreateTokenFrom(secondValue);
 
-            var variable = new RangeVariable(Lambda.Variable.Name, itemToken);
-            var secondVariable = new RangeVariable(Lambda.SecondVariable.Name, secondItemToken);
+            var variable = new RangeVariable(Lambda.Variables[0].Name, itemToken);
+            var secondVariable = new RangeVariable(Lambda.Variables[1].Name, secondItemToken);
 
             context.Scope.AddOrUpdateVariable(variable);
             context.Scope.AddOrUpdateVariable(secondVariable);

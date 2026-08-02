@@ -7,20 +7,18 @@ namespace Jolt.Evaluation
 {
     public sealed class LambdaMethod
     {
-        public RangeVariable Variable { get; }
-        public RangeVariable? SecondVariable { get; }
+        public RangeVariable[] Variables { get; }
         public Expression Body { get; }
 
         public LambdaMethod(RangeVariable variable, Expression body)
         {
-            Variable = variable;
+            Variables = new[] { variable };
             Body = body;
         }
 
         public LambdaMethod(RangeVariable variable, RangeVariable? secondVariable, Expression body)
         {
-            Variable = variable;
-            SecondVariable = secondVariable;
+            Variables = new[] { variable, secondVariable };
             Body = body;
         }
     }

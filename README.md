@@ -296,7 +296,7 @@ If you hardcode the property name like that, however, you will overwrite the sam
 
 ### Range Variables: Lambda Expressions
 
-There is also another use for range variables, namely in lambda expressions. Several methods in the library will take a lambda in order to better filter and/or refine the JSON data, used in the form of declaring a range variable and a body expression separated by a colon `:`. The variable's lifetime is scoped to the lambda body and will not be accessible outside of it. Let's take a quick look at the methods which allow this usage.
+There is also another use for range variables, namely in lambda expressions. Several methods in the library will take a lambda in order to better filter and/or refine the JSON data, used in the form of declaring one or more range variables (separated by a semicolon `;`) and a body expression (separated by a colon `:`). A lambda variable's lifetime is scoped to the lambda body and will not be accessible outside of it. Let's take a quick look at a few methods which allow this usage.
 ```json
 {
     "hasValues": "#valueOf($.some.integerArray)->#any(@x: @x > 5)",
@@ -338,6 +338,7 @@ Using the previous transform, the output would look like:
     "projectedData": [ 5, 30 ]
 }
 ```
+It's also worth noting that you can take a JSON-based lambda as a parameter in your custom external methods. These must always be of type `Func` in your custom method signature, and Jolt currently supports either one or two parameters and a return value. If you discover a use case for higher numbers of generic type parameters in your methods, feel free to reach out and we may support that further down the road.
 
 ### Range Variables: Indexing and Slicing
 
@@ -592,7 +593,9 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 
 <h6>* The #eval method is considered unsafe because it can execute any expression, including ones that may have unwanted side effects or security implications. It should be used with caution and only with trusted input. In order to enable unsafe method usage, the JoltOptions instance that can be passed into your JoltJsonTransformer has a method called WithUnsafeAllowed that will enable this. Use with caution!</h6>
 
-<h6>** I'd also like to call out the summarizeWith method, which on its surface can be a little confusing, so let's break it apart a little bit.</h6>
+<h6>** I'd also like to call out the summarizeWith method, which on its surface can be a little confusing, so let's break it apart a little bit in the next section.</h6>
+
+# SummarizeWith
 
 The `summarizeWith` method is a powerful tool that allows you to perform aggregation operations on a grouped array of objects. It takes a path or value to the group, and a lambda function that defines how to summarize the group. Let's take a look at some objects in an array that could be grouped.
 ```json

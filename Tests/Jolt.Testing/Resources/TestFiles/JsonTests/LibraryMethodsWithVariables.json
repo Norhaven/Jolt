@@ -1612,17 +1612,41 @@
           }
         },
         {
+          "name": "Reduce can sum all elements in an array with a seed",
+          "transformer": {
+            "result": "#valueOf($.integerArray)->#reduce(@x;@y: @x + @y, 1)"
+          },
+          "result": {
+            "result": 16
+          }
+        },
+        {
           "name": "Zip can combine two arrays into an array of pairs",
           "transformer": {
             "result": "#valueOf($.integerArray)->#zip($.otherIntegerArray, @x;@y: { 'first': @x, 'second': @y })"
           },
           "result": {
             "result": [
-              { "first": 1, "second": 10 },
-              { "first": 2, "second": 20 },
-              { "first": 3, "second": 30 },
-              { "first": 4, "second": 40 },
-              { "first": 5, "second": 50 }
+              {
+                "first": 1,
+                "second": 10
+              },
+              {
+                "first": 2,
+                "second": 20
+              },
+              {
+                "first": 3,
+                "second": 30
+              },
+              {
+                "first": 4,
+                "second": 40
+              },
+              {
+                "first": 5,
+                "second": 50
+              }
             ]
           }
         }

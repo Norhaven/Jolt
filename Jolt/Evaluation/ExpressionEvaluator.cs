@@ -603,13 +603,17 @@ namespace Jolt.Evaluation
 
                     IJsonToken? ExecuteCustomLambda(object value)
                     {
-                        var itemToken = context.CreateTokenFrom(value);
-                        var loopVariable = new RangeVariable(lambda.Variable.Name, itemToken);
-
-                        context.Scope.AddOrUpdateVariable(loopVariable);
-
                         try
                         {
+                            var parameters = ((object[])value).Select(x => context.CreateTokenFrom(x)).ToArray();
+
+                            for(var i = 0; i < parameters.Length && i < lambda.Variables.Length; i++)
+                            {
+                                var variable = new RangeVariable(lambda.Variables[i].Name, parameters[i]);
+
+                                context.Scope.AddOrUpdateVariable(variable);
+                            }
+
                             var evaluationContext = new EvaluationContext(
                                 context.Mode,
                                 lambda.Body,
@@ -628,39 +632,7 @@ namespace Jolt.Evaluation
                         }
                     }
 
-                    value = currentFormalParameter.Type switch
-                    {
-                        var x when x == typeof(Func<object, object>) => new Func<object, object>(ExecuteCustomLambda),
-                        var x when x == typeof(Func<string, bool>) => new Func<string, bool>(x => ExecuteCustomLambda(x).ToTypeOf<bool>()),
-                        var x when x == typeof(Func<long, bool>) => new Func<long, bool>(x => ExecuteCustomLambda(x).ToTypeOf<bool>()),
-                        var x when x == typeof(Func<double, bool>) => new Func<double, bool>(x => ExecuteCustomLambda(x).ToTypeOf<bool>()),
-                        var x when x == typeof(Func<bool, bool>) => new Func<bool, bool>(x => ExecuteCustomLambda(x).ToTypeOf<bool>()),
-                        var x when x == typeof(Func<IJsonToken, bool>) => new Func<IJsonToken, bool>(x => ExecuteCustomLambda(x).ToTypeOf<bool>()),
-                        var x when x == typeof(Func<IJsonObject, bool>) => new Func<IJsonObject, bool>(x => ExecuteCustomLambda(x).ToTypeOf<bool>()),
-                        var x when x == typeof(Func<IJsonArray, bool>) => new Func<IJsonArray, bool>(x => ExecuteCustomLambda(x).ToTypeOf<bool>()),
-                        var x when x == typeof(Func<string, string>) => new Func<string, string>(x => ExecuteCustomLambda(x).ToTypeOf<string>()),
-                        var x when x == typeof(Func<long, string>) => new Func<long, string>(x => ExecuteCustomLambda(x).ToTypeOf<string>()),
-                        var x when x == typeof(Func<double, string>) => new Func<double, string>(x => ExecuteCustomLambda(x).ToTypeOf<string>()),
-                        var x when x == typeof(Func<bool, string>) => new Func<bool, string>(x => ExecuteCustomLambda(x).ToTypeOf<string>()),
-                        var x when x == typeof(Func<IJsonToken, string>) => new Func<string, string>(x => ExecuteCustomLambda(x).ToTypeOf<string>()),
-                        var x when x == typeof(Func<IJsonObject, string>) => new Func<IJsonObject, string>(x => ExecuteCustomLambda(x).ToTypeOf<string>()),
-                        var x when x == typeof(Func<IJsonArray, string>) => new Func<IJsonArray, string>(x => ExecuteCustomLambda(x).ToTypeOf<string>()),
-                        var x when x == typeof(Func<string, double>) => new Func<string, double>(x => ExecuteCustomLambda(x).ToTypeOf<double>()),
-                        var x when x == typeof(Func<long, double>) => new Func<long, double>(x => ExecuteCustomLambda(x).ToTypeOf<double>()),
-                        var x when x == typeof(Func<double, double>) => new Func<double, double>(x => ExecuteCustomLambda(x).ToTypeOf<double>()),
-                        var x when x == typeof(Func<bool, double>) => new Func<bool, double>(x => ExecuteCustomLambda(x).ToTypeOf<double>()),
-                        var x when x == typeof(Func<IJsonToken, double>) => new Func<string, double>(x => ExecuteCustomLambda(x).ToTypeOf<double>()),
-                        var x when x == typeof(Func<IJsonObject, double>) => new Func<IJsonObject, double>(x => ExecuteCustomLambda(x).ToTypeOf<double>()),
-                        var x when x == typeof(Func<IJsonArray, double>) => new Func<IJsonArray, double>(x => ExecuteCustomLambda(x).ToTypeOf<double>()),
-                        var x when x == typeof(Func<string, long>) => new Func<string, long>(x => ExecuteCustomLambda(x).ToTypeOf<long>()),
-                        var x when x == typeof(Func<long, long>) => new Func<long, long>(x => ExecuteCustomLambda(x).ToTypeOf<long>()),
-                        var x when x == typeof(Func<double, long>) => new Func<double, long>(x => ExecuteCustomLambda(x).ToTypeOf<long>()),
-                        var x when x == typeof(Func<bool, long>) => new Func<bool, long>(x => ExecuteCustomLambda(x).ToTypeOf<long>()),
-                        var x when x == typeof(Func<IJsonToken, long>) => new Func<string, long>(x => ExecuteCustomLambda(x).ToTypeOf<long>()),
-                        var x when x == typeof(Func<IJsonObject, long>) => new Func<IJsonObject, long>(x => ExecuteCustomLambda(x).ToTypeOf<long>()),
-                        var x when x == typeof(Func<IJsonArray, long>) => new Func<IJsonArray, long>(x => ExecuteCustomLambda(x).ToTypeOf<long>()),
-                        _ => throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToConvertLambdaToRequiredDelegateParameterType, call.Signature.Name, currentFormalParameter.Name, currentFormalParameter.Type)
-                    };
+                    value = LambdaWrapperCache.BuildLambdaDelegate(call.Signature.Name, currentFormalParameter.Type, ExecuteCustomLambda);
                 }
                 else if (currentFormalParameter.IsDelegate)
                 {

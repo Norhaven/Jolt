@@ -65,6 +65,19 @@ namespace Jolt.Testing.Resources.TestMethods
             }
         }
 
+        [JoltExternalMethod("customReduceWithLambda")]
+        public static long CustomReduceWithLambda(IEnumerable<long> sequence, Func<long, long, long> reducer, long seed)
+        {
+            var result = seed;
+
+            foreach (var item in sequence)
+            {
+                result = reducer(result, item);
+            }
+
+            return result;
+        }
+
         [JoltExternalMethod("customBoolFilterWithLambda")]
         public static IEnumerable<string> CustomBoolFilterWithLambda(IEnumerable<bool> sequence, Func<bool, string> filter)
         {

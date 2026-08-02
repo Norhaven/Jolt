@@ -101,29 +101,37 @@
       ]
     },
     {
-      "name": "Invoking a IJsonObject/string parameter delegate using JSON lambda",
+      "name": "Invoking a bool/string parameter delegate using JSON lambda",
       "source": {
-        "testData": [
-          {
-            "text": "this"
+        "testData": [ true, false, true ]
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method with bool/bool delegate parameter should be invoked from JSON lambda",
+          "transformer": {
+            "filtered": "#valueOf($.testData)->#customBoolFilterWithLambda(@x: #toString(@x))"
           },
-          {
-            "text": "is a"
-          },
-          {
-            "text": "test"
+          "result": {
+            "filtered": [ "True", "False", "True" ]
           }
-        ]
+        }
+      ]
+    },
+    {
+      "name": "Invoking custom external method implementation of multi-parameter delegates",
+      "source": {
+        "testData": [ 1, 10, 5 ]        
       },
       "externalMethodSource": "ExternalMixedMethods",
       "tests": [
         {
           "name": "External method with IJsonObject/string delegate parameter should be invoked from JSON lambda",
           "transformer": {
-            "filtered": "#valueOf($.testData)->#customJsonObjectFilterWithLambda(@x: @x.text)"
+            "filtered": "#valueOf($.testData)->#customReduceWithLambda(@x;@y: @x + @y, 0)"
           },
           "result": {
-            "filtered": [ "this", "is a", "test" ]
+            "filtered": 16
           }
         }
       ]
