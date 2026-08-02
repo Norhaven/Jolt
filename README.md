@@ -550,7 +550,7 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | takeWhile | Returns an array containing the leading elements of an array that satisfy a specified condition | `#takeWhile($.some.path, @x: @x.propertyName > 5)` | Property Value
 | skipWhile | Returns an array excluding the leading elements of an array that satisfy a specified condition | `#skipWhile($.some.path, @x: @x.propertyName > 5)` | Property Value
 | distinct | Returns an array of items associated with distinct values of a specified property or scalar values | `#distinct($.some.path, @x: @x.propertyName)` | Property Value
-| reduce | Returns a single value that is the accumulated result of applying a two-parameter lambda (the accumulated value and the current value) to each element of an array, with an optional seed value | `#reduce($.some.path, @acc;@current: @acc + @current, @optionalSeedValue)` | Property Value
+| reduce | Returns a single value that is the accumulated result of applying a two-parameter lambda (the accumulated value and the current value) to each element of an array, with an optional seed value. Returns the seed value (if any) when the array is empty. | `#reduce($.some.path, @acc;@current: @acc + @current, @optionalSeedValue)` | Property Value
 | zip | Returns a single array that is the result of combining two arrays by pairs with a two-parameter lambda (the first element and the second element) | `#zip($.some.path, $some.other.path, @x;@y: { 'first': @x, 'second': @y })` | Property Value
 | keysFrom | Returns an array of the property names of an object | `#keysFrom($.some.path)` | Property Value
 | valuesFrom | Returns an array of the property values of an object | `#valuesFrom($.some.path)` | Property Value
