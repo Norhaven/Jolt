@@ -108,7 +108,7 @@ That will execute your method with the value "not null" and create the following
     "result": true
 }
 ```
-Your external methods that provide their output at the root level, as in the example above, must return a value that is either an acceptable JSON value (e.g. string, boolean), an `IJsonToken` instance, an `EvaluationResult` instance, or an instance that will be serialized to JSON. Your other non-root external methods may return and consume whatever instance types they want.
+Your external methods that provide their output at the root level, as in the example above, must return a value that is either an acceptable JSON value (e.g. string, boolean), an `IJsonToken` instance, an `EvaluationResult` instance, or an instance that will be serialized to JSON.
 
 The external methods you create may be either static or instance methods. We took a look at how a static method would be used above, and you can follow the same path for instance methods with one extra step. Let's assume we added the following instance method to the `TransformerMethods` class above.
 ```csharp
