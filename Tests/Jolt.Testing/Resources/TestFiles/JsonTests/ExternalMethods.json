@@ -121,7 +121,7 @@
     {
       "name": "Invoking custom external method implementation of multi-parameter delegates",
       "source": {
-        "testData": [ 1, 10, 5 ]        
+        "testData": [ 1, 10, 5 ]
       },
       "externalMethodSource": "ExternalMixedMethods",
       "tests": [
@@ -150,6 +150,58 @@
           },
           "result": {
             "filtered": [ 10, 15 ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoking a custom type parameter/long parameter delegate using JSON lambda",
+      "source": {
+        "testStrings": [ "5", "10", "2", "15" ]
+      },
+      "externalMethodSource": "ExternalMixedMethods",
+      "tests": [
+        {
+          "name": "External method with custom type/long delegate parameter should be invoked from JSON lambda",
+          "transformer": {
+            "filtered": "#valueOf($.testStrings)->#customTypeToLongFilterWithLambda(@x: #toInteger(@x.Value))"
+          },
+          "result": {
+            "filtered": [ 10, 15 ]
+          }
+        },
+        {
+          "name": "External method with custom type/long delegate parameter should be invoked from JSON lambda and accumulate values",
+          "transformer": {
+            "filtered": "#valueOf($.testStrings)->#customTypeAccumulationWithLambda(@x;@y: @x.AccumulatedValue + #toInteger(@y))"
+          },
+          "result": {
+            "filtered": [
+              {
+                "Name": "Accumulator",
+                "Id": 1,
+                "Value": null,
+                "AccumulatedValue": 5
+              },
+              {
+                "Name": "Accumulator",
+                "Id": 2,
+                "Value": null,
+                "AccumulatedValue": 15
+              },
+              {
+                "Name": "Accumulator",
+                "Id": 3,
+                "Value": null,
+                "AccumulatedValue": 17
+              },
+              {
+                "Name": "Accumulator",
+                "Id": 4,
+                "Value": null,
+                "AccumulatedValue": 32
+              }
+            ]
           }
         }
       ]
@@ -196,7 +248,9 @@
             "jsonArrayResult": [ 1, 2, 3 ],
             "complexObject": {
               "Id": 123,
-              "Name": "Test"
+              "Name": "Test",
+              "Value": "N/A",
+              "AccumulatedValue": 0
             }
           }
         }

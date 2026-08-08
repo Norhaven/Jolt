@@ -510,19 +510,7 @@ namespace Jolt.Library.StandardLibrary
         {
             var resolved = context.ResolveValueOf<object>(value);
 
-            if (resolved is DereferencedPath path)
-            {
-                if (path.MissingPaths.Length > 0)
-                {
-                    throw context.CreateExecutionErrorFor<LoopAndQueryMethods>(ExceptionCode.UnableToPerformLibraryCallOnMissingPath, path.MissingPaths[0]);
-                }
-
-                if (projection != null)
-                {
-                    value = Select(path.ObtainableToken, projection, context);
-                }
-            }
-            else if (value is RangeVariable variable)
+            if (value is RangeVariable variable)
             {
                 value = variable.Value;
 
@@ -530,6 +518,10 @@ namespace Jolt.Library.StandardLibrary
                 {
                     value = Select(value, projection, context);
                 }
+            }
+            else if (projection != null)
+            {
+                value = Select(value, projection, context);
             }
 
             return value;

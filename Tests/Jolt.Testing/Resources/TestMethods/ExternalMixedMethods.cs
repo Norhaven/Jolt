@@ -12,6 +12,8 @@ namespace Jolt.Testing.Resources.TestMethods
         {
             public string Name { get; set; }
             public int Id { get; set; }
+            public string Value { get; set; }
+            public long AccumulatedValue { get; set; }
         }
 
         private readonly StringBuilder _builder = new StringBuilder();
@@ -112,6 +114,36 @@ namespace Jolt.Testing.Resources.TestMethods
             }
         }
 
+        [JoltExternalMethod("customTypeToLongFilterWithLambda")]
+        public static IEnumerable<long> CustomTypeToLongFilterWithLambda(IEnumerable<string> sequence, Func<ComplexObject, long> convertTypeToLong)
+        {
+            foreach (var value in sequence)
+            {
+                var result = convertTypeToLong(new ComplexObject { Value = value });
+
+                if (result <= 5)
+                {
+                    continue;
+                }
+
+                yield return result;
+            }
+        }
+
+        [JoltExternalMethod("customTypeAccumulationWithLambda")]
+        public static IEnumerable<ComplexObject> CustomTypeAccumulationWithLambda(IEnumerable<string> sequence, Func<ComplexObject, string, long> accumulate)
+        {
+            var currentResult = new ComplexObject { Name = "Accumulator", Id = 0, AccumulatedValue = 0 };
+
+            foreach (var value in sequence)
+            {
+                currentResult.AccumulatedValue = accumulate(currentResult, value);
+                currentResult.Id++;
+
+                yield return currentResult;
+            }
+        }
+
         [JoltExternalMethod("stringPassthrough")]
         public static string PassStringThroughAndReturn(string value) => value;
 
@@ -128,6 +160,6 @@ namespace Jolt.Testing.Resources.TestMethods
         public static IJsonArray PassJsonArrayThroughAndReturn(IJsonArray array) => array;
 
         [JoltExternalMethod("returnsComplexObject")]
-        public static ComplexObject ReturnsComplexObject() => new ComplexObject { Name = "Test", Id = 123 };
+        public static ComplexObject ReturnsComplexObject() => new ComplexObject { Name = "Test", Id = 123, Value = "N/A" };
     }
 }

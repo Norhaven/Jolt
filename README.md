@@ -338,8 +338,76 @@ Using the previous transform, the output would look like:
     "projectedData": [ 5, 30 ]
 }
 ```
-It's also worth noting that you can take a JSON-based lambda as a parameter in your custom external methods. These must always be of type `Func` in your custom method signature, and Jolt currently supports either one or two parameters and a return value. If you discover a use case for higher numbers of generic type parameters in your methods, feel free to reach out and we may support that further down the road.
+It's also worth noting that you can take a JSON-based lambda as a parameter in your custom external methods. These must always be of type `Func<>` in your custom method signature with generic type parameters being any type supported by Jolt external methods. Currently, this allows either one or two parameters and a return value. If you discover a use case for higher numbers of generic type parameters in your methods, feel free to reach out and we may support that further down the road.
 
+For example, let's say you have the following external method that takes a lambda with one `string` parameter and a `long` return value.
+```csharp
+[JoltExternalMethod("convertAllStringsToLongs")]
+public static IEnumerable<long> ConvertAllStringsToLongs(IEnumerable<string> sequence, Func<string, long> convertStringToLong)
+{
+    foreach (var value in sequence)
+    {
+        yield return convertStringToLong(value);
+    }
+}
+```
+You could invoke that with a transformer that looks like this:
+```json
+{
+    "converted": "#valueOf($.some.stringArray)->#convertAllStringsToLongs(@x: #toInteger(@x))"
+}
+```
+You could also use a lambda with two parameters and a custom type that returns the object, so for example:
+```csharp
+public sealed class ComplexObject
+{
+    public int Id { get; set; }
+    public long Value { get; set; }
+}
+
+[JoltExternalMethod("accumulateWithCustomType")]
+public static IEnumerable<ComplexObject> AccumulateWithCustomType(IEnumerable<long> sequence, Func<ComplexObject, long, long> accumulate)
+{
+    var complexObject = new ComplexObject { Id = 0, Value = 0 };
+
+    foreach (var value in sequence)
+    {
+        complexObject.Id++;
+        complexObject.Value = accumulate(complexObject, value);
+
+        yield return complexObject;
+    }
+}
+```
+So with a transformer like this:
+```json
+{
+    "accumulated": "#valueOf($.some.integerArray)->#accumulateWithCustomType(@x;@y: @x.Value + @y)"
+}
+```
+You might get something like this as a result:
+```json
+{
+    "accumulated": [
+        {
+            "Id": 1,
+            "Value": 1
+        },
+        {
+            "Id": 2,
+            "Value": 3
+        },
+        {
+            "Id": 3,
+            "Value": 6
+        },
+        {
+            "Id": 4,
+            "Value": 10
+        }
+    ]
+}
+```
 ### Range Variables: Indexing and Slicing
 
 You are also welcome to use a range expression to index into a string or array at a specific point or range as shorthand for calling the `substring` or `slice` library methods. Let's say we have the following source JSON:
