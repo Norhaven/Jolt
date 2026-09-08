@@ -707,6 +707,7 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | isDecimal | Returns true if the value is represented as a floating point number | `#isDecimal($.some.path)` | Property Value
 | isBoolean | Returns true if the value is represented as a boolean | `#isBoolean($.some.path)` | Property Value
 | isArray | Returns true if the value is represented as an array, false otherwise | `#isArray($.some.path)` | Property Value
+| isObject | Returns true if the value is represented as an object, false otherwise | `#isObject($.some.path)` | Property Value
 | isEmpty | Returns true if the value is an array or string with no contents, false otherwise | `#isEmpty($.some.path)` | Property Value
 | toInteger | Returns a value converted to a whole number | `#toInteger($.some.path)` | Property Value
 | toString | Returns the string representation of a value | `#toString($.some.path)` | Property Value
