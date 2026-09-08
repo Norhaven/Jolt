@@ -118,13 +118,13 @@ namespace Jolt.Testing.Harness.DotNetFramework.Newtonsoft.Unit
                 Transformer = "{\"transformerKey\": \"transformerValue\"}",
                 PossibleExceptions = new Dictionary<string, string>
                 {
-                    { "ExceptionCode1", "ExceptionMessage1" },
-                    { "ExceptionCode2", "ExceptionMessage2" }
+                    { "exceptionCode1", "ExceptionMessage1" },
+                    { "exceptionCode2", "ExceptionMessage2" }
                 },
                 PossibleExternalMethodSources = new Dictionary<string, string>
                 {
-                    { "ExternalMethodSource1", "ExternalMethodCode1" },
-                    { "ExternalMethodSource2", "ExternalMethodCode2" }
+                    { "externalMethodSource1", "ExternalMethodCode1" },
+                    { "externalMethodSource2", "ExternalMethodCode2" }
                 },
             };
             
