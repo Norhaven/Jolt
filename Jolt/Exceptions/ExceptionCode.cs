@@ -39,6 +39,7 @@ namespace Jolt.Exceptions
         UnableToLocateExpectedCharactersInExpression,
         [Description("JLT114")]
         UnableToLocateSpecificExpectedCharactersInExpression,
+        [Obsolete("Originally used for parsing of literal values, such as bool or types, removed due to accepting raw text as literals")]
         [Description("JLT115")]
         ExpectedBooleanLiteralTokenButFoundUnknownToken,
         [Description("JLT116")]
@@ -240,6 +241,20 @@ namespace Jolt.Exceptions
         [Description("JLT562")]
         AttemptedToUseUndeclaredVariable,
         [Description("JLT563")]
-        UnableToPerformLibraryCallOnMissingPath
+        UnableToPerformLibraryCallOnMissingPath,
+        [Description("JLT564")]
+        UnableToUseMethodWithinMatchBlock,
+        [Description("JLT565")]
+        UnableToUseMatchCaseMethodOutsideOfMatchBlock,
+        [Description("JLT566")]
+        UnableToEvaluateResultOfGivenExpressionDueToNonBooleanResult,
+        [Description("JLT567")]
+        UnableToEvaluateResultOfMatchCaseExpressionDueToNonBooleanResult,
+        [Description("JLT568")]
+        MatchCaseBlockMustBeAnObject,
+        [Description("JLT569")]
+        MatchCaseBlockMustBeAnObjectWithExactlyOneProperty,
+        [Description("JLT570")]
+        UnableToParseMatchCaseBlockValueExpression
     }
 }

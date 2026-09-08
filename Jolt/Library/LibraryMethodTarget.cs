@@ -14,5 +14,6 @@ namespace Jolt.Library
         PropertyName = 1 << 0,
         PropertyValue = 1 << 1,
         StatementBlock = 1 << 2,
+        MatchBlock = 1 << 3
     }
 }

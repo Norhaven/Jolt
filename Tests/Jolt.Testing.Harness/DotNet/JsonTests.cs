@@ -19,5 +19,8 @@ namespace Jolt.Testing.Harness.DotNet
 
         [JsonTest("Literals", typeof(TestContext), TestType.DotNet)]
         public void Literals(EndToEndTest test) { Execute(test); }
+
+        [JsonTest("MatchingWithVariables", typeof(TestContext), TestType.DotNet)]
+        public void MatchingWithVariables(EndToEndTest test) { Execute(test); }
     }
 }

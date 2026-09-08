@@ -22,7 +22,7 @@ namespace Jolt.Library
                    where attribute != null
                    let validity = method.GetCustomAttribute<MethodIsValidOnAttribute>()
                    let parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, x.GetCustomAttribute<LazyEvaluationAttribute>() != null, x.GetCustomAttribute<VariadicEvaluationAttribute>() != null, x.GetCustomAttribute<OptionalParameterAttribute>() != null, x.GetCustomAttribute<OptionalParameterAttribute>()?.DefaultValue, x.ParameterType.IsAllowedDelegate()))
-                   select new MethodSignature(type.AssemblyQualifiedName, method.Name, attribute.Name, method.ReturnType, CallType.Static, true, attribute.IsValueGenerator, validity.Target.HasFlag(LibraryMethodTarget.PropertyName), validity.Target.HasFlag(LibraryMethodTarget.PropertyValue), validity.Target.HasFlag(LibraryMethodTarget.StatementBlock), attribute.IsUnsafe, parameters.ToArray());
+                   select new MethodSignature(type.AssemblyQualifiedName, method.Name, attribute.Name, method.ReturnType, CallType.Static, true, attribute.IsValueGenerator, validity.Target.HasFlag(LibraryMethodTarget.PropertyName), validity.Target.HasFlag(LibraryMethodTarget.PropertyValue), validity.Target.HasFlag(LibraryMethodTarget.StatementBlock), validity.Target.HasFlag(LibraryMethodTarget.MatchBlock), attribute.IsUnsafe, parameters.ToArray());
         }
 
         public static IEnumerable<MethodSignature> GetExternalMethodRegistrations(IEnumerable<MethodRegistration> registrations, IMessageProvider messageProvider, object? methodContext = default)
@@ -49,7 +49,7 @@ namespace Jolt.Library
 
                 var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false, false, false, null, x.ParameterType.IsAllowedDelegate())).ToArray();
 
-                return new MethodSignature(type?.AssemblyQualifiedName, registration.MethodName, registration.Alias, method?.ReturnType, registration.CallType, false, false, false, true, false, false, parameters);
+                return new MethodSignature(type?.AssemblyQualifiedName, registration.MethodName, registration.Alias, method?.ReturnType, registration.CallType, false, false, false, true, false, false, false, parameters);
             }
             else
             {
@@ -69,7 +69,7 @@ namespace Jolt.Library
 
                 var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false, false, false, null, x.ParameterType.IsAllowedDelegate())).ToArray();
 
-                return new MethodSignature(type.AssemblyQualifiedName, registration.MethodName, registration.Alias, method.ReturnType, registration.CallType, false, false, false, true, false, false, parameters);
+                return new MethodSignature(type.AssemblyQualifiedName, registration.MethodName, registration.Alias, method.ReturnType, registration.CallType, false, false, false, true, false, false, false, parameters);
             }
         }
     }

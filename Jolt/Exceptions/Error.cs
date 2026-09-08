@@ -130,6 +130,13 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToLocateReferencedTransformer] = "Unable to locate referenced transformer '{0}' for use within #transformWith() library call",
             [ExceptionCode.AttemptedToUseUndeclaredVariable] = "Attempted to use undeclared variable '{0}'",
             [ExceptionCode.UnableToPerformLibraryCallOnMissingPath] = "Unable to perform library call using missing path '{0}'",
+            [ExceptionCode.UnableToUseMethodWithinMatchBlock] = "Unable to use method '{0}' within a match case block",
+            [ExceptionCode.UnableToUseMatchCaseMethodOutsideOfMatchBlock] = "Unable to use match case method '{0}' outside of a match block",
+            [ExceptionCode.UnableToEvaluateResultOfGivenExpressionDueToNonBooleanResult] = "Unable to evaluate the result of the #given() expression due to evaluating as non-boolean",
+            [ExceptionCode.UnableToEvaluateResultOfMatchCaseExpressionDueToNonBooleanResult] = "Unable to evaluate the result of the case match expression do to evaluating as non-boolean",
+            [ExceptionCode.MatchCaseBlockMustBeAnObject] = "Unable to evaluate case block, it must be an object",
+            [ExceptionCode.MatchCaseBlockMustBeAnObjectWithExactlyOneProperty] = "Unable to evaluate case block, it must be an object with a single property",
+            [ExceptionCode.UnableToParseMatchCaseBlockValueExpression] = "Unable to parse case block value expession '{0}'"
         };
 
         public static JoltException CreateParsingErrorFrom(ExceptionCode code, JoltException? innerException, params object[] parameters)

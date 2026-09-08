@@ -1,0 +1,522 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "possibleExceptionCodes": {
+    
+  },
+  "testGroups": [
+    {
+      "name": "Match expressions with type literals",
+      "source": {
+        "objectValue": {},
+        "arrayValue": [],
+        "emptyStringValue": "",
+        "integerValue": 2,
+        "decimalValue": 3.14,
+        "booleanTrueValue": true,
+        "booleanFalseValue": false,
+        "stringValue": "this is a test"
+      },
+      "tests": [
+        {
+          "name": "Match returns true for an object against an object type check",
+          "transformer": {
+            "#match($.objectValue as @x) into 'resultValue'": [
+              { "#is(object)": true }
+            ]
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Match returns variable value for an object against an object type check",
+          "transformer": {
+            "#match($.objectValue as @x) into 'resultValue'": [
+              { "#is(object)": "@x" }
+            ]
+          },
+          "result": {
+            "resultValue": {}
+          }
+        },
+        {
+          "name": "Match returns variable value for an array against an array type check",
+          "transformer": {
+            "#match($.arrayValue as @x) into 'resultValue'": [
+              { "#is(array)": "@x" }
+            ]
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "Match returns true for an array against an array type check",
+          "transformer": {
+            "#match($.arrayValue as @x) into 'resultValue'": [
+              { "#is(array)": true }
+            ]
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Match returns null for an object against a string type check",
+          "transformer": {
+            "#match($.emptyStringValue as @x) into 'resultValue'": [
+              { "#is(object)": true }
+            ]
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Match evaluates case block value expression for an object against an object type check",
+          "transformer": {
+            "#match($.objectValue as @x) into 'resultValue'": [
+              { "#is(object)": "#valueOf($.stringValue)" }
+            ]
+          },
+          "result": {
+            "resultValue": "this is a test"
+          }
+        },
+        {
+          "name": "Match evaluates case blocks top to bottom to find first object type check match and selects the bottom one",
+          "transformer": {
+            "#match($.objectValue as @x) into 'resultValue'": [
+              { "#is(string)": "#valueOf($.emptyStringValue)" },
+              { "#is(object)": "#valueOf($.stringValue)" }
+            ]
+          },
+          "result": {
+            "resultValue": "this is a test"
+          }
+        },
+        {
+          "name": "Match evaluates case blocks top to bottom to find first object type check match and selects the top one",
+          "transformer": {
+            "#match($.objectValue as @x) into 'resultValue'": [
+              { "#is(object)": "#valueOf($.stringValue)" },
+              { "#is(string)": "#valueOf($.emptyStringValue)" }
+            ]
+          },
+          "result": {
+            "resultValue": "this is a test"
+          }
+        },
+        {
+          "name": "Match evaluates case block value expression for a true boolean against a boolean type check",
+          "transformer": {
+            "#match($.booleanTrueValue as @x) into 'resultValue'": [
+              { "#is(boolean)": "#valueOf($.stringValue)" }
+            ]
+          },
+          "result": {
+            "resultValue": "this is a test"
+          }
+        },
+        {
+          "name": "Match evaluates case block value expression for a false boolean against a boolean type check",
+          "transformer": {
+            "#match($.booleanFalseValue as @x) into 'resultValue'": [
+              { "#is(boolean)": "#valueOf($.stringValue)" }
+            ]
+          },
+          "result": {
+            "resultValue": "this is a test"
+          }
+        },
+        {
+          "name": "Match evaluates case block value expression for an integer against an integer type check",
+          "transformer": {
+            "#match($.integerValue as @x) into 'resultValue'": [
+              { "#is(integer)": "#valueOf($.stringValue)" }
+            ]
+          },
+          "result": {
+            "resultValue": "this is a test"
+          }
+        },
+        {
+          "name": "Match evaluates case block value expression for a decimal against a decimal type check",
+          "transformer": {
+            "#match($.decimalValue as @x) into 'resultValue'": [
+              { "#is(decimal)": "#valueOf($.stringValue)" }
+            ]
+          },
+          "result": {
+            "resultValue": "this is a test"
+          }
+        },
+        {
+          "name": "Match evaluates case block value expression for a decimal against both a decimal and integer type check",
+          "transformer": {
+            "#match($.decimalValue as @x) into 'resultValue'": [
+              { "#is(integer) || #is(decimal)": true }
+            ]
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Match evaluates case block value expression for a decimal against invalid boolean combination",
+          "transformer": {
+            "#match($.decimalValue as @x) into 'resultValue'": [
+              { "#is(integer) && #is(decimal)": true }
+            ]
+          },
+          "result": {
+            "resultValue": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pattern match expressions with type literals",
+      "source": {
+        "emptyObject": {},
+        "singlePropertyObject": {
+          "first": "someValue"
+        },
+        "doublePropertyObject": {
+          "first": "test",
+          "second": "this"
+        },
+        "nestedPropertyObject": {
+          "first": {
+            "first": "firstValue",
+            "second": "secondValue"
+          },
+          "second": [ "this", "is", "a", "test" ]
+        },
+        "emptyArray": [],
+        "singleElementArray": [ "test" ],
+        "doubleElementArray": [ "test", "this" ],
+        "tripleElementArray": [ "test", "this", "please" ]
+      },
+      "tests": [
+        {
+          "name": "Match returns true for an object against an empty object pattern check",
+          "transformer": {
+            "#match($.emptyObject as @x) into 'resultValue'": [
+              { "#is({})": true }
+            ]
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Match returns true for an object with a single property against a single property object pattern check",
+          "transformer": {
+            "#match($.singlePropertyObject as @x) into 'resultValue'": [
+              { "#is({ 'first': 'someValue' })": true }
+            ]
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Match returns null for an object with a single property against a single property object pattern check with a different value",
+          "transformer": {
+            "#match($.singlePropertyObject as @x) into 'resultValue'": [
+              { "#is({ 'first': 'incorrect' })": true }
+            ]
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Match returns null for an object with two properties against a single property object pattern check with a different value",
+          "transformer": {
+            "#match($.doublePropertyObject as @x) into 'resultValue'": [
+              { "#is({ 'first': 'incorrect' })": true }
+            ]
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Match returns true for an object with two properties against a single property object pattern check with a value that matches",
+          "transformer": {
+            "#match($.doublePropertyObject as @x) into 'resultValue'": [
+              { "#is({ 'first': 'test' })": true }
+            ]
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Match returns true for an object with nested properties against a single nested property object pattern check with a value that matches",
+          "transformer": {
+            "#match($.doublePropertyObject as @x) into 'resultValue'": [
+              { "#is({ 'first': 'test' })": true }
+            ]
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Match returns true for an object with a discard value",
+          "transformer": {
+            "#match($.doublePropertyObject as @x) into 'resultValue'": [
+              { "#is({ 'first': _ })": true }
+            ]
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Match returns true for an object with nested properties against a single nested property array pattern check with a value pattern that matches",
+          "transformer": {
+            "#match($.nestedPropertyObject as @x) into 'resultValue'": [
+              { "#is({ 'second': ['this', _] })": true }
+            ]
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Match returns true for an object with a single property against an empty object pattern check",
+          "transformer": {
+            "#match($.singlePropertyObject as @x) into 'resultValue'": [
+              { "#is({})": true }
+            ]
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Match returns true for an empty array against an empty array pattern check",
+          "transformer": {
+            "#match($.emptyArray as @x) into 'resultValue'": [
+              { "#is([])": true }
+            ]
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Match returns null for a non-empty array against an empty array pattern check",
+          "transformer": {
+            "#match($.singleElementArray as @x) into 'resultValue'": [
+              { "#is([])": true }
+            ]
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Match returns true for a single element array against a single element discard pattern check",
+          "transformer": {
+            "#match($.singleElementArray as @x) into 'resultValue'": [
+              { "#is([_])": true }
+            ]
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Match returns true for a single element array against a multi element discard pattern check",
+          "transformer": {
+            "#match($.singleElementArray as @x) into 'resultValue'": [
+              { "#is([_, _])": true }
+            ]
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Match returns false for a multi element array against a single element discard pattern check",
+          "transformer": {
+            "#match($.doubleElementArray as @x) into 'resultValue'": [
+              { "#is([_])": true }
+            ]
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Match returns true for a single element array against a single element explicit pattern check",
+          "transformer": {
+            "#match($.singleElementArray as @x) into 'resultValue'": [
+              { "#is(['test'])": true }
+            ]
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Match returns null for a double element array against a single element explicit pattern check",
+          "transformer": {
+            "#match($.doubleElementArray as @x) into 'resultValue'": [
+              { "#is(['test'])": true }
+            ]
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Match returns true for a double element array against a double element explicit pattern check",
+          "transformer": {
+            "#match($.doubleElementArray as @x) into 'resultValue'": [
+              { "#is(['test', 'this'])": true }
+            ]
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Match returns null for a double element array against a double element explicit pattern check with incorrect values",
+          "transformer": {
+            "#match($.doubleElementArray as @x) into 'resultValue'": [
+              { "#is(['test', 'it'])": true }
+            ]
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Match returns true for a triple element array against a triple element explicit/discard pattern check",
+          "transformer": {
+            "#match($.tripleElementArray as @x) into 'resultValue'": [
+              { "#is(['test', _, 'please'])": true }
+            ]
+          },
+          "result": {
+            "resultValue": true
+          }
+        },
+        {
+          "name": "Match returns true for a triple element array against a double element explicit/discard pattern check",
+          "transformer": {
+            "#match($.tripleElementArray as @x) into 'resultValue'": [
+              { "#is(['test', _])": true }
+            ]
+          },
+          "result": {
+            "resultValue": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pattern match expressions with default case",
+      "source": {
+        "emptyObject": {}
+      },
+      "tests": [
+        {
+          "name": "Matching against an empty object with an array match will produce default value",
+          "transformer": {
+            "#match($.emptyObject as @x) into 'resultValue'": [
+              { "#is([])": "'this is an array" },
+              { "#default()": "'defaultValue'" }
+            ]
+          },
+          "result": {
+            "resultValue": "defaultValue"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pattern match expressions with #given() case",
+      "source": {
+        "emptyObject": {},
+        "singlePropertyObject": {
+          "first": "firstValue"
+        },
+        "multipleElementArray": [
+          "this",
+          "is",
+          "a",
+          "test"
+        ]
+      },
+      "tests": [
+        {
+          "name": "Matching against an empty object with an array match will produce default value",
+          "transformer": {
+            "#match($.emptyObject as @x) into 'resultValue'": [
+              { "#given(#isObject(@x))": "'this is an object'" },
+              { "#default()": "'defaultValue'" }
+            ]
+          },
+          "result": {
+            "resultValue": "this is an object"
+          }
+        },
+        {
+          "name": "Matching with both #is and #given will succeed if both evaluate to true",
+          "transformer": {
+            "#match($.emptyObject as @x) into 'resultValue'": [
+              { "#is(object) && #given(#isObject(@x))": "'this is an object'" },
+              { "#default()": "'defaultValue'" }
+            ]
+          },
+          "result": {
+            "resultValue": "this is an object"
+          }
+        },
+        {
+          "name": "Matching with both #is and #given will fail if either evaluates to false",
+          "transformer": {
+            "#match($.emptyObject as @x) into 'resultValue'": [
+              { "#is(object) && #given(#isArray(@x))": "'this is an object'" },
+              { "#default()": "'defaultValue'" }
+            ]
+          },
+          "result": {
+            "resultValue": "defaultValue"
+          }
+        },
+        {
+          "name": "Matching with #is and embedded variable declarations will assign variable and be usable within the current expression",
+          "transformer": {
+            "#match($.singlePropertyObject as @x) into 'resultValue'": [
+              { "#is({ 'first': @f }) && #given(#isString(@f))": "#append('this is an object ', @f)" },
+              { "#default()": "'defaultValue'" }
+            ]
+          },
+          "result": {
+            "resultValue": "this is an object firstValue"
+          }
+        },
+        {
+          "name": "Matching with #is and embedded variable declarations will assign variable and be usable within the current expression",
+          "transformer": {
+            "#match($.multipleElementArray as @x) into 'resultValue'": [
+              { "#is([@f, 'is', 'a', @y])": "#append('this is an array ', @f, ' ', @y)" },
+              { "#default()": "'defaultValue'" }
+            ]
+          },
+          "result": {
+            "resultValue": "this is an array this test"
+          }
+        }
+      ]
+    }
+  ]
+}

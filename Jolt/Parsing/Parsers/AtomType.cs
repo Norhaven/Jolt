@@ -16,6 +16,8 @@ namespace Jolt.Parsing.Parsers
         ArrayLiteral,
         Literal,
         LogicalNot,
-        ObjectLiteral
+        ObjectLiteral,
+        TypeLiteral,
+        Discard
     }
 }

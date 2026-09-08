@@ -3,6 +3,7 @@ using Jolt.Exceptions;
 using Jolt.Structure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -130,7 +131,9 @@ namespace Jolt.Json.Newtonsoft
                 return path.ObtainableToken;
             }
 
-            return JsonToken.FromObject(JToken.FromObject(value));
+            var serializer = new JsonSerializer { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+
+            return JsonToken.FromObject(JToken.FromObject(value, serializer));
         }
 
         public IJsonToken? Read(string json)

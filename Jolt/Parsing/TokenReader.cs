@@ -135,6 +135,10 @@ namespace Jolt.Parsing
             {
                 yield return TokenFromCurrent(stream, ExpressionTokenCategory.Division);
             }
+            else if (stream.CurrentToken == ExpressionToken.Discard)
+            {
+                yield return TokenFromCurrent(stream, ExpressionTokenCategory.Discard);
+            }
             else if (stream.CurrentToken == ExpressionToken.And)
             {
                 stream.ConsumeCurrent();
@@ -333,47 +337,59 @@ namespace Jolt.Parsing
             }
             else if (stream.CurrentToken == ExpressionToken.LetterA)
             {
-                var token = TokenUntilMatchedWith(stream, ExpressionTokenCategory.As, ExpressionToken.Whitespace);
+                var token = TokenUntilMatchedWith(stream, ExpressionTokenCategory.As, ExpressionToken.Whitespace, ExpressionToken.CloseParentheses);
 
                 if (token.Value != ExpressionToken.As)
                 {
-                    throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedAsKeywordButFoundUnexpectedToken, token.Value);
+                    if (token.Value != ExpressionToken.Array)
+                    {
+                        throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedAsKeywordButFoundUnexpectedToken, token.Value);
+                    }
+
+                    token = new ExpressionToken(token.Value, ExpressionTokenCategory.TypeLiteral);
                 }
 
                 yield return token;
             }
             else if (stream.CurrentToken == ExpressionToken.LetterI)
             {
-                var token = TokenUntilMatchedWith(stream, ExpressionTokenCategory.Into, ExpressionToken.Whitespace);
+                var token = TokenUntilMatchedWith(stream, ExpressionTokenCategory.Into, ExpressionToken.Whitespace, ExpressionToken.CloseParentheses);
 
                 if (token.Value != ExpressionToken.Into)
                 {
-                    throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedIntoKeywordButFoundUnexpectedToken, token.Value);
-                }
+                    if (token.Value != ExpressionToken.Integer)
+                    {
+                        throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedIntoKeywordButFoundUnexpectedToken, token.Value);
+                    }
 
-                if (mode == EvaluationMode.PropertyValue)
-                {
-                    throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedNamedPropertyOrRangeVariableButFoundUnexpectedToken, stream.CurrentToken, stream.Position);
-                }
-
-                while (stream.CurrentToken == ExpressionToken.Whitespace)
-                {
-                    stream.ConsumeCurrent();
-                }
-
-                if (stream.CurrentToken == ExpressionToken.SingleQuote)
-                {
-                    stream.ConsumeCurrent();
-
-                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.GeneratedNameIdentifier, ExpressionToken.SingleQuote);
-                }
-                else if (stream.CurrentToken == ExpressionToken.At)
-                {
-                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.ArrowBody);
+                    yield return new ExpressionToken(token.Value, ExpressionTokenCategory.TypeLiteral);
                 }
                 else
                 {
-                    throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedStringLiteralPropertyNameButFoundDifferentToken, stream.CurrentToken);
+                    if (mode == EvaluationMode.PropertyValue)
+                    {
+                        throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedNamedPropertyOrRangeVariableButFoundUnexpectedToken, stream.CurrentToken, stream.Position);
+                    }
+
+                    while (stream.CurrentToken == ExpressionToken.Whitespace)
+                    {
+                        stream.ConsumeCurrent();
+                    }
+
+                    if (stream.CurrentToken == ExpressionToken.SingleQuote)
+                    {
+                        stream.ConsumeCurrent();
+
+                        yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.GeneratedNameIdentifier, ExpressionToken.SingleQuote);
+                    }
+                    else if (stream.CurrentToken == ExpressionToken.At)
+                    {
+                        yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.ArrowBody);
+                    }
+                    else
+                    {
+                        throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedStringLiteralPropertyNameButFoundDifferentToken, stream.CurrentToken);
+                    }
                 }
             }
             else if (stream.CurrentToken == ExpressionToken.Colon)
@@ -477,14 +493,22 @@ namespace Jolt.Parsing
                 if (bool.TryParse(possibleBoolToken.Value, out var value))
                 {
                     yield return possibleBoolToken;
-                }
-                else if (possibleBoolToken.Value == "null")
-                {
-                    yield return TokenFrom(ExpressionToken.NullLiteral, ExpressionTokenCategory.NullLiteral);
-                }
+                }                             
                 else
                 {
-                    throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedBooleanLiteralTokenButFoundUnknownToken, possibleBoolToken.Value);
+                    // We currently allow the use of raw text to be interpreted as either a boolean value, null value, or a type literal value.
+                    // This causes problems when the user wants to return a non-expression string, so if it's not any of the ones we're
+                    // looking for we'll just assume that the entire value must be a string literal and move on from there without trying
+                    // to evaluate it further.
+
+                    var typeLiterals = new HashSet<string> { "array", "object", "integer", "decimal", "boolean", "string" };
+
+                    yield return possibleBoolToken.Value switch
+                    {
+                        "null" => TokenFrom(ExpressionToken.NullLiteral, ExpressionTokenCategory.NullLiteral),
+                        var x when typeLiterals.Contains(x) => TokenFrom(x, ExpressionTokenCategory.TypeLiteral),
+                        var x => new ExpressionToken(x + TokenUntilMatchedWith(stream, ExpressionTokenCategory.StringLiteral).Value, ExpressionTokenCategory.StringLiteral)                        
+                    };
                 }
             }
             else if (stream.CurrentToken == ExpressionToken.Whitespace)

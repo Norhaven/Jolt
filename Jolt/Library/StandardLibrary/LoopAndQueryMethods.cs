@@ -14,7 +14,7 @@ namespace Jolt.Library.StandardLibrary
     [IncludeInStandardLibrary]
     internal sealed class LoopAndQueryMethods
     {
-        [JoltLibraryMethod("foreach", true)]
+        [JoltLibraryMethod("foreach", isValueGenerator: true)]
         [MethodIsValidOn(LibraryMethodTarget.PropertyName)]
         public static IEnumerable<IJsonToken> LoopOnArrayOrObjectAtPath(Enumeration enumeration, EvaluationContext context)
         {

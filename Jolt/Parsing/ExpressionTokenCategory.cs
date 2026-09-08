@@ -96,6 +96,10 @@ namespace Jolt.Parsing
         [Description("a null-safe variable dereference")]
         NullSafeRangeVariableDereference,
         [Description("a null literal")]
-        NullLiteral
+        NullLiteral,
+        [Description("a type literal")]
+        TypeLiteral,
+        [Description("a discard character")]
+        Discard
     }
 }

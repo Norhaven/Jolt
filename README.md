@@ -382,7 +382,7 @@ public static IEnumerable<ComplexObject> AccumulateWithCustomType(IEnumerable<lo
 So with a transformer like this:
 ```json
 {
-    "accumulated": "#valueOf($.some.integerArray)->#accumulateWithCustomType(@x;@y: @x.Value + @y)"
+    "accumulated": "#valueOf($.some.integerArray)->#accumulateWithCustomType(@x;@y: @x.value + @y)"
 }
 ```
 You might get something like this as a result:
@@ -390,24 +390,25 @@ You might get something like this as a result:
 {
     "accumulated": [
         {
-            "Id": 1,
-            "Value": 1
+            "id": 1,
+            "value": 1
         },
         {
-            "Id": 2,
-            "Value": 3
+            "id": 2,
+            "value": 3
         },
         {
-            "Id": 3,
-            "Value": 6
+            "id": 3,
+            "value": 6
         },
         {
-            "Id": 4,
-            "Value": 10
+            "id": 4,
+            "value": 10
         }
     ]
 }
 ```
+You may also notice that your custom data types are serialized to JSON with the camel-case naming convention. This is both to standardize on a style and to make it easier for you to figure out the style.
 ### Range Variables: Indexing and Slicing
 
 You are also welcome to use a range expression to index into a string or array at a specific point or range as shorthand for calling the `substring` or `slice` library methods. Let's say we have the following source JSON:
@@ -552,6 +553,68 @@ Creating complex objects directly within the transformer is also possible by usi
 }
 ```
 These features allow you to construct complex JSON structures directly within your transformer without needing to rely on the shape of the input JSON document. These are available anywhere an expression in a property value is supported.
+# Pattern Matching
+You can handle most of your typical data transformations  with what we've talked about above and the standard library methods below, but you may want to make decisions based on the shape of your data or other factors in order to conditionally populate your JSON. Let's talk about the `#match` expression and see how we can expand upon your choices.
+
+For example, you may have an expression like this:
+```json
+{
+    "#match($.somePath as @x) into 'result'": [
+        { "#is(object)": "'Found an object'" },
+        { "#is(array)": "'Found an array'" },
+        { "#is(string)": "'Found a string'" },
+        { "#is(integer)": "'Found an integer'" },
+        { "#is(decimal)": "'Found a decimal'" },
+        { "#is(boolean)": "'Found a boolean'" }
+    ]
+}
+```
+These are various ways of type checking the same path and producing different results depending on what it happens to match to that evaluates to true. If you need more flexibility, you can use the `#given` method instead of (or in combination with) the `#is` method in order to evaluate arbitrary expressions.
+```json
+{
+    "#match($.somePath as @x) into 'result'": [
+        { "#given(#isObject(@x) && #valueOf($.someOther) > 5)": "'Found a specific object'" },
+        { "#default()": "'Found something else'" }
+    ]
+}
+```
+You'll notice that this also includes a `#default()` method, which always evaluates to true and acts as a catch-all case for when your other cases have all failed.
+
+In practice, these should help you out, but just in case you need more fine-grained control over objects and arrays, let's introduce pattern matching specifically for those two things.
+```json
+{
+    "#match($.somePath as @x) into 'result'": [
+        { "#is([])": "'Found an empty array'" },
+        { "#is([_])": "'Found an array with exactly one element'" },
+        { "#is(['test', _])": "'Found an array whose first element is 'test' and contains 0 or more other elements'" },
+        { "#is([_, _])": "'Found an array with at least one element'" }
+    ]
+}
+```
+The underscore `_` character is a discard character, allowing it to match with any possible value. The explicit values, such as 'test', must match exactly. As a general rule, a discard at the tail end of an array pattern indicates zero or more elements (unless it's the only value in the pattern). 
+
+You can also match the same way with object literals and mix discards in where appropriate.
+```json
+{
+    "#match($.somePath as @x) into 'result'": [
+        { "#is({})": "'Found an object with zero or more properties'" },
+        { "#is({ 'someName': 'someValue' })": "'Found an object with one specific property with a specific value and zero or more other properties'" },
+        { "#is({ 'someName': { 'nested": _ })": "'Found an object with one specific nested property that contains any value'" },
+        { "#is({ 'someName': [_, 'someValue])": "'Found an object with one specific property that is an array where the first element is anything and the second is a specific value'" }
+    ]
+}
+```
+For object patterns, as a general rule the object may have any number of other properties but must have the ones you specify.
+
+If you put an undeclared variable in either an array pattern or an object pattern, it will be set to the value that's currently in that location. These variables will live for the lifetime of the specific case they're declared in and will be disposed of afterwards.
+```json
+{
+    "#match($.somePath as @x) into 'result'": [
+        { "#is({ 'name': @name, 'values': [@firstValue, _] })": "#append("Name is ', @name, ' and first value is ', @firstValue)" },
+        { "#is({ 'function': @f }) && #given(#isObject(@f))": "'Found a function object'" }
+    ]
+}
+```
 
 # Additional Operations
 

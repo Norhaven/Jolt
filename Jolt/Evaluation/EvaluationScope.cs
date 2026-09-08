@@ -115,5 +115,12 @@ namespace Jolt.Evaluation
 
             return this;
         }
+
+        public IEvaluationScope AddEmptyVariablesLayer()
+        {
+            _variables.Push(new List<RangeVariable>());
+
+            return this;
+        }
     }
 }

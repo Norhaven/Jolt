@@ -30,7 +30,9 @@ namespace Jolt.Parsing
         public const char Dot = '.';
         public const string In = "in";
         public const string As = "as";
+        public const string Array = "array";
         public const string Into = "into";
+        public const string Integer = "integer";
         public const char LetterI = 'i';
         public const char LetterA = 'a';
         public const char Semicolon = ';';
@@ -43,6 +45,7 @@ namespace Jolt.Parsing
         public const char Or = '|';
         public const char OpenCurlyBrace = '{';
         public const char CloseCurlyBrace = '}';
+        public const char Discard = '_';
 
         public string Value { get; }
         public ExpressionTokenCategory Category { get; }

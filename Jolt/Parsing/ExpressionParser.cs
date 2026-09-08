@@ -34,7 +34,9 @@ namespace Jolt.Parsing
                 new RangeVariableExpressionParser(reader, atomParser),
                 new ArrayLiteralExpressionParser(reader, atomParser),
                 new ObjectLiteralExpressionParser(reader, atomParser),
-                new LiteralExpressionParser(reader, atomParser)
+                new LiteralExpressionParser(reader, atomParser),
+                new TypeLiteralExpressionParser(reader, atomParser),
+                new DiscardExpressionParser(reader, atomParser)
             };
 
             atomParser.AvailableParsers = availableParsers;

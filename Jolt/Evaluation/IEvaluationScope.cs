@@ -57,5 +57,11 @@ namespace Jolt.Evaluation
         /// </summary>
         /// <returns>An instance of <see cref="IEvaluationScope"/> with the most recent layer of variables removed.</returns>
         IEvaluationScope RemoveCurrentVariablesLayer();
+
+        /// <summary>
+        /// Adds an empty layer for variables stored there in the future.
+        /// </summary>
+        /// <returns>An instance of <see cref="IEvaluationScope"/> with the most recent layer of variables removed.</returns>
+        IEvaluationScope AddEmptyVariablesLayer();
     }
 }

@@ -1,4 +1,5 @@
-﻿using Jolt.Exceptions;
+﻿using Jolt.Evaluation.Matching;
+using Jolt.Exceptions;
 using Jolt.Expressions;
 using Jolt.Extensions;
 using Jolt.Library;
@@ -77,6 +78,8 @@ namespace Jolt.Evaluation
                 ArrayLiteralExpression array => EvaluateArrayLiteral(array, context),
                 ObjectLiteralExpression obj => EvaluateObjectLiteral(obj, context),
                 LogicalNotExpression not => EvaluateLogicalNotExpression(not, context),
+                TypeLiteralExpression type => UnwrapTypeLiteral(type, context),
+                DiscardExpression discard => UnwrapDiscard(discard, context),
                 _ => default
             };
         }
@@ -102,7 +105,9 @@ namespace Jolt.Evaluation
 
             var jsonElements = from element in array.Elements
                                select EvaluateExpression(element, context) into evaluatedElement
-                               select context.CreateTokenFrom(evaluatedElement);
+                               let isPatternMatchVariable = evaluatedElement is RangeVariable variable && !context.Scope.ContainsVariable(variable.Name)
+                               let value = isPatternMatchVariable && evaluatedElement is RangeVariable variable ? new MatchDiscard(MatchKind.Variable, variable.Name) : evaluatedElement
+                               select context.CreateTokenFrom(value);
 
             return context.CreateArrayFrom(jsonElements.ToArray());
         }
@@ -112,7 +117,9 @@ namespace Jolt.Evaluation
             var jsonProperties = from property in obj.Properties
                                  let propertyName = property.PropertyName
                                  let propertyValue = EvaluateExpression(property.PropertyValue, context)
-                                 select new KeyValuePair<string, IJsonToken>(propertyName, context.CreateTokenFrom(propertyValue));
+                                 let isPatternMatchVariable = propertyValue is RangeVariable variable && !context.Scope.ContainsVariable(variable.Name)
+                                 let value = isPatternMatchVariable && propertyValue is RangeVariable variable ? new MatchDiscard(MatchKind.Variable, variable.Name) : propertyValue
+                                 select new KeyValuePair<string, IJsonToken>(propertyName, context.CreateTokenFrom(value));
 
             return context.CreateTokenFrom(jsonProperties.ToDictionary(x => x.Key, x => x.Value));
         }
@@ -137,6 +144,26 @@ namespace Jolt.Evaluation
             var aliasVariable = UnwrapRangeVariable(expression.AliasVariable, context);
 
             return new VariableAlias(source, aliasVariable);
+        }
+
+        private object? UnwrapDiscard(DiscardExpression discard, EvaluationContext context)
+        {
+            return new MatchDiscard(MatchKind.Discard);
+        }
+
+        private object? UnwrapTypeLiteral(TypeLiteralExpression expression, EvaluationContext context)
+        {
+            return expression.TypeName switch
+            {
+                "array" => MatchCaseType.Array,
+                "object" => MatchCaseType.Object,
+                "string" => MatchCaseType.String,
+                "integer" => MatchCaseType.Integer,
+                "decimal" => MatchCaseType.Decimal,
+                "boolean" => MatchCaseType.Boolean,
+                "null" => MatchCaseType.Null,
+                _ => default
+            };
         }
 
         private object? EvaluateBinaryExpression(BinaryExpression binary, EvaluationContext context)
@@ -520,9 +547,19 @@ namespace Jolt.Evaluation
                 throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMethodWithinPropertyValue, call.Signature.Alias);
             }
 
+            if (!context.Token.IsWithinMatchBlock && call.Signature.IsAllowedAsMatchCase)
+            {
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMatchCaseMethodOutsideOfMatchBlock, call.Signature.Alias);
+            }
+
             if (isRootExpression && context.Mode == EvaluationMode.PropertyValue && context.Token.IsWithinStatementBlock && !call.Signature.IsAllowedAsStatement)
             {
                 throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMethodWithinStatementBlock, call.Signature.Alias);
+            }
+
+            if (isRootExpression && context.Mode == EvaluationMode.PropertyName && context.Token.IsWithinMatchBlock && !call.Signature.IsAllowedAsMatchCase)
+            {
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMethodWithinMatchBlock, call.Signature.Alias);
             }
 
             if (!isRootExpression && context.Token.IsWithinStatementBlock && call.Signature.IsAllowedAsStatement)

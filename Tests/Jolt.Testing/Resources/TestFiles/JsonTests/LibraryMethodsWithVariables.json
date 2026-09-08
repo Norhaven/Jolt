@@ -1262,7 +1262,7 @@
         {
           "name": "Try error handler receives error object with message",
           "transformer": {
-            "result": "#try(#toInteger($.invalidInteger), @e: #exists(@e.Message))"
+            "result": "#try(#toInteger($.invalidInteger), @e: #exists(@e.message))"
           },
           "result": {
             "result": true
@@ -1326,7 +1326,7 @@
         {
           "name": "Try with complex error handler expression",
           "transformer": {
-            "result": "#try(#toInteger($.invalidInteger), @e: #if(#exists(@e.message), @e.message, 'unknown error'))"
+            "result": "#try(#toInteger($.invalidInteger), @e: #if(#exists(@e.invalidProperty), @e.invalidProperty, 'unknown error'))"
           },
           "result": {
             "result": "unknown error"

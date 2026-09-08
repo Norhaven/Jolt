@@ -175,6 +175,15 @@ namespace Jolt.Library.StandardLibrary
             return context.CreateTokenFrom(resolved?.GetType().IsArray == true || resolved is IJsonArray);
         }
 
+        [JoltLibraryMethod("isObject")]
+        [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
+        public static IJsonToken? IsObject(object? value, EvaluationContext context)
+        {
+            var resolved = context.ResolveValueOf<object>(value);
+
+            return context.CreateTokenFrom(resolved?.GetType().IsClass == true || resolved is IJsonObject);
+        }
+
         [JoltLibraryMethod("isEmpty")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsEmpty(object? value, EvaluationContext context)

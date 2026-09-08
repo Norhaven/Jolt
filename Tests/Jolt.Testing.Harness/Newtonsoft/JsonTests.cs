@@ -19,5 +19,8 @@ namespace Jolt.Testing.Harness.Newtonsoft
 
         [JsonTest("Literals", typeof(TestContext), TestType.Newtonsoft)]
         public void Literals(EndToEndTest test) { Execute(test); }
+
+        [JsonTest("MatchingWithVariables", typeof(TestContext), TestType.Newtonsoft)]
+        public void MatchingWithVariables(EndToEndTest test) { Execute(test); }
     }
 }

@@ -128,7 +128,7 @@ namespace Jolt
                     {
                         var result = TransformExpression(current, current.PropertyName, EvaluationMode.PropertyName, scope);
 
-                        ApplyChangesToParent(current.ParentToken, result, scope, current.IsWithinStatementBlock);
+                        ApplyChangesToParent(current.ParentToken, result, scope, current.IsWithinStatementBlock, current.IsWithinMatchBlock);
 
                         if (result.IsValuePendingEvaluation)
                         {
@@ -149,6 +149,10 @@ namespace Jolt
                             // it to the front of the line.
 
                             pendingNodes.Push(evaluationToken);
+                        }
+                        else if (current.IsWithinMatchBlock)
+                        {
+                            return result.TransformedToken;
                         }
                     }
                     else if (current.CurrentTransformerToken is IJsonObject obj)
@@ -179,7 +183,7 @@ namespace Jolt
 
                         var result = TransformExpression(current, value.ToTypeOf<string>(), EvaluationMode.PropertyValue, scope);
 
-                        ApplyChangesToParent(current.ParentToken, result, scope, current.IsWithinStatementBlock);
+                        ApplyChangesToParent(current.ParentToken, result, scope, current.IsWithinStatementBlock, current.IsWithinMatchBlock);
                     }
                 }
                 catch (Exception ex) when (_context.ErrorHandler.IsEnabled)
@@ -233,7 +237,7 @@ namespace Jolt
             return _context.ExpressionEvaluator.Evaluate(evaluationContext);
         }
 
-        private void ApplyChangesToParent(IJsonToken parent, EvaluationResult result, IEvaluationScope scope, bool isWithinStatementBlock)
+        private void ApplyChangesToParent(IJsonToken parent, EvaluationResult result, IEvaluationScope scope, bool isWithinStatementBlock, bool isWithinMatchBlock)
         {            
             void SetVariableIfPresent(IJsonObject? json, string propertyName)
             {
@@ -296,10 +300,10 @@ namespace Jolt
             }
             else if (parent is IJsonArray array)
             {
-                // Within a statement block, all transformation work will be done on a variable and
+                // Within a statement or match block, all transformation work will be done on a variable and
                 // won't need to be merged until it all collects at the end, so we're skipping that case.
 
-                if (result.TransformedToken != null && !isWithinStatementBlock)
+                if (result.TransformedToken != null && !isWithinStatementBlock && !isWithinMatchBlock)
                 {
                     _context.WriteInfoFor<JoltTransformer<TContext>>($"Adding entry to non-statement parent array.");
 

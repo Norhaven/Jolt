@@ -10,7 +10,7 @@
     <Copyright>Chris Hannon</Copyright>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>JoltLogo.png</PackageIcon>
-    <Version>2.3.1</Version>
+    <Version>2.4.1</Version>
     <PackageTags>json;xslt;transformation;transform</PackageTags>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>

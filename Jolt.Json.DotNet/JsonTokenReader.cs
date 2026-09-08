@@ -140,7 +140,17 @@ namespace Jolt.Json.DotNet
                 return path.ObtainableToken;
             }
 
-            return JsonToken.FromObject(JsonSerializer.SerializeToNode(value));
+            var options = new JsonSerializerOptions
+            {
+                Converters =
+                {
+                    new JoltJsonObjectConverter(),
+                    new JoltJsonArrayConverter()
+                },
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            return JsonToken.FromObject(JsonSerializer.SerializeToNode(value, options));
         }
 
         public IJsonToken? Read(string json)

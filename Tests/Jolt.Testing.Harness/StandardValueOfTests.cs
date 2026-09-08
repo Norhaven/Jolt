@@ -61,11 +61,6 @@ namespace Jolt.Testing.Harness
         [ExpectsException(ExceptionCode.MissingRequiredMethodParameter)]
         public void ValueOf_ThrowsException_WithMismatchedParameterCount() { }
 
-        [SourceHasNoValue]
-        [TransformerIs(ValueTransformer.NonPathParameter)]
-        [ExpectsException(ExceptionCode.ExpectedBooleanLiteralTokenButFoundUnknownToken)]
-        public void ValueOf_ThrowsException_WithNonPathParameter() { }
-
         [SourceHasString("test")]
         [TransformerIs(ValueTransformer.TooManyParameters)]
         [ExpectsException(ExceptionCode.MethodCallActualParameterCountExceedsFormalParameterCount)]
