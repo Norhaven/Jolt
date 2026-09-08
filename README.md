@@ -600,7 +600,7 @@ You can also match the same way with object literals and mix discards in where a
         { "#is({})": "'Found an object with zero or more properties'" },
         { "#is({ 'someName': 'someValue' })": "'Found an object with one specific property with a specific value and zero or more other properties'" },
         { "#is({ 'someName': { 'nested': _ })": "'Found an object with one specific nested property that contains any value'" },
-        { "#is({ 'someName': [_, 'someValue])": "'Found an object with one specific property that is an array where the first element is anything and the second is a specific value'" }
+        { "#is({ 'someName': [_, 'someValue'])": "'Found an object with one specific property that is an array where the first element is anything and the second is a specific value'" }
     ]
 }
 ```
