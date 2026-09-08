@@ -610,7 +610,7 @@ If you put an undeclared variable in either an array pattern or an object patter
 ```json
 {
     "#match($.somePath as @x) into 'result'": [
-        { "#is({ 'name': @name, 'values': [@firstValue, _] })": "#append("Name is ', @name, ' and first value is ', @firstValue)" },
+        { "#is({ 'name': @name, 'values': [@firstValue, _] })": "#append('Name is ', @name, ' and first value is ', @firstValue)" },
         { "#is({ 'function': @f }) && #given(#isObject(@f))": "'Found a function object'" }
     ]
 }
