@@ -185,7 +185,7 @@ The logical operators `&&` and `||` are also implemented for use in your transfo
     "third": true
 }
 ```
-The logical OR operator `||` will return `true` if at least one of the operands is `true`, and `false` otherwise. The logical AND operator `&&` will return `true` if both operands are `true`, and `false` otherwise. For example:
+The logical OR operator `||` will return `true` if at least one of the operands is `true` (short-circuiting when it finds a `true` value), and `false` otherwise. The logical AND operator `&&` will return `true` if both operands are `true`, and `false` otherwise (short-circuiting when it finds a `false` value). For example:
 ```json
 {
     "orResult": "#valueOf($.first) || #valueOf($.second) || #valueOf($.third)",
@@ -408,7 +408,8 @@ You might get something like this as a result:
     ]
 }
 ```
-You may also notice that your custom data types are serialized to JSON with the camel-case naming convention. This is both to standardize on a style and to make it easier for you to figure out the style.
+
+You may also notice that your custom data types are serialized to JSON with the *camel-case naming convention*. This is both to standardize on a style and make it easier to reason about styles, no context-specific changes needed.
 ### Range Variables: Indexing and Slicing
 
 You are also welcome to use a range expression to index into a string or array at a specific point or range as shorthand for calling the `substring` or `slice` library methods. Let's say we have the following source JSON:
@@ -578,16 +579,16 @@ These are various ways of type checking the same path and producing different re
     ]
 }
 ```
-You'll notice that this also includes a `#default()` method, which always evaluates to true and acts as a catch-all case for when your other cases have all failed.
+You'll notice that this also includes a `#default()` method which takes no arguments and always evaluates to true, acting as a catch-all case for when your other cases have all failed.
 
 In practice, these should help you out, but just in case you need more fine-grained control over objects and arrays, let's introduce pattern matching specifically for those two things.
 ```json
 {
     "#match($.somePath as @x) into 'result'": [
         { "#is([])": "'Found an empty array'" },
-        { "#is([_])": "'Found an array with exactly one element'" },
-        { "#is(['test', _])": "'Found an array whose first element is 'test' and contains 0 or more other elements'" },
-        { "#is([_, _])": "'Found an array with at least one element'" }
+        { "#is([_])": "'Found an array with one or more elements'" },
+        { "#is(['test', _])": "'Found an array whose first element is 'test' and contains at least one more element'" },
+        { "#is([_, _])": "'Found an array with at least two elements'" }
     ]
 }
 ```
@@ -606,7 +607,7 @@ You can also match the same way with object literals and mix discards in where a
 ```
 For object patterns, as a general rule the object may have any number of other properties but must have the ones you specify.
 
-If you put an undeclared variable in either an array pattern or an object pattern, it will be set to the value that's currently in that location. These variables will live for the lifetime of the specific case they're declared in and will be disposed of afterwards.
+If you put an undeclared variable in either an array pattern or an object pattern, it will be set to the value that's currently in that location. These variables are populated as they are matched, so one earlier in a specific case would be usable later in that same case and are evaluated in the order they appear in the pattern. They will live, much like lambda variables, within the scope of their specific case and will be disposed of afterwards.
 ```json
 {
     "#match($.somePath as @x) into 'result'": [
@@ -722,6 +723,10 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | removeAt | Removes a JSON node from the provided variable-based path | `#removeAt(@x.some.path)` | Statement
 | setAt | Adds or modifies a JSON node specified with the provided variable-based path | `#setAt(@x.some.path, 5)` | Statement
 | when | Conditionally executes a statement based on a boolean expression | `#when(#exists(@x.integerArray), #removeAt(@x.integerArray))` | Statement
+| match | Matches a value against a set of conditions, evaluating from top to bottom and returning the value of the first one matched | `"#match($.path as @x) into 'result'": [ ... ]` | Property Name
+| is | Takes a type literal, array pattern, object pattern, or scalar literal value and tries to match it against the value present in the #match expression | `{ "#is(object)": "'some result'" }` | Property Name, Matching
+| given | Takes an expression and evaluates the result as a boolean, succeeding on true and failing on false | `{ "#given(@x > 5)": "'some result'" }` | Property Name, Matching
+| default | Acts as a catch-all in a match expression, always evaluating to true | `{ "#default()": "'some result'" }` | Property Name, Matching
 
 <h6>* The #eval method is considered unsafe because it can execute any expression, including ones that may have unwanted side effects or security implications. It should be used with caution and only with trusted input. In order to enable unsafe method usage, the JoltOptions instance that can be passed into your JoltJsonTransformer has a method called WithUnsafeAllowed that will enable this. Use with caution!</h6>
 

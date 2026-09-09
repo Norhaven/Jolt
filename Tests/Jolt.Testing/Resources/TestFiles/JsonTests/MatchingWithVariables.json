@@ -332,14 +332,14 @@
           }
         },
         {
-          "name": "Match returns true for a single element array against a multi element discard pattern check",
+          "name": "Match returns null for a single element array against a multi element discard pattern check",
           "transformer": {
             "#match($.singleElementArray as @x) into 'resultValue'": [
               { "#is([_, _])": true }
             ]
           },
           "result": {
-            "resultValue": true
+            "resultValue": null
           }
         },
         {
@@ -350,7 +350,7 @@
             ]
           },
           "result": {
-            "resultValue": null
+            "resultValue": true
           }
         },
         {

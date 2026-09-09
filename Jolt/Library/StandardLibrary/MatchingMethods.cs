@@ -198,14 +198,11 @@ namespace Jolt.Library.StandardLibrary
 
             bool IsMatchable() =>
                 IsPatternSameLengthAsMatch() ||
-                (IsPatternLongerThanMatch() && GetNumberOfRequiredSingleElements() == patternArray.Length - 1 && IsDiscardAtEnd()) ||
                 (IsPatternShorterThanMatch() && IsDiscardAtEnd());
 
             bool ArrayPatternsMatchArrayContents()
             {
-                var requiredMatchAttempts = GetNumberOfRequiredSingleElements();
-
-                for (var i = 0; i < requiredMatchAttempts; i++)
+                for (var i = 0; i < patternArray.Length; i++)
                 {
                     if (!IsDiscardAtPosition(i) && !IsEqualAtPosition(i))
                     {
@@ -238,7 +235,7 @@ namespace Jolt.Library.StandardLibrary
             return patternArray.Length switch
             {
                 0 => matchArray.Length == 0,
-                1 when IsDiscardAtEnd() => matchArray.Length == 1,
+                1 when IsDiscardAtEnd() => matchArray.Length >= 1,
                 1 => matchArray.Length == 1 && IsEqualAtPosition(0),
                 _ => ArrayPatternsMatchArrayContents()
             };
