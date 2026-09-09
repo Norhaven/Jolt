@@ -592,7 +592,7 @@ In practice, these should help you out, but just in case you need more fine-grai
     ]
 }
 ```
-The underscore `_` character is a discard character, allowing it to match with any possible value. The explicit values, such as 'test', must match exactly. As a general rule, a discard at the tail end of an array pattern indicates zero or more elements (unless it's the only value in the pattern). 
+The underscore `_` character is a discard character, allowing it to match with any possible value. The explicit values, such as 'test', must match exactly. As a general rule, a discard at the tail end of an array pattern indicates one or more elements. 
 
 You can also match the same way with object literals and mix discards in where appropriate.
 ```json
