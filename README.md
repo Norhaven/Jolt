@@ -854,7 +854,7 @@ Also, here is a small table of how Jolt regards levels of operator precedence fo
 | Multiplication | `*` | 6
 | Division | `/` | 6
 
-For reference, the full EBNF grammar lives [over here.](https://github.com/Norhaven/Jolt/Jolt-EBNF-Grammar.md)
+For reference, the full EBNF grammar lives [over here.](Jolt-EBNF-Grammar.md)
 
 # Alternate External Method Registrations
 
