@@ -566,7 +566,8 @@ For example, you may have an expression like this:
         { "#is(string)": "'Found a string'" },
         { "#is(integer)": "'Found an integer'" },
         { "#is(decimal)": "'Found a decimal'" },
-        { "#is(boolean)": "'Found a boolean'" }
+        { "#is(boolean)": "'Found a boolean'" },
+        { "#is(null)": "'Found a null value'" }
     ]
 }
 ```
