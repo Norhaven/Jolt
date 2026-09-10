@@ -873,7 +873,7 @@ You'll notice that you don't have to provide an instance type for the instance m
 ```csharp
 var transformer = JoltJsonTransformer.DefaultWith(transformerJson, new[] { staticRegistration, instanceRegistration }, new TransformerMethods());
 ```
-That's it! You can pass in your source JSON document to the `transform` method call just like before and collect the transformed result.
+That's it! You can pass in your source JSON document to the `Transform` method call just like before and collect the transformed result.
 
 ## Transformer Registration
 
@@ -943,7 +943,7 @@ First, when you have a series of JSON objects, condensed so that each line has a
 | ------ | ----------- 
 | TransformLines(TextReader reader, TextWriter writer, StreamingOptions? options) | Reads a single line at a time from the reader, transforms each, and writes the output to the provided writer.
 | TransformLines(Stream input, Stream output, StreamingOptions? options) | Reads a single line at a time from the given stream, transforms each, and writes the output to the provided stream.
-| TransformLinesAsync(TextReader reader, TextWriter writer, CancellationToken? cancellationToken, StreamingOptions? options) | Asynchronously reads a single line at a time from the reader, transforms eacch, and asynchronously writes the output to the provided writer. 
+| TransformLinesAsync(TextReader reader, TextWriter writer, CancellationToken? cancellationToken, StreamingOptions? options) | Asynchronously reads a single line at a time from the reader, transforms each, and asynchronously writes the output to the provided writer. 
 | TransformLinesAsync(Stream input, Stream output, CancellationToken? cancellationToken, StreamingOptions? options) | Asynchronously reads a single line at a time from the given stream, transforms each, and asynchronously writes the output to the provided stream.
 
 And that's great, but what about when you have a different format than just a single JSON object per line? That's where the following methods come in:
