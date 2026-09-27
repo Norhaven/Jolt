@@ -113,7 +113,7 @@ Your external methods that provide their output at the root level, as in the exa
 The external methods you create may be either static or instance methods. We took a look at how a static method would be used above, and you can follow the same path for instance methods with one extra step. Let's assume we added the following instance method to the `TransformerMethods` class above.
 ```csharp
 [JoltExternalMethod]
-public string ReverseString(string value) => value.Reverse();
+public string ReverseString(string value) => new string(value.Reverse().ToArray());
 ```
 In order to use the instance method, we need to pass an instance of `TransformerMethods` to the transformer creation call.
 ```csharp
@@ -444,7 +444,7 @@ And that will create the resulting JSON:
     "arrayStart": [ 1, 9, 3 ],
     "arrayMiddle": [ 3, 2 ],
     "arrayEnd": [ 3, 2, 6 ],
-    "arrayElement": [ 9 ]
+    "arrayElement": 9
 }
 ```
 Range expressions immediately follow a variable and are enclosed in square brackets `[` and `]` which indicate indexing. They behave much the same as C# range expressions that you may already be used to, where a literal integer, range variable, or method return result indicates an offset index from the beginning of the string or array and the caret `^` indicates an index that is offset from the end of it. It's important to note that there are some standard library methods that take a range as a parameter, such as `substring` or `slice`, and in those cases you don't need to use square brackets and can specify the range expression as a first class citizen of the method call parameter, such as `#substring($.some.text, 2..5)` or `#slice($.some.array, ^3..)`.
@@ -505,7 +505,7 @@ You can also conditionally execute statements within a `using` block by using th
 Following that up, you can also take advantage of pre-processing variables with a `using` block much the same way as a `foreach` loop does by assigning the output to a variable instead of a named property, which can be used either in a subsequent `using` block or other valid variable uses.
 ```json
 {
-    "#using($.some.path as @x) into @tempResult": [
+    "#using($.some as @x) into @tempResult": [
         "#removeAt(@x.integerArray)"
     ],
     "#using(@tempResult as @x) into 'actualResult'": [
@@ -531,7 +531,7 @@ By default, if an error is encountered during the transformation process then th
 ```json
 {
     "default": "#try(#valueOf($.stringValue)->#toInteger(), @e: #valueOf($.defaultValue))",
-    "nullOnError": "#try(#valueOf($.stringValue)->#toInteger(), @e: null)",
+    "nullOnError": "#try(#valueOf($.stringValue)->#toInteger(), @e: null)"
 }
 ```
 The `#try` method takes two parameters: the first is the expression to evaluate and the second is a lambda that takes an exception parameter and returns the value to use in the case of an error. In the example above, the `default` property will attempt to convert a string value to an integer and if it fails it will return the value of `$.defaultValue` instead, while the `nullOnError` property will return null in the case of any error.
@@ -643,7 +643,7 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 ```json
 {
     "@someVariable": "#valueOf($.some.arrayPath)",
-    "result": "@someVariable->#select(@y: @y->length())"
+    "result": "@someVariable->#select(@y: @y->#length())"
 }
 ```
 
