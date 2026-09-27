@@ -1,0 +1,705 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Jolt",
+	"scopeName": "source.jolt",
+	"patterns": [
+		{
+			"include": "#value"
+		}
+	],
+	"repository": {
+		"value": {
+			"comment": "§1 property-value: any JSON value, where strings may carry Jolt expressions.",
+			"patterns": [
+				{
+					"include": "#json-object"
+				},
+				{
+					"include": "#json-array"
+				},
+				{
+					"include": "#expression-string"
+				},
+				{
+					"include": "#plain-string"
+				},
+				{
+					"include": "#json-number"
+				},
+				{
+					"include": "#json-constant"
+				}
+			]
+		},
+		"json-object": {
+			"comment": "§1 json-object: keys are Jolt key-expressions or plain property names.",
+			"name": "meta.structure.dictionary.jolt",
+			"begin": "\\{",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.dictionary.begin.jolt"
+				}
+			},
+			"end": "\\}",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.dictionary.end.jolt"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#expression-key"
+				},
+				{
+					"include": "#plain-key"
+				},
+				{
+					"name": "meta.structure.dictionary.value.jolt",
+					"begin": ":",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.separator.dictionary.key-value.jolt"
+						}
+					},
+					"end": "(,)|(?=\\})",
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.separator.dictionary.pair.jolt"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#value"
+						}
+					]
+				}
+			]
+		},
+		"json-array": {
+			"comment": "§1 json-array, §8 match-case-list and §9 statement-block all share this shape.",
+			"name": "meta.structure.array.jolt",
+			"begin": "\\[",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.array.begin.jolt"
+				}
+			},
+			"end": "\\]",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.array.end.jolt"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#value"
+				},
+				{
+					"name": "punctuation.separator.array.jolt",
+					"match": ","
+				}
+			]
+		},
+		"json-number": {
+			"name": "constant.numeric.jolt",
+			"match": "-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?"
+		},
+		"json-constant": {
+			"name": "constant.language.jolt",
+			"match": "\\b(?:true|false|null)\\b"
+		},
+		"json-escape": {
+			"name": "constant.character.escape.jolt",
+			"match": "\\\\(?:[\"\\\\/bfnrt]|u[0-9a-fA-F]{4})"
+		},
+		"expression-key": {
+			"comment": "§7 key-expression: a property key beginning with '#' or '@'.",
+			"name": "meta.key.expression.jolt",
+			"begin": "\"(?=\\s*[#@])",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.jolt"
+				}
+			},
+			"end": "\"",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.jolt"
+				}
+			},
+			"patterns": [
+				{
+					"comment": "§7.8 var-declaration-key: \"@name\" declares a variable suppressed from output.",
+					"match": "\\G\\s*((@)[A-Za-z_]\\w*)\\s*(?=\")",
+					"captures": {
+						"0": {
+							"name": "meta.definition.variable.jolt"
+						},
+						"1": {
+							"name": "variable.other.declaration.jolt"
+						},
+						"2": {
+							"name": "punctuation.definition.variable.jolt"
+						}
+					}
+				},
+				{
+					"include": "#expression"
+				}
+			]
+		},
+		"plain-key": {
+			"comment": "§7.9 plain-string-key.",
+			"name": "support.type.property-name.jolt",
+			"begin": "\"",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.support.type.property-name.begin.jolt"
+				}
+			},
+			"end": "\"",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.support.type.property-name.end.jolt"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#json-escape"
+				}
+			]
+		},
+		"expression-string": {
+			"comment": "§2 '\"' value-expression '\"': a string value that begins with a Jolt token, including §11 inline array/object literals.",
+			"name": "meta.embedded.expression.jolt",
+			"begin": "\"(?=\\s*[#@$!('\\[{])",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.jolt"
+				}
+			},
+			"end": "\"",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.jolt"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#expression"
+				}
+			]
+		},
+		"plain-string": {
+			"comment": "Passthrough JSON string with no Jolt expression.",
+			"name": "string.quoted.double.jolt",
+			"begin": "\"",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.jolt"
+				}
+			},
+			"end": "\"",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.jolt"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#json-escape"
+				}
+			]
+		},
+		"expression": {
+			"comment": "§2–§12: the contents of a Jolt expression. Every nested begin/end rule also ends at the enclosing '\"' so unbalanced input cannot escape the JSON string.",
+			"patterns": [
+				{
+					"include": "#json-escape"
+				},
+				{
+					"include": "#string-literal"
+				},
+				{
+					"include": "#is-pattern"
+				},
+				{
+					"include": "#method-call"
+				},
+				{
+					"include": "#pipe-call"
+				},
+				{
+					"include": "#foreach-binding"
+				},
+				{
+					"include": "#as-binding"
+				},
+				{
+					"include": "#lambda-params"
+				},
+				{
+					"include": "#variable"
+				},
+				{
+					"include": "#json-path-root"
+				},
+				{
+					"include": "#accessors"
+				},
+				{
+					"include": "#key-keywords"
+				},
+				{
+					"include": "#constants"
+				},
+				{
+					"include": "#numbers"
+				},
+				{
+					"include": "#discard"
+				},
+				{
+					"include": "#paren-group"
+				},
+				{
+					"include": "#array-literal"
+				},
+				{
+					"include": "#object-literal"
+				},
+				{
+					"include": "#operators"
+				},
+				{
+					"include": "#punctuation"
+				}
+			]
+		},
+		"string-literal": {
+			"comment": "§12 string-literal: single-quoted text inside an expression.",
+			"name": "string.quoted.single.jolt",
+			"begin": "'",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.jolt"
+				}
+			},
+			"end": "'|(?=\")",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.jolt"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#json-escape"
+				}
+			]
+		},
+		"method-call": {
+			"comment": "§4 method-call: #name( argument-list ).",
+			"name": "meta.function-call.jolt",
+			"begin": "(#[A-Za-z_]\\w*)\\s*(\\()",
+			"beginCaptures": {
+				"1": {
+					"patterns": [
+						{
+							"include": "#method-name"
+						}
+					]
+				},
+				"2": {
+					"name": "punctuation.definition.arguments.begin.jolt"
+				}
+			},
+			"end": "\\)|(?=\")",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.arguments.end.jolt"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#expression"
+				}
+			]
+		},
+		"pipe-call": {
+			"comment": "§3 pipe-suffix: -> name( argument-list ).",
+			"name": "meta.function-call.pipe.jolt",
+			"begin": "(->)\\s*([A-Za-z_]\\w*)\\s*(\\()",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.operator.pipe.jolt"
+				},
+				"2": {
+					"patterns": [
+						{
+							"include": "#method-name"
+						}
+					]
+				},
+				"3": {
+					"name": "punctuation.definition.arguments.begin.jolt"
+				}
+			},
+			"end": "\\)|(?=\")",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.arguments.end.jolt"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#expression"
+				}
+			]
+		},
+		"method-name": {
+			"comment": "§13 library catalogue. Key-position constructs are keywords; anything unknown is an external method. The leading '#' (absent after '->') is scoped inside the name so both share one color.",
+			"patterns": [
+				{
+					"name": "keyword.control.jolt",
+					"match": "(#)?\\b(?:foreach|using|match|includeIf|nameOf|is|given|default|if|try|when)\\b",
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.function.jolt"
+						}
+					}
+				},
+				{
+					"name": "keyword.other.statement.jolt",
+					"match": "(#)?\\b(?:removeAt|setAt)\\b",
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.function.jolt"
+						}
+					}
+				},
+				{
+					"name": "support.function.unsafe.jolt",
+					"match": "(#)?\\beval\\b",
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.function.jolt"
+						}
+					}
+				},
+				{
+					"name": "support.function.builtin.jolt",
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.function.jolt"
+						}
+					},
+					"match": "(#)?\\b(?:valueOf|exists|isNull|isMissing|isInteger|isString|isDecimal|isBoolean|isArray|isObject|isEmpty|any|toUpperCase|toLowerCase|trim|trimStart|trimEnd|replace|startsWith|endsWith|substring|isRegexMatch|regexReplace|joinWith|splitOn|append|reverse|indexOf|length|toInteger|toDecimal|toBoolean|toString|roundTo|max|min|sum|average|currentDateTime|currentDateTimeUtc|parseDateTime|formatDateTime|addDays|addHours|addMinutes|slice|flatten|contains|distinct|where|select|orderBy|orderByDesc|take|skip|takeWhile|skipWhile|reduce|zip|keysFrom|valuesFrom|groupBy|summarizeWith|merge|transform)\\b"
+				},
+				{
+					"name": "entity.name.function.jolt",
+					"match": "(#)?[A-Za-z_]\\w*",
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.function.jolt"
+						}
+					}
+				}
+			]
+		},
+		"is-pattern": {
+			"comment": "§7.7 / §8.1 #is( is-pattern ): type literals, discards and captures.",
+			"name": "meta.pattern.jolt",
+			"begin": "((#)is)\\s*(\\()",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.control.jolt"
+				},
+				"2": {
+					"name": "punctuation.definition.function.jolt"
+				},
+				"3": {
+					"name": "punctuation.definition.arguments.begin.jolt"
+				}
+			},
+			"end": "\\)|(?=\")",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.arguments.end.jolt"
+				}
+			},
+			"patterns": [
+				{
+					"name": "support.type.jolt",
+					"match": "\\b(?:object|array|string|integer|decimal|boolean)\\b"
+				},
+				{
+					"include": "#expression"
+				}
+			]
+		},
+		"foreach-binding": {
+			"comment": "§7.1 foreach-binding: @x [; @i] in …",
+			"match": "((@)[A-Za-z_]\\w*)(?:\\s*(;)\\s*((@)[A-Za-z_]\\w*))?\\s+(in)\\b",
+			"captures": {
+				"1": {
+					"name": "variable.parameter.jolt"
+				},
+				"2": {
+					"name": "punctuation.definition.variable.jolt"
+				},
+				"3": {
+					"name": "punctuation.separator.parameters.jolt"
+				},
+				"4": {
+					"name": "variable.parameter.jolt"
+				},
+				"5": {
+					"name": "punctuation.definition.variable.jolt"
+				},
+				"6": {
+					"name": "keyword.operator.word.jolt"
+				}
+			}
+		},
+		"as-binding": {
+			"comment": "§7.2 / §7.3 … as @x",
+			"match": "\\b(as)\\s+((@)[A-Za-z_]\\w*)",
+			"captures": {
+				"1": {
+					"name": "keyword.operator.word.jolt"
+				},
+				"2": {
+					"name": "variable.parameter.jolt"
+				},
+				"3": {
+					"name": "punctuation.definition.variable.jolt"
+				}
+			}
+		},
+		"lambda-params": {
+			"comment": "§5 lambda-params: @x : body  or  @x ; @y : body",
+			"match": "((@)[A-Za-z_]\\w*)\\s*(?:(;)\\s*((@)[A-Za-z_]\\w*)\\s*)?(:)",
+			"captures": {
+				"1": {
+					"name": "variable.parameter.jolt"
+				},
+				"2": {
+					"name": "punctuation.definition.variable.jolt"
+				},
+				"3": {
+					"name": "punctuation.separator.parameters.jolt"
+				},
+				"4": {
+					"name": "variable.parameter.jolt"
+				},
+				"5": {
+					"name": "punctuation.definition.variable.jolt"
+				},
+				"6": {
+					"name": "storage.type.function.lambda.jolt"
+				}
+			}
+		},
+		"variable": {
+			"comment": "§10 var-name, with §15 reserved @params. The '@' is scoped inside the name so both share one color.",
+			"patterns": [
+				{
+					"match": "((@)params)\\b",
+					"captures": {
+						"1": {
+							"name": "variable.language.params.jolt"
+						},
+						"2": {
+							"name": "punctuation.definition.variable.jolt"
+						}
+					}
+				},
+				{
+					"match": "((@)[A-Za-z_]\\w*)",
+					"captures": {
+						"1": {
+							"name": "variable.other.jolt"
+						},
+						"2": {
+							"name": "punctuation.definition.variable.jolt"
+						}
+					}
+				}
+			]
+		},
+		"json-path-root": {
+			"comment": "§10 json-path root.",
+			"name": "variable.language.root.jolt",
+			"match": "\\$"
+		},
+		"accessors": {
+			"comment": "§10 path steps: .name, ?.name, ..name (recursive descent), [*].",
+			"patterns": [
+				{
+					"match": "(\\.\\.)([A-Za-z_]\\w*)",
+					"captures": {
+						"1": {
+							"name": "punctuation.accessor.recursive.jolt"
+						},
+						"2": {
+							"name": "variable.other.property.jolt"
+						}
+					}
+				},
+				{
+					"match": "(\\?\\.|\\.)([A-Za-z_]\\w*)",
+					"captures": {
+						"1": {
+							"name": "punctuation.accessor.jolt"
+						},
+						"2": {
+							"name": "variable.other.property.jolt"
+						}
+					}
+				},
+				{
+					"name": "constant.language.wildcard.jolt",
+					"match": "(?<=\\[)\\s*\\*\\s*(?=\\])"
+				}
+			]
+		},
+		"key-keywords": {
+			"comment": "§7 key-position keywords.",
+			"patterns": [
+				{
+					"name": "keyword.control.into.jolt",
+					"match": "\\binto\\b"
+				},
+				{
+					"name": "keyword.operator.word.jolt",
+					"match": "\\b(?:in|as)\\b"
+				}
+			]
+		},
+		"constants": {
+			"name": "constant.language.jolt",
+			"match": "\\b(?:true|false|null)\\b"
+		},
+		"numbers": {
+			"comment": "§12 number-literal. A leading '-' is scoped as an operator.",
+			"name": "constant.numeric.jolt",
+			"match": "\\b\\d+(?:\\.\\d+)?\\b"
+		},
+		"discard": {
+			"comment": "§8.1 discard.",
+			"name": "variable.language.discard.jolt",
+			"match": "(?<![\\w@$])_(?!\\w)"
+		},
+		"paren-group": {
+			"name": "meta.group.jolt",
+			"begin": "\\(",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.section.group.begin.jolt"
+				}
+			},
+			"end": "\\)|(?=\")",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.section.group.end.jolt"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#expression"
+				}
+			]
+		},
+		"array-literal": {
+			"comment": "§11 array-literal, §3 index-suffix and §8.1 array-pattern.",
+			"name": "meta.brackets.jolt",
+			"begin": "\\[",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.section.brackets.begin.jolt"
+				}
+			},
+			"end": "\\]|(?=\")",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.section.brackets.end.jolt"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#expression"
+				}
+			]
+		},
+		"object-literal": {
+			"comment": "§11 object-literal and §8.1 object-pattern.",
+			"name": "meta.braces.jolt",
+			"begin": "\\{",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.section.braces.begin.jolt"
+				}
+			},
+			"end": "\\}|(?=\")",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.section.braces.end.jolt"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#expression"
+				}
+			]
+		},
+		"operators": {
+			"comment": "§2 / §14 operators and §6 range operators.",
+			"patterns": [
+				{
+					"name": "keyword.operator.null-coalescing.jolt",
+					"match": "\\?\\?"
+				},
+				{
+					"name": "keyword.operator.logical.jolt",
+					"match": "\\|\\||&&"
+				},
+				{
+					"name": "keyword.operator.comparison.jolt",
+					"match": "==|!="
+				},
+				{
+					"name": "keyword.operator.relational.jolt",
+					"match": "<=|>=|<|>"
+				},
+				{
+					"name": "keyword.operator.logical.jolt",
+					"match": "!"
+				},
+				{
+					"name": "keyword.operator.range.jolt",
+					"match": "\\.\\.|\\^"
+				},
+				{
+					"name": "keyword.operator.arithmetic.jolt",
+					"match": "[+\\-*/]"
+				}
+			]
+		},
+		"punctuation": {
+			"patterns": [
+				{
+					"name": "punctuation.separator.comma.jolt",
+					"match": ","
+				},
+				{
+					"name": "punctuation.separator.parameters.jolt",
+					"match": ";"
+				},
+				{
+					"name": "punctuation.separator.key-value.jolt",
+					"match": ":"
+				}
+			]
+		}
+	}
+}

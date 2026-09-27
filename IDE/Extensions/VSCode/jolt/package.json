@@ -1,0 +1,70 @@
+{
+  "name": "jolt",
+  "displayName": "Jolt Language",
+  "description": "A friendly way of transforming JSON into different JSON.",
+  "version": "1.0.1",
+  "icon": "./JoltLogo.png",
+  "publisher": "Norhaven",
+  "license": "BSD-3-Clause",
+  "homepage": "https://github.com/Norhaven/Jolt",
+  "bugs": { "url": "https://github.com/Norhaven/Jolt/issues" },
+  "keywords": ["jolt", "json", "transform", "transformation", "transformer", "syntax", "highlighting"],
+  "galleryBanner": { "color": "#1E1E1E", "theme": "dark" },
+  "pricing": "Free",
+  "repository": { 
+    "type": "git",
+    "directory": "IDE/Extensions/VSCode/jolt",
+    "url": "https://github.com/Norhaven/Jolt"
+  },
+  "engines": {
+    "vscode": "^1.138.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "jolt",
+      "aliases": ["Jolt", "jolt"],
+      "extensions": [".jolt.json"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "jolt",
+      "scopeName": "source.jolt",
+      "path": "./syntaxes/jolt.tmLanguage.json"
+    }],
+    "configurationDefaults": {
+      "editor.tokenColorCustomizations": {
+        "[Default Dark Modern][Default Dark+][Visual Studio Dark]": {
+          "textMateRules": [
+            { "scope": ["keyword.control.jolt", "keyword.control.jolt punctuation.definition.function.jolt"],"settings": { "foreground": "#C586C0" } },
+            { "scope": ["keyword.control.into.jolt", "keyword.operator.word.jolt", "support.type.jolt", "constant.language.jolt", "variable.language.root.jolt", "variable.language.params.jolt", "variable.language.params.jolt punctuation.definition.variable.jolt"],"settings": { "foreground": "#569CD6" } },
+            { "scope": ["support.function.builtin.jolt", "entity.name.function.jolt", "keyword.other.statement.jolt", "support.function.builtin.jolt punctuation.definition.function.jolt", "entity.name.function.jolt punctuation.definition.function.jolt", "keyword.other.statement.jolt punctuation.definition.function.jolt"],"settings": { "foreground": "#DCDCAA" } },
+            { "scope": ["support.function.unsafe.jolt", "support.function.unsafe.jolt punctuation.definition.function.jolt"],"settings": { "foreground": "#DCDCAA", "fontStyle": "underline" } },
+            { "scope": ["variable.other.jolt", "variable.other.declaration.jolt", "variable.parameter.jolt", "variable.other.property.jolt", "variable.language.discard.jolt", "variable.other.jolt punctuation.definition.variable.jolt", "variable.other.declaration.jolt punctuation.definition.variable.jolt", "variable.parameter.jolt punctuation.definition.variable.jolt"],"settings": { "foreground": "#9CDCFE" } },
+            { "scope": ["support.type.property-name.jolt", "punctuation.support.type.property-name.begin.jolt", "punctuation.support.type.property-name.end.jolt"], "settings": { "foreground": "#9CDCFE" } },
+            { "scope": ["string.quoted.single.jolt", "string.quoted.double.jolt", "punctuation.definition.string.begin.jolt", "punctuation.definition.string.end.jolt"], "settings": { "foreground": "#CE9178" } },
+            { "scope": ["constant.character.escape.jolt"], "settings": { "foreground": "#D7BA7D" } },
+            { "scope": ["constant.numeric.jolt"], "settings": { "foreground": "#B5CEA8" } },
+            { "scope": ["keyword.operator.pipe.jolt", "keyword.operator.null-coalescing.jolt", "keyword.operator.logical.jolt", "keyword.operator.comparison.jolt", "keyword.operator.relational.jolt", "keyword.operator.arithmetic.jolt", "keyword.operator.range.jolt", "storage.type.function.lambda.jolt", "constant.language.wildcard.jolt", "punctuation.accessor.jolt", "punctuation.accessor.recursive.jolt"], "settings": { "foreground": "#D4D4D4" } }
+          ]
+        },
+        "[Default Light Modern][Default Light+][Visual Studio Light]": {
+          "textMateRules": [
+            { "scope": ["keyword.control.jolt", "keyword.control.jolt punctuation.definition.function.jolt"],"settings": { "foreground": "#AF00DB" } },
+            { "scope": ["keyword.control.into.jolt", "keyword.operator.word.jolt", "support.type.jolt", "constant.language.jolt", "variable.language.root.jolt", "variable.language.params.jolt", "variable.language.params.jolt punctuation.definition.variable.jolt"],"settings": { "foreground": "#0000FF" } },
+            { "scope": ["support.function.builtin.jolt", "entity.name.function.jolt", "keyword.other.statement.jolt", "support.function.builtin.jolt punctuation.definition.function.jolt", "entity.name.function.jolt punctuation.definition.function.jolt", "keyword.other.statement.jolt punctuation.definition.function.jolt"],"settings": { "foreground": "#795E26" } },
+            { "scope": ["support.function.unsafe.jolt", "support.function.unsafe.jolt punctuation.definition.function.jolt"],"settings": { "foreground": "#795E26", "fontStyle": "underline" } },
+            { "scope": ["variable.other.jolt", "variable.other.declaration.jolt", "variable.parameter.jolt", "variable.other.property.jolt", "variable.language.discard.jolt", "variable.other.jolt punctuation.definition.variable.jolt", "variable.other.declaration.jolt punctuation.definition.variable.jolt", "variable.parameter.jolt punctuation.definition.variable.jolt"],"settings": { "foreground": "#001080" } },
+            { "scope": ["support.type.property-name.jolt", "punctuation.support.type.property-name.begin.jolt", "punctuation.support.type.property-name.end.jolt"], "settings": { "foreground": "#0451A5" } },
+            { "scope": ["string.quoted.single.jolt", "string.quoted.double.jolt", "punctuation.definition.string.begin.jolt", "punctuation.definition.string.end.jolt"], "settings": { "foreground": "#A31515" } },
+            { "scope": ["constant.character.escape.jolt"], "settings": { "foreground": "#EE0000" } },
+            { "scope": ["constant.numeric.jolt"], "settings": { "foreground": "#098658" } },
+            { "scope": ["keyword.operator.pipe.jolt", "keyword.operator.null-coalescing.jolt", "keyword.operator.logical.jolt", "keyword.operator.comparison.jolt", "keyword.operator.relational.jolt", "keyword.operator.arithmetic.jolt", "keyword.operator.range.jolt", "storage.type.function.lambda.jolt", "constant.language.wildcard.jolt", "punctuation.accessor.jolt", "punctuation.accessor.recursive.jolt"], "settings": { "foreground": "#000000" } }
+          ]
+        }
+      }
+    }
+  }
+}
