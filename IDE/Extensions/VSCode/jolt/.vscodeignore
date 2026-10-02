@@ -4,3 +4,9 @@
 tests/**
 *.vsix
 vsc-extension-quickstart.md
+src/**
+out/**
+node_modules/**
+tsconfig*.json
+esbuild.mjs
+**/*.map

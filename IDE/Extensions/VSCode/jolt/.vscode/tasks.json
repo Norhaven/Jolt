@@ -1,0 +1,22 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			// Opens an Extension Development Host window with its extension host inspector on a fixed port, so that the
+			// "Attach to Extension Host" configuration can connect over 127.0.0.1 rather than resolving localhost.
+			// The code CLI returns as soon as the window is requested, so this task completes immediately.
+			"label": "Open Extension Development Host",
+			"type": "shell",
+			"command": "code",
+			"args": [
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"--inspect-extensions=9333"
+			],
+			"dependsOn": "npm: compile",
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "silent"
+			}
+		}
+	]
+}

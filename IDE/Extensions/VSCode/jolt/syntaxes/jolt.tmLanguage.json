@@ -429,7 +429,7 @@
 			},
 			"patterns": [
 				{
-					"name": "support.type.jolt",
+					"name": "keyword.other.jolt",
 					"match": "\\b(?:object|array|string|integer|decimal|boolean)\\b"
 				},
 				{
@@ -457,7 +457,7 @@
 					"name": "punctuation.definition.variable.jolt"
 				},
 				"6": {
-					"name": "keyword.operator.word.jolt"
+					"name": "keyword.other.jolt"
 				}
 			}
 		},
@@ -466,7 +466,7 @@
 			"match": "\\b(as)\\s+((@)[A-Za-z_]\\w*)",
 			"captures": {
 				"1": {
-					"name": "keyword.operator.word.jolt"
+					"name": "keyword.other.jolt"
 				},
 				"2": {
 					"name": "variable.parameter.jolt"
@@ -564,15 +564,11 @@
 			]
 		},
 		"key-keywords": {
-			"comment": "§7 key-position keywords.",
+			"comment": "§7 key-position keywords. These share the keyword.other.jolt scope with #is() type literals (see is-pattern) and the 'in'/'as' bindings (see foreach-binding/as-binding), so that all Jolt language keywords are colorized as one distinct group.",
 			"patterns": [
 				{
-					"name": "keyword.control.into.jolt",
-					"match": "\\binto\\b"
-				},
-				{
-					"name": "keyword.operator.word.jolt",
-					"match": "\\b(?:in|as)\\b"
+					"name": "keyword.other.jolt",
+					"match": "\\b(?:into|in|as)\\b"
 				}
 			]
 		},

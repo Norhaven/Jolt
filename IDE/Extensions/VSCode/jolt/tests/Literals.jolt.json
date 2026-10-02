@@ -18,7 +18,7 @@
         {
           "name": "New object literal can be defined using only literal values",
           "transformer": {
-            "instance": "{ 'integerValue': 5, 'stringValue': 'test', 'booleanValue': true }"
+            "instance": "{ 'integerValue': 5, 'stringValue': 'test', 'booleanValue': true }"            
           },
           "result": {
             "instance": {

@@ -1,18 +1,16 @@
-# Jolt README
-
 Welcome to the Jolt language extension! At the moment, this provides syntax coloring for your Jolt transformers when using the `*.jolt.json` file extension to make reading and managing your transforms a bit easier. The Jolt language interpreter is written in C# and published to NuGet. Please see the project's [GitHub repository](https://github.com/Norhaven/Jolt) for further information and complete documentation.
 
 ## Disambiguation
 
-This is _not_ related to the much older and unrelated Java-based JSON transformation library, by coincidence also called Jolt.
+This is _not_ part of the much older and unrelated Java-based JSON transformation library, by coincidence also called Jolt.
 
 ## Features
 
 Right now, this language extension solely provides syntax coloring for your Jolt transformers. For example:
 
-![Match Expression\](IDE/Extensions/VSCode/jolt/images/match-with-test-colorization.png)
+![Match Expression](IDE/Extensions/VSCode/jolt/images/match-with-test-colorization.png)
 
-![Foreach Loop Expression\](IDE/Extensions/VSCode/jolt/images/foreach-test-colorization.png)
+![Foreach Loop Expression](IDE/Extensions/VSCode/jolt/images/foreach-test-colorization.png)
 
 > As a heads up, additional work on the roadmap for this extension intends to offer further functionality such as code completion and transformer validation, among other features.
 

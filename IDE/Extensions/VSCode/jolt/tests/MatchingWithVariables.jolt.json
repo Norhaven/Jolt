@@ -486,7 +486,7 @@
             "#match($.emptyObject as @x) into 'resultValue'": [
               { "#is(object) && #given(#isArray(@x))": "'this is an object'" },
               { "#default()": "'defaultValue'" }
-            ]
+            ]            
           },
           "result": {
             "resultValue": "defaultValue"
