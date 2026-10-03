@@ -35,8 +35,8 @@ There are no additional requirements or dependencies at the moment aside from na
 ## Extension Settings
 
 This extension offers default colorization settings via the `editor.tokenColorCustomizations` setting. This supports the following themes:
-* **Dark Mode** (via `Default Dark Modern`, `Default Dark+`, or `Visual Studio Dark`)
-* **Light Mode** (via `Default Light Modern`, `Default Light+`, or `Visual Studio Light`)
+* **Dark Mode** (via `Dark 2026`, `Default Dark Modern`, `Default Dark+`, or `Visual Studio Dark`)
+* **Light Mode** (via `Light 2026`, `Default Light Modern`, `Default Light+`, or `Visual Studio Light`)
 
 ## Current Limitations
 

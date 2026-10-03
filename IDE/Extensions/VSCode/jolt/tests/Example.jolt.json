@@ -1,7 +1,7 @@
 {
-    "#foreach(@x;@i in $.path) into 'result'": [
+    "#foreach(@x;@i in $.path) into 'result'":[
         {
-            ""
+            "isExample": "@x->#endsWith('example')"
         }
-    ]        
+    ]
 }
