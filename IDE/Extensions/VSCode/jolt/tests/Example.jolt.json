@@ -1,0 +1,7 @@
+{
+    "#foreach(@x;@i in $.path) into 'result'": [
+        {
+            ""
+        }
+    ]        
+}
