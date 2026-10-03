@@ -20,7 +20,7 @@ namespace Jolt.LanguageMetadata
     {
         private const string DefaultOutputPath = "IDE/Extensions/VSCode/jolt/src/data/library-methods.json";
 
-        private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {
             WriteIndented = true,
             NewLine = "\n",
@@ -64,7 +64,7 @@ namespace Jolt.LanguageMetadata
                 Methods = methods
             };
 
-            var json = JsonSerializer.Serialize(manifest, SerializerOptions) + "\n";
+            var json = JsonSerializer.Serialize(manifest, _serializerOptions) + "\n";
 
             if (isCheckOnly)
             {
