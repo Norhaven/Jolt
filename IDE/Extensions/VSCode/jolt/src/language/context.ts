@@ -8,13 +8,20 @@ export interface ExpressionContext {
 	textBeforeCursor: string;
 }
 
+export interface StringLocation {
+	/** The JSON string node (a property name or a string value) that contains the cursor. */
+	node: Node;
+	/** The raw text of the string, from just after its opening quote up to the cursor. */
+	textBeforeCursor: string;
+}
+
 const unescapedQuote = /(^|[^\\])(\\\\)*"/;
 
 /**
- * Determines the Jolt expression context at the given offset of a transformer document, or undefined when the
- * offset is not inside a JSON string (Jolt expressions only ever appear within property names and string values).
+ * Finds the JSON string that contains the given offset of a transformer document, or undefined when the offset is
+ * not inside a JSON string (Jolt expressions only ever appear within property names and string values).
  */
-export function getExpressionContext(text: string, offset: number): ExpressionContext | undefined {
+export function getStringLocation(text: string, offset: number): StringLocation | undefined {
 	const root = parseTree(text);
 
 	if (!root) {
@@ -34,7 +41,37 @@ export function getExpressionContext(text: string, offset: number): ExpressionCo
 		return undefined;
 	}
 
-	return { target: getTarget(node, textBeforeCursor), textBeforeCursor };
+	return { node, textBeforeCursor };
+}
+
+/**
+ * Determines the Jolt expression context at the given offset of a transformer document, or undefined when the
+ * offset is not inside a JSON string.
+ */
+export function getExpressionContext(text: string, offset: number): ExpressionContext | undefined {
+	const location = getStringLocation(text, offset);
+
+	if (!location) {
+		return undefined;
+	}
+
+	return { target: getTarget(location.node, location.textBeforeCursor), textBeforeCursor: location.textBeforeCursor };
+}
+
+/**
+ * Whether the given string node is a property name rather than a value.
+ */
+export function isPropertyName(node: Node): boolean {
+	return node.parent?.type === 'property' && node.parent.children?.[0] === node;
+}
+
+/**
+ * Whether the given property is a case within a #match case list (i.e. a single-property object in its array).
+ */
+export function isMatchCase(property: Node): boolean {
+	const caseList = property.parent?.parent;
+
+	return caseList?.type === 'array' && isValueOfKey(caseList, /^#match\s*\(/);
 }
 
 function getTarget(node: Node, textBeforeCursor: string): MethodTarget {
@@ -45,11 +82,9 @@ function getTarget(node: Node, textBeforeCursor: string): MethodTarget {
 
 	const parent = node.parent;
 
-	if (parent?.type === 'property' && parent.children?.[0] === node) {
+	if (parent && isPropertyName(node)) {
 		// The keys of the single-property objects in a #match case list are match arms (#is, #given, #default).
-		const caseList = parent.parent?.parent;
-
-		return caseList?.type === 'array' && isValueOfKey(caseList, /^#match\s*\(/) ? 'matchBlock' : 'propertyName';
+		return isMatchCase(parent) ? 'matchBlock' : 'propertyName';
 	}
 
 	if (parent?.type === 'array' && isValueOfKey(parent, /^#using\s*\(/)) {

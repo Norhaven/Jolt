@@ -3,10 +3,11 @@ import { getExpressionContext } from './language/context';
 import { getMethodReferenceAt } from './language/hover';
 import { libraryMethods } from './language/library';
 import { formatDocumentation, formatSignature, getMethodCompletions } from './language/methodCompletions';
+import { getVariableCompletions } from './language/variables';
 
 export function activate(context: vscode.ExtensionContext): void {
 	context.subscriptions.push(
-		vscode.languages.registerCompletionItemProvider({ language: 'jolt' }, new JoltCompletionProvider(), '#', '>'),
+		vscode.languages.registerCompletionItemProvider({ language: 'jolt' }, new JoltCompletionProvider(), '#', '>', '@'),
 		vscode.languages.registerHoverProvider({ language: 'jolt' }, new JoltHoverProvider()));
 }
 
@@ -15,6 +16,24 @@ export function deactivate(): void {
 
 class JoltCompletionProvider implements vscode.CompletionItemProvider {
 	provideCompletionItems(document: vscode.TextDocument, position: vscode.Position): vscode.CompletionItem[] | undefined {
+		const variableCompletions = getVariableCompletions(document.getText(), document.offsetAt(position));
+
+		if (variableCompletions) {
+			const range = new vscode.Range(position.translate(0, -variableCompletions.replaceLength), position);
+
+			return variableCompletions.variables.map((variable, index) => {
+				const item = new vscode.CompletionItem(
+					{ label: `@${variable.name}`, description: variable.description },
+					vscode.CompletionItemKind.Variable);
+
+				item.range = range;
+				// Keeps the innermost variables at the top, rather than sorting alphabetically.
+				item.sortText = String(index).padStart(4, '0');
+
+				return item;
+			});
+		}
+
 		const expressionContext = getExpressionContext(document.getText(), document.offsetAt(position));
 
 		if (!expressionContext) {
