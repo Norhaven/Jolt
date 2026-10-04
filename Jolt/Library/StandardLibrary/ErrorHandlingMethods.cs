@@ -13,7 +13,7 @@ namespace Jolt.Library.StandardLibrary
     {
         [JoltLibraryMethod("try")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyName | LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? Try([LazyEvaluation] Expression body, LambdaMethod handleError, EvaluationContext context)
+        public static IJsonToken? Try([LazyEvaluation] Expression body, [LambdaVariables("e")] LambdaMethod handleError, EvaluationContext context)
         {
             try
             {

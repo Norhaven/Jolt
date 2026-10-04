@@ -53,6 +53,12 @@ namespace Jolt.LanguageMetadata
         /// </summary>
         public string Kind { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Gets or sets the names of the variables that a lambda parameter binds, in order (e.g. ["acc", "current"]),
+        /// whose count is the lambda's arity. Only set when <see cref="Kind"/> is lambda.
+        /// </summary>
+        public List<string>? LambdaVariables { get; set; }
+
         public bool IsOptional { get; set; }
 
         public bool IsVariadic { get; set; }

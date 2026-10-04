@@ -17,6 +17,7 @@ namespace Jolt.LanguageMetadata
         private const string OptionalParameterAttribute = "Jolt.Library.OptionalParameterAttribute";
         private const string VariadicEvaluationAttribute = "Jolt.Library.VariadicEvaluationAttribute";
         private const string LazyEvaluationAttribute = "Jolt.Library.LazyEvaluationAttribute";
+        private const string LambdaVariablesAttribute = "Jolt.Library.LambdaVariablesAttribute";
         private const string EvaluationContextType = "Jolt.Evaluation.EvaluationContext";
 
         public static List<LibraryMethodMetadata> ReadFrom(Assembly assembly)
@@ -47,7 +48,7 @@ namespace Jolt.LanguageMetadata
                         IsUnsafe = arguments.Count > 2 && (bool)arguments[2].Value!,
                         ReturnType = ReadReturnType(method),
                         ValidOn = ReadValidOn(method),
-                        Parameters = ReadParameters(method)
+                        Parameters = ReadParameters(method, (string)arguments[0].Value!)
                     });
                 }
             }
@@ -76,20 +77,38 @@ namespace Jolt.LanguageMetadata
                 .ToList();
         }
 
-        private static List<LibraryParameterMetadata> ReadParameters(MethodInfo method)
+        private static List<LibraryParameterMetadata> ReadParameters(MethodInfo method, string methodName)
         {
             return method
                 .GetParameters()
                 .Where(x => x.ParameterType.FullName != EvaluationContextType)
+                .Select(x => (Parameter: x, Kind: ToParameterKind(x)))
                 .Select(x => new LibraryParameterMetadata
                 {
-                    Name = x.Name!,
-                    Kind = ToParameterKind(x),
-                    IsOptional = HasAttribute(x.CustomAttributes, OptionalParameterAttribute),
-                    IsVariadic = HasAttribute(x.CustomAttributes, VariadicEvaluationAttribute),
-                    IsLazy = HasAttribute(x.CustomAttributes, LazyEvaluationAttribute)
+                    Name = x.Parameter.Name!,
+                    Kind = x.Kind,
+                    LambdaVariables = x.Kind == "lambda" ? ReadLambdaVariables(x.Parameter, methodName) : null,
+                    IsOptional = HasAttribute(x.Parameter.CustomAttributes, OptionalParameterAttribute),
+                    IsVariadic = HasAttribute(x.Parameter.CustomAttributes, VariadicEvaluationAttribute),
+                    IsLazy = HasAttribute(x.Parameter.CustomAttributes, LazyEvaluationAttribute)
                 })
                 .ToList();
+        }
+
+        private static List<string> ReadLambdaVariables(ParameterInfo parameter, string methodName)
+        {
+            var lambdaVariables = FindAttribute(parameter.CustomAttributes, LambdaVariablesAttribute);
+
+            if (lambdaVariables is null)
+            {
+                Console.Error.WriteLine($"warning: lambda parameter '{parameter.Name}' of library method '{methodName}' has no [LambdaVariables] attribute, assuming a single variable");
+                return new List<string> { "x" };
+            }
+
+            // The attribute takes a params array, which is exposed as a single argument containing the array elements.
+            var names = (IEnumerable<CustomAttributeTypedArgument>)lambdaVariables.ConstructorArguments[0].Value!;
+
+            return names.Select(x => (string)x.Value!).ToList();
         }
 
         private static string ToParameterKind(ParameterInfo parameter)

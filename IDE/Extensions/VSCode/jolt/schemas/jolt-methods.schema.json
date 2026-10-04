@@ -54,6 +54,17 @@
                   "enum": ["value", "lambda"],
                   "default": "value",
                   "description": "\"lambda\" for a Func<> parameter, which completions insert as \"@x: expression\". Defaults to \"value\"."
+                },
+                "lambdaVariables": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 2,
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "pattern": "^@?[A-Za-z_][A-Za-z0-9_]*$"
+                  },
+                  "description": "For a \"lambda\" parameter, the names of the variables it binds, in order (e.g. [\"acc\", \"current\"] for a Func<> with two inputs, written as @acc;@current: expression). Shown in signatures and used as completion placeholders. Defaults to a single variable, @x."
                 }
               }
             }

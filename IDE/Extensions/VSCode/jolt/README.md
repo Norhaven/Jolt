@@ -30,7 +30,7 @@ You may forget what a particular method is for and need a quick refresher on the
 
 ### Custom Method Completions
 
-Finally, with a little effort you can also have completions and on-hover documentation for your custom methods. In a trusted workspace, this extension will look for a `.jolt` folder containing a `methods.json` file, starting with the current folder containing the transformer and walking back up to either the workspace root or upon finding a `methods.json` file with its `root` property set to true. All `.jolt/methods.json` files collected in this way will be merged into the overall available methods to a given transformer, with files closer to the transformer's folder overriding any previously defined methods higher up the folder hierarchy.
+Finally, with a little effort you can also have completions and on-hover documentation for your custom methods. In a trusted workspace, this extension will look for a `.jolt` folder containing a `methods.json` file, starting with the current folder containing the transformer and walking back up to either the workspace root or upon finding a `methods.json` file with its `root` property set to true. All `.jolt/methods.json` files collected in this way will be merged into the overall available methods to a given transformer, with files closer to the transformer's folder overriding any previously defined methods higher up the folder hierarchy. Given this behavior, you can then structure your instance-based Jolt context types accordingly to maximize your method selection.
 
 > IMPORTANT: This feature is unavailable in an untrusted workspace to increase security, although the rest of the extension's functionality is allowed. Make sure you are confident that your `methods.json` files are benign prior to establishing workspace trust.
 
@@ -38,9 +38,9 @@ As an example of a `methods.json` file, you could create one that looks like thi
 
 ![Custom Methods File](images/custom-method-file.png)
 
-Each method may also include an optional `returnType` property with the method's C# return type (e.g. `"returnType": "OrderSummary"`), which is shown alongside its documentation in completions and on hover.
+Each method may also include an optional `returnType` property with the method's C# return type (e.g. `"returnType": "OrderSummary"`), which is shown alongside its documentation in completions and on hover. Similarly, a parameter whose `kind` is `lambda` may include an optional `lambdaVariables` array naming the one or two variables it binds (e.g. `"lambdaVariables": ["acc", "current"]` for a `Func<>` with two inputs), which is shown in the method's signature (e.g. `@acc;@current: combiner`) and used for the placeholders when completing it. Lambdas without it are shown with a single `@x` variable.
 
-And then it would be accessible to a transformer within that folder or a subfolder, like this:
+After creating the file, it would then be accessible to a transformer within that folder or a subfolder, like this:
 
 ![Custom Methods Completion](images/custom-method-completions.gif)
 

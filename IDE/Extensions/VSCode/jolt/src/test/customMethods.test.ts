@@ -67,6 +67,39 @@ test('the return type is optional and must be a non-empty string', () => {
 	assert.match(file.problems[0].message, /"returnType" must be a string/);
 });
 
+test('lambda parameters may name the variables they bind', () => {
+	const file = parse({
+		methods: [{
+			name: 'combine',
+			parameters: [{ name: 'value' }, { name: 'combiner', kind: 'lambda', lambdaVariables: ['@left', 'right'] }]
+		}]
+	});
+
+	assert.deepEqual(file.problems, []);
+	assert.deepEqual(file.methods[0].parameters[1].lambdaVariables, ['left', 'right']);
+	assert.equal(file.methods[0].parameters[0].lambdaVariables, undefined);
+});
+
+test('invalid lambda variables are ignored without skipping the method', () => {
+	const lambda = (lambdaVariables: unknown, kind = 'lambda') => ({ name: 'f', kind, lambdaVariables });
+	const file = parse({
+		methods: [
+			{ name: 'notLambda', parameters: [lambda(['x'], 'value')] },
+			{ name: 'notArray', parameters: [lambda('x')] },
+			{ name: 'empty', parameters: [lambda([])] },
+			{ name: 'tooMany', parameters: [lambda(['a', 'b', 'c'])] },
+			{ name: 'badName', parameters: [lambda(['1a'])] },
+			{ name: 'repeated', parameters: [lambda(['a', '@a'])] }
+		]
+	});
+
+	assert.equal(file.methods.length, 6);
+	assert.ok(file.methods.every(x => x.parameters[0].lambdaVariables === undefined));
+	assert.equal(file.problems.length, 6);
+	assert.match(file.problems[0].message, /only applies to parameters whose "kind" is "lambda"/);
+	assert.match(file.problems[5].message, /must not repeat/);
+});
+
 test('the root flag is read', () => {
 	assert.equal(parse({ root: true, methods: [] }).isRoot, true);
 });

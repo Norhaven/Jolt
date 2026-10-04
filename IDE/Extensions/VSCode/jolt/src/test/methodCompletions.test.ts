@@ -1,7 +1,7 @@
 import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
 import { ExpressionContext } from '../language/context';
-import { libraryMethods, MethodTarget } from '../language/library';
+import { LibraryMethod, libraryMethods, MethodTarget } from '../language/library';
 import { formatDocumentation, formatSignature, getMethodCompletions } from '../language/methodCompletions';
 
 function complete(target: MethodTarget, textBeforeCursor: string, includeUnsafeMethods = false) {
@@ -90,9 +90,37 @@ test('completing directly after the pipe operator inserts the hash', () => {
 test('signatures mark optional and variadic parameters', () => {
 	const method = (name: string) => libraryMethods.find(x => x.name === name)!;
 
-	assert.equal(formatSignature(method('reduce')), 'reduce(value, lambda, seed?)');
+	assert.equal(formatSignature(method('orderBy')), 'orderBy(value, @x: lambda?)');
 	assert.equal(formatSignature(method('append')), 'append(value, ...additionalValues)');
 	assert.equal(formatSignature(method('append'), true), 'append(...additionalValues)');
+});
+
+test('signatures show the variables that each lambda binds', () => {
+	const method = (name: string) => libraryMethods.find(x => x.name === name)!;
+
+	assert.equal(formatSignature(method('select')), 'select(value, @x: lambda)');
+	assert.equal(formatSignature(method('try')), 'try(body, @e: handleError)');
+	assert.equal(formatSignature(method('reduce')), 'reduce(value, @acc;@current: lambda, seed?)');
+	assert.equal(formatSignature(method('zip'), true), 'zip(second, @x;@y: lambda)');
+});
+
+test('lambda snippets have a placeholder for each variable', () => {
+	assert.equal(snippetFor('propertyValue', '$.a->#', 'reduce'), 'reduce(${1:@acc};${2:@current}: ${3:expression})$0');
+	assert.equal(snippetFor('propertyValue', '#', 'zip'), 'zip(${1:first}, ${2:second}, ${3:@x};${4:@y}: ${5:expression})$0');
+	assert.equal(snippetFor('propertyValue', '#', 'summarizeWith'), 'summarizeWith(${1:value}, ${2:@group}: ${3:expression})$0');
+});
+
+test('lambdas without known variables are assumed to bind a single variable', () => {
+	const custom: LibraryMethod = {
+		name: 'custom',
+		validOn: ['propertyValue'],
+		isValueGenerator: false,
+		isUnsafe: false,
+		parameters: [{ name: 'convert', kind: 'lambda', isOptional: false, isVariadic: false, isLazy: false }]
+	};
+
+	assert.equal(formatSignature(custom), 'custom(@x: convert)');
+	assert.equal(getMethodCompletions({ target: 'propertyValue', textBeforeCursor: '#' }, [custom], { includeUnsafeMethods: false })?.[0].snippet, 'custom(${1:@x}: ${2:expression})$0');
 });
 
 test('documentation shows the return type when one is known', () => {

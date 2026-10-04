@@ -123,7 +123,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("groupBy")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? GroupBy(object? value, LambdaMethod keySelectorLambda, EvaluationContext context)
+        public static IJsonToken? GroupBy(object? value, [LambdaVariables("x")] LambdaMethod keySelectorLambda, EvaluationContext context)
         {
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
@@ -138,7 +138,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("orderBy")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? OrderBy(object? value, [OptionalParameter(null)] LambdaMethod? lambda, EvaluationContext context)
+        public static IJsonToken? OrderBy(object? value, [OptionalParameter(null)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
@@ -155,7 +155,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("orderByDesc")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? OrderByDescending(object? value, [OptionalParameter(null)] LambdaMethod? lambda, EvaluationContext context)
+        public static IJsonToken? OrderByDescending(object? value, [OptionalParameter(null)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
@@ -172,7 +172,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("max")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? Maximum(object? value, [OptionalParameter(default)] LambdaMethod? lambda, EvaluationContext context)
+        public static IJsonToken? Maximum(object? value, [OptionalParameter(default)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
             var resolved = ResolveValueWithOptionalProjection(value, lambda, context);
 
@@ -181,7 +181,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("min")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? Minimum(object? value, [OptionalParameter(default)] LambdaMethod? lambda, EvaluationContext context)
+        public static IJsonToken? Minimum(object? value, [OptionalParameter(default)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
             var resolved = ResolveValueWithOptionalProjection(value, lambda, context);
 
@@ -190,7 +190,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("sum")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? Sum(object? value, [OptionalParameter(default)] LambdaMethod? lambda, EvaluationContext context)
+        public static IJsonToken? Sum(object? value, [OptionalParameter(default)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
             var resolved = ResolveValueWithOptionalProjection(value, lambda, context);
 
@@ -199,7 +199,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("average")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? Average(object? value, [OptionalParameter(default)] LambdaMethod? lambda, EvaluationContext context)
+        public static IJsonToken? Average(object? value, [OptionalParameter(default)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
             var resolved = ResolveValueWithOptionalProjection(value, lambda, context);
 
@@ -218,7 +218,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("select")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? Select(object? value, LambdaMethod lambda, EvaluationContext context)
+        public static IJsonToken? Select(object? value, [LambdaVariables("x")] LambdaMethod lambda, EvaluationContext context)
         {
             if (value is null)
             {
@@ -238,7 +238,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("distinct")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? Distinct(object? value, LambdaMethod lambda, EvaluationContext context)
+        public static IJsonToken? Distinct(object? value, [LambdaVariables("x")] LambdaMethod lambda, EvaluationContext context)
         {
             if (value is null)
             {
@@ -258,7 +258,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("any")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? Any(object? value, [OptionalParameter(default)] LambdaMethod? lambda, EvaluationContext context)
+        public static IJsonToken? Any(object? value, [OptionalParameter(default)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
             if (value is null)
             {
@@ -279,7 +279,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("where")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? Where(object? value, LambdaMethod lambda, EvaluationContext context)
+        public static IJsonToken? Where(object? value, [LambdaVariables("x")] LambdaMethod lambda, EvaluationContext context)
         {
             if (value is null)
             {
@@ -299,7 +299,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("takeWhile")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? TakeWhile(object? value, LambdaMethod lambda, EvaluationContext context)
+        public static IJsonToken? TakeWhile(object? value, [LambdaVariables("x")] LambdaMethod lambda, EvaluationContext context)
         {
             if (value is null)
             {
@@ -340,7 +340,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("skipWhile")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? SkipWhile(object? value, LambdaMethod lambda, EvaluationContext context)
+        public static IJsonToken? SkipWhile(object? value, [LambdaVariables("x")] LambdaMethod lambda, EvaluationContext context)
         {
             if (value is null)
             {
@@ -409,7 +409,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("reduce")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? Reduce(object? value, LambdaMethod lambda, [OptionalParameter(default)] object? seed, EvaluationContext context)
+        public static IJsonToken? Reduce(object? value, [LambdaVariables("acc", "current")] LambdaMethod lambda, [OptionalParameter(default)] object? seed, EvaluationContext context)
         {
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
@@ -444,7 +444,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("zip")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? Zip(object? first, object? second, LambdaMethod lambda, EvaluationContext context)
+        public static IJsonToken? Zip(object? first, object? second, [LambdaVariables("x", "y")] LambdaMethod lambda, EvaluationContext context)
         {
             var resolvedFirst = context.ResolveValueOf<IJsonArray>(first);
             var resolvedSecond = context.ResolveValueOf<IJsonArray>(second);
@@ -460,7 +460,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("summarizeWith")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? SummarizeWith(object? value, LambdaMethod lambda, EvaluationContext context)
+        public static IJsonToken? SummarizeWith(object? value, [LambdaVariables("group")] LambdaMethod lambda, EvaluationContext context)
         {
             IJsonObject? ConvertToGroup(IJsonToken? groupToken)
             {

@@ -19,6 +19,11 @@ export type ParameterKind =
 export interface LibraryParameter {
 	name: string;
 	kind: ParameterKind;
+	/**
+	 * For a lambda, the names of the variables it binds, in order and without the leading "@" (e.g. ["acc", "current"]).
+	 * The count is the lambda's arity. When absent, a lambda is assumed to bind a single variable.
+	 */
+	lambdaVariables?: string[];
 	isOptional: boolean;
 	isVariadic: boolean;
 	isLazy: boolean;

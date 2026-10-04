@@ -34,6 +34,9 @@ export interface MethodsFileSystem {
 
 const methodName = /^[A-Za-z_]\w*$/;
 const parameterKinds = ['value', 'lambda'];
+const lambdaVariableName = /^@?([A-Za-z_]\w*)$/;
+/** Jolt lambdas bind at most two variables (e.g. @acc;@current: ...). */
+const maxLambdaVariables = 2;
 
 /**
  * Parses a custom methods file. External methods are always valid only on property values and are never value
@@ -134,7 +137,17 @@ function parseMethod(entry: Node, source: string, report: (message: string, node
 			return undefined;
 		}
 
-		parameters.push({ name: parameterName.value, kind: kind?.value ?? 'value', isOptional: false, isVariadic: false, isLazy: false });
+		const parameterKind = kind?.value ?? 'value';
+		const lambdaVariables = getLambdaVariables(parameter, parameterKind, report);
+
+		parameters.push({
+			name: parameterName.value,
+			kind: parameterKind,
+			...(lambdaVariables ? { lambdaVariables } : {}),
+			isOptional: false,
+			isVariadic: false,
+			isLazy: false
+		});
 	}
 
 	return {
@@ -148,6 +161,38 @@ function parseMethod(entry: Node, source: string, report: (message: string, node
 		parameters,
 		source
 	};
+}
+
+/**
+ * Reads a parameter's optional "lambdaVariables". Problems only cause the variables to be ignored, which leaves the
+ * lambda showing a single @x variable, rather than skipping the whole method.
+ */
+function getLambdaVariables(parameter: Node, kind: string, report: (message: string, node: Node | undefined) => void): string[] | undefined {
+	const node = parameter.type === 'object' ? findNodeAtLocation(parameter, ['lambdaVariables']) : undefined;
+
+	if (!node) {
+		return undefined;
+	}
+
+	if (kind !== 'lambda') {
+		report('"lambdaVariables" only applies to parameters whose "kind" is "lambda", so it is ignored.', node);
+		return undefined;
+	}
+
+	const items = node.type === 'array' ? node.children ?? [] : [];
+	const names = items.map(x => x.type === 'string' ? lambdaVariableName.exec(x.value)?.[1] : undefined);
+
+	if (node.type !== 'array' || items.length === 0 || items.length > maxLambdaVariables || names.some(x => x === undefined)) {
+		report(`"lambdaVariables" must be an array of 1 to ${maxLambdaVariables} variable names (e.g. ["acc", "current"]), so it is ignored.`, node);
+		return undefined;
+	}
+
+	if (new Set(names).size !== names.length) {
+		report('"lambdaVariables" must not repeat a variable name, so it is ignored.', node);
+		return undefined;
+	}
+
+	return names as string[];
 }
 
 function getOptionalString(entry: Node, key: string, report: (message: string, node: Node | undefined) => void): string | undefined {

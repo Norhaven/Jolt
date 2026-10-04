@@ -55,14 +55,23 @@ export function getMethodCompletions(
 }
 
 /**
- * Formats a method's signature for display, e.g. "orderBy(value, lambda?)".
+ * Formats a method's signature for display, e.g. "orderBy(value, @x: lambda?)". Lambdas are shown with the
+ * variables they bind, so a two-parameter lambda appears as e.g. "@acc;@current: lambda".
  */
 export function formatSignature(method: LibraryMethod, isPiped = false): string {
 	const parameters = method.parameters
 		.slice(isPiped ? 1 : 0)
-		.map(x => `${x.isVariadic ? '...' : ''}${x.name}${x.isOptional ? '?' : ''}`);
+		.map(x => {
+			const variables = x.kind === 'lambda' ? `${getLambdaVariables(x).map(name => '@' + name).join(';')}: ` : '';
+
+			return `${x.isVariadic ? '...' : ''}${variables}${x.name}${x.isOptional ? '?' : ''}`;
+		});
 
 	return `${method.name}(${parameters.join(', ')})`;
+}
+
+function getLambdaVariables(parameter: LibraryParameter): string[] {
+	return parameter.lambdaVariables?.length ? parameter.lambdaVariables : ['x'];
 }
 
 /**
@@ -138,7 +147,7 @@ function buildSnippet(method: LibraryMethod, target: MethodTarget, isPiped: bool
 function formatArgument(parameter: LibraryParameter, placeholder: (text: string) => string): string {
 	switch (parameter.kind) {
 		case 'lambda':
-			return `${placeholder('@x')}: ${placeholder('expression')}`;
+			return `${getLambdaVariables(parameter).map(x => placeholder('@' + x)).join(';')}: ${placeholder('expression')}`;
 		case 'enumeration':
 			return `${placeholder('@x')} in ${placeholder('$.path')}`;
 		case 'variableAlias':
