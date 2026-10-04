@@ -66,9 +66,10 @@ We're considering several features, including:
 
 ### 1.3.0
 
-Targeted release for method return types. This includes:
+Targeted release for method metadata. This includes:
 - Optional custom method return types (in `.jolt/methods.json` files)
 - On-Hover documentation for C# return types
+- On-Hover documentation for library and custom method lambda parameters 
 
 ### 1.2.0
 
