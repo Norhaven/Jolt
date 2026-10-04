@@ -54,11 +54,12 @@ This extension offers default colorization settings via the `editor.tokenColorCu
 * **Dark Mode** (via `Dark 2026`, `Default Dark Modern`, `Default Dark+`, or `Visual Studio Dark`)
 * **Light Mode** (via `Light 2026`, `Default Light Modern`, `Default Light+`, or `Visual Studio Light`)
 
-## Current Limitations
+## Roadmap
 
-There are a few use cases not covered by the extension, most notably that your custom methods will not be available in either the method completion dropdown or the hover documentation due to them being registered at runtime (which could change the implementation, intended usage, and other areas that aren't visible at compile time). 
-
-> We're currently looking into how to provide this to you in the best way possible, but for now they won't be available.
+We're considering several features, including:
+- Providing syntax validations
+- Documenting the return type for methods
+- Raising semantic issues
 
 ## Release Notes
 
