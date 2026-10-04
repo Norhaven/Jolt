@@ -344,6 +344,15 @@
       ]
     },
     {
+      "name": "Issue: Operator at the end of an expression fails",
+      "transformer": {
+        "result": "#valueOf($.path) +"
+      },
+      "expectedIssues": [
+        "ExpectedExpressionAfterOperator"
+      ]
+    },
+    {
       "name": "Issue: Unterminated string literal fails",
       "transformer": {
         "result": "#valueOf('path)"

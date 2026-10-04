@@ -770,6 +770,13 @@
           "exceptionCode": "missingOperand"
         },
         {
+          "name": "Operator is at the end of the expression",
+          "transformer": {
+            "value": "#valueOf($.missing) ??"
+          },
+          "exceptionCode": "missingOperand"
+        },
+        {
           "name": "Evaluated expression is followed by other content",
           "transformer": {
             "value": "#eval('1 + 2) * 3')"

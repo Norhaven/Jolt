@@ -106,9 +106,12 @@ namespace Jolt.Parsing.Parsers
                 var operatorPrecedence = GetOperatorPrecedence(@operator);
                 var operatorToken = _reader.ConsumeCurrent();
 
-                var rightExpression = ReadNextAtom(context);
+                // An operator must be followed by an operand, whether the expression ends after it (e.g. "#valueOf($.a) ==")
+                // or something that can't be an operand follows it (e.g. "(#valueOf($.a) == )"). Checking for the end here
+                // keeps the operand parsers from reporting which one of them was looking for more (e.g. a logical NOT).
+                
+                var rightExpression = _reader.IsCompleted ? null : ReadNextAtom(context);
 
-                // E.g. "(#valueOf($.a) == )", where nothing that can be an operand follows the operator.
                 if (rightExpression is null)
                 {
                     throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.ExpectedExpressionAfterOperator, operatorToken.Value)
