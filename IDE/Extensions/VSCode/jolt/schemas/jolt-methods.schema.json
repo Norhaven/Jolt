@@ -32,7 +32,11 @@
           },
           "example": {
             "type": "string",
-            "description": "An example call, e.g. #ReverseString($.some.path)."
+            "description": "An example call (e.g. #ReverseString($.some.path))."
+          },
+          "returnType": {
+            "type": "string",
+            "description": "The method's C# return type, shown in completions and when hovering over the method (e.g. string, int, IJsonToken?, EvaluationResult, or a type that Jolt serializes to JSON)."
           },
           "parameters": {
             "type": "array",

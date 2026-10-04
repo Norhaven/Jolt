@@ -38,6 +38,8 @@ As an example of a `methods.json` file, you could create one that looks like thi
 
 ![Custom Methods File](images/custom-method-file.png)
 
+Each method may also include an optional `returnType` property with the method's C# return type (e.g. `"returnType": "OrderSummary"`), which is shown alongside its documentation in completions and on hover.
+
 And then it would be accessible to a transformer within that folder or a subfolder, like this:
 
 ![Custom Methods Completion](images/custom-method-completions.gif)
@@ -58,7 +60,6 @@ This extension offers default colorization settings via the `editor.tokenColorCu
 
 We're considering several features, including:
 - Providing syntax validations
-- Documenting the return type for methods
 - Raising semantic issues
 
 ## Release Notes

@@ -31,6 +31,11 @@ export interface LibraryMethod {
 	validOn: MethodTarget[];
 	isValueGenerator: boolean;
 	isUnsafe: boolean;
+	/**
+	 * The method's C# return type as declared (e.g. "IJsonToken?" or a user-defined type that Jolt serializes to JSON).
+	 * Always present for the standard library, and optional for custom methods.
+	 */
+	returnType?: string;
 	parameters: LibraryParameter[];
 	/** Where a custom method was defined (e.g. a .jolt/methods.json path), or undefined for the standard library. */
 	source?: string;

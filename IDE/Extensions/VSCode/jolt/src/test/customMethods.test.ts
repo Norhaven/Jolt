@@ -30,6 +30,7 @@ test('a valid file produces property value methods with their parameters', () =>
 			name: 'ReverseString',
 			description: 'Reverses a string',
 			example: '#ReverseString($.a)',
+			returnType: 'ReversedString',
 			parameters: [{ name: 'value' }, { name: 'convert', kind: 'lambda' }]
 		}]
 	});
@@ -43,12 +44,27 @@ test('a valid file produces property value methods with their parameters', () =>
 		validOn: ['propertyValue'],
 		isValueGenerator: false,
 		isUnsafe: false,
+		returnType: 'ReversedString',
 		parameters: [
 			{ name: 'value', kind: 'value', isOptional: false, isVariadic: false, isLazy: false },
 			{ name: 'convert', kind: 'lambda', isOptional: false, isVariadic: false, isLazy: false }
 		],
 		source: 'methods.json'
 	}]);
+});
+
+test('the return type is optional and must be a non-empty string', () => {
+	const file = parse({
+		methods: [
+			{ name: 'none' },
+			{ name: 'blank', returnType: '  ' },
+			{ name: 'notString', returnType: 42 }
+		]
+	});
+
+	assert.deepEqual(file.methods.map(x => x.returnType), [undefined, undefined, undefined]);
+	assert.equal(file.problems.length, 1);
+	assert.match(file.problems[0].message, /"returnType" must be a string/);
 });
 
 test('the root flag is read', () => {

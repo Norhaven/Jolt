@@ -2,7 +2,7 @@ import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
 import { ExpressionContext } from '../language/context';
 import { libraryMethods, MethodTarget } from '../language/library';
-import { formatSignature, getMethodCompletions } from '../language/methodCompletions';
+import { formatDocumentation, formatSignature, getMethodCompletions } from '../language/methodCompletions';
 
 function complete(target: MethodTarget, textBeforeCursor: string, includeUnsafeMethods = false) {
 	const context: ExpressionContext = { target, textBeforeCursor };
@@ -93,4 +93,11 @@ test('signatures mark optional and variadic parameters', () => {
 	assert.equal(formatSignature(method('reduce')), 'reduce(value, lambda, seed?)');
 	assert.equal(formatSignature(method('append')), 'append(value, ...additionalValues)');
 	assert.equal(formatSignature(method('append'), true), 'append(...additionalValues)');
+});
+
+test('documentation shows the return type when one is known', () => {
+	const method = libraryMethods.find(x => x.name === 'valueOf')!;
+
+	assert.match(formatDocumentation(method), /\*Returns:\* `IJsonToken\?`/);
+	assert.doesNotMatch(formatDocumentation({ ...method, returnType: undefined }), /Returns/);
 });

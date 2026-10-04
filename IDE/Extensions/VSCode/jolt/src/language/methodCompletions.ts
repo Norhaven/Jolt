@@ -79,6 +79,10 @@ export function formatDocumentation(method: LibraryMethod): string {
 		sections.push(`*Example:* \`${method.example}\``);
 	}
 
+	if (method.returnType) {
+		sections.push(`*Returns:* \`${method.returnType}\``);
+	}
+
 	sections.push(`*Valid on:* ${method.validOn.map(x => targetDisplayNames[x]).join(', ')}`);
 
 	if (method.isUnsafe) {

@@ -111,6 +111,7 @@ function parseMethod(entry: Node, source: string, report: (message: string, node
 
 	const description = getOptionalString(entry, 'description', report);
 	const example = getOptionalString(entry, 'example', report);
+	const returnType = getOptionalString(entry, 'returnType', report);
 	const parametersNode = findNodeAtLocation(entry, ['parameters']);
 	const parameters: LibraryParameter[] = [];
 
@@ -143,6 +144,7 @@ function parseMethod(entry: Node, source: string, report: (message: string, node
 		validOn: ['propertyValue'],
 		isValueGenerator: false,
 		isUnsafe: false,
+		returnType: returnType?.trim() || undefined,
 		parameters,
 		source
 	};
