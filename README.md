@@ -1,6 +1,4 @@
-# Jolt - A JSON Transformation Language
-
-![Logo](https://raw.githubusercontent.com/Norhaven/Jolt/main/JoltLogo.png)
+# <img src="https://raw.githubusercontent.com/Norhaven/Jolt/main/JoltLogo.png" width="100"/> Jolt - A JSON Transformation Language
 
 Welcome! This is an imperative JSON transformation language inspired by XSLT and the wonderful .Net JSON adaptation of it over at [JUST.Net](https://github.com/WorkMaze/JUST.net). This project provides an expression-based interpreter for the language and a highly extensible way of approaching the same problem, namely How To Transform JSON Into Different JSON.
 
