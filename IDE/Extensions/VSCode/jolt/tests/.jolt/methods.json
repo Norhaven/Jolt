@@ -5,6 +5,7 @@
             "name": "exampleCustomMethod",
             "description": "This is an example of a custom method that takes a string and a lambda",
             "example": "#exampleCustomMethod('some string', @x: @x.someProperty)",
+            "returnType": "SomeType",
             "parameters": [
                 {
                     "name": "inputString",
