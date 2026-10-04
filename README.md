@@ -718,7 +718,7 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | any | Returns true if the value is an array or string with contents, false otherwise (lambda parameter is optional) | `#any($.some.path, @x: @x.someValue == 5)` | Property Value
 | where | Returns an array of objects that match a predicate | `#where($.some.path, @x: @x.other.path > 2)` | Property Value
 | select | Returns an array of objects that are the result of a projection | `#select($.some.path, @x: @x.other.path)` | Property Value
-| transform | Returns an object that is the result of transforming a document sub-path using a standalone transformer | `#transform($.some.path, 'SomeNamedTransformer')` | Property Value
+| transformWith | Returns an object that is the result of transforming a document sub-path using a standalone transformer | `#transformWith($.some.path, 'SomeNamedTransformer')` | Property Value
 | using | Assigns a specific path to a range variable and allows statements to operate on it | `"#using($.some.path as @x) into 'result'":[ "#setAt(@x.other.path, 5)" ]` | Property Name
 | removeAt | Removes a JSON node from the provided variable-based path | `#removeAt(@x.some.path)` | Statement
 | setAt | Adds or modifies a JSON node specified with the provided variable-based path | `#setAt(@x.some.path, 5)` | Statement
@@ -877,19 +877,19 @@ That's it! You can pass in your source JSON document to the `Transform` method c
 
 ## Transformer Registration
 
-As you go, you may run into the issue where the transformer is ultimately too complex to reason about in a single file. In that case, you can break it up into multiple transformers and then call them from each other using the `#transform` method. This method takes a path to the sub-document to transform and the name of the transformer to use, which must be registered with the `JoltJsonTransformer` instance. Let's see how we can register a transformer and then call it from another one.
+As you go, you may run into the issue where the transformer is ultimately too complex to reason about in a single file. In that case, you can break it up into multiple transformers and then call them from each other using the `#transformWith` method. This method takes a path to the sub-document to transform and the name of the transformer to use, which must be registered with the `JoltJsonTransformer` instance. Let's see how we can register a transformer and then call it from another one.
 
 Registration is fairly straightforward, you need a name and the transformer JSON that will be used.
 ```csharp
 var registration = new TransformerRegistration("PartialTransformer", partialTransformerJson);
 context.RegisterTransformer(registration);
 ```
-And then in your primary transformer, on the property value side you can call `#transform($.some.path, 'PartialTransformer')` to execute the registered transformer against the sub-document at `$.some.path` and return the result as the value of that evaluation.
+And then in your primary transformer, on the property value side you can call `#transformWith($.some.path, 'PartialTransformer')` to execute the registered transformer against the sub-document at `$.some.path` and return the result as the value of that evaluation.
 
-Variables from the primary transformer will not be available in the referenced transformer, although it can receive a JSON object as parameters through the `#transform` method, which will store the object in an implicitly created variable called `@params` and allow access to the properties from there. This allows you to create more dynamic and reusable transformers that can be configured at runtime with different parameters. For example, you could have a transformer that formats a date according to a provided format string, and then call it with different format strings as needed. Here's an example using the object literal syntax.
+Variables from the primary transformer will not be available in the referenced transformer, although it can receive a JSON object as parameters through the `#transformWith` method, which will store the object in an implicitly created variable called `@params` and allow access to the properties from there. This allows you to create more dynamic and reusable transformers that can be configured at runtime with different parameters. For example, you could have a transformer that formats a date according to a provided format string, and then call it with different format strings as needed. Here's an example using the object literal syntax.
 ```json
 {
-    "formattedDate": "#transform($.date, 'DateFormatter', { 'format': 'MM/dd/yyyy' })"
+    "formattedDate": "#transformWith($.date, 'DateFormatter', { 'format': 'MM/dd/yyyy' })"
 }
 ```
 And the referenced transformer could access the `format` property from the `@params` variable like this:
@@ -903,7 +903,7 @@ This is definitely recommended for composability and readability as your transfo
 Also, a recommended pattern that's possible using these referenced transformers is to use the `#merge` method to enrich the results of the referenced transformer with additional properties from the primary transformer. This allows you to keep your transformers focused and reusable while still being able to add context-specific information as needed. For example:
 ```json
 {
-    "enrichedResult": "#merge(#transform($.some.path, 'PartialTransformer'), { 'source': 'local', 'processedAt': #currentDateTimeUtc() })"
+    "enrichedResult": "#merge(#transformWith($.some.path, 'PartialTransformer'), { 'source': 'local', 'processedAt': #currentDateTimeUtc() })"
 }
 ```
 Here's a final pattern that may prove useful. Last example and we'll move on!
@@ -911,7 +911,7 @@ Here's a final pattern that may prove useful. Last example and we'll move on!
 {
     "#foreach(@x in $.order.items) into 'lineItems'": [
         {
-            "item": "#transform(@x, 'LineItemTransformer', { 'currency': #valueOf($.order.currency) })"
+            "item": "#transformWith(@x, 'LineItemTransformer', { 'currency': #valueOf($.order.currency) })"
         }
     ]
 }
@@ -919,7 +919,7 @@ Here's a final pattern that may prove useful. Last example and we'll move on!
 
 # Validating Your Transformer Syntax
 
-Additionally, transformers may prove difficult to test for correctness without actually obtaining a source document and running through it, which can take time and be specific to a source document. There is a way, however, to get a quick sanity check on your syntax and expression shapes and that's through the `Validate()` method on the `JoltTransformer`. First, you create the `JoltJsonTransformer` instance, using the `IJsonContext` that contains the transformer string you'd like to validate, and then call `Validate()` and iterate through the issues that come back, if any. This will not execute any evaluations against a source document and so you won't get errors (such as an incorrect variable value) that would appear at runtime, rather it would identify issues (such as syntax misuse) in how you've constructed your transformer. It will also verify that any calls to `#transform` will resolve to registered transformers.
+Additionally, transformers may prove difficult to test for correctness without actually obtaining a source document and running through it, which can take time and be specific to a source document. There is a way, however, to get a quick sanity check on your syntax and expression shapes and that's through the `Validate()` method on the `JoltTransformer`. First, you create the `JoltJsonTransformer` instance, using the `IJsonContext` that contains the transformer string you'd like to validate, and then call `Validate()` and iterate through the issues that come back, if any. This will not execute any evaluations against a source document and so you won't get errors (such as an incorrect variable value) that would appear at runtime, rather it would identify issues (such as syntax misuse) in how you've constructed your transformer. It will also verify that any calls to `#transformWith` will resolve to registered transformers.
 
 Issues will be returned as instances of `Jolt.Structure.ValidationIssue` and will contain information about the issue that was found, such as the type of issue, a message describing the issue, and the path to the part of the transformer where the issue was found. This can be a great way to catch mistakes early on in development before you even have a source document to test against. The issue contract is below:
 ```csharp
