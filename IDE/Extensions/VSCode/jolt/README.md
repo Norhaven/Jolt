@@ -10,9 +10,9 @@ This is _not_ part of the much older and unrelated Java-based JSON transformatio
 
 The Jolt language is embedded inside JSON strings, and editing transforms with the default JSON coloring can make it more difficult to develop and maintain. This language extension provides syntax coloring to make that easier.
 
-![Match Expression](IDE/Extensions/VSCode/jolt/images/match-with-test-colorization.png)
+![Match Expression](images/match-with-test-colorization.png)
 
-![Foreach Loop Expression](IDE/Extensions/VSCode/jolt/images/foreach-test-colorization.png)
+![Foreach Loop Expression](images/foreach-test-colorization.png)
 
 ### Method & Variable Completion
 
@@ -20,13 +20,13 @@ It can be a bit difficult to know at a glance what the available Jolt Library me
 
 The same holds true for variables and understanding which are currently in scope for you to use and which are not. This extension also provides context-sensitive method and variable completions to help speed up your development and maintenance abilities.
 
-![Method And Variable Completions](IDE/Extensions/VSCode/jolt/images/method-and-variable-completions.gif)
+![Method And Variable Completions](images/method-and-variable-completions.gif)
 
 ### Method Information On Hover
 
 You may forget what a particular method is for and need a quick refresher on the documented method information. It also slows down your development if you have to continually refer to the README file, so the documented definition for a given method is available when hovering over it.
 
-![Method Information](IDE/Extensions/VSCode/jolt/images/method-information-on-hover.png)
+![Method Information](images/method-information-on-hover.png)
 
 ### Custom Method Completions
 
@@ -36,11 +36,11 @@ Finally, with a little effort you can also have completions and on-hover documen
 
 As an example of a `methods.json` file, you could create one that looks like this:
 
-![Custom Methods File](IDE/Extensions/VSCode/jolt/images/custom-method-file.png)
+![Custom Methods File](images/custom-method-file.png)
 
 And then it would be accessible to a transformer within that folder or a subfolder, like this:
 
-![Custom Methods Completion](IDE/Extensions/VSCode/jolt/images/custom-method-completions.gif)
+![Custom Methods Completion](images/custom-method-completions.gif)
 
 It's also important to note that any updates to the `methods.json` file will only be picked up when by this extension when the file is saved. Unsaved definitions will not be loaded. Additionally, transformers opened from outside the workspace will only check their own folder and that file isn't watched for changes, meaning that any changes there will need to reload the VSCode window to be applied. As a last caveat, any custom methods whose name collides with a defined Jolt standard library method will be ignored (as per Jolt's execution rules) and will not be available in your transformer completions or on-hover behavior.
 

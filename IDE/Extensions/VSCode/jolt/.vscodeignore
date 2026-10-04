@@ -10,3 +10,5 @@ node_modules/**
 tsconfig*.json
 esbuild.mjs
 **/*.map
+images/**
+BuildPackage.ps1
