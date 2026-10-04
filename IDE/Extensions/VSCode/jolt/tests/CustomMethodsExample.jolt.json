@@ -1,0 +1,4 @@
+{
+    "exampleValue": "#exampleCustomMethod('test', @y: @y.someProperty)"
+}
+

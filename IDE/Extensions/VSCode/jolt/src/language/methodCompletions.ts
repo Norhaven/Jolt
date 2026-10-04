@@ -85,6 +85,10 @@ export function formatDocumentation(method: LibraryMethod): string {
 		sections.push('**Unsafe:** only available when the host application explicitly enables unsafe methods.');
 	}
 
+	if (method.source) {
+		sections.push(`*Defined in:* \`${method.source}\``);
+	}
+
 	return sections.join('\n\n');
 }
 

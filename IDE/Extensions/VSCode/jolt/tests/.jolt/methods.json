@@ -1,0 +1,21 @@
+{
+    "root": true,
+    "methods": [
+        {
+            "name": "exampleCustomMethod",
+            "description": "This is an example of a custom method that takes a string and a lambda",
+            "example": "#exampleCustomMethod('some string', @x: @x.someProperty)",
+            "parameters": [
+                {
+                    "name": "inputString",
+                    "kind": "value"
+                },
+                {
+                    "name": "inputFilter",
+                    "kind": "lambda"
+                }
+            ]
+        }
+    ]
+}
+

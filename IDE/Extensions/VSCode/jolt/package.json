@@ -2,7 +2,7 @@
   "name": "jolt",
   "displayName": "Jolt Language",
   "description": "A friendly way of transforming JSON into different JSON.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "icon": "./JoltLogo.png",
   "publisher": "Norhaven",
   "license": "BSD-3-Clause",
@@ -23,6 +23,12 @@
     "Programming Languages"
   ],
   "main": "./dist/extension.js",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Custom methods from .jolt/methods.json files are only offered in trusted workspaces. Syntax coloring, standard library completions, and hover work everywhere."
+    }
+  },
   "scripts": {
     "vscode:prepublish": "npm run package",
     "compile": "npm run check-types && node esbuild.mjs",
@@ -61,6 +67,10 @@
       "language": "jolt",
       "scopeName": "source.jolt",
       "path": "./syntaxes/jolt.tmLanguage.json"
+    }],
+    "jsonValidation": [{
+      "fileMatch": "**/.jolt/methods.json",
+      "url": "./schemas/jolt-methods.schema.json"
     }],
     "configurationDefaults": {
       "editor.tokenColorCustomizations": {

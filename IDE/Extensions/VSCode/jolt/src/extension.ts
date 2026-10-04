@@ -1,21 +1,27 @@
 import * as vscode from 'vscode';
+import { CustomMethodsService } from './customMethodsService';
 import { getExpressionContext } from './language/context';
 import { getMethodReferenceAt } from './language/hover';
-import { libraryMethods } from './language/library';
 import { formatDocumentation, formatSignature, getMethodCompletions } from './language/methodCompletions';
 import { getVariableCompletions } from './language/variables';
 
 export function activate(context: vscode.ExtensionContext): void {
+	const methods = new CustomMethodsService();
+
 	context.subscriptions.push(
-		vscode.languages.registerCompletionItemProvider({ language: 'jolt' }, new JoltCompletionProvider(), '#', '>', '@'),
-		vscode.languages.registerHoverProvider({ language: 'jolt' }, new JoltHoverProvider()));
+		methods,
+		vscode.languages.registerCompletionItemProvider({ language: 'jolt' }, new JoltCompletionProvider(methods), '#', '>', '@'),
+		vscode.languages.registerHoverProvider({ language: 'jolt' }, new JoltHoverProvider(methods)));
 }
 
 export function deactivate(): void {
 }
 
 class JoltCompletionProvider implements vscode.CompletionItemProvider {
-	provideCompletionItems(document: vscode.TextDocument, position: vscode.Position): vscode.CompletionItem[] | undefined {
+	constructor(private readonly methods: CustomMethodsService) {
+	}
+
+	async provideCompletionItems(document: vscode.TextDocument, position: vscode.Position): Promise<vscode.CompletionItem[] | undefined> {
 		const variableCompletions = getVariableCompletions(document.getText(), document.offsetAt(position));
 
 		if (variableCompletions) {
@@ -44,7 +50,8 @@ class JoltCompletionProvider implements vscode.CompletionItemProvider {
 			.getConfiguration('jolt', document)
 			.get<boolean>('completion.includeUnsafeMethods', false);
 
-		const completions = getMethodCompletions(expressionContext, libraryMethods, { includeUnsafeMethods });
+		const methods = await this.methods.getMethodsFor(document);
+		const completions = getMethodCompletions(expressionContext, methods, { includeUnsafeMethods });
 
 		return completions?.map(completion => {
 			const signature = formatSignature(completion.method, completion.isPiped);
@@ -52,7 +59,7 @@ class JoltCompletionProvider implements vscode.CompletionItemProvider {
 				{
 					label: completion.method.name,
 					detail: signature.substring(completion.method.name.length),
-					description: completion.method.isUnsafe ? 'unsafe' : undefined
+					description: completion.method.source ?? (completion.method.isUnsafe ? 'unsafe' : undefined)
 				},
 				vscode.CompletionItemKind.Function);
 
@@ -66,7 +73,10 @@ class JoltCompletionProvider implements vscode.CompletionItemProvider {
 }
 
 class JoltHoverProvider implements vscode.HoverProvider {
-	provideHover(document: vscode.TextDocument, position: vscode.Position): vscode.Hover | undefined {
+	constructor(private readonly methods: CustomMethodsService) {
+	}
+
+	async provideHover(document: vscode.TextDocument, position: vscode.Position): Promise<vscode.Hover | undefined> {
 		const reference = getMethodReferenceAt(document.lineAt(position.line).text, position.character);
 
 		// Method references only exist within Jolt expressions, which are always inside JSON strings.
@@ -74,7 +84,9 @@ class JoltHoverProvider implements vscode.HoverProvider {
 			return undefined;
 		}
 
-		const method = libraryMethods.find(x => x.name === reference.name);
+		// Standard library methods come first, matching Jolt, which calls them in preference to custom methods.
+		const methods = await this.methods.getMethodsFor(document);
+		const method = methods.find(x => x.name === reference.name);
 
 		if (!method) {
 			return undefined;

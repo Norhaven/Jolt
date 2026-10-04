@@ -32,6 +32,8 @@ export interface LibraryMethod {
 	isValueGenerator: boolean;
 	isUnsafe: boolean;
 	parameters: LibraryParameter[];
+	/** Where a custom method was defined (e.g. a .jolt/methods.json path), or undefined for the standard library. */
+	source?: string;
 }
 
 /**

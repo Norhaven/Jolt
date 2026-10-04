@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Jolt custom methods",
+  "description": "Describes external methods for Jolt code completion and hover. Applies to transformers in this folder and its subfolders, merged with files in parent folders up to the workspace root unless \"root\" is true.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "root": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, .jolt/methods.json files in parent folders are not merged with this one."
+    },
+    "methods": {
+      "type": "array",
+      "description": "The external methods registered with the transformers that this file applies to.",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+            "description": "The method name (or its alias, if any) as used in a transformer, without the leading #. Names are case-sensitive."
+          },
+          "description": {
+            "type": "string",
+            "description": "Shown in completions and when hovering over the method."
+          },
+          "example": {
+            "type": "string",
+            "description": "An example call, e.g. #ReverseString($.some.path)."
+          },
+          "parameters": {
+            "type": "array",
+            "description": "The method's parameters, in order.",
+            "items": {
+              "type": "object",
+              "required": ["name"],
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The parameter name, shown in the signature."
+                },
+                "kind": {
+                  "enum": ["value", "lambda"],
+                  "default": "value",
+                  "description": "\"lambda\" for a Func<> parameter, which completions insert as \"@x: expression\". Defaults to \"value\"."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
