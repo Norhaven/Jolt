@@ -51,6 +51,11 @@ namespace Jolt.Parsing
         public ExpressionTokenCategory Category { get; }
         public bool ProvidesNullSafeAccess { get; }
 
+        /// <summary>
+        /// Gets the location of this token within the expression it was read from, when known.
+        /// </summary>
+        public ExpressionSpan? Span { get; internal set; }
+
         public ExpressionToken(string value, ExpressionTokenCategory category, bool providesNullSafeAccess = false)
         {
             Value = value;

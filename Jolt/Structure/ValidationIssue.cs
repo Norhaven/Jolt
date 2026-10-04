@@ -1,4 +1,5 @@
 ﻿using Jolt.Exceptions;
+using Jolt.Parsing;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -42,6 +43,13 @@ namespace Jolt.Structure
         public bool IsInPropertyName { get; }
 
         /// <summary>
+        /// Gets the location of the issue within the expression (the property name or value at
+        /// <see cref="TransformerExpressionPath"/>), when known. For a syntax error, this is where parsing failed, which
+        /// may be an empty span at the end of the expression when it ended early.
+        /// </summary>
+        public ExpressionSpan? Span { get; }
+
+        /// <summary>
         /// Initializes an instance of <see cref="ValidationIssue"/> with the provided parameters.
         /// </summary>
         /// <param name="type">The validation type.</param>
@@ -64,6 +72,21 @@ namespace Jolt.Structure
         /// <param name="expressionText">The text of the failed expression.</param>
         /// <param name="isInPropertyName">Whether the failing expression is the property name at the path, rather than its value.</param>
         public ValidationIssue(ValidationIssueType type, ExceptionCode code, string message, string? transformerExpressionPath, string? expressionText, bool isInPropertyName)
+            : this(type, code, message, transformerExpressionPath, expressionText, isInPropertyName, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes an instance of <see cref="ValidationIssue"/> with the provided parameters.
+        /// </summary>
+        /// <param name="type">The validation type.</param>
+        /// <param name="code">The exception code.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="transformerExpressionPath">The JSON path to the failing expression.</param>
+        /// <param name="expressionText">The text of the failed expression.</param>
+        /// <param name="isInPropertyName">Whether the failing expression is the property name at the path, rather than its value.</param>
+        /// <param name="span">The location of the issue within the failing expression, if known.</param>
+        public ValidationIssue(ValidationIssueType type, ExceptionCode code, string message, string? transformerExpressionPath, string? expressionText, bool isInPropertyName, ExpressionSpan? span)
         {
             Type = type;
             Code = code;
@@ -71,6 +94,7 @@ namespace Jolt.Structure
             TransformerExpressionPath = transformerExpressionPath;
             ExpressionText = expressionText;
             IsInPropertyName = isInPropertyName;
+            Span = span;
         }
     }
 }

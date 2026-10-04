@@ -90,15 +90,37 @@ namespace Jolt.LanguageServer.Tests
         }
 
         [Fact]
-        public void SyntaxError_CoversTheExpressionWithoutThePathInItsMessage()
+        public void SyntaxError_AtTheEndOfTheExpression_CoversItsLastCharacter()
         {
             const string text = "{ \"result\": \"#valueOf(\" }";
 
             var diagnostic = Assert.Single(Validate(text));
 
-            Assert.Equal("#valueOf(", Covered(text, diagnostic));
+            Assert.Equal("(", Covered(text, diagnostic));
+            Assert.Equal(text.IndexOf('('), diagnostic.Range.Start.Character);
             Assert.StartsWith("Unable to continue parsing, expected ", diagnostic.Message);
             Assert.EndsWith(" but found end of expression", diagnostic.Message);
+        }
+
+        [Fact]
+        public void UnknownMethod_CoversTheMethodName()
+        {
+            const string text = "{ \"result\": \"#valueOf($.a)->#reverseString()\" }";
+
+            var diagnostic = Assert.Single(Validate(text));
+
+            Assert.Equal("#reverseString", Covered(text, diagnostic));
+        }
+
+        [Fact]
+        public void Spans_AreMappedThroughEscapeSequences()
+        {
+            // "\u0041" is six characters in the document but one in the expression, so the unknown method after it moves.
+            const string text = "{ \"result\": \"#valueOf('\\u0041')->#nope()\" }";
+
+            var diagnostic = Assert.Single(Validate(text));
+
+            Assert.Equal("#nope", Covered(text, diagnostic));
         }
 
         [Fact]

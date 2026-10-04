@@ -12,6 +12,7 @@ namespace Jolt.Expressions
             : base(firstVariable.Name)
         {
             SecondVariable = secondVariable;
+            Span = Parsing.ExpressionSpan.Cover(firstVariable.Span, secondVariable.Span);
         }
     }
 }

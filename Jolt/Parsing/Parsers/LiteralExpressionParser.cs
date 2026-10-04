@@ -53,6 +53,11 @@ namespace Jolt.Parsing.Parsers
                 _ => default
             };
 
+            if (literal != null)
+            {
+                literal.Span = _reader.CurrentToken.Span;
+            }
+
             expression = literal;
 
             var isParseSuccessful = expression != null;
@@ -63,7 +68,7 @@ namespace Jolt.Parsing.Parsers
                 {
                     if (_reader.CurrentToken.Category == ExpressionTokenCategory.NumericLiteral)
                     {
-                        expression = new LiteralExpression(literal.Type, $"-{literal.Value}");
+                        expression = new LiteralExpression(literal.Type, $"-{literal.Value}").WithSpan(literal.Span);
                     }
                     else
                     {

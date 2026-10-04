@@ -12,6 +12,7 @@ namespace Jolt.Expressions
             :base(method.Signature, method.ParameterValues, method.GeneratedName, method.GeneratedVariable)
         {
             ResultRange = resultRange;
+            Span = method.Span;
         }
     }
 }

@@ -51,14 +51,69 @@ namespace Jolt.Parsing
             }
 
             var stream = new TokenStream<char>(expression);
+            var previousEnd = 0;
 
             while (!stream.IsCompleted)
             {
                 foreach(var token in ReadTokenFrom(stream, mode))
                 {
+                    // Tokens are read lazily, so when one is produced, the stream has consumed exactly up to its end.
+                    var end = Math.Max(previousEnd, Math.Min(stream.ConsumedCount, expression.Length));
+
+                    token.Span = IncludeQuotes(expression, token, GetTokenSpan(expression, token, previousEnd, end));
+                    previousEnd = end;
+
                     yield return token;
                 }
             }
+        }
+
+        /// <summary>
+        /// Extends the span of a string literal, whose value doesn't include its quotes, to cover them.
+        /// </summary>
+        private static ExpressionSpan IncludeQuotes(string expression, ExpressionToken token, ExpressionSpan span)
+        {
+            if (token.Category != ExpressionTokenCategory.StringLiteral)
+            {
+                return span;
+            }
+
+            var start = span.Start > 0 && expression[span.Start - 1] == ExpressionToken.SingleQuote ? span.Start - 1 : span.Start;
+            var end = span.End < expression.Length && expression[span.End] == ExpressionToken.SingleQuote ? span.End + 1 : span.End;
+
+            return ExpressionSpan.FromBounds(start, end);
+        }
+
+        /// <summary>
+        /// Gets where a token is, given the characters consumed since the previous token. Most tokens are written exactly
+        /// as their value (e.g. "#", "valueOf", or "@x"), which is then found at the end or the start of those characters.
+        /// Otherwise (e.g. a string literal, whose value has no quotes), the token covers all of them except leading
+        /// whitespace, since some characters are consumed without becoming a token of their own (e.g. "->").
+        /// </summary>
+        private static ExpressionSpan GetTokenSpan(string expression, ExpressionToken token, int previousEnd, int end)
+        {
+            var value = token.Value ?? string.Empty;
+            var start = end - value.Length;
+
+            if (value.Length > 0 && start >= previousEnd && string.CompareOrdinal(expression, start, value, 0, value.Length) == 0)
+            {
+                return new ExpressionSpan(start, value.Length);
+            }
+
+            start = previousEnd;
+
+            while (start < end && char.IsWhiteSpace(expression[start]))
+            {
+                start++;
+            }
+
+            // E.g. "@x" followed by the "?" of a null-safe dereference ("@x?.y"), which is consumed with it.
+            if (value.Length > 0 && start + value.Length <= end && string.CompareOrdinal(expression, start, value, 0, value.Length) == 0)
+            {
+                return new ExpressionSpan(start, value.Length);
+            }
+
+            return ExpressionSpan.FromBounds(start, end);
         }
 
         public override IEnumerable<ExpressionToken> ReadTokenFrom(ITokenStream<char> stream, EvaluationMode mode)

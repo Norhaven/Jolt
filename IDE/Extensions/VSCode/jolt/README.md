@@ -76,11 +76,6 @@ It also contributes the following settings:
 * `jolt.validation.enabled`: validate transformers as you edit them. Defaults to true.
 * `jolt.validation.allowUnsafeMethods`: don't report the use of unsafe library methods, for when your application enables them. Defaults to false.
 
-## Roadmap
-
-We're considering several features, including:
-- Precise locations for syntax errors within an expression
-
 ## Release Notes
 
 ### 1.3.0

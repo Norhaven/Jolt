@@ -15,6 +15,17 @@ namespace Jolt.Exceptions
         public ExceptionCode Code { get; }
 
         /// <summary>
+        /// Gets the location within the expression being parsed that this exception is about, when known.
+        /// </summary>
+        public Parsing.ExpressionSpan? Span { get; private set; }
+
+        internal JoltException WithSpan(Parsing.ExpressionSpan? span)
+        {
+            Span = span;
+            return this;
+        }
+
+        /// <summary>
         /// Initializes a new instance of the JoltException class with a specified error code, message, and optional
         /// inner exception.
         /// </summary>

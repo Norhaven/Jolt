@@ -26,7 +26,7 @@ namespace Jolt.Expressions
 
         public MethodCallExpression WithParameters(IEnumerable<Expression> parameters)
         {
-            return new MethodCallExpression(Signature, parameters.ToArray(), GeneratedName, GeneratedVariable);
+            return new MethodCallExpression(Signature, parameters.ToArray(), GeneratedName, GeneratedVariable) { Span = Span };
         }
     }
 }

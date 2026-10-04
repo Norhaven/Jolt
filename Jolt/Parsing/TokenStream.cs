@@ -11,10 +11,17 @@ namespace Jolt.Parsing
         private readonly IEnumerator<T> _enumerator;
         private bool _isCompleted;
         private int _position;
+        private int _consumedCount;
 
         public T CurrentToken => IsCompleted ? default : _enumerator.Current;
         public int Position => _position;
         public bool IsCompleted => _isCompleted;
+
+        /// <summary>
+        /// Gets the number of items consumed so far, which is also the index of the current item. Unlike
+        /// <see cref="Position"/>, this includes items consumed in bulk (e.g. by <see cref="TryConsumeUntil"/>).
+        /// </summary>
+        internal int ConsumedCount => _consumedCount;
 
         public TokenStream(IEnumerable<T> tokens)
         {
@@ -67,7 +74,7 @@ namespace Jolt.Parsing
                 _enumerator.Current,
             };
 
-            while (_enumerator.MoveNext())
+            while (Advance())
             {
                 if (isMatch(_enumerator.Current))
                 {
@@ -103,7 +110,7 @@ namespace Jolt.Parsing
                 _enumerator.Current,
             };
 
-            while (_enumerator.MoveNext())
+            while (Advance())
             {
                 if (isMatch(_enumerator.Current))
                 {
@@ -150,7 +157,7 @@ namespace Jolt.Parsing
                 _enumerator.Current
             };
 
-            while (_enumerator.MoveNext())
+            while (Advance())
             {
                 tokens.Add(_enumerator.Current);
             }
@@ -167,8 +174,14 @@ namespace Jolt.Parsing
                 return;
             }
 
-            _isCompleted = !_enumerator.MoveNext();
+            _isCompleted = !Advance();
             _position++;
+        }
+
+        private bool Advance()
+        {
+            _consumedCount++;
+            return _enumerator.MoveNext();
         }
     }
 }

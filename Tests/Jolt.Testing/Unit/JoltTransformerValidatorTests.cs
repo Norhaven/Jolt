@@ -1,6 +1,7 @@
 ﻿using Jolt.Testing.Assertions;
 using Jolt.Exceptions;
 using Jolt.Library;
+using Jolt.Parsing;
 using Jolt.Structure;
 using Jolt.Testing.Resources;
 using System;
@@ -103,6 +104,34 @@ namespace Jolt.Testing.Unit
             issues[2].Type.Should().Be(ValidationIssueType.SyntaxError, "because the expression is incomplete");
             issues[2].TransformerExpressionPath.Should().Be(transformer["broken"].FullPath, "because the issue is in the third property");
             issues[2].IsInPropertyName.Should().Be(false, "because the issue is in the property value");
+
+            issues[0].Span.Should().Be(new ExpressionSpan(15, 8), "because that is where @missing is in the property name");
+            issues[1].Span.Should().Be(new ExpressionSpan(9, 11), "because that is where @undeclared is in the property value");
+            issues[2].Span.Should().Be(new ExpressionSpan(9, 0), "because the expression ends where the parameters were expected");
+        }
+
+        [Theory]
+        [InlineData(TestType.DotNet, "#valueOf($.a) + @missing", "@missing")]
+        [InlineData(TestType.DotNet, "#nope($.a)", "#nope")]
+        [InlineData(TestType.DotNet, "#valueOf($.a)->#nope()", "#nope")]
+        [InlineData(TestType.DotNet, "#currentDateTime('extra')", "#currentDateTime")]
+        [InlineData(TestType.DotNet, "#valueOf($.a)->#eval()", "#eval")]
+        [InlineData(TestType.DotNet, "#reduce($.a, @acc;@current: @acc + @current + @other)", "@other")]
+        [InlineData(TestType.DotNet, "#transformWith($.a, 'person')", "'person'")]
+        [InlineData(TestType.DotNet, "#valueOf(@x?.y)", "@x")]
+        [InlineData(TestType.DotNet, "#valueOf(@xs[1..2])", "@xs")]
+        [InlineData(TestType.DotNet, "#valueOf(  $.a  ,  @y  )", "#valueOf")]
+        [InlineData(TestType.DotNet, "#valueOf(   @y   )", "@y")]
+        [InlineData(TestType.Newtonsoft, "#valueOf($.a) + @missing", "@missing")]
+        public void ValidateTransformer_WithIssue_ShouldLocateItWithinTheExpression(TestType testType, string expression, string expectedText)
+        {
+            var context = CreateContext(testType);
+            var transformer = context.JsonTokenReader.Read($"{{ \"result\": {System.Text.Json.JsonSerializer.Serialize(expression)} }}").AsObject();
+
+            var issue = new JoltTransformerValidator<IJsonContext>(context).Validate(transformer).First();
+            var span = issue.Span ?? throw new InvalidOperationException("The issue should have a span.");
+
+            expression.Substring(span.Start, span.Length).Should().Be(expectedText, "because that is the part of the expression with the issue");
         }
     }
 }

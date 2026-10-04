@@ -931,10 +931,11 @@ public sealed class ValidationIssue
     public string TransformerExpressionPath { get; }
     public string ExpressionText { get; }
     public bool IsInPropertyName { get; }
+    public ExpressionSpan? Span { get; }
 }
 ```
 
-The `TransformerExpressionPath` is the path to the property (or array element) containing the expression with the issue. A property's name and value share the same path, so `IsInPropertyName` indicates whether the issue is within the expression in the property's name rather than its value.
+The `TransformerExpressionPath` is the path to the property (or array element) containing the expression with the issue. A property's name and value share the same path, so `IsInPropertyName` indicates whether the issue is within the expression in the property's name rather than its value. When known, `Span` gives the location of the issue within that expression as a `Start` index and `Length`: the method name (e.g. `#valueOf`) for an issue with a method call, the variable (e.g. `@x`) for an undeclared variable, the quoted name for an unregistered transformer, and the token where parsing failed for a syntax error. A syntax error found at the end of an expression, such as a missing closing parenthesis, has an empty span at the end.
 
 # Streaming Large Amounts Of Documents
 

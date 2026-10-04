@@ -197,8 +197,10 @@ namespace Jolt.LanguageServer.Validation
 
         /// <summary>
         /// Locates an issue within the document. Jolt reports the path to the property or array element with the
-        /// issue, so that finds the string containing the expression. Within it, a syntax error covers the whole
-        /// expression, while other issues cover the method or variable they are about where it can be found.
+        /// issue, so that finds the string containing the expression, and the span of the issue within it (e.g. the
+        /// token where parsing failed, or the method or variable an issue is about), which is mapped through any escape
+        /// sequences in the string. Without a span, a syntax error covers the whole expression, while other issues
+        /// cover the method or variable they are about where it can be found.
         /// </summary>
         private static (int Start, int End) Locate(ValidationIssue issue, JsonPathIndex index, OccurrenceTracker occurrences)
         {
@@ -211,6 +213,14 @@ namespace Jolt.LanguageServer.Validation
                 return (index.Root.Start, index.Root.Start + 1);
             }
 
+            if (issue.Span is ExpressionSpan span && span.End <= expression.Value.Length)
+            {
+                var (start, end) = WidenIfEmpty(span.Start, span.End, expression.Value.Length);
+
+                return (expression.RawOffsets[start], expression.RawOffsets[end]);
+            }
+
+            // Without a span from Jolt (e.g. from a version that doesn't report them), search for what the issue is about.
             var needle = issue.Type == ValidationIssueType.SyntaxError ? null : GetNeedle(issue);
             var found = needle is null ? -1 : occurrences.FindNext(expression, needle);
 
@@ -221,6 +231,20 @@ namespace Jolt.LanguageServer.Validation
             }
 
             return (expression.RawOffsets[found], expression.RawOffsets[found + needle!.Length]);
+        }
+
+        /// <summary>
+        /// Widens an empty span (e.g. the end of an expression that ended early) to the character before it, or after it
+        /// at the start, since an empty range is hard to see in an editor.
+        /// </summary>
+        private static (int Start, int End) WidenIfEmpty(int start, int end, int length)
+        {
+            if (end > start || length == 0)
+            {
+                return (start, end);
+            }
+
+            return start > 0 ? (start - 1, start) : (start, start + 1);
         }
 
         /// <summary>

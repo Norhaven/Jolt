@@ -60,11 +60,11 @@ A document is usually a single transformer. A Jolt test document (an object with
 
 ## How issues are located
 
-Jolt reports the path to the property or array element containing an issue (e.g. `$.items[0]['#foreach(@x in $.list)']`), and whether it's in the property's name or value. The server parses the document with its own position-aware JSON parser and builds the same paths, formatting each property segment with System.Text.Json (which Jolt uses), so they match exactly. Within the expression found that way:
+Jolt reports the path to the property or array element containing an issue (e.g. `$.items[0]['#foreach(@x in $.list)']`), and whether it's in the property's name or value. The server parses the document with its own position-aware JSON parser and builds the same paths, formatting each property segment with System.Text.Json (which Jolt uses), so they match exactly. Within the expression found that way, Jolt reports the span of each issue, which the server maps through any escape sequences in the JSON string:
 
-- A syntax error covers the whole expression, as Jolt does not report where within it parsing failed
+- A syntax error covers the token where parsing failed, or the last character when the expression ended early (e.g. the `(` of an unclosed `#valueOf(`)
 - An undeclared variable covers the variable (e.g. `@missing`)
-- A method issue covers the method name (e.g. `#currentDateTime`)
+- A method issue, including an unknown method, covers the method name (e.g. `#currentDateTime`)
 - An unregistered transformer covers its quoted name (e.g. `'address'`)
 
-When the same name has several issues within an expression, they are placed on successive occurrences of it.
+For issues without a span (e.g. from a version of Jolt that doesn't report them), a syntax error covers the whole expression, and other issues are placed by searching the expression for the method, variable, or transformer they name, with several issues about the same name placed on successive occurrences of it.

@@ -83,7 +83,7 @@ namespace Jolt.Parsing.Parsers
             methodCall = default;
 
             if (!_reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.StartOfMethodCall ||
-                                                     x.Category == ExpressionTokenCategory.StartOfPipedMethodCall))
+                                                     x.Category == ExpressionTokenCategory.StartOfPipedMethodCall, out var methodStart))
             {
                 return false;
             }
@@ -92,6 +92,9 @@ namespace Jolt.Parsing.Parsers
             {
                 return false;
             }
+
+            // The method is located by its name, including the leading "#" (e.g. "#valueOf").
+            var nameSpan = ExpressionSpan.Cover(methodStart.Span, potentiallyQualifiedMethodName.Span);
 
             if (!_reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.StartOfMethodParameters))
             {
@@ -140,16 +143,16 @@ namespace Jolt.Parsing.Parsers
 
             if (methodSignature is null)
             {
-                throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToFindMethodImplementation, potentiallyQualifiedMethodName.Value);
+                throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToFindMethodImplementation, potentiallyQualifiedMethodName.Value).WithSpan(nameSpan);
             }
 
             if (_reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.GeneratedNameIdentifier, out var generatedName))
             {
-                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), generatedName.Value);
+                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), generatedName.Value).WithSpan(nameSpan);
             }
             else if (_reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.RangeVariable, out var rangeVariable))
             {
-                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), rangeVariable.Value, new RangeVariable(rangeVariable.Value));
+                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), rangeVariable.Value, new RangeVariable(rangeVariable.Value)).WithSpan(nameSpan);
             }
             else if (_reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.StartOfIndexerOrArrayLiteral, out var indexer))
             {                
@@ -165,7 +168,7 @@ namespace Jolt.Parsing.Parsers
                     throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToCloseIndexerExpressionAtPosition, _reader.Position);
                 }
 
-                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray());
+                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray()).WithSpan(nameSpan);
                 methodCall = new IndexOrSliceMethodResultExpression((RangeExpression)range, methodCall);
 
                 if (_reader.CurrentToken?.Category == ExpressionTokenCategory.StartOfPipedMethodCall)
@@ -190,7 +193,7 @@ namespace Jolt.Parsing.Parsers
                 // We're piping the initial method call results into the first argument of the target method,
                 // so we need to switch the evaluation order around a little bit.
 
-                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), default);
+                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), default).WithSpan(nameSpan);
 
                 var leftMostMethodCall = (MethodCallExpression)pipedMethodCall;
                 MethodCallExpression? previousCall = default;
@@ -222,7 +225,7 @@ namespace Jolt.Parsing.Parsers
             }
             else
             {
-                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray());
+                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray()).WithSpan(nameSpan);
             }
 
             return true;

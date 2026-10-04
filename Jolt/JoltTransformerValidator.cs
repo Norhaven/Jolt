@@ -1,6 +1,7 @@
 using Jolt.Evaluation;
 using Jolt.Exceptions;
 using Jolt.Expressions;
+using Jolt.Parsing;
 using Jolt.Structure;
 using System;
 using System.Collections.Generic;
@@ -189,10 +190,10 @@ namespace Jolt
             expression = default;
             issue = default;
 
+            var expressionTokens = new TokenTracker(_context.TokenReader.ReadToEnd(expressionString, mode));
+
             try
             {
-                var expressionTokens = _context.TokenReader.ReadToEnd(expressionString, mode);
-
                 if (_context.ExpressionParser.TryParseExpression(expressionTokens, _context, out expression))
                 {
                     return true;
@@ -200,7 +201,7 @@ namespace Jolt
             }
             catch(JoltException ex)
             {
-                issue = new ValidationIssue(ValidationIssueType.SyntaxError, ex.Code, $"Error parsing expression at transformer path '{expressionPath}' with expression '{expressionString}': {ex.Message}", expressionPath, expressionString, mode == EvaluationMode.PropertyName);
+                issue = new ValidationIssue(ValidationIssueType.SyntaxError, ex.Code, $"Error parsing expression at transformer path '{expressionPath}' with expression '{expressionString}': {ex.Message}", expressionPath, expressionString, mode == EvaluationMode.PropertyName, ex.Span ?? expressionTokens.GetFailureSpan(expressionString));
                 return false;
             }
             catch(Exception)
@@ -208,7 +209,7 @@ namespace Jolt
                 // The parser may fail unexpectedly on incomplete or malformed input (e.g. while a transformer is being
                 // edited). That is a problem with this expression, so it is reported rather than ending the validation.
 
-                issue = new ValidationIssue(ValidationIssueType.SyntaxError, ExceptionCode.UnableToParseMalformedExpression, $"Error parsing expression at transformer path '{expressionPath}' with expression '{expressionString}': Unable to parse expression '{expressionString}', it may be incomplete or malformed", expressionPath, expressionString, mode == EvaluationMode.PropertyName);
+                issue = new ValidationIssue(ValidationIssueType.SyntaxError, ExceptionCode.UnableToParseMalformedExpression, $"Error parsing expression at transformer path '{expressionPath}' with expression '{expressionString}': Unable to parse expression '{expressionString}', it may be incomplete or malformed", expressionPath, expressionString, mode == EvaluationMode.PropertyName, expressionTokens.GetFailureSpan(expressionString));
                 return false;
             }
 
@@ -305,21 +306,21 @@ namespace Jolt
 
                 case SlicedVariableExpression sliced:
                     if (!scope.IsVariableDeclared(sliced.Variable.Name))
-                        yield return UndeclaredVariableIssue(sliced.Variable.Name, path, mode);
+                        yield return UndeclaredVariableIssue(sliced.Variable, path, mode);
                     foreach (var issue in ValidateExpression(sliced.Range, mode, scope, path))
                         yield return issue;
                     break;
 
                 case PropertyDereferenceExpression dereference:
                     if (!scope.IsVariableDeclared(dereference.Variable.Name))
-                        yield return UndeclaredVariableIssue(dereference.Variable.Name, path, mode);
+                        yield return UndeclaredVariableIssue(dereference.Variable, path, mode);
                     break;
 
                 // RangeVariablePairExpression also extends RangeVariableExpression; its .Name is the first variable.
 
                 case RangeVariableExpression variable:
                     if (!scope.IsVariableDeclared(variable.Name))
-                        yield return UndeclaredVariableIssue(variable.Name, path, mode);
+                        yield return UndeclaredVariableIssue(variable, path, mode);
                     break;
 
                 case EnumerateAsVariableExpression enumerate:
@@ -335,7 +336,7 @@ namespace Jolt
                     // The alias variable is being introduced; only the source variable needs to be in scope.
 
                     if (!alias.IsSourceFromPath && alias.SourceVariable != null && !scope.IsVariableDeclared(alias.SourceVariable.Name))
-                        yield return UndeclaredVariableIssue(alias.SourceVariable.Name, path, mode);
+                        yield return UndeclaredVariableIssue(alias.SourceVariable, path, mode);
                     break;
 
                 case LambdaMethodExpression lambda:
@@ -376,7 +377,8 @@ namespace Jolt
                     $"Method '{signature.Alias}' is not valid in a property name context.",
                     path,
                     signature.Alias,
-                    mode == EvaluationMode.PropertyName);
+                    mode == EvaluationMode.PropertyName,
+                    methodCall.Span);
             }
 
             // Statement-only methods are exempt from the property-value check because they legitimately
@@ -390,7 +392,8 @@ namespace Jolt
                     $"Method '{signature.Alias}' is not valid in a property value context.",
                     path,
                     signature.Alias,
-                    mode == EvaluationMode.PropertyName);
+                    mode == EvaluationMode.PropertyName,
+                    methodCall.Span);
             }
 
             if (signature.IsUnsafe)
@@ -401,7 +404,8 @@ namespace Jolt
                     $"Method '{signature.Alias}' is unsafe. Enable unsafe evaluations via JoltOptions.WithUnsafeAllowed() if this is intentional.",
                     path,
                     signature.Alias,
-                    mode == EvaluationMode.PropertyName);
+                    mode == EvaluationMode.PropertyName,
+                    methodCall.Span);
             }
 
             // A #transformWith call must name a registered transformer. Only literal names can be checked statically,
@@ -420,7 +424,8 @@ namespace Jolt
                     $"Transformer '{transformerName.Value}' is not registered, so it cannot be used with #{TransformWithMethodName}().",
                     path,
                     transformerName.Value,
-                    mode == EvaluationMode.PropertyName);
+                    mode == EvaluationMode.PropertyName,
+                    transformerName.Span);
             }
 
             // Arity check: mirrors the parameter-counting logic in ExpressionEvaluator.
@@ -442,7 +447,8 @@ namespace Jolt
                         $"Method '{signature.Alias}' expects no arguments but received {actualCount}.",
                         path,
                         signature.Alias,
-                        mode == EvaluationMode.PropertyName);
+                        mode == EvaluationMode.PropertyName,
+                        methodCall.Span);
                 }
             }
             else
@@ -462,7 +468,8 @@ namespace Jolt
                         $"Method '{signature.Alias}' expects {(minArgs == maxArgs ? $"{minArgs}" : $"{minArgs}–{(lastIsVariadic ? "∞" : maxArgs.ToString())}")} argument(s) but received {actualCount}.",
                         path,
                         signature.Alias,
-                        mode == EvaluationMode.PropertyName);
+                        mode == EvaluationMode.PropertyName,
+                        methodCall.Span);
                 }
 
                 if (!lastIsVariadic && actualCount > maxArgs)
@@ -473,7 +480,8 @@ namespace Jolt
                         $"Method '{signature.Alias}' expects {(minArgs == maxArgs ? $"{minArgs}" : $"{minArgs}–{(lastIsVariadic ? "∞" : maxArgs.ToString())}")} argument(s) but received {actualCount}.",
                         path,
                         signature.Alias,
-                        mode == EvaluationMode.PropertyName);
+                        mode == EvaluationMode.PropertyName,
+                        methodCall.Span);
                 }
             }
 
@@ -486,13 +494,89 @@ namespace Jolt
             }
         }
 
-        private static ValidationIssue UndeclaredVariableIssue(string variableName, string path, EvaluationMode mode) =>
+        private static ValidationIssue UndeclaredVariableIssue(RangeVariableExpression variable, string path, EvaluationMode mode) =>
             new ValidationIssue(
                 ValidationIssueType.UndeclaredVariable,
                 ExceptionCode.AttemptedToUseUndeclaredVariable,
-                $"Range variable '{variableName}' is referenced but has not been declared in the current scope.",
+                $"Range variable '{variable.Name}' is referenced but has not been declared in the current scope.",
                 path,
-                variableName,
-                mode == EvaluationMode.PropertyName);
+                variable.Name,
+                mode == EvaluationMode.PropertyName,
+                variable.Span);
+
+        /// <summary>
+        /// Tracks the tokens of an expression as the parser reads them, so that a parsing failure can be located: the
+        /// parser reads one token ahead, so the most recent token is the one it was looking at when it failed.
+        /// </summary>
+        private sealed class TokenTracker : IEnumerable<ExpressionToken>
+        {
+            private readonly IEnumerable<ExpressionToken> _tokens;
+            private ExpressionToken? _current;
+            private bool _isEnded;
+            private bool _isFaulted;
+
+            public TokenTracker(IEnumerable<ExpressionToken> tokens)
+            {
+                _tokens = tokens;
+            }
+
+            /// <summary>
+            /// Gets where parsing failed: at the token being looked at, at the end of the expression when the parser
+            /// expected more, or just past the last token when the expression could not be split into tokens there.
+            /// </summary>
+            public ExpressionSpan? GetFailureSpan(string expression)
+            {
+                var afterCurrent = _current?.Span?.End ?? 0;
+
+                if (_isFaulted)
+                {
+                    while (afterCurrent < expression.Length && char.IsWhiteSpace(expression[afterCurrent]))
+                    {
+                        afterCurrent++;
+                    }
+
+                    return new ExpressionSpan(afterCurrent, afterCurrent < expression.Length ? 1 : 0);
+                }
+
+                return _isEnded ? new ExpressionSpan(afterCurrent, 0) : _current?.Span;
+            }
+
+            public IEnumerator<ExpressionToken> GetEnumerator()
+            {
+                _current = null;
+                _isEnded = false;
+                _isFaulted = false;
+
+                using var tokens = _tokens.GetEnumerator();
+
+                while (true)
+                {
+                    bool hasNext;
+
+                    try
+                    {
+                        hasNext = tokens.MoveNext();
+                    }
+                    catch
+                    {
+                        // The expression could not be split into tokens past the current one.
+                        _isFaulted = true;
+                        throw;
+                    }
+
+                    if (!hasNext)
+                    {
+                        _isEnded = true;
+                        yield break;
+                    }
+
+                    _current = tokens.Current;
+
+                    yield return _current;
+                }
+            }
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+        }
     }
 }

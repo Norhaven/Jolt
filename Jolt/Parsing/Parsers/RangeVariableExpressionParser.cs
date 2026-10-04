@@ -34,7 +34,7 @@ namespace Jolt.Parsing.Parsers
                 return false;
             }
 
-            expression = new RangeVariableExpression(_reader.CurrentToken.Value, providesNullSafeAccess: category == ExpressionTokenCategory.NullSafeRangeVariableDereference);
+            expression = new RangeVariableExpression(_reader.CurrentToken.Value, providesNullSafeAccess: category == ExpressionTokenCategory.NullSafeRangeVariableDereference).WithSpan(_reader.CurrentToken.Span);
 
             _reader.ConsumeCurrent();
 
