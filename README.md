@@ -38,6 +38,8 @@ Let's take a quick tour of the language features and you can decide if this fits
 
 The transformation language itself is pretty straightforward and primarily relies on defining and using methods to handle the transformation work needed, both as provided by the library within the package or external methods that you will create and register for use.
 
+As a quick note before we move on, each property name or value that contains an expression must hold exactly one complete expression. Anything left over after it, such as an extra closing parenthesis (`#valueOf($.a))`) or a second expression without an operator between them (`#valueOf($.a) @b`), is a parsing error, as is an operator with nothing after it (`#valueOf($.a) == `).
+
 ## Methods
 
 All method calls begin with a `#` symbol and are case-sensitive. Open and close parentheses surround the method arguments, which are comma-separated. Let's take a look at an example from the library.

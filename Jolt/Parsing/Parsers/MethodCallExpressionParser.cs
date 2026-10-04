@@ -146,11 +146,14 @@ namespace Jolt.Parsing.Parsers
                 throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToFindMethodImplementation, potentiallyQualifiedMethodName.Value).WithSpan(nameSpan);
             }
 
-            if (_reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.GeneratedNameIdentifier, out var generatedName))
+            // A generated name or variable only follows the "into" keyword (e.g. "#foreach(@x in $.a) into 'name'").
+            var isInto = _reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.Into);
+
+            if (isInto && _reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.GeneratedNameIdentifier, out var generatedName))
             {
                 methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), generatedName.Value).WithSpan(nameSpan);
             }
-            else if (_reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.RangeVariable, out var rangeVariable))
+            else if (isInto && _reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.RangeVariable, out var rangeVariable))
             {
                 methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), rangeVariable.Value, new RangeVariable(rangeVariable.Value)).WithSpan(nameSpan);
             }

@@ -306,6 +306,51 @@
       "expectedIssues": [
         "UnableToLocateReferencedTransformer"
       ]
+    },
+    {
+      "name": "Generated names in property names are complete expressions",
+      "transformer": {
+        "#foreach(@x in $.items) into 'result'": [ { "value": "@x" } ],
+        "#foreach(@x in $.items) into @items": [ { "value": "@x" } ],
+        "copy": "@items"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Issue: Repeated closing parenthesis fails",
+      "transformer": {
+        "result": "#valueOf($.path))"
+      },
+      "expectedIssues": [
+        "UnexpectedContentAfterExpression"
+      ]
+    },
+    {
+      "name": "Issue: Expression followed by another without an operator fails",
+      "transformer": {
+        "result": "#valueOf($.path) #valueOf($.other)"
+      },
+      "expectedIssues": [
+        "UnexpectedContentAfterExpression"
+      ]
+    },
+    {
+      "name": "Issue: Operator without a right side fails",
+      "transformer": {
+        "result": "(#valueOf($.path) == )"
+      },
+      "expectedIssues": [
+        "ExpectedExpressionAfterOperator"
+      ]
+    },
+    {
+      "name": "Issue: Unterminated string literal fails",
+      "transformer": {
+        "result": "#valueOf('path)"
+      },
+      "expectedIssues": [
+        "ExpectedTokenButFoundEndOfExpression"
+      ]
     }
   ]
 }

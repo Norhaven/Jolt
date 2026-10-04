@@ -104,10 +104,16 @@ namespace Jolt.Parsing.Parsers
             {
                 var @operator = lookahead;
                 var operatorPrecedence = GetOperatorPrecedence(@operator);
-
-                _reader.ConsumeCurrent();
+                var operatorToken = _reader.ConsumeCurrent();
 
                 var rightExpression = ReadNextAtom(context);
+
+                // E.g. "(#valueOf($.a) == )", where nothing that can be an operand follows the operator.
+                if (rightExpression is null)
+                {
+                    throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.ExpectedExpressionAfterOperator, operatorToken.Value)
+                        .WithSpan(operatorToken.Span);
+                }
 
                 lookahead = ToOperator(_reader.CurrentToken);
                 lookaheadPrecedence = GetOperatorPrecedence(lookahead);

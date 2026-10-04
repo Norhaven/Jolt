@@ -102,6 +102,20 @@ namespace Jolt.LanguageServer.Tests
             Assert.EndsWith(" but found end of expression", diagnostic.Message);
         }
 
+        [Theory]
+        [InlineData("#valueOf($.a))", ")", "JLT572")]
+        [InlineData("#valueOf($.a) @b", "@b", "JLT572")]
+        [InlineData("(#valueOf($.a) == )", "==", "JLT573")]
+        public void IncompleteOrExtraContent_CoversTheProblem(string expression, string expectedText, string expectedCode)
+        {
+            var text = $"{{ \"result\": \"{expression}\" }}";
+
+            var diagnostic = Assert.Single(Validate(text));
+
+            Assert.Equal(expectedText, Covered(text, diagnostic));
+            Assert.Equal(expectedCode, diagnostic.Code);
+        }
+
         [Fact]
         public void UnknownMethod_CoversTheMethodName()
         {

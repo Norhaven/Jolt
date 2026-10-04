@@ -48,6 +48,18 @@ namespace Jolt.Parsing
 
             expression = atomParser.Parse(context);
 
+            // An expression must be complete on its own, so anything after it is a mistake (e.g. "#valueOf($.a) @b" or
+            // "#valueOf($.a))") rather than something to ignore.
+
+            if (!reader.IsCompleted)
+            {
+                var unexpected = reader.CurrentToken;
+                var remaining = reader.ConsumeUntilEnd();
+
+                throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnexpectedContentAfterExpression, unexpected.Value)
+                    .WithSpan(ExpressionSpan.Cover(remaining[0].Span, remaining[remaining.Length - 1].Span));
+            }
+
             return true;
         }
     }

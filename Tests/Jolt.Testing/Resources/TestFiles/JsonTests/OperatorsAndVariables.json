@@ -10,12 +10,56 @@
     "externalMethodException": "ExternalMethodInvocationCausedAnException",
     "dereferencedNonObject": "EncounteredNonObjectInDereferenceChainButExpectedObject",
     "dereferencedMissingProperty": "AttemptedToDereferenceMissingPath",
-    "tooManyEqualitySymbols": "ExpectedZeroOrOneEqualitySymbolsInExpressionButFoundMoreThanOne"
+    "tooManyEqualitySymbols": "ExpectedZeroOrOneEqualitySymbolsInExpressionButFoundMoreThanOne",
+    "unexpectedTrailingContent": "UnexpectedContentAfterExpression",
+    "missingOperand": "ExpectedExpressionAfterOperator"
   },
   "possibleExternalMethodSources": {
     "ExternalMixedMethods": "Jolt.Testing.Resources.TestMethods.ExternalMixedMethods, Jolt.Testing.Resources, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
   },
   "testGroups": [
+    {
+      "name": "Operators without surrounding whitespace",
+      "source": {
+        "one": 1,
+        "yes": true,
+        "no": false
+      },
+      "tests": [
+        {
+          "name": "Comparison operators work without whitespace",
+          "transformer": {
+            "equal": "#valueOf($.one)==1",
+            "notEqual": "#valueOf($.one)!=1",
+            "lessThan": "#valueOf($.one)<2",
+            "greaterThan": "#valueOf($.one)>2",
+            "lessThanOrEqual": "#valueOf($.one)<=1",
+            "greaterThanOrEqual": "#valueOf($.one)>=2"
+          },
+          "result": {
+            "equal": true,
+            "notEqual": false,
+            "lessThan": true,
+            "greaterThan": false,
+            "lessThanOrEqual": true,
+            "greaterThanOrEqual": false
+          }
+        },
+        {
+          "name": "Logical and null coalescing operators work without whitespace",
+          "transformer": {
+            "and": "#valueOf($.yes)&&#valueOf($.no)",
+            "or": "#valueOf($.yes)||#valueOf($.no)",
+            "coalesced": "#valueOf($.missing)??'default'"
+          },
+          "result": {
+            "and": false,
+            "or": true,
+            "coalesced": "default"
+          }
+        }
+      ]
+    },
     {
       "name": "Path dereferencing",
       "source": {
@@ -494,7 +538,7 @@
         {
           "name": "Parentheses will determine evaluation precedence",
           "transformer": {
-            "value": "#eval('(1 + 2) * (3 - 1) / 2)')"
+            "value": "#eval('(1 + 2) * (3 - 1) / 2')"
           },
           "result": {
             "value": 3
@@ -703,6 +747,34 @@
             "value": "#valueOf$.missing)"
           },
           "exceptionCode": "missingExpectedToken"
+        },
+        {
+          "name": "Closing parenthesis is repeated",
+          "transformer": {
+            "value": "#valueOf($.missing))"
+          },
+          "exceptionCode": "unexpectedTrailingContent"
+        },
+        {
+          "name": "Expression is followed by another without an operator",
+          "transformer": {
+            "value": "#valueOf($.missing) @other"
+          },
+          "exceptionCode": "unexpectedTrailingContent"
+        },
+        {
+          "name": "Comparison is missing its right side",
+          "transformer": {
+            "value": "(#valueOf($.missing) == )"
+          },
+          "exceptionCode": "missingOperand"
+        },
+        {
+          "name": "Evaluated expression is followed by other content",
+          "transformer": {
+            "value": "#eval('1 + 2) * 3')"
+          },
+          "exceptionCode": "externalMethodException"
         }
       ]
     }

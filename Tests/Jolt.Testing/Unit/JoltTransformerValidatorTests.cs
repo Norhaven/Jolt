@@ -122,6 +122,9 @@ namespace Jolt.Testing.Unit
         [InlineData(TestType.DotNet, "#valueOf(@xs[1..2])", "@xs")]
         [InlineData(TestType.DotNet, "#valueOf(  $.a  ,  @y  )", "#valueOf")]
         [InlineData(TestType.DotNet, "#valueOf(   @y   )", "@y")]
+        [InlineData(TestType.DotNet, "#valueOf($.a) @b", "@b")]
+        [InlineData(TestType.DotNet, "#valueOf($.a)) + 1", ") + 1")]
+        [InlineData(TestType.DotNet, "(#valueOf($.a) == )", "==")]
         [InlineData(TestType.Newtonsoft, "#valueOf($.a) + @missing", "@missing")]
         public void ValidateTransformer_WithIssue_ShouldLocateItWithinTheExpression(TestType testType, string expression, string expectedText)
         {

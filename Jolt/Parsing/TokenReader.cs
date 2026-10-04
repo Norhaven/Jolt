@@ -69,6 +69,19 @@ namespace Jolt.Parsing
         }
 
         /// <summary>
+        /// Consumes the closing quote of a quoted value (e.g. 'text' or into 'name'), which must be there.
+        /// </summary>
+        private void ConsumeClosingQuote(ITokenStream<char> stream)
+        {
+            if (stream.IsCompleted)
+            {
+                throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedTokenButFoundEndOfExpression, ExpressionToken.SingleQuote);
+            }
+
+            stream.ConsumeCurrent();
+        }
+
+        /// <summary>
         /// Extends the span of a string literal, whose value doesn't include its quotes, to cover them.
         /// </summary>
         private static ExpressionSpan IncludeQuotes(string expression, ExpressionToken token, ExpressionSpan span)
@@ -92,7 +105,9 @@ namespace Jolt.Parsing
         /// </summary>
         private static ExpressionSpan GetTokenSpan(string expression, ExpressionToken token, int previousEnd, int end)
         {
-            var value = token.Value ?? string.Empty;
+            // Some tokens take their value from a character after them, e.g. "==" has the value of the following space,
+            // so a value that is only whitespace isn't looked for and the span covers what was consumed instead.
+            var value = string.IsNullOrWhiteSpace(token.Value) ? string.Empty : token.Value;
             var start = end - value.Length;
 
             if (value.Length > 0 && start >= previousEnd && string.CompareOrdinal(expression, start, value, 0, value.Length) == 0)
@@ -113,7 +128,14 @@ namespace Jolt.Parsing
                 return new ExpressionSpan(start, value.Length);
             }
 
-            return ExpressionSpan.FromBounds(start, end);
+            var trimmedEnd = end;
+
+            while (trimmedEnd > start && char.IsWhiteSpace(expression[trimmedEnd - 1]))
+            {
+                trimmedEnd--;
+            }
+
+            return ExpressionSpan.FromBounds(start, trimmedEnd);
         }
 
         public override IEnumerable<ExpressionToken> ReadTokenFrom(ITokenStream<char> stream, EvaluationMode mode)
@@ -135,9 +157,11 @@ namespace Jolt.Parsing
                     throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedDoubleEqualForEqualityComparisonButFoundSingleEqual);
                 }
 
+                // Operators consume only their own characters, so that whatever follows them (e.g. the "1" in "@x==1")
+                // is read as the next token rather than being taken as part of the operator.
                 stream.ConsumeCurrent();
 
-                yield return TokenFromCurrent(stream, ExpressionTokenCategory.EqualComparison);
+                yield return TokenFrom("==", ExpressionTokenCategory.EqualComparison);
             }
             else if (stream.CurrentToken == ExpressionToken.Not)
             {
@@ -145,7 +169,9 @@ namespace Jolt.Parsing
 
                 if (stream.CurrentToken == ExpressionToken.Equal)
                 {
-                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.NotEqualComparison);
+                    stream.ConsumeCurrent();
+
+                    yield return TokenFrom("!=", ExpressionTokenCategory.NotEqualComparison);
                 }
                 else
                 {
@@ -158,11 +184,13 @@ namespace Jolt.Parsing
 
                 if (stream.CurrentToken == ExpressionToken.Equal)
                 {
-                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.LessThanOrEqualComparison);
+                    stream.ConsumeCurrent();
+
+                    yield return TokenFrom("<=", ExpressionTokenCategory.LessThanOrEqualComparison);
                 }
                 else
                 {
-                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.LessThanComparison);
+                    yield return TokenFrom("<", ExpressionTokenCategory.LessThanComparison);
                 }
             }
             else if (stream.CurrentToken == ExpressionToken.GreaterThan)
@@ -171,11 +199,13 @@ namespace Jolt.Parsing
 
                 if (stream.CurrentToken == ExpressionToken.Equal)
                 {
-                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.GreaterThanOrEqualComparison);
+                    stream.ConsumeCurrent();
+
+                    yield return TokenFrom(">=", ExpressionTokenCategory.GreaterThanOrEqualComparison);
                 }
                 else
                 {
-                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.GreaterThanComparison);
+                    yield return TokenFrom(">", ExpressionTokenCategory.GreaterThanComparison);
                 }
             }
             else if (stream.CurrentToken == ExpressionToken.Plus)
@@ -200,7 +230,9 @@ namespace Jolt.Parsing
 
                 if (stream.CurrentToken == ExpressionToken.And)
                 {
-                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.LogicalAnd);
+                    stream.ConsumeCurrent();
+
+                    yield return TokenFrom("&&", ExpressionTokenCategory.LogicalAnd);
                 }
                 else
                 {
@@ -213,7 +245,9 @@ namespace Jolt.Parsing
 
                 if (stream.CurrentToken == ExpressionToken.Or)
                 {
-                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.LogicalOr);
+                    stream.ConsumeCurrent();
+
+                    yield return TokenFrom("||", ExpressionTokenCategory.LogicalOr);
                 }
                 else
                 {
@@ -426,6 +460,10 @@ namespace Jolt.Parsing
                         throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedNamedPropertyOrRangeVariableButFoundUnexpectedToken, stream.CurrentToken, stream.Position);
                     }
 
+                    // The keyword is its own token so that the parser can tell "#method() into @x" from a method call
+                    // that is mistakenly followed by a variable ("#method() @x").
+                    yield return token;
+
                     while (stream.CurrentToken == ExpressionToken.Whitespace)
                     {
                         stream.ConsumeCurrent();
@@ -436,6 +474,8 @@ namespace Jolt.Parsing
                         stream.ConsumeCurrent();
 
                         yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.GeneratedNameIdentifier, ExpressionToken.SingleQuote);
+
+                        ConsumeClosingQuote(stream);
                     }
                     else if (stream.CurrentToken == ExpressionToken.At)
                     {
@@ -461,7 +501,7 @@ namespace Jolt.Parsing
 
                 yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.StringLiteral, ExpressionToken.SingleQuote);
 
-                stream.ConsumeCurrent();
+                ConsumeClosingQuote(stream);
             }
             else if (stream.CurrentToken == ExpressionToken.DollarSign)
             {
@@ -474,7 +514,8 @@ namespace Jolt.Parsing
                 if (stream.CurrentToken == ExpressionToken.QuestionMark)
                 {
                     stream.ConsumeCurrent();
-                    yield return TokenFromCurrent(stream, ExpressionTokenCategory.NullCoalescing);
+
+                    yield return TokenFrom("??", ExpressionTokenCategory.NullCoalescing);
                 }
                 else
                 {

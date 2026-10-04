@@ -257,6 +257,10 @@ namespace Jolt.Exceptions
         [Description("JLT570")]
         UnableToParseMatchCaseBlockValueExpression,
         [Description("JLT571")]
-        UnableToParseMalformedExpression
+        UnableToParseMalformedExpression,
+        [Description("JLT572")]
+        UnexpectedContentAfterExpression,
+        [Description("JLT573")]
+        ExpectedExpressionAfterOperator
     }
 }

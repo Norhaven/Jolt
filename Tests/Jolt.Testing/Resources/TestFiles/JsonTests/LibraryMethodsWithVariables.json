@@ -334,7 +334,7 @@
           "name": "GroupBy works with a range variable containing a string value",
           "transformer": {
             "@x": "#valueOf($.stringArray)",
-            "resultArray": "#groupBy(@x, @y: #contains(@y, 'is')))"
+            "resultArray": "#groupBy(@x, @y: #contains(@y, 'is'))"
           },
           "result": {
             "resultArray": [
