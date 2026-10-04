@@ -11,6 +11,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -37,6 +38,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -63,6 +65,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -89,6 +92,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -115,6 +119,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -141,6 +146,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -167,6 +173,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "instance",
@@ -193,6 +200,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": []
     },
     {
@@ -204,6 +212,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": []
     },
     {
@@ -216,6 +225,7 @@
       ],
       "isValueGenerator": true,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": []
     },
     {
@@ -227,6 +237,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -253,6 +264,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -280,6 +292,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": true,
+      "returnType": "EvaluationResult?",
       "parameters": [
         {
           "name": "pathOrLiteral",
@@ -299,6 +312,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "pathOrValue",
@@ -318,6 +332,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -337,6 +352,7 @@
       ],
       "isValueGenerator": true,
       "isUnsafe": false,
+      "returnType": "IEnumerable<IJsonToken>",
       "parameters": [
         {
           "name": "enumeration",
@@ -356,6 +372,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -383,6 +400,7 @@
       ],
       "isValueGenerator": true,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "expression",
@@ -402,6 +420,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -429,6 +448,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "EvaluationResult?",
       "parameters": [
         {
           "name": "result",
@@ -462,6 +482,7 @@
       ],
       "isValueGenerator": true,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "result",
@@ -481,6 +502,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -508,6 +530,7 @@
       ],
       "isValueGenerator": true,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "typeToCheckAgainst",
@@ -527,6 +550,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -546,6 +570,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -565,6 +590,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -584,6 +610,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -603,6 +630,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -622,6 +650,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "pathOrValue",
@@ -641,6 +670,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "pathOrValue",
@@ -660,6 +690,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -679,6 +710,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -705,6 +737,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -725,6 +758,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -751,6 +785,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -770,6 +805,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -789,6 +825,7 @@
       ],
       "isValueGenerator": true,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "sourceAlias",
@@ -808,6 +845,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -834,6 +872,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "first",
@@ -860,6 +899,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -886,6 +926,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "variable",
@@ -905,6 +946,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -931,6 +973,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -957,6 +1000,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -983,6 +1027,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1016,6 +1061,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1050,6 +1096,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "path",
@@ -1069,6 +1116,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1102,6 +1150,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1121,6 +1170,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1147,6 +1197,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1174,6 +1225,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "path",
@@ -1200,6 +1252,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1226,6 +1279,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1252,6 +1306,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1278,6 +1333,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1304,6 +1360,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1331,6 +1388,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1357,6 +1415,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1383,6 +1442,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1409,6 +1469,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1435,6 +1496,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1461,6 +1523,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1480,6 +1543,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1499,6 +1563,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1518,6 +1583,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1537,6 +1603,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1556,6 +1623,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1573,6 +1641,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "content",
@@ -1606,6 +1675,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1625,6 +1695,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1644,6 +1715,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1664,6 +1736,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "body",
@@ -1690,6 +1763,7 @@
       ],
       "isValueGenerator": true,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "variable",
@@ -1710,6 +1784,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "path",
@@ -1729,6 +1804,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1749,6 +1825,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "EvaluationResult?",
       "parameters": [
         {
           "name": "result",
@@ -1775,6 +1852,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "value",
@@ -1801,6 +1879,7 @@
       ],
       "isValueGenerator": false,
       "isUnsafe": false,
+      "returnType": "IJsonToken?",
       "parameters": [
         {
           "name": "first",

@@ -45,6 +45,7 @@ namespace Jolt.LanguageMetadata
                         Name = (string)arguments[0].Value!,
                         IsValueGenerator = arguments.Count > 1 && (bool)arguments[1].Value!,
                         IsUnsafe = arguments.Count > 2 && (bool)arguments[2].Value!,
+                        ReturnType = ReadReturnType(method),
                         ValidOn = ReadValidOn(method),
                         Parameters = ReadParameters(method)
                     });
@@ -107,6 +108,73 @@ namespace Jolt.LanguageMetadata
                 "IJsonObject" => "object",
                 "String" => "string",
                 _ => "value"
+            };
+        }
+
+        private static string ReadReturnType(MethodInfo method)
+        {
+            var nullability = new NullabilityInfoContext().Create(method.ReturnParameter);
+
+            return ToTypeName(method.ReturnType, nullability);
+        }
+
+        private static string ToTypeName(Type type, NullabilityInfo? nullability)
+        {
+            var underlyingType = Nullable.GetUnderlyingType(type);
+
+            if (underlyingType != null)
+            {
+                return ToTypeName(underlyingType, null) + "?";
+            }
+
+            string name;
+
+            if (type.IsArray)
+            {
+                name = ToTypeName(type.GetElementType()!, nullability?.ElementType) + "[]";
+            }
+            else if (type.IsGenericType)
+            {
+                var typeArguments = type.GetGenericArguments();
+                var argumentNames = typeArguments.Select((x, i) =>
+                {
+                    var argumentNullability = nullability != null && i < nullability.GenericTypeArguments.Length ? nullability.GenericTypeArguments[i] : null;
+                    return ToTypeName(x, argumentNullability);
+                });
+
+                name = $"{type.Name.Substring(0, type.Name.IndexOf('`'))}<{string.Join(", ", argumentNames)}>";
+            }
+            else
+            {
+                name = ToKeywordName(type) ?? type.Name;
+            }
+
+            var isNullableReference = !type.IsValueType && nullability?.ReadState == NullabilityState.Nullable;
+
+            return isNullableReference ? name + "?" : name;
+        }
+
+        private static string? ToKeywordName(Type type)
+        {
+            return Type.GetTypeCode(type) switch
+            {
+                TypeCode.Boolean => "bool",
+                TypeCode.Byte => "byte",
+                TypeCode.SByte => "sbyte",
+                TypeCode.Char => "char",
+                TypeCode.Int16 => "short",
+                TypeCode.UInt16 => "ushort",
+                TypeCode.Int32 => "int",
+                TypeCode.UInt32 => "uint",
+                TypeCode.Int64 => "long",
+                TypeCode.UInt64 => "ulong",
+                TypeCode.Single => "float",
+                TypeCode.Double => "double",
+                TypeCode.Decimal => "decimal",
+                TypeCode.String => "string",
+                _ when type == typeof(object) => "object",
+                _ when type == typeof(void) => "void",
+                _ => null
             };
         }
 

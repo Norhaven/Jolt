@@ -31,6 +31,12 @@ namespace Jolt.LanguageMetadata
 
         public bool IsUnsafe { get; set; }
 
+        /// <summary>
+        /// Gets or sets the declared return type of the method as it would be written in C# (e.g. int, string,
+        /// IJsonToken?, EvaluationResult?, or a user-defined type that Jolt serializes to JSON).
+        /// </summary>
+        public string ReturnType { get; set; } = string.Empty;
+
         public List<LibraryParameterMetadata> Parameters { get; set; } = new List<LibraryParameterMetadata>();
     }
 
