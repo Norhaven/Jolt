@@ -1,4 +1,5 @@
 {
-    "exampleValue": "#exampleCustomMethod('test', @y: @y.someProperty)"
+    "exampleValue": "#exampleCustomMethod('test', @y: @y.someProperty)",
+    "exampleValueTwo": "#exampleCustomMethodWithTwoLambdaParameters('test2', @first;@second: @first + @second)"
 }
 

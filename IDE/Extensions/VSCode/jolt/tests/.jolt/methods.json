@@ -16,6 +16,23 @@
                     "kind": "lambda"
                 }
             ]
+        },
+        {
+            "name": "exampleCustomMethodWithTwoLambdaParameters",
+            "description": "This is an example of a custom method that takes a string and two lambdas",
+            "example": "#exampleCustomMethodWithTwoLambdaParameters('some string', @first;@second: @first + @second)",
+            "returnType": "SomeType",
+            "parameters": [
+                {
+                    "name": "inputString",
+                    "kind": "value"
+                },
+                {
+                    "name": "collect",
+                    "kind": "lambda",
+                    "lambdaVariables": [ "first", "second" ]
+                }
+            ]
         }
     ]
 }
