@@ -12,3 +12,4 @@ esbuild.mjs
 **/*.map
 images/**
 BuildPackage.ps1
+server/**/*.pdb

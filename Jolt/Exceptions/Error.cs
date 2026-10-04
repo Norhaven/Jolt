@@ -57,7 +57,8 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToParseObjectLiteralPropertyNameAtPosition] = "Unable to parse object literal property name at position '{0}'",
             [ExceptionCode.ObjectLiteralPropertyNameMustBeStringAtPosition] = "Object literal property name must be a string at position '{0}'",
             [ExceptionCode.ObjectLiteralPropertyNameCannotBeNullEmptyOrWhitespaceAtPosition] = "Object literal property name cannot be null, empty, or whitespace at position '{0}'",
-            [ExceptionCode.UnableToParseObjectLiteralPropertyValueAtPosition] = "Unable to parse object literal property value at position '{0}'"
+            [ExceptionCode.UnableToParseObjectLiteralPropertyValueAtPosition] = "Unable to parse object literal property value at position '{0}'",
+            [ExceptionCode.UnableToParseMalformedExpression] = "Unable to parse expression '{0}', it may be incomplete or malformed"
         };
 
         private static readonly Dictionary<ExceptionCode, string> _resolutionErrorsByCode = new Dictionary<ExceptionCode, string>

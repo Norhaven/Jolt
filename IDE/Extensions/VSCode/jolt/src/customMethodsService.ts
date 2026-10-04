@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { CustomMethodsResolver, MethodsFile, methodsFileName } from './language/customMethods';
+import { CustomMethodsResolver, MethodsContext, MethodsFile, methodsFileName } from './language/customMethods';
 import { LibraryMethod, libraryMethods } from './language/library';
 
 /**
@@ -8,8 +8,14 @@ import { LibraryMethod, libraryMethods } from './language/library';
  */
 export class CustomMethodsService implements vscode.Disposable {
 	private readonly diagnostics = vscode.languages.createDiagnosticCollection('jolt-methods');
+	private readonly changed = new vscode.EventEmitter<void>();
 	private readonly resolver: CustomMethodsResolver;
-	private readonly disposables: vscode.Disposable[] = [this.diagnostics];
+	private readonly disposables: vscode.Disposable[] = [this.diagnostics, this.changed];
+
+	/**
+	 * Raised when a methods file is created, changed, or deleted, or when the workspace becomes trusted.
+	 */
+	readonly onDidChange = this.changed.event;
 
 	constructor() {
 		const decoder = new TextDecoder();
@@ -33,14 +39,18 @@ export class CustomMethodsService implements vscode.Disposable {
 
 		this.disposables.push(
 			watcher,
-			watcher.onDidCreate(uri => this.resolver.refresh(uri.toString())),
-			watcher.onDidChange(uri => this.resolver.refresh(uri.toString())),
+			watcher.onDidCreate(uri => this.refresh(uri)),
+			watcher.onDidChange(uri => this.refresh(uri)),
 			watcher.onDidDelete(uri => {
 				this.resolver.invalidate(uri.toString());
 				this.diagnostics.delete(uri);
+				this.changed.fire();
 			}),
 			vscode.workspace.onDidOpenTextDocument(document => this.preload(document)),
-			vscode.workspace.onDidGrantWorkspaceTrust(() => vscode.workspace.textDocuments.forEach(x => this.preload(x))));
+			vscode.workspace.onDidGrantWorkspaceTrust(() => {
+				vscode.workspace.textDocuments.forEach(x => this.preload(x));
+				this.changed.fire();
+			}));
 
 		vscode.workspace.textDocuments.forEach(x => this.preload(x));
 	}
@@ -59,8 +69,25 @@ export class CustomMethodsService implements vscode.Disposable {
 		return customMethods.length > 0 ? [...libraryMethods, ...customMethods] : libraryMethods;
 	}
 
+	/**
+	 * Gets the custom methods and transformers that the host application provides to the given transformer document,
+	 * or undefined when they are not known because the workspace is not trusted.
+	 */
+	async getContextFor(document: vscode.TextDocument): Promise<MethodsContext | undefined> {
+		if (!vscode.workspace.isTrusted) {
+			return undefined;
+		}
+
+		return this.resolver.getContext(getCandidateFiles(document.uri).map(x => x.toString()));
+	}
+
 	dispose(): void {
 		this.disposables.forEach(x => x.dispose());
+	}
+
+	private async refresh(uri: vscode.Uri): Promise<void> {
+		await this.resolver.refresh(uri.toString());
+		this.changed.fire();
 	}
 
 	/**

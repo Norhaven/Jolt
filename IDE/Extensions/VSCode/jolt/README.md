@@ -46,9 +46,24 @@ After creating the file, it would then be accessible to a transformer within tha
 
 It's also important to note that any updates to the `methods.json` file will only be picked up when by this extension when the file is saved. Unsaved definitions will not be loaded. Additionally, transformers opened from outside the workspace will only check their own folder and that file isn't watched for changes, meaning that any changes there will need to reload the VSCode window to be applied. As a last caveat, any custom methods whose name collides with a defined Jolt standard library method will be ignored (as per Jolt's execution rules) and will not be available in your transformer completions or on-hover behavior.
 
+### Validation
+
+As you edit a transformer, it is validated by the Jolt library itself (the same validation as `JoltTransformer.Validate()`), and any problems are shown in the editor and the Problems panel. This includes invalid JSON, expression syntax errors, undeclared variables, methods used where they aren't allowed, the wrong number of arguments to a method, and the use of unsafe methods (as warnings). In a Jolt test file (with a `testGroups` array), the transformer in each test is validated on its own.
+
+Validation also uses your `.jolt/methods.json` files in a trusted workspace. Calls to methods that aren't standard library methods or listed in an applicable `methods.json` file are reported as unknown, and when no `methods.json` file applies to a transformer, unknown methods aren't reported at all. Similarly, you can list the names of the transformers that your application registers, so that `#transformWith()` calls using any other transformer name are reported:
+
+```json
+{
+  "transformers": ["address", "person"],
+  "methods": []
+}
+```
+
+Transformer names from all of the applicable `methods.json` files are combined, and when none of them have a `transformers` property, `#transformWith()` calls aren't checked.
+
 ## Requirements
 
-There are no additional requirements or dependencies at the moment aside from naming your transformer files appropriately, using a supported theme, and using Jolt!
+Validation uses the Jolt language server, which needs .NET 8 or later. If a suitable .NET runtime isn't already installed, the [.NET Install Tool](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.vscode-dotnet-runtime) extension (installed along with this one) downloads one for this extension's use. Everything else works without .NET, and validation can be turned off with the `jolt.validation.enabled` setting.
 
 ## Extension Settings
 
@@ -56,11 +71,15 @@ This extension offers default colorization settings via the `editor.tokenColorCu
 * **Dark Mode** (via `Dark 2026`, `Default Dark Modern`, `Default Dark+`, or `Visual Studio Dark`)
 * **Light Mode** (via `Light 2026`, `Default Light Modern`, `Default Light+`, or `Visual Studio Light`)
 
+It also contributes the following settings:
+* `jolt.completion.includeUnsafeMethods`: include unsafe library methods (such as `#eval`) in completions. Defaults to false.
+* `jolt.validation.enabled`: validate transformers as you edit them. Defaults to true.
+* `jolt.validation.allowUnsafeMethods`: don't report the use of unsafe library methods, for when your application enables them. Defaults to false.
+
 ## Roadmap
 
 We're considering several features, including:
-- Providing syntax validations
-- Raising semantic issues
+- Precise locations for syntax errors within an expression
 
 ## Release Notes
 

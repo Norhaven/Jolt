@@ -7,9 +7,24 @@
   "publisher": "Norhaven",
   "license": "BSD-3-Clause",
   "homepage": "https://github.com/Norhaven/Jolt",
-  "bugs": { "url": "https://github.com/Norhaven/Jolt/issues" },
-  "keywords": ["jolt", "json", "transform", "transformation", "transformer", "syntax", "highlighting", "completion", "language"],
-  "galleryBanner": { "color": "#1E1E1E", "theme": "dark" },
+  "bugs": {
+    "url": "https://github.com/Norhaven/Jolt/issues"
+  },
+  "keywords": [
+    "jolt",
+    "json",
+    "transform",
+    "transformation",
+    "transformer",
+    "syntax",
+    "highlighting",
+    "completion",
+    "language"
+  ],
+  "galleryBanner": {
+    "color": "#1E1E1E",
+    "theme": "dark"
+  },
   "pricing": "Free",
   "repository": {
     "type": "git",
@@ -26,11 +41,15 @@
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": "limited",
-      "description": "Custom methods from .jolt/methods.json files are only offered in trusted workspaces. Syntax coloring, standard library completions, and hover work everywhere."
+      "description": "Custom methods and transformers from .jolt/methods.json files are only used in trusted workspaces. Syntax coloring, standard library completions, hover, and validation work everywhere."
     }
   },
+  "extensionDependencies": [
+    "ms-dotnettools.vscode-dotnet-runtime"
+  ],
   "scripts": {
-    "vscode:prepublish": "npm run package",
+    "vscode:prepublish": "npm run build-server && npm run package",
+    "build-server": "dotnet publish ../../../LanguageServer/Jolt.LanguageServer -c Release -o server --nologo",
     "compile": "npm run check-types && node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",
     "package": "npm run check-types && node esbuild.mjs --production",
@@ -38,7 +57,8 @@
     "test": "tsc -p tsconfig.test.json && node --test \"out/test/**/*.test.js\""
   },
   "dependencies": {
-    "jsonc-parser": "^3.3.1"
+    "jsonc-parser": "^3.3.1",
+    "vscode-languageclient": "^10.1.2"
   },
   "devDependencies": {
     "@types/node": "^22.20.4",
@@ -54,54 +74,295 @@
           "type": "boolean",
           "default": false,
           "description": "Include library methods marked as unsafe (such as #eval) in completions. These methods only work when the host application explicitly enables them."
+        },
+        "jolt.validation.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Validate transformers with the Jolt library as you edit them. This runs the Jolt language server, which needs .NET 8 or later and installs it through the .NET Install Tool when none is found."
+        },
+        "jolt.validation.allowUnsafeMethods": {
+          "type": "boolean",
+          "default": false,
+          "description": "Don't report the use of unsafe library methods (such as #eval) when the host application explicitly enables them."
         }
       }
     },
-    "languages": [{
-      "id": "jolt",
-      "aliases": ["Jolt", "jolt"],
-      "extensions": [".jolt.json"],
-      "configuration": "./language-configuration.json"
-    }],
-    "grammars": [{
-      "language": "jolt",
-      "scopeName": "source.jolt",
-      "path": "./syntaxes/jolt.tmLanguage.json"
-    }],
-    "jsonValidation": [{
-      "fileMatch": "**/.jolt/methods.json",
-      "url": "./schemas/jolt-methods.schema.json"
-    }],
+    "languages": [
+      {
+        "id": "jolt",
+        "aliases": [
+          "Jolt",
+          "jolt"
+        ],
+        "extensions": [
+          ".jolt.json"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "jolt",
+        "scopeName": "source.jolt",
+        "path": "./syntaxes/jolt.tmLanguage.json"
+      }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": "**/.jolt/methods.json",
+        "url": "./schemas/jolt-methods.schema.json"
+      }
+    ],
     "configurationDefaults": {
       "editor.tokenColorCustomizations": {
         "[Dark 2026][Default Dark Modern][Default Dark+][Visual Studio Dark]": {
           "textMateRules": [
-            { "scope": ["keyword.control.jolt", "keyword.control.jolt punctuation.definition.function.jolt"],"settings": { "foreground": "#C586C0" } },
-            { "scope": ["keyword.other.jolt"],"settings": { "foreground": "#4EC9B0" } },
-            { "scope": ["constant.language.jolt", "variable.language.root.jolt", "variable.language.params.jolt", "variable.language.params.jolt punctuation.definition.variable.jolt"],"settings": { "foreground": "#7eb1da" } },
-            { "scope": ["support.function.builtin.jolt", "entity.name.function.jolt", "keyword.other.statement.jolt", "support.function.builtin.jolt punctuation.definition.function.jolt", "entity.name.function.jolt punctuation.definition.function.jolt", "keyword.other.statement.jolt punctuation.definition.function.jolt"],"settings": { "foreground": "#DCDCAA" } },
-            { "scope": ["support.function.unsafe.jolt", "support.function.unsafe.jolt punctuation.definition.function.jolt"],"settings": { "foreground": "#DCDCAA", "fontStyle": "underline" } },
-            { "scope": ["variable.other.jolt", "variable.other.declaration.jolt", "variable.parameter.jolt", "variable.other.property.jolt", "variable.language.discard.jolt", "variable.other.jolt punctuation.definition.variable.jolt", "variable.other.declaration.jolt punctuation.definition.variable.jolt", "variable.parameter.jolt punctuation.definition.variable.jolt"],"settings": { "foreground": "#7ba5dd" } },
-            { "scope": ["support.type.property-name.jolt", "punctuation.support.type.property-name.begin.jolt", "punctuation.support.type.property-name.end.jolt"], "settings": { "foreground": "#a9cddf" } },
-            { "scope": ["string.quoted.single.jolt", "string.quoted.double.jolt", "punctuation.definition.string.begin.jolt", "punctuation.definition.string.end.jolt"], "settings": { "foreground": "#CE9178" } },
-            { "scope": ["constant.character.escape.jolt"], "settings": { "foreground": "#D7BA7D" } },
-            { "scope": ["constant.numeric.jolt"], "settings": { "foreground": "#B5CEA8" } },
-            { "scope": ["keyword.operator.pipe.jolt", "keyword.operator.null-coalescing.jolt", "keyword.operator.logical.jolt", "keyword.operator.comparison.jolt", "keyword.operator.relational.jolt", "keyword.operator.arithmetic.jolt", "keyword.operator.range.jolt", "storage.type.function.lambda.jolt", "constant.language.wildcard.jolt", "punctuation.accessor.jolt", "punctuation.accessor.recursive.jolt"], "settings": { "foreground": "#D4D4D4" } }
+            {
+              "scope": [
+                "keyword.control.jolt",
+                "keyword.control.jolt punctuation.definition.function.jolt"
+              ],
+              "settings": {
+                "foreground": "#C586C0"
+              }
+            },
+            {
+              "scope": [
+                "keyword.other.jolt"
+              ],
+              "settings": {
+                "foreground": "#4EC9B0"
+              }
+            },
+            {
+              "scope": [
+                "constant.language.jolt",
+                "variable.language.root.jolt",
+                "variable.language.params.jolt",
+                "variable.language.params.jolt punctuation.definition.variable.jolt"
+              ],
+              "settings": {
+                "foreground": "#7eb1da"
+              }
+            },
+            {
+              "scope": [
+                "support.function.builtin.jolt",
+                "entity.name.function.jolt",
+                "keyword.other.statement.jolt",
+                "support.function.builtin.jolt punctuation.definition.function.jolt",
+                "entity.name.function.jolt punctuation.definition.function.jolt",
+                "keyword.other.statement.jolt punctuation.definition.function.jolt"
+              ],
+              "settings": {
+                "foreground": "#DCDCAA"
+              }
+            },
+            {
+              "scope": [
+                "support.function.unsafe.jolt",
+                "support.function.unsafe.jolt punctuation.definition.function.jolt"
+              ],
+              "settings": {
+                "foreground": "#DCDCAA",
+                "fontStyle": "underline"
+              }
+            },
+            {
+              "scope": [
+                "variable.other.jolt",
+                "variable.other.declaration.jolt",
+                "variable.parameter.jolt",
+                "variable.other.property.jolt",
+                "variable.language.discard.jolt",
+                "variable.other.jolt punctuation.definition.variable.jolt",
+                "variable.other.declaration.jolt punctuation.definition.variable.jolt",
+                "variable.parameter.jolt punctuation.definition.variable.jolt"
+              ],
+              "settings": {
+                "foreground": "#7ba5dd"
+              }
+            },
+            {
+              "scope": [
+                "support.type.property-name.jolt",
+                "punctuation.support.type.property-name.begin.jolt",
+                "punctuation.support.type.property-name.end.jolt"
+              ],
+              "settings": {
+                "foreground": "#a9cddf"
+              }
+            },
+            {
+              "scope": [
+                "string.quoted.single.jolt",
+                "string.quoted.double.jolt",
+                "punctuation.definition.string.begin.jolt",
+                "punctuation.definition.string.end.jolt"
+              ],
+              "settings": {
+                "foreground": "#CE9178"
+              }
+            },
+            {
+              "scope": [
+                "constant.character.escape.jolt"
+              ],
+              "settings": {
+                "foreground": "#D7BA7D"
+              }
+            },
+            {
+              "scope": [
+                "constant.numeric.jolt"
+              ],
+              "settings": {
+                "foreground": "#B5CEA8"
+              }
+            },
+            {
+              "scope": [
+                "keyword.operator.pipe.jolt",
+                "keyword.operator.null-coalescing.jolt",
+                "keyword.operator.logical.jolt",
+                "keyword.operator.comparison.jolt",
+                "keyword.operator.relational.jolt",
+                "keyword.operator.arithmetic.jolt",
+                "keyword.operator.range.jolt",
+                "storage.type.function.lambda.jolt",
+                "constant.language.wildcard.jolt",
+                "punctuation.accessor.jolt",
+                "punctuation.accessor.recursive.jolt"
+              ],
+              "settings": {
+                "foreground": "#D4D4D4"
+              }
+            }
           ]
         },
         "[Light 2026][Default Light Modern][Default Light+][Visual Studio Light]": {
           "textMateRules": [
-            { "scope": ["keyword.control.jolt", "keyword.control.jolt punctuation.definition.function.jolt"],"settings": { "foreground": "#AF00DB" } },
-            { "scope": ["keyword.other.jolt"],"settings": { "foreground": "#267F99" } },
-            { "scope": ["constant.language.jolt", "variable.language.root.jolt", "variable.language.params.jolt", "variable.language.params.jolt punctuation.definition.variable.jolt"],"settings": { "foreground": "#0000FF" } },
-            { "scope": ["support.function.builtin.jolt", "entity.name.function.jolt", "keyword.other.statement.jolt", "support.function.builtin.jolt punctuation.definition.function.jolt", "entity.name.function.jolt punctuation.definition.function.jolt", "keyword.other.statement.jolt punctuation.definition.function.jolt"],"settings": { "foreground": "#795E26" } },
-            { "scope": ["support.function.unsafe.jolt", "support.function.unsafe.jolt punctuation.definition.function.jolt"],"settings": { "foreground": "#795E26", "fontStyle": "underline" } },
-            { "scope": ["variable.other.jolt", "variable.other.declaration.jolt", "variable.parameter.jolt", "variable.other.property.jolt", "variable.language.discard.jolt", "variable.other.jolt punctuation.definition.variable.jolt", "variable.other.declaration.jolt punctuation.definition.variable.jolt", "variable.parameter.jolt punctuation.definition.variable.jolt"],"settings": { "foreground": "#001080" } },
-            { "scope": ["support.type.property-name.jolt", "punctuation.support.type.property-name.begin.jolt", "punctuation.support.type.property-name.end.jolt"], "settings": { "foreground": "#0451A5" } },
-            { "scope": ["string.quoted.single.jolt", "string.quoted.double.jolt", "punctuation.definition.string.begin.jolt", "punctuation.definition.string.end.jolt"], "settings": { "foreground": "#A31515" } },
-            { "scope": ["constant.character.escape.jolt"], "settings": { "foreground": "#EE0000" } },
-            { "scope": ["constant.numeric.jolt"], "settings": { "foreground": "#098658" } },
-            { "scope": ["keyword.operator.pipe.jolt", "keyword.operator.null-coalescing.jolt", "keyword.operator.logical.jolt", "keyword.operator.comparison.jolt", "keyword.operator.relational.jolt", "keyword.operator.arithmetic.jolt", "keyword.operator.range.jolt", "storage.type.function.lambda.jolt", "constant.language.wildcard.jolt", "punctuation.accessor.jolt", "punctuation.accessor.recursive.jolt"], "settings": { "foreground": "#000000" } }
+            {
+              "scope": [
+                "keyword.control.jolt",
+                "keyword.control.jolt punctuation.definition.function.jolt"
+              ],
+              "settings": {
+                "foreground": "#AF00DB"
+              }
+            },
+            {
+              "scope": [
+                "keyword.other.jolt"
+              ],
+              "settings": {
+                "foreground": "#267F99"
+              }
+            },
+            {
+              "scope": [
+                "constant.language.jolt",
+                "variable.language.root.jolt",
+                "variable.language.params.jolt",
+                "variable.language.params.jolt punctuation.definition.variable.jolt"
+              ],
+              "settings": {
+                "foreground": "#0000FF"
+              }
+            },
+            {
+              "scope": [
+                "support.function.builtin.jolt",
+                "entity.name.function.jolt",
+                "keyword.other.statement.jolt",
+                "support.function.builtin.jolt punctuation.definition.function.jolt",
+                "entity.name.function.jolt punctuation.definition.function.jolt",
+                "keyword.other.statement.jolt punctuation.definition.function.jolt"
+              ],
+              "settings": {
+                "foreground": "#795E26"
+              }
+            },
+            {
+              "scope": [
+                "support.function.unsafe.jolt",
+                "support.function.unsafe.jolt punctuation.definition.function.jolt"
+              ],
+              "settings": {
+                "foreground": "#795E26",
+                "fontStyle": "underline"
+              }
+            },
+            {
+              "scope": [
+                "variable.other.jolt",
+                "variable.other.declaration.jolt",
+                "variable.parameter.jolt",
+                "variable.other.property.jolt",
+                "variable.language.discard.jolt",
+                "variable.other.jolt punctuation.definition.variable.jolt",
+                "variable.other.declaration.jolt punctuation.definition.variable.jolt",
+                "variable.parameter.jolt punctuation.definition.variable.jolt"
+              ],
+              "settings": {
+                "foreground": "#001080"
+              }
+            },
+            {
+              "scope": [
+                "support.type.property-name.jolt",
+                "punctuation.support.type.property-name.begin.jolt",
+                "punctuation.support.type.property-name.end.jolt"
+              ],
+              "settings": {
+                "foreground": "#0451A5"
+              }
+            },
+            {
+              "scope": [
+                "string.quoted.single.jolt",
+                "string.quoted.double.jolt",
+                "punctuation.definition.string.begin.jolt",
+                "punctuation.definition.string.end.jolt"
+              ],
+              "settings": {
+                "foreground": "#A31515"
+              }
+            },
+            {
+              "scope": [
+                "constant.character.escape.jolt"
+              ],
+              "settings": {
+                "foreground": "#EE0000"
+              }
+            },
+            {
+              "scope": [
+                "constant.numeric.jolt"
+              ],
+              "settings": {
+                "foreground": "#098658"
+              }
+            },
+            {
+              "scope": [
+                "keyword.operator.pipe.jolt",
+                "keyword.operator.null-coalescing.jolt",
+                "keyword.operator.logical.jolt",
+                "keyword.operator.comparison.jolt",
+                "keyword.operator.relational.jolt",
+                "keyword.operator.arithmetic.jolt",
+                "keyword.operator.range.jolt",
+                "storage.type.function.lambda.jolt",
+                "constant.language.wildcard.jolt",
+                "punctuation.accessor.jolt",
+                "punctuation.accessor.recursive.jolt"
+              ],
+              "settings": {
+                "foreground": "#000000"
+              }
+            }
           ]
         }
       }

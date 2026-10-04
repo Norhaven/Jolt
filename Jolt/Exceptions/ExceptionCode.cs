@@ -255,6 +255,8 @@ namespace Jolt.Exceptions
         [Description("JLT569")]
         MatchCaseBlockMustBeAnObjectWithExactlyOneProperty,
         [Description("JLT570")]
-        UnableToParseMatchCaseBlockValueExpression
+        UnableToParseMatchCaseBlockValueExpression,
+        [Description("JLT571")]
+        UnableToParseMalformedExpression
     }
 }

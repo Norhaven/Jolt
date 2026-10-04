@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Jolt custom methods",
-  "description": "Describes external methods for Jolt code completion and hover. Applies to transformers in this folder and its subfolders, merged with files in parent folders up to the workspace root unless \"root\" is true.",
+  "description": "Describes what the host application provides to Jolt transformers (external methods and registered transformers), for code completion, hover, and validation. Applies to transformers in this folder and its subfolders, merged with files in parent folders up to the workspace root unless \"root\" is true.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -12,6 +12,15 @@
       "type": "boolean",
       "default": false,
       "description": "When true, .jolt/methods.json files in parent folders are not merged with this one."
+    },
+    "transformers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "The names of the transformers that the host application registers, which #transformWith() can use (e.g. [\"address\"] for #transformWith($.address, 'address')). A #transformWith() call with any other literal name is reported as a problem. When none of the files that apply to a transformer have this property, its calls are not checked."
     },
     "methods": {
       "type": "array",

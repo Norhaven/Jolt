@@ -36,6 +36,12 @@ namespace Jolt.Structure
         public string? ExpressionText { get; }
 
         /// <summary>
+        /// Gets whether the issue is within the expression in the property name at <see cref="TransformerExpressionPath"/>,
+        /// rather than the expression in its value. A property's name and value share the same path.
+        /// </summary>
+        public bool IsInPropertyName { get; }
+
+        /// <summary>
         /// Initializes an instance of <see cref="ValidationIssue"/> with the provided parameters.
         /// </summary>
         /// <param name="type">The validation type.</param>
@@ -44,12 +50,27 @@ namespace Jolt.Structure
         /// <param name="transformerExpressionPath">The JSON path to the failing expression.</param>
         /// <param name="expressionText">The text of the failed expression.</param>
         public ValidationIssue(ValidationIssueType type, ExceptionCode code, string message, string? transformerExpressionPath, string? expressionText)
+            : this(type, code, message, transformerExpressionPath, expressionText, false)
+        {
+        }
+
+        /// <summary>
+        /// Initializes an instance of <see cref="ValidationIssue"/> with the provided parameters.
+        /// </summary>
+        /// <param name="type">The validation type.</param>
+        /// <param name="code">The exception code.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="transformerExpressionPath">The JSON path to the failing expression.</param>
+        /// <param name="expressionText">The text of the failed expression.</param>
+        /// <param name="isInPropertyName">Whether the failing expression is the property name at the path, rather than its value.</param>
+        public ValidationIssue(ValidationIssueType type, ExceptionCode code, string message, string? transformerExpressionPath, string? expressionText, bool isInPropertyName)
         {
             Type = type;
             Code = code;
             Message = message;
             TransformerExpressionPath = transformerExpressionPath;
             ExpressionText = expressionText;
+            IsInPropertyName = isInPropertyName;
         }
     }
 }

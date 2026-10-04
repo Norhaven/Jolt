@@ -4,6 +4,7 @@ using Jolt.Expressions;
 using Jolt.Structure;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Jolt
 {
@@ -13,6 +14,8 @@ namespace Jolt
     /// <typeparam name="TContext">The JSON context used in this validation.</typeparam>
     public sealed class JoltTransformerValidator<TContext> where TContext : IJsonContext
     {
+        private const string TransformWithMethodName = "transformWith";
+
         private readonly TContext _context;
 
         /// <summary>
@@ -70,7 +73,7 @@ namespace Jolt
 
                     if (!(nameExpression is RangeVariableExpression))
                     {
-                        foreach (var issue in ValidateExpression(nameExpression, EvaluationMode.PropertyName, scope))
+                        foreach (var issue in ValidateExpression(nameExpression, EvaluationMode.PropertyName, scope, property.FullPath))
                             yield return issue;
                     }
 
@@ -197,7 +200,15 @@ namespace Jolt
             }
             catch(JoltException ex)
             {
-                issue = new ValidationIssue(ValidationIssueType.SyntaxError, ex.Code, $"Error parsing expression at transformer path '{expressionPath}' with expression '{expressionString}': {ex.Message}", expressionPath, expressionString);
+                issue = new ValidationIssue(ValidationIssueType.SyntaxError, ex.Code, $"Error parsing expression at transformer path '{expressionPath}' with expression '{expressionString}': {ex.Message}", expressionPath, expressionString, mode == EvaluationMode.PropertyName);
+                return false;
+            }
+            catch(Exception)
+            {
+                // The parser may fail unexpectedly on incomplete or malformed input (e.g. while a transformer is being
+                // edited). That is a problem with this expression, so it is reported rather than ending the validation.
+
+                issue = new ValidationIssue(ValidationIssueType.SyntaxError, ExceptionCode.UnableToParseMalformedExpression, $"Error parsing expression at transformer path '{expressionPath}' with expression '{expressionString}': Unable to parse expression '{expressionString}', it may be incomplete or malformed", expressionPath, expressionString, mode == EvaluationMode.PropertyName);
                 return false;
             }
 
@@ -231,7 +242,7 @@ namespace Jolt
                             if (!TryReadAndParseExpression(token.FullPath, str, EvaluationMode.PropertyValue, out var expr, out var issue))
                                 yield return issue!;
                             else if (expr != null)
-                                foreach (var validationIssue in ValidateExpression(expr, EvaluationMode.PropertyValue, scope))
+                                foreach (var validationIssue in ValidateExpression(expr, EvaluationMode.PropertyValue, scope, token.FullPath))
                                     yield return validationIssue;
                         }
                     }
@@ -248,7 +259,7 @@ namespace Jolt
                     yield return issue;
         }
 
-        private IEnumerable<ValidationIssue> ValidateExpression(Expression expression, EvaluationMode mode, ValidationScope scope)
+        private IEnumerable<ValidationIssue> ValidateExpression(Expression expression, EvaluationMode mode, ValidationScope scope, string path)
         {
             switch (expression)
             {
@@ -260,32 +271,32 @@ namespace Jolt
                 // IndexOrSliceMethodResultExpression must precede MethodCallExpression since it extends it.
 
                 case IndexOrSliceMethodResultExpression indexOrSlice:
-                    foreach (var issue in ValidateMethodCall(indexOrSlice, mode, scope))
+                    foreach (var issue in ValidateMethodCall(indexOrSlice, mode, scope, path))
                         yield return issue;
-                    foreach (var issue in ValidateExpression(indexOrSlice.ResultRange, mode, scope))
+                    foreach (var issue in ValidateExpression(indexOrSlice.ResultRange, mode, scope, path))
                         yield return issue;
                     break;
 
                 case MethodCallExpression methodCall:
-                    foreach (var issue in ValidateMethodCall(methodCall, mode, scope))
+                    foreach (var issue in ValidateMethodCall(methodCall, mode, scope, path))
                         yield return issue;
                     break;
 
                 case BinaryExpression binary:
-                    foreach (var issue in ValidateExpression(binary.Left, mode, scope))
+                    foreach (var issue in ValidateExpression(binary.Left, mode, scope, path))
                         yield return issue;
-                    foreach (var issue in ValidateExpression(binary.Right, mode, scope))
+                    foreach (var issue in ValidateExpression(binary.Right, mode, scope, path))
                         yield return issue;
                     break;
 
                 case LogicalNotExpression not:
-                    foreach (var issue in ValidateExpression(not.Operand, mode, scope))
+                    foreach (var issue in ValidateExpression(not.Operand, mode, scope, path))
                         yield return issue;
                     break;
 
                 case ArrayLiteralExpression arrayLiteral:
                     foreach (var element in arrayLiteral.Elements)
-                        foreach (var issue in ValidateExpression(element, mode, scope))
+                        foreach (var issue in ValidateExpression(element, mode, scope, path))
                             yield return issue;
                     break;
 
@@ -294,28 +305,28 @@ namespace Jolt
 
                 case SlicedVariableExpression sliced:
                     if (!scope.IsVariableDeclared(sliced.Variable.Name))
-                        yield return UndeclaredVariableIssue(sliced.Variable.Name);
-                    foreach (var issue in ValidateExpression(sliced.Range, mode, scope))
+                        yield return UndeclaredVariableIssue(sliced.Variable.Name, path, mode);
+                    foreach (var issue in ValidateExpression(sliced.Range, mode, scope, path))
                         yield return issue;
                     break;
 
                 case PropertyDereferenceExpression dereference:
                     if (!scope.IsVariableDeclared(dereference.Variable.Name))
-                        yield return UndeclaredVariableIssue(dereference.Variable.Name);
+                        yield return UndeclaredVariableIssue(dereference.Variable.Name, path, mode);
                     break;
 
                 // RangeVariablePairExpression also extends RangeVariableExpression; its .Name is the first variable.
 
                 case RangeVariableExpression variable:
                     if (!scope.IsVariableDeclared(variable.Name))
-                        yield return UndeclaredVariableIssue(variable.Name);
+                        yield return UndeclaredVariableIssue(variable.Name, path, mode);
                     break;
 
                 case EnumerateAsVariableExpression enumerate:
 
                     // The variable is being introduced here, not consumed — only validate the source.
 
-                    foreach (var issue in ValidateExpression(enumerate.EnumerationSource, mode, scope))
+                    foreach (var issue in ValidateExpression(enumerate.EnumerationSource, mode, scope, path))
                         yield return issue;
                     break;
 
@@ -324,33 +335,36 @@ namespace Jolt
                     // The alias variable is being introduced; only the source variable needs to be in scope.
 
                     if (!alias.IsSourceFromPath && alias.SourceVariable != null && !scope.IsVariableDeclared(alias.SourceVariable.Name))
-                        yield return UndeclaredVariableIssue(alias.SourceVariable.Name);
+                        yield return UndeclaredVariableIssue(alias.SourceVariable.Name, path, mode);
                     break;
 
                 case LambdaMethodExpression lambda:
 
-                    // Lambda variable is scoped to the body only — create a child scope for it.
+                    // Lambda variables are scoped to the body only — create a child scope for them. A two-variable
+                    // lambda (@acc;@current: ...) is a pair expression whose .Name is only the first variable.
 
-                    var lambdaScope = scope.With(lambda.Variable.Name);
-                    foreach (var issue in ValidateExpression(lambda.Body, mode, lambdaScope))
+                    var lambdaScope = lambda.Variable is RangeVariablePairExpression lambdaPair
+                        ? scope.With(new[] { lambdaPair.Name, lambdaPair.SecondVariable.Name })
+                        : scope.With(lambda.Variable.Name);
+                    foreach (var issue in ValidateExpression(lambda.Body, mode, lambdaScope, path))
                         yield return issue;
                     break;
 
                 case RangeExpression range:
-                    foreach (var issue in ValidateExpression(range.StartIndex.Index, mode, scope))
+                    foreach (var issue in ValidateExpression(range.StartIndex.Index, mode, scope, path))
                         yield return issue;
-                    foreach (var issue in ValidateExpression(range.EndIndex.Index, mode, scope))
+                    foreach (var issue in ValidateExpression(range.EndIndex.Index, mode, scope, path))
                         yield return issue;
                     break;
 
                 case RangeIndexExpression rangeIndex:
-                    foreach (var issue in ValidateExpression(rangeIndex.Index, mode, scope))
+                    foreach (var issue in ValidateExpression(rangeIndex.Index, mode, scope, path))
                         yield return issue;
                     break;
             }
         }
 
-        private IEnumerable<ValidationIssue> ValidateMethodCall(MethodCallExpression methodCall, EvaluationMode mode, ValidationScope scope)
+        private IEnumerable<ValidationIssue> ValidateMethodCall(MethodCallExpression methodCall, EvaluationMode mode, ValidationScope scope, string path)
         {
             var signature = methodCall.Signature;
 
@@ -360,8 +374,9 @@ namespace Jolt
                     ValidationIssueType.InvalidMethodContext,
                     ExceptionCode.UnableToUseMethodWithinPropertyName,
                     $"Method '{signature.Alias}' is not valid in a property name context.",
-                    null,
-                    signature.Alias);
+                    path,
+                    signature.Alias,
+                    mode == EvaluationMode.PropertyName);
             }
 
             // Statement-only methods are exempt from the property-value check because they legitimately
@@ -373,8 +388,9 @@ namespace Jolt
                     ValidationIssueType.InvalidMethodContext,
                     ExceptionCode.UnableToUseMethodWithinPropertyValue,
                     $"Method '{signature.Alias}' is not valid in a property value context.",
-                    null,
-                    signature.Alias);
+                    path,
+                    signature.Alias,
+                    mode == EvaluationMode.PropertyName);
             }
 
             if (signature.IsUnsafe)
@@ -383,8 +399,28 @@ namespace Jolt
                     ValidationIssueType.UnsafeMethodUsage,
                     ExceptionCode.UnsafeMethodCallNotAllowed,
                     $"Method '{signature.Alias}' is unsafe. Enable unsafe evaluations via JoltOptions.WithUnsafeAllowed() if this is intentional.",
-                    null,
-                    signature.Alias);
+                    path,
+                    signature.Alias,
+                    mode == EvaluationMode.PropertyName);
+            }
+
+            // A #transformWith call must name a registered transformer. Only literal names can be checked statically,
+            // since a name from a path or variable is not known until the transformer runs.
+
+            if (signature.IsSystemMethod
+                && signature.Alias == TransformWithMethodName
+                && methodCall.ParameterValues.Length > 1
+                && methodCall.ParameterValues[1] is LiteralExpression transformerName
+                && transformerName.Type == typeof(string)
+                && !_context.TransformerRegistrations.Any(x => x.TransformerName == transformerName.Value))
+            {
+                yield return new ValidationIssue(
+                    ValidationIssueType.MissingTransformerReference,
+                    ExceptionCode.UnableToLocateReferencedTransformer,
+                    $"Transformer '{transformerName.Value}' is not registered, so it cannot be used with #{TransformWithMethodName}().",
+                    path,
+                    transformerName.Value,
+                    mode == EvaluationMode.PropertyName);
             }
 
             // Arity check: mirrors the parameter-counting logic in ExpressionEvaluator.
@@ -404,8 +440,9 @@ namespace Jolt
                         ValidationIssueType.ArgumentCountMismatch,
                         ExceptionCode.MethodCallActualParameterCountExceedsFormalParameterCount,
                         $"Method '{signature.Alias}' expects no arguments but received {actualCount}.",
-                        null,
-                        signature.Alias);
+                        path,
+                        signature.Alias,
+                        mode == EvaluationMode.PropertyName);
                 }
             }
             else
@@ -423,8 +460,9 @@ namespace Jolt
                         ValidationIssueType.ArgumentCountMismatch,
                         ExceptionCode.MissingRequiredMethodParameter,
                         $"Method '{signature.Alias}' expects {(minArgs == maxArgs ? $"{minArgs}" : $"{minArgs}–{(lastIsVariadic ? "∞" : maxArgs.ToString())}")} argument(s) but received {actualCount}.",
-                        null,
-                        signature.Alias);
+                        path,
+                        signature.Alias,
+                        mode == EvaluationMode.PropertyName);
                 }
 
                 if (!lastIsVariadic && actualCount > maxArgs)
@@ -433,26 +471,28 @@ namespace Jolt
                         ValidationIssueType.ArgumentCountMismatch,
                         ExceptionCode.MethodCallActualParameterCountExceedsFormalParameterCount,
                         $"Method '{signature.Alias}' expects {(minArgs == maxArgs ? $"{minArgs}" : $"{minArgs}–{(lastIsVariadic ? "∞" : maxArgs.ToString())}")} argument(s) but received {actualCount}.",
-                        null,
-                        signature.Alias);
+                        path,
+                        signature.Alias,
+                        mode == EvaluationMode.PropertyName);
                 }
             }
 
             foreach (var parameter in methodCall.ParameterValues)
             {
-                foreach (var issue in ValidateExpression(parameter, mode, scope))
+                foreach (var issue in ValidateExpression(parameter, mode, scope, path))
                 {
                     yield return issue;
                 }
             }
         }
 
-        private static ValidationIssue UndeclaredVariableIssue(string variableName) =>
+        private static ValidationIssue UndeclaredVariableIssue(string variableName, string path, EvaluationMode mode) =>
             new ValidationIssue(
                 ValidationIssueType.UndeclaredVariable,
                 ExceptionCode.AttemptedToUseUndeclaredVariable,
                 $"Range variable '{variableName}' is referenced but has not been declared in the current scope.",
-                null,
-                variableName);
+                path,
+                variableName,
+                mode == EvaluationMode.PropertyName);
     }
 }

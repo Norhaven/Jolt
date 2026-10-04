@@ -4,17 +4,28 @@ import { getExpressionContext } from './language/context';
 import { getMethodReferenceAt } from './language/hover';
 import { formatDocumentation, formatSignature, getMethodCompletions } from './language/methodCompletions';
 import { getVariableCompletions } from './language/variables';
+import { LanguageServerController } from './languageServer';
+
+let languageServer: LanguageServerController | undefined;
 
 export function activate(context: vscode.ExtensionContext): void {
 	const methods = new CustomMethodsService();
 
+	languageServer = new LanguageServerController(context, methods);
+
 	context.subscriptions.push(
 		methods,
+		languageServer,
 		vscode.languages.registerCompletionItemProvider({ language: 'jolt' }, new JoltCompletionProvider(methods), '#', '>', '@'),
 		vscode.languages.registerHoverProvider({ language: 'jolt' }, new JoltHoverProvider(methods)));
+
+	// Completions and hover don't depend on the language server, so they work while it starts (or if it can't).
+	void languageServer.update();
 }
 
-export function deactivate(): void {
+export function deactivate(): Promise<void> | undefined {
+	// Stopping the server asks it to shut down and exit, rather than leaving the process to be ended.
+	return languageServer?.stop();
 }
 
 class JoltCompletionProvider implements vscode.CompletionItemProvider {

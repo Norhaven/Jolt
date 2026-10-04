@@ -24,6 +24,41 @@ function createResolver(files: Record<string, string>) {
 	return { resolver, reads, notified };
 }
 
+test('transformers are read, with invalid entries reported and duplicates removed', () => {
+	const file = parse({ transformers: ['address', '', 42, 'person', 'address'] });
+
+	assert.deepEqual(file.transformers, ['address', 'person']);
+	assert.equal(file.problems.length, 2);
+	assert.deepEqual(parse({ transformers: [] }).transformers, []);
+	assert.equal(parse({}).transformers, undefined);
+	assert.equal(parse({ transformers: 'address' }).transformers, undefined);
+	assert.equal(parse({ transformers: 'address' }).problems.length, 1);
+});
+
+test('the context is unknown when no methods file applies or lists transformers', async () => {
+	const { resolver } = createResolver({ '/p/.jolt/methods.json': JSON.stringify({ methods: [{ name: 'custom' }] }) });
+
+	assert.deepEqual(await resolver.getContext(['/q/.jolt/methods.json']), { methods: undefined, transformers: undefined });
+
+	const context = await resolver.getContext(['/p/.jolt/methods.json']);
+
+	assert.deepEqual(context.methods?.map(x => x.name), ['custom']);
+	assert.equal(context.transformers, undefined);
+});
+
+test('the context merges methods and transformers up to the root file', async () => {
+	const { resolver } = createResolver({
+		'/p/a/.jolt/methods.json': JSON.stringify({ methods: [{ name: 'local' }], transformers: ['address'] }),
+		'/p/.jolt/methods.json': JSON.stringify({ root: true, methods: [{ name: 'global' }], transformers: ['person', 'address'] }),
+		'/.jolt/methods.json': JSON.stringify({ transformers: ['ignored'] })
+	});
+
+	const context = await resolver.getContext(['/p/a/.jolt/methods.json', '/p/.jolt/methods.json', '/.jolt/methods.json']);
+
+	assert.deepEqual(context.methods?.map(x => x.name), ['local', 'global']);
+	assert.deepEqual(context.transformers, ['address', 'person']);
+});
+
 test('a valid file produces property value methods with their parameters', () => {
 	const file = parse({
 		methods: [{

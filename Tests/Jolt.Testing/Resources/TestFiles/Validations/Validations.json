@@ -264,6 +264,48 @@
         "AttemptedToUseUndeclaredVariable",
         "AttemptedToUseUndeclaredVariable"
       ]
+    },
+    {
+      "name": "Two-variable lambda declares both variables in its body",
+      "transformer": {
+        "total": "#reduce($.values, @acc;@current: @acc + @current)",
+        "pairs": "#zip($.first, $.second, @x;@y: @x + @y)"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Issue: Two-variable lambda variables are not in scope outside of its body",
+      "transformer": {
+        "total": "#reduce($.values, @acc;@current: @acc) + @current"
+      },
+      "expectedIssues": [
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    },
+    {
+      "name": "Transform with a registered transformer will succeed",
+      "registeredTransformers": [ "address" ],
+      "transformer": {
+        "result": "#transformWith($.path, 'address')"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Transform with a transformer name that is not a literal is not checked",
+      "transformer": {
+        "result": "#transformWith($.path, $.transformerName)"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Issue: Transform with an unregistered transformer fails",
+      "registeredTransformers": [ "address" ],
+      "transformer": {
+        "result": "#transformWith($.path, 'person')"
+      },
+      "expectedIssues": [
+        "UnableToLocateReferencedTransformer"
+      ]
     }
   ]
 }

@@ -21,7 +21,22 @@ export interface MethodsFile {
 	isRoot: boolean;
 	/** The valid methods from the file. Invalid entries are skipped and reported as problems. */
 	methods: LibraryMethod[];
+	/**
+	 * The names of the transformers that the host application registers, which #transformWith can refer to, or
+	 * undefined when the file does not list them.
+	 */
+	transformers: string[] | undefined;
 	problems: MethodsFileProblem[];
+}
+
+/**
+ * What the host application provides to the transformers that a set of methods files applies to.
+ */
+export interface MethodsContext {
+	/** The external methods, or undefined when no methods file applies (so they are not known). */
+	methods: LibraryMethod[] | undefined;
+	/** The registered transformers, or undefined when no applicable methods file lists them (so they are not known). */
+	transformers: string[] | undefined;
 }
 
 /**
@@ -62,7 +77,7 @@ export function parseMethodsFile(text: string, source: string, builtInNames: Rea
 			undefined,
 			'error');
 
-		return { isRoot: false, methods: [], problems };
+		return { isRoot: false, methods: [], transformers: undefined, problems };
 	}
 
 	const rootFlag = findNodeAtLocation(root, ['root']);
@@ -96,7 +111,31 @@ export function parseMethodsFile(text: string, source: string, builtInNames: Rea
 		}
 	}
 
-	return { isRoot: rootFlag?.value === true, methods, problems };
+	return { isRoot: rootFlag?.value === true, methods, transformers: parseTransformers(root, report), problems };
+}
+
+function parseTransformers(root: Node, report: (message: string, node: Node | undefined) => void): string[] | undefined {
+	const transformersNode = findNodeAtLocation(root, ['transformers']);
+	const transformers: string[] = [];
+
+	if (!transformersNode) {
+		return undefined;
+	}
+
+	if (transformersNode.type !== 'array') {
+		report('"transformers" must be an array of transformer names, so it is ignored.', transformersNode);
+		return undefined;
+	}
+
+	for (const entry of transformersNode.children ?? []) {
+		if (entry.type !== 'string' || !entry.value) {
+			report('Each transformer must be a non-empty name, as registered with the host application. This entry is ignored.', entry);
+		} else if (!transformers.includes(entry.value)) {
+			transformers.push(entry.value);
+		}
+	}
+
+	return transformers;
 }
 
 function parseMethod(entry: Node, source: string, report: (message: string, node: Node | undefined) => void): LibraryMethod | undefined {
@@ -250,23 +289,21 @@ export class CustomMethodsResolver {
 	 * Gets the merged custom methods, given the paths where methods files may exist, closest folder first.
 	 */
 	async getMethods(candidatePaths: readonly string[]): Promise<LibraryMethod[]> {
-		const applicable: MethodsFile[] = [];
+		return mergeMethodsFiles(await this.getApplicableFiles(candidatePaths));
+	}
 
-		for (const path of candidatePaths) {
-			const file = await this.getFile(path);
+	/**
+	 * Gets the merged custom methods and transformers, given the paths where methods files may exist, closest folder first.
+	 */
+	async getContext(candidatePaths: readonly string[]): Promise<MethodsContext> {
+		const files = await this.getApplicableFiles(candidatePaths);
 
-			if (!file) {
-				continue;
-			}
+		const listingTransformers = files.filter(x => x.transformers !== undefined);
 
-			applicable.push(file);
-
-			if (file.isRoot) {
-				break;
-			}
-		}
-
-		return mergeMethodsFiles(applicable);
+		return {
+			methods: files.length > 0 ? mergeMethodsFiles(files) : undefined,
+			transformers: listingTransformers.length > 0 ? [...new Set(listingTransformers.flatMap(x => x.transformers ?? []))] : undefined
+		};
 	}
 
 	/**
@@ -286,6 +323,26 @@ export class CustomMethodsResolver {
 
 	clear(): void {
 		this.files.clear();
+	}
+
+	private async getApplicableFiles(candidatePaths: readonly string[]): Promise<MethodsFile[]> {
+		const applicable: MethodsFile[] = [];
+
+		for (const path of candidatePaths) {
+			const file = await this.getFile(path);
+
+			if (!file) {
+				continue;
+			}
+
+			applicable.push(file);
+
+			if (file.isRoot) {
+				break;
+			}
+		}
+
+		return applicable;
 	}
 
 	private getFile(path: string): Promise<MethodsFile | undefined> {

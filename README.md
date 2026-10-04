@@ -930,8 +930,11 @@ public sealed class ValidationIssue
     public string Message { get; }
     public string TransformerExpressionPath { get; }
     public string ExpressionText { get; }
+    public bool IsInPropertyName { get; }
 }
 ```
+
+The `TransformerExpressionPath` is the path to the property (or array element) containing the expression with the issue. A property's name and value share the same path, so `IsInPropertyName` indicates whether the issue is within the expression in the property's name rather than its value.
 
 # Streaming Large Amounts Of Documents
 

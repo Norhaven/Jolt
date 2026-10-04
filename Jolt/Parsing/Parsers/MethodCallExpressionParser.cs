@@ -103,6 +103,13 @@ namespace Jolt.Parsing.Parsers
 
             var actualParameters = invocationSource != null ? new List<Expression> { invocationSource } : new List<Expression>();
 
+            // An unclosed method call (e.g. "#valueOf(" while it is being written) ends before its parameters do.
+
+            if (_reader.IsCompleted)
+            {
+                throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.ExpectedTokenButFoundEndOfExpression, ExpressionTokenCategory.CloseParenthesesGroup.GetDescription());
+            }
+
             if (_reader.CurrentToken.Category != ExpressionTokenCategory.CloseParenthesesGroup)
             {
                 do

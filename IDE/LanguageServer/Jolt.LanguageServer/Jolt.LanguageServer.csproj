@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- Runs on .NET 8 or any later runtime, so that an existing installation can be used rather than acquiring one. -->
+    <RollForward>Major</RollForward>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- Clients start the server with "dotnet", so no platform-specific executable is needed. -->
+    <UseAppHost>false</UseAppHost>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="StreamJsonRpc" Version="2.25.29" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Jolt\Jolt.csproj" />
+    <ProjectReference Include="..\..\..\Jolt.Json.DotNet\Jolt.Json.DotNet.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Jolt.LanguageServer.Tests" />
+  </ItemGroup>
+</Project>
