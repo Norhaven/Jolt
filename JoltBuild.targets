@@ -5,7 +5,7 @@
   </ItemGroup>
   
   <ItemGroup Condition="'$(BuildGroup)' == 'CrossPlatform'">
-    <ProjectReference Include="**/*.csproj" Exclude="Tests/Jolt.Testing.Harness.DotNetFramework/Jolt.Testing.Harness.DotNetFramework.csproj;IDE/Tools/Jolt.LanguageMetadata/Jolt.LanguageMetadata.csproj" />
+    <ProjectReference Include="**/*.csproj" Exclude="Tests/Jolt.Testing.Harness.DotNetFramework/Jolt.Testing.Harness.DotNetFramework.csproj;IDE/Tools/Jolt.LanguageMetadata/Jolt.LanguageMetadata.csproj;IDE/LanguageServer/Jolt.LanguageServer/Jolt.LanguageServer.csproj;IDE/LanguageServer/Jolt.LanguageServer.Tests/Jolt.LanguageServer.Tests.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildGroup)' == 'WindowsOnly'">
