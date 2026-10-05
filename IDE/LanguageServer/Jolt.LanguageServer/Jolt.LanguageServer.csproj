@@ -10,6 +10,7 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     <!-- Clients start the server with "dotnet", so no platform-specific executable is needed. -->
     <UseAppHost>false</UseAppHost>
+    <Version>1.0.0</Version>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
   <ItemGroup>

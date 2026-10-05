@@ -4,9 +4,11 @@ All notable changes to the Jolt Language extension will be documented in this fi
 
 ### 1.3.0
 
-Targeted release for method return types. This includes:
+Larger release for method metadata and a Jolt Language Server. This includes:
 - Optional custom method return types (in `.jolt/methods.json` files)
 - On-Hover documentation for C# return types
+- On-Hover documentation for library and custom method lambda parameters 
+- Syntax validation using the Jolt library within the Jolt Language Server
 
 ### 1.2.0
 
