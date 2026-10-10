@@ -251,7 +251,7 @@ This is one way to directly declare and use variables in your transformations. A
             "intermediateValue": "@x.someInteger * 2"
         }
     ],
-    "#foreach(@x;i in @tempResult) into 'actualResult'": [
+    "#foreach(@x;@i in @tempResult) into 'actualResult'": [
         {
             "finalValue": "@x.intermediateValue + 5",
             "currentIndex": "@i"
