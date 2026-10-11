@@ -15,6 +15,7 @@ All notable changes to the Jolt Language extension will be documented in this fi
 - Standard library metadata is regenerated from Jolt when the extension is packaged (updated to Jolt 2.4.3)
 - Restart Language Server and Show Language Server Output commands
 - Show Output, Retry, and Disable Validation actions when the language server can't be started
+- Supports VS Code 1.101 and later (previously 1.138), so that editors based on older versions of VS Code can install it from Open VSX
 
 ### 1.3.0
 
