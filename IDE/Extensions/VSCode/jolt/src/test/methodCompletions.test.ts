@@ -1,7 +1,7 @@
 import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
 import { ExpressionContext } from '../language/context';
-import { LibraryMethod, libraryMethods, MethodTarget } from '../language/library';
+import { LibraryMethod, libraryMethods, libraryVersion, MethodTarget } from '../language/library';
 import { formatDocumentation, formatSignature, getMethodCompletions } from '../language/methodCompletions';
 
 function complete(target: MethodTarget, textBeforeCursor: string, includeUnsafeMethods = false) {
@@ -128,4 +128,12 @@ test('documentation shows the return type when one is known', () => {
 
 	assert.match(formatDocumentation(method), /\*Returns:\* `IJsonToken\?`/);
 	assert.doesNotMatch(formatDocumentation({ ...method, returnType: undefined }), /Returns/);
+});
+
+test('documentation shows the Jolt version for standard library methods and the file for custom methods', () => {
+	const method = libraryMethods.find(x => x.name === 'valueOf')!;
+
+	assert.match(libraryVersion, /^\d+\.\d+\.\d+$/);
+	assert.ok(formatDocumentation(method).endsWith(`*Defined in:* Jolt ${libraryVersion} standard library`));
+	assert.ok(formatDocumentation({ ...method, source: '.jolt/methods.json' }).endsWith('*Defined in:* `.jolt/methods.json`'));
 });

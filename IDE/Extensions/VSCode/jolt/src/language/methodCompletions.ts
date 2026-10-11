@@ -1,5 +1,5 @@
 import { ExpressionContext } from './context';
-import { LibraryMethod, LibraryParameter, MethodTarget } from './library';
+import { LibraryMethod, LibraryParameter, libraryVersion, MethodTarget } from './library';
 
 export interface MethodCompletion {
 	method: LibraryMethod;
@@ -104,9 +104,8 @@ export function formatDocumentation(method: LibraryMethod): string {
 		sections.push('**Unsafe:** only available when the host application explicitly enables unsafe methods.');
 	}
 
-	if (method.source) {
-		sections.push(`*Defined in:* \`${method.source}\``);
-	}
+	// The standard library may differ between Jolt versions, so it is clear which one this documentation describes.
+	sections.push(method.source ? `*Defined in:* \`${method.source}\`` : `*Defined in:* Jolt ${libraryVersion} standard library`);
 
 	return sections.join('\n\n');
 }

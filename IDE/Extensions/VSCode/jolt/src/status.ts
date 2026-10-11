@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { CustomMethodsService } from './customMethodsService';
+import { libraryVersion } from './language/library';
 import { LanguageServerController, ServerStatus } from './languageServer';
 
 export const restartCommand = 'jolt.restartLanguageServer';
@@ -12,12 +13,18 @@ export const showOutputCommand = 'jolt.showLanguageServerOutput';
 export class JoltStatus implements vscode.Disposable {
 	private readonly validation = vscode.languages.createLanguageStatusItem('jolt.validation', { language: 'jolt' });
 	private readonly methodsFiles = vscode.languages.createLanguageStatusItem('jolt.methodsFiles', { language: 'jolt' });
-	private readonly disposables: vscode.Disposable[] = [this.validation, this.methodsFiles];
+	private readonly version = vscode.languages.createLanguageStatusItem('jolt.version', { language: 'jolt' });
+	private readonly disposables: vscode.Disposable[] = [this.validation, this.methodsFiles, this.version];
 	private methodsFilesUpdate = 0;
 
 	constructor(server: LanguageServerController, private readonly methods: CustomMethodsService) {
 		this.validation.name = 'Jolt Validation';
 		this.methodsFiles.name = 'Jolt Custom Methods';
+		this.version.name = 'Jolt Version';
+
+		// Transformers written for another version may use methods that this version doesn't have, or vice versa.
+		this.version.text = `Jolt ${libraryVersion}`;
+		this.version.detail = 'The Jolt version used for completions, hover, and validation';
 
 		this.showValidation(server.status);
 		void this.updateMethodsFiles();
@@ -47,7 +54,7 @@ export class JoltStatus implements vscode.Disposable {
 				break;
 			case 'running':
 				item.text = 'Jolt validation';
-				item.detail = 'Validating with the Jolt language server';
+				item.detail = `Validating with the Jolt ${libraryVersion} language server`;
 				item.command = { title: 'Restart', command: restartCommand };
 				break;
 			case 'disabled':

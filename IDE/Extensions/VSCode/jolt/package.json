@@ -48,7 +48,9 @@
     "ms-dotnettools.vscode-dotnet-runtime"
   ],
   "scripts": {
-    "vscode:prepublish": "npm run build-server && npm run package",
+    "vscode:prepublish": "npm run build-metadata && npm run build-server && npm run package",
+    "build-metadata": "dotnet run --project ../../../Tools/Jolt.LanguageMetadata -c Release -- --output src/data/library-methods.json",
+    "check-metadata": "dotnet run --project ../../../Tools/Jolt.LanguageMetadata -c Release -- --output src/data/library-methods.json --check",
     "build-server": "dotnet publish ../../../LanguageServer/Jolt.LanguageServer -c Release -o server --nologo",
     "compile": "npm run check-types && node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",

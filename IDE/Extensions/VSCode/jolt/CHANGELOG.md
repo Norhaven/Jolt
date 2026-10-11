@@ -10,7 +10,9 @@ All notable changes to the Jolt Language extension will be documented in this fi
 - Rename for variables
 - Document formatting and range formatting
 - Outline and breadcrumbs for transformers
-- Language status items for validation and the applicable `.jolt/methods.json` files
+- Language status items for validation, the applicable `.jolt/methods.json` files, and the included Jolt version
+- The included Jolt version is shown in standard library method hover documentation
+- Standard library metadata is regenerated from Jolt when the extension is packaged (updated to Jolt 2.4.3)
 - Restart Language Server and Show Language Server Output commands
 - Show Output, Retry, and Disable Validation actions when the language server can't be started
 

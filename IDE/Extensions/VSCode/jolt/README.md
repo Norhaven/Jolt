@@ -77,7 +77,9 @@ Transformer names from all of the applicable `methods.json` files are combined, 
 
 ### Language Status
 
-The language status area of the status bar (the `{ }` next to "Jolt") shows whether validation is running, starting, turned off, or has failed (and why), along with the `methods.json` files that apply to the current transformer, which you can open from there. If the language server can't be started, the warning offers to show its output, retry, or turn validation off.
+The language status area of the status bar (the `{ }` next to "Jolt") shows whether validation is running, starting, turned off, or has failed (and why), along with the `methods.json` files that apply to the current transformer, which you can open from there. It also shows the version of Jolt that this extension's completions, hover and validation are based on.
+
+> NOTE: This extension includes its own copy of the Jolt library, so if your application uses a different version of the Jolt NuGet package, its standard library methods may not match what's offered here. The included version is also shown at the end of each standard library method's hover documentation. If the language server can't be started, the warning offers to show its output, retry, or turn validation off.
 
 The following commands are also available from the Command Palette:
 * **Jolt: Restart Language Server**: stops and restarts validation, e.g. after installing .NET.

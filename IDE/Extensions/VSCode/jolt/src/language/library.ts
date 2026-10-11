@@ -60,3 +60,9 @@ export interface SourceLocation {
  * The Jolt standard library, generated from the Jolt assembly by IDE/Tools/Jolt.LanguageMetadata.
  */
 export const libraryMethods: readonly LibraryMethod[] = manifest.methods as LibraryMethod[];
+
+/**
+ * The version of Jolt that the standard library was generated from, which is also the version that the bundled
+ * language server validates with, as both are built from the same source when the extension is packaged.
+ */
+export const libraryVersion: string = manifest.joltVersion;
