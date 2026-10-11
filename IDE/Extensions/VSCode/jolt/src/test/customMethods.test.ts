@@ -88,6 +88,16 @@ test('a valid file produces property value methods with their parameters', () =>
 	}]);
 });
 
+test('methods record where their names are defined when the path is given', () => {
+	const text = JSON.stringify({ methods: [{ name: 'first' }, { name: 'second' }] }, null, 2);
+	const file = parseMethodsFile(text, 'methods.json', builtIns, 'file:///p/.jolt/methods.json');
+
+	assert.deepEqual(file.methods.map(x => x.definition), [
+		{ path: 'file:///p/.jolt/methods.json', start: { line: 3, character: 14 }, end: { line: 3, character: 21 } },
+		{ path: 'file:///p/.jolt/methods.json', start: { line: 6, character: 14 }, end: { line: 6, character: 22 } }
+	]);
+});
+
 test('the return type is optional and must be a non-empty string', () => {
 	const file = parse({
 		methods: [

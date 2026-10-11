@@ -55,9 +55,10 @@ const maxLambdaVariables = 2;
 
 /**
  * Parses a custom methods file. External methods are always valid only on property values and are never value
- * generators or unsafe, so those properties are fixed rather than read from the file.
+ * generators or unsafe, so those properties are fixed rather than read from the file. When the file's path is given,
+ * each method records where its name is defined.
  */
-export function parseMethodsFile(text: string, source: string, builtInNames: ReadonlySet<string>): MethodsFile {
+export function parseMethodsFile(text: string, source: string, builtInNames: ReadonlySet<string>, path?: string): MethodsFile {
 	const errors: ParseError[] = [];
 	const root = parseTree(text, errors, { allowTrailingComma: true });
 	const problems: MethodsFileProblem[] = [];
@@ -106,6 +107,10 @@ export function parseMethodsFile(text: string, source: string, builtInNames: Rea
 			report(`"${method.name}" is a standard library method, which Jolt always calls instead of a custom method with the same name. This entry is ignored.`, nameNode);
 		} else if (methods.some(x => x.name === method.name)) {
 			report(`"${method.name}" is already defined earlier in this file. This entry is ignored.`, nameNode);
+		} else if (path !== undefined && nameNode) {
+			const start = positionAt(text, nameNode.offset);
+
+			methods.push({ ...method, definition: { path, start, end: { line: start.line, character: start.character + nameNode.length } } });
 		} else {
 			methods.push(method);
 		}
@@ -365,7 +370,7 @@ export class CustomMethodsResolver {
 
 	private async load(path: string): Promise<MethodsFile | undefined> {
 		const text = await this.fileSystem.readFile(path);
-		const file = text === undefined ? undefined : parseMethodsFile(text, this.describe(path), this.builtInNames);
+		const file = text === undefined ? undefined : parseMethodsFile(text, this.describe(path), this.builtInNames, path);
 
 		this.onFileRead?.(path, file);
 

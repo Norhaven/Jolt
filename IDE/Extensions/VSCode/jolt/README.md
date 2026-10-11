@@ -28,6 +28,12 @@ You may forget what a particular method is for and need a quick refresher on the
 
 ![Method Information](images/method-information-on-hover.png)
 
+### Variable Navigation
+
+Hovering over a variable shows what kind of variable it is (e.g. a `#foreach` loop item, a lambda parameter, or a `#match` pattern capture) and the property name or expression that declares it. **Go to Definition** (`F12`) on a variable jumps to its declaration, and on a custom method it opens the `methods.json` file that defines it.
+
+You can also **Rename** (`F2`) a variable, which updates its declaration and every reference to it, while leaving other variables that happen to share its name (such as a lambda parameter shadowing an outer variable) alone.
+
 ### Signature Help
 
 While you're writing a method's arguments, its signature is shown with the current parameter highlighted, including any optional parameters that the completion snippet left out. This also works for piped methods (where the pipe supplies the first parameter) and for your custom methods. To bring it back up within a method's arguments, press `Ctrl+Space`, which also shows completions, or `Ctrl+Shift+Space` for the signature alone.

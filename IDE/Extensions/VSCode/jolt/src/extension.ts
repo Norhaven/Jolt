@@ -6,7 +6,17 @@ import { getMethodReferenceAt } from './language/hover';
 import { formatDocumentation, formatParameters, formatSignature, getMethodCompletions } from './language/methodCompletions';
 import { getCallContext } from './language/signatureHelp';
 import { getDocumentSymbols, JoltSymbol, JoltSymbolKind } from './language/symbols';
-import { getVariableCompletions } from './language/variables';
+import { LibraryMethod } from './language/library';
+import {
+	formatVariableDocumentation,
+	getVariableCompletions,
+	getVariableOccurrences,
+	getVariableReferenceAt,
+	isValidVariableName,
+	Span,
+	VariableBinding,
+	VariableReference
+} from './language/variables';
 import { LanguageServerController } from './languageServer';
 import { JoltStatus, restartCommand, showOutputCommand } from './status';
 
@@ -28,6 +38,8 @@ export function activate(context: vscode.ExtensionContext): void {
 		vscode.commands.registerCommand(showOutputCommand, () => server.output.show()),
 		vscode.languages.registerCompletionItemProvider(selector, new JoltCompletionProvider(methods), '#', '>', '@'),
 		vscode.languages.registerHoverProvider(selector, new JoltHoverProvider(methods)),
+		vscode.languages.registerDefinitionProvider(selector, new JoltDefinitionProvider(methods)),
+		vscode.languages.registerRenameProvider(selector, new JoltRenameProvider()),
 		vscode.languages.registerSignatureHelpProvider(
 			selector,
 			new JoltSignatureHelpProvider(methods),
@@ -105,25 +117,114 @@ class JoltHoverProvider implements vscode.HoverProvider {
 	}
 
 	async provideHover(document: vscode.TextDocument, position: vscode.Position): Promise<vscode.Hover | undefined> {
-		const reference = getMethodReferenceAt(document.lineAt(position.line).text, position.character);
+		const variable = getVariableReferenceAt(document.getText(), document.offsetAt(position));
 
-		// Method references only exist within Jolt expressions, which are always inside JSON strings.
-		if (!reference || !getExpressionContext(document.getText(), document.offsetAt(position))) {
-			return undefined;
+		if (variable) {
+			// An undeclared variable is reported by validation, so there is nothing more to show for it here.
+			return variable.binding && new vscode.Hover(
+				new vscode.MarkdownString(formatVariableDocumentation(variable.binding)),
+				// The "@" is included, as it is part of the reference.
+				toRange(document, { start: variable.span.start - 1, end: variable.span.end }));
 		}
 
-		// Standard library methods come first, matching Jolt, which calls them in preference to custom methods.
-		const methods = await this.methods.getMethodsFor(document);
-		const method = methods.find(x => x.name === reference.name);
+		const found = await findMethodAt(this.methods, document, position);
 
-		if (!method) {
-			return undefined;
-		}
-
-		return new vscode.Hover(
-			new vscode.MarkdownString(formatDocumentation(method)),
-			new vscode.Range(position.line, reference.start, position.line, reference.end));
+		return found && new vscode.Hover(new vscode.MarkdownString(formatDocumentation(found.method)), found.range);
 	}
+}
+
+class JoltDefinitionProvider implements vscode.DefinitionProvider {
+	constructor(private readonly methods: CustomMethodsService) {
+	}
+
+	async provideDefinition(document: vscode.TextDocument, position: vscode.Position): Promise<vscode.Location | undefined> {
+		const variable = getVariableReferenceAt(document.getText(), document.offsetAt(position));
+
+		if (variable) {
+			const declaration = variable.binding?.declaration;
+
+			return declaration && new vscode.Location(document.uri, toRange(document, declaration));
+		}
+
+		// Standard library methods have no definition to go to, as they are built into Jolt.
+		const definition = (await findMethodAt(this.methods, document, position))?.method.definition;
+
+		return definition && new vscode.Location(
+			vscode.Uri.parse(definition.path),
+			new vscode.Range(definition.start.line, definition.start.character, definition.end.line, definition.end.character));
+	}
+}
+
+class JoltRenameProvider implements vscode.RenameProvider {
+	prepareRename(document: vscode.TextDocument, position: vscode.Position): { range: vscode.Range; placeholder: string } {
+		const variable = getRenameableVariable(document, position);
+
+		return { range: toRange(document, variable.span), placeholder: variable.name };
+	}
+
+	provideRenameEdits(document: vscode.TextDocument, position: vscode.Position, newName: string): vscode.WorkspaceEdit {
+		const variable = getRenameableVariable(document, position);
+		// The "@" is not part of the name, but is accepted in case it is typed out of habit.
+		const name = newName.trim().replace(/^@/, '');
+
+		if (!isValidVariableName(name)) {
+			throw new Error(`"${newName}" is not a valid variable name. Use letters, digits and underscores, not starting with a digit.`);
+		}
+
+		const edit = new vscode.WorkspaceEdit();
+
+		for (const occurrence of getVariableOccurrences(document.getText(), variable.binding)) {
+			edit.replace(document.uri, toRange(document, occurrence), name);
+		}
+
+		return edit;
+	}
+}
+
+/**
+ * Gets the variable at the given position, which must be declared within the document for it to be renamed.
+ */
+function getRenameableVariable(document: vscode.TextDocument, position: vscode.Position): VariableReference & { binding: VariableBinding } {
+	const variable = getVariableReferenceAt(document.getText(), document.offsetAt(position));
+
+	if (!variable) {
+		throw new Error('Only variables can be renamed.');
+	}
+
+	if (!variable.binding) {
+		throw new Error(`@${variable.name} is not declared here, so it cannot be renamed.`);
+	}
+
+	if (!variable.binding.declaration) {
+		throw new Error(`@${variable.name} is provided by Jolt, so it cannot be renamed.`);
+	}
+
+	return { ...variable, binding: variable.binding };
+}
+
+/**
+ * Finds the method that a "#name" reference at the given position calls, along with the reference's range.
+ */
+async function findMethodAt(
+	methods: CustomMethodsService,
+	document: vscode.TextDocument,
+	position: vscode.Position): Promise<{ method: LibraryMethod; range: vscode.Range } | undefined> {
+
+	const reference = getMethodReferenceAt(document.lineAt(position.line).text, position.character);
+
+	// Method references only exist within Jolt expressions, which are always inside JSON strings.
+	if (!reference || !getExpressionContext(document.getText(), document.offsetAt(position))) {
+		return undefined;
+	}
+
+	// Standard library methods come first, matching Jolt, which calls them in preference to custom methods.
+	const method = (await methods.getMethodsFor(document)).find(x => x.name === reference.name);
+
+	return method && { method, range: new vscode.Range(position.line, reference.start, position.line, reference.end) };
+}
+
+function toRange(document: vscode.TextDocument, span: Span): vscode.Range {
+	return new vscode.Range(document.positionAt(span.start), document.positionAt(span.end));
 }
 
 class JoltSignatureHelpProvider implements vscode.SignatureHelpProvider {

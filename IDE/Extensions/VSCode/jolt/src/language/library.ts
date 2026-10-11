@@ -44,6 +44,16 @@ export interface LibraryMethod {
 	parameters: LibraryParameter[];
 	/** Where a custom method was defined (e.g. a .jolt/methods.json path), or undefined for the standard library. */
 	source?: string;
+	/** The location of a custom method's name within the file that defines it, or undefined for the standard library. */
+	definition?: SourceLocation;
+}
+
+/** A range of a file, with zero-based lines and characters. */
+export interface SourceLocation {
+	/** The file, identified by the same opaque path (e.g. a URI string) used to read it. */
+	path: string;
+	start: { line: number; character: number };
+	end: { line: number; character: number };
 }
 
 /**

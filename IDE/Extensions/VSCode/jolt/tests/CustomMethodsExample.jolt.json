@@ -1,4 +1,11 @@
 {
     "exampleValue": "#exampleCustomMethod('test', @y: @y.someProperty)",
-    "exampleValueTwo": "#exampleCustomMethodWithTwoLambdaParameters('test2', @first;@second: @first + @second)"
+    "exampleValueTwo": "#exampleCustomMethodWithTwoLambdaParameters('test2', @first;@second: @first + @second)",
+    "#foreach(@value;@index in $.path) into @actualResult": [
+        {
+            "value": "@value",
+            "index": "@index"
+        }
+    ],
+    "result": "@actualResult"
 }

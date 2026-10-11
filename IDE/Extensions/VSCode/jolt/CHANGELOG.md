@@ -5,6 +5,9 @@ All notable changes to the Jolt Language extension will be documented in this fi
 ### Unreleased
 
 - Signature help for library and custom method arguments, also shown by `Ctrl+Space` alongside completions
+- Variable hover showing where a variable is declared
+- Go to Definition for variables and custom methods
+- Rename for variables
 - Document formatting and range formatting
 - Outline and breadcrumbs for transformers
 - Language status items for validation and the applicable `.jolt/methods.json` files
