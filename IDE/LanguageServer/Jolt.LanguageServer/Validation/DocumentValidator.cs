@@ -140,8 +140,9 @@ namespace Jolt.LanguageServer.Validation
             var occurrences = new OccurrenceTracker();
 
             return issues
-                .Where(x => IsReported(x, context, settings))
-                .Select(x => ToDiagnostic(x, index, lines, occurrences))
+                .Select(x => (Issue: x, Misspelling: FindMisspelledLibraryMethod(x, index, context)))
+                .Where(x => IsReported(x.Issue, x.Misspelling, context, settings))
+                .Select(x => ToDiagnostic(x.Issue, x.Misspelling, index, lines, occurrences))
                 .ToList();
         }
 
@@ -167,7 +168,7 @@ namespace Jolt.LanguageServer.Validation
             return context;
         }
 
-        private static bool IsReported(ValidationIssue issue, DocumentContext context, ValidationSettings settings)
+        private static bool IsReported(ValidationIssue issue, Misspelling? misspelling, DocumentContext context, ValidationSettings settings)
         {
             switch (issue.Type)
             {
@@ -176,23 +177,53 @@ namespace Jolt.LanguageServer.Validation
                 case ValidationIssueType.MissingTransformerReference:
                     return context.Transformers != null;
                 case ValidationIssueType.SyntaxError when issue.Code == ExceptionCode.UnableToFindMethodImplementation:
-                    return context.ExternalMethods != null;
+                    // Without the host's custom methods, an unknown method may well be one of them, so it's only
+                    // reported when it's close enough to a standard library method to most likely be a misspelling.
+                    return context.ExternalMethods != null || misspelling != null;
                 default:
                     return true;
             }
         }
 
-        private static Diagnostic ToDiagnostic(ValidationIssue issue, JsonPathIndex index, TextLines lines, OccurrenceTracker occurrences)
+        private static Diagnostic ToDiagnostic(ValidationIssue issue, Misspelling? misspelling, JsonPathIndex index, TextLines lines, OccurrenceTracker occurrences)
         {
             var (start, end) = Locate(issue, index, occurrences);
 
             return new Diagnostic
             {
                 Range = lines.GetRange(start, end),
-                Severity = issue.Type == ValidationIssueType.UnsafeMethodUsage ? DiagnosticSeverity.Warning : DiagnosticSeverity.Error,
+                // A misspelling is a warning, as it might still be a custom method that the editor doesn't know about.
+                Severity = issue.Type == ValidationIssueType.UnsafeMethodUsage || misspelling != null ? DiagnosticSeverity.Warning : DiagnosticSeverity.Error,
                 Code = GetCode(issue.Code),
-                Message = GetMessage(issue)
+                Message = misspelling is Misspelling x
+                    ? $"Unknown method '#{x.Name}'. Did you mean '#{x.Suggestion}'? If it's a custom method, list it in a .jolt/methods.json file."
+                    : GetMessage(issue)
             };
+        }
+
+        /// <summary>
+        /// Finds the standard library method that an unknown method was most likely meant to be, when the host's custom
+        /// methods aren't known (so that unknown methods aren't otherwise reported). The unknown method's name is read
+        /// from the span of the issue, which covers the method name.
+        /// </summary>
+        private static Misspelling? FindMisspelledLibraryMethod(ValidationIssue issue, JsonPathIndex index, DocumentContext context)
+        {
+            if (issue.Code != ExceptionCode.UnableToFindMethodImplementation || context.ExternalMethods != null)
+            {
+                return null;
+            }
+
+            var expression = FindIssueExpression(issue, index);
+
+            if (expression is null || !(issue.Span is ExpressionSpan span) || span.End > expression.Value.Length)
+            {
+                return null;
+            }
+
+            var name = expression.Value.Substring(span.Start, span.Length).TrimStart('#');
+            var suggestion = name.Length > 0 ? SimilarLibraryMethods.FindClosest(name) : null;
+
+            return suggestion is null ? (Misspelling?)null : new Misspelling(name, suggestion);
         }
 
         /// <summary>
@@ -204,9 +235,7 @@ namespace Jolt.LanguageServer.Validation
         /// </summary>
         private static (int Start, int End) Locate(ValidationIssue issue, JsonPathIndex index, OccurrenceTracker occurrences)
         {
-            var entry = index.Find(issue.TransformerExpressionPath);
-            var expression = (issue.IsInPropertyName ? entry?.Key : entry?.Value as JsonStringSyntax)
-                ?? FindExpression(issue, index);
+            var expression = FindIssueExpression(issue, index);
 
             if (expression is null)
             {
@@ -231,6 +260,17 @@ namespace Jolt.LanguageServer.Validation
             }
 
             return (expression.RawOffsets[found], expression.RawOffsets[found + needle!.Length]);
+        }
+
+        /// <summary>
+        /// Finds the string containing the expression with an issue: the property name or value at the issue's path, or
+        /// otherwise the expression it is about.
+        /// </summary>
+        private static JsonStringSyntax? FindIssueExpression(ValidationIssue issue, JsonPathIndex index)
+        {
+            var entry = index.Find(issue.TransformerExpressionPath);
+
+            return (issue.IsInPropertyName ? entry?.Key : entry?.Value as JsonStringSyntax) ?? FindExpression(issue, index);
         }
 
         /// <summary>
@@ -309,6 +349,22 @@ namespace Jolt.LanguageServer.Validation
         /// </summary>
         private static string GetCode(ExceptionCode code) => _codes.GetOrAdd(code, x =>
             typeof(ExceptionCode).GetField(x.ToString())?.GetCustomAttribute<DescriptionAttribute>()?.Description ?? x.ToString());
+
+        /// <summary>
+        /// An unknown method name, and the standard library method it was most likely meant to be.
+        /// </summary>
+        private readonly struct Misspelling
+        {
+            public Misspelling(string name, string suggestion)
+            {
+                Name = name;
+                Suggestion = suggestion;
+            }
+
+            public string Name { get; }
+
+            public string Suggestion { get; }
+        }
 
         /// <summary>
         /// Tracks which occurrence of a method or variable each issue refers to, so that repeated issues about the same

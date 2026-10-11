@@ -6,6 +6,7 @@ import { getFormattingEdits, OffsetRange } from './language/formatting';
 import { getMethodReferenceAt } from './language/hover';
 import { formatDocumentation, formatParameters, formatSignature, getMethodCompletions } from './language/methodCompletions';
 import { getCallContext } from './language/signatureHelp';
+import { getPropertyPosition, statementSnippets } from './language/statementSnippets';
 import { getDocumentSymbols, JoltSymbol, JoltSymbolKind } from './language/symbols';
 import { LibraryMethod } from './language/library';
 import {
@@ -41,6 +42,8 @@ export function activate(context: vscode.ExtensionContext): void {
 		vscode.languages.registerHoverProvider(selector, new JoltHoverProvider(methods)),
 		vscode.languages.registerDefinitionProvider(selector, new JoltDefinitionProvider(methods)),
 		vscode.languages.registerRenameProvider(selector, new JoltRenameProvider()),
+		vscode.languages.registerReferenceProvider(selector, new JoltReferenceProvider()),
+		vscode.languages.registerDocumentHighlightProvider(selector, new JoltDocumentHighlightProvider()),
 		vscode.languages.registerCodeActionsProvider(selector, new JoltCodeActionProvider(methods), JoltCodeActionProvider.metadata),
 		vscode.languages.registerSignatureHelpProvider(
 			selector,
@@ -69,7 +72,8 @@ class JoltCompletionProvider implements vscode.CompletionItemProvider {
 		if (variableCompletions) {
 			const range = new vscode.Range(position.translate(0, -variableCompletions.replaceLength), position);
 
-			return variableCompletions.variables.map((variable, index) => {
+			// A property name being typed as "@ is a variable declaration, which can be completed with its value.
+			return [...getStatementSnippetCompletions(document, position) ?? [], ...variableCompletions.variables.map((variable, index) => {
 				const item = new vscode.CompletionItem(
 					{ label: `@${variable.name}`, description: variable.description },
 					vscode.CompletionItemKind.Variable);
@@ -79,13 +83,14 @@ class JoltCompletionProvider implements vscode.CompletionItemProvider {
 				item.sortText = String(index).padStart(4, '0');
 
 				return item;
-			});
+			})];
 		}
 
 		const expressionContext = getExpressionContext(document.getText(), document.offsetAt(position));
 
+		// Outside of a string, whole statements can be inserted where a property would go.
 		if (!expressionContext) {
-			return undefined;
+			return getStatementSnippetCompletions(document, position);
 		}
 
 		const includeUnsafeMethods = vscode.workspace
@@ -95,7 +100,10 @@ class JoltCompletionProvider implements vscode.CompletionItemProvider {
 		const methods = await this.methods.getMethodsFor(document);
 		const completions = getMethodCompletions(expressionContext, methods, { includeUnsafeMethods });
 
-		return completions?.map(completion => {
+		// A property name being typed (e.g. "#fore") can also be replaced by a whole statement, value included.
+		const statementCompletions = getStatementSnippetCompletions(document, position) ?? [];
+
+		return completions && [...statementCompletions, ...completions.map(completion => {
 			const signature = formatSignature(completion.method, completion.isPiped);
 			const item = new vscode.CompletionItem(
 				{
@@ -110,8 +118,49 @@ class JoltCompletionProvider implements vscode.CompletionItemProvider {
 			item.documentation = new vscode.MarkdownString(formatDocumentation(completion.method));
 
 			return item;
-		});
+		})];
 	}
+}
+
+function getStatementSnippetCompletions(document: vscode.TextDocument, position: vscode.Position): vscode.CompletionItem[] | undefined {
+	const property = getPropertyPosition(document.getText(), document.offsetAt(position));
+
+	if (!property) {
+		return undefined;
+	}
+
+	const range = new vscode.Range(position.translate(0, -property.replaceLength), position.translate(0, property.replaceAfterLength));
+
+	return statementSnippets.map(snippet => {
+		const item = new vscode.CompletionItem({ label: snippet.label, description: snippet.description }, vscode.CompletionItemKind.Snippet);
+
+		item.insertText = new vscode.SnippetString(snippet.body + (property.needsTrailingComma ? ',' : ''));
+		item.range = range;
+		// Completions are filtered by the text from the start of the range, which includes an opening quote when the
+		// snippet replaces a property name being typed.
+		item.filterText = property.labelPrefix + snippet.label;
+		// Within a property name, these come before the methods that only complete the name.
+		item.sortText = ' ' + snippet.label;
+		item.documentation = new vscode.MarkdownString().appendCodeblock(formatSnippetPreview(snippet.body), 'json');
+
+		if (property.leadingCommaOffset !== undefined) {
+			const commaPosition = document.positionAt(property.leadingCommaOffset);
+
+			item.additionalTextEdits = [vscode.TextEdit.insert(commaPosition, ',')];
+		}
+
+		return item;
+	});
+}
+
+/**
+ * Shows a snippet as the text it inserts, with its placeholders' default values and four-space indentation.
+ */
+function formatSnippetPreview(body: string): string {
+	return body
+		.replace(/\$\{\d+:((?:[^}\\]|\\.)*)\}/g, '$1')
+		.replace(/\\(.)/g, '$1')
+		.replace(/\t/g, '    ');
 }
 
 class JoltHoverProvider implements vscode.HoverProvider {
@@ -155,6 +204,56 @@ class JoltDefinitionProvider implements vscode.DefinitionProvider {
 			vscode.Uri.parse(definition.path),
 			new vscode.Range(definition.start.line, definition.start.character, definition.end.line, definition.end.character));
 	}
+}
+
+class JoltReferenceProvider implements vscode.ReferenceProvider {
+	provideReferences(document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext): vscode.Location[] | undefined {
+		const binding = getVariableReferenceAt(document.getText(), document.offsetAt(position))?.binding;
+		const declaration = binding?.declaration;
+
+		if (!binding || !declaration) {
+			return undefined;
+		}
+
+		return getVariableOccurrences(document.getText(), binding)
+			.filter(x => context.includeDeclaration || x.start !== declaration.start)
+			.map(x => new vscode.Location(document.uri, toRange(document, x)));
+	}
+}
+
+class JoltDocumentHighlightProvider implements vscode.DocumentHighlightProvider {
+	provideDocumentHighlights(document: vscode.TextDocument, position: vscode.Position): vscode.DocumentHighlight[] | undefined {
+		const binding = getVariableReferenceAt(document.getText(), document.offsetAt(position))?.binding;
+		const declaration = binding?.declaration;
+
+		if (!binding || !declaration) {
+			return getWordHighlights(document, position);
+		}
+
+		// Other variables that share the name (e.g. a lambda parameter shadowing an outer variable) aren't highlighted.
+		return getVariableOccurrences(document.getText(), binding).map(x => new vscode.DocumentHighlight(
+			toRange(document, x),
+			x.start === declaration.start ? vscode.DocumentHighlightKind.Write : vscode.DocumentHighlightKind.Read));
+	}
+}
+
+/**
+ * Highlights the other occurrences of the word at a position, as VS Code does when no provider highlights anything,
+ * so that providing variable highlights doesn't stop words such as method names from being highlighted.
+ */
+function getWordHighlights(document: vscode.TextDocument, position: vscode.Position): vscode.DocumentHighlight[] | undefined {
+	const wordRange = document.getWordRangeAtPosition(position);
+
+	if (!wordRange) {
+		return undefined;
+	}
+
+	const word = document.getText(wordRange);
+	const occurrences = new RegExp(`(?<![\\w])${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w])`, 'g');
+
+	return [...document.getText().matchAll(occurrences)].map(x => new vscode.DocumentHighlight(
+		new vscode.Range(document.positionAt(x.index), document.positionAt(x.index + word.length)),
+		vscode.DocumentHighlightKind.Text));
 }
 
 class JoltRenameProvider implements vscode.RenameProvider {

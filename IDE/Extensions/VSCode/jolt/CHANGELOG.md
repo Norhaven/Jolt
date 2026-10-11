@@ -7,8 +7,10 @@ All notable changes to the Jolt Language extension will be documented in this fi
 - Signature help for library and custom method arguments, also shown by `Ctrl+Space` alongside completions
 - Variable hover showing where a variable is declared
 - Go to Definition for variables and custom methods
-- Rename for variables
-- Quick fixes for unknown methods (similar names, or adding the method to an existing `.jolt/methods.json` file) and undeclared variables (similar names, or declaring the variable)
+- Rename, Find All References, and occurrence highlighting for variables
+- Snippets for `#foreach`, `#using`, `#match`, and variable declarations, offered where a property would go
+- Likely misspellings of standard library methods (e.g. `#valeuOf`) are reported as warnings, with a quick fix, even without a `.jolt/methods.json` file
+- Quick fixes for unknown methods (similar names, or adding the method to a `.jolt/methods.json` file) and undeclared variables (similar names, or declaring the variable)
 - Method hover and Go to Definition no longer match method names within string literals
 - JSON escape sequences within string literals (e.g. `'it\\'s'`) are now read as Jolt reads them by completions, signature help, and variable scoping
 - Document formatting and range formatting

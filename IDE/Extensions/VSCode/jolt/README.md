@@ -22,6 +22,10 @@ The same holds true for variables and understanding which are currently in scope
 
 ![Method And Variable Completions](images/method-and-variable-completions.gif)
 
+### Statement Snippets
+
+Where a property would go, completions also offer whole statements with the shape their values need: a `#foreach` loop with its template, a `#using` block with its statements, a `#match` with its cases, and a variable declaration. Start a new property name with `"#` or `"@` (or type them without the quote) to see them. Choosing one replaces the property name you've started with the whole property, value included, and any commas needed to separate it from its neighbors are added for you.
+
 ### Method Information On Hover
 
 You may forget what a particular method is for and need a quick refresher on the documented method information. It also slows down your development if you have to continually refer to the README file, so the documented definition for a given method is available when hovering over it.
@@ -32,7 +36,7 @@ You may forget what a particular method is for and need a quick refresher on the
 
 Hovering over a variable shows what kind of variable it is (e.g. a `#foreach` loop item, a lambda parameter, or a `#match` pattern capture) and the property name or expression that declares it. **Go to Definition** (`F12`) on a variable jumps to its declaration, and on a custom method it opens the `methods.json` file that defines it.
 
-You can also **Rename** (`F2`) a variable, which updates its declaration and every reference to it, while leaving other variables that happen to share its name (such as a lambda parameter shadowing an outer variable) alone.
+You can also **Rename** (`F2`) a variable or **Find All References** (`Shift+F12`) to it, which cover its declaration and every reference to it, while leaving other variables that happen to share its name (such as a lambda parameter shadowing an outer variable) alone. Placing the cursor on a variable highlights its other occurrences in the same way.
 
 ### Signature Help
 
@@ -63,6 +67,8 @@ It's also important to note that any updates to the `methods.json` file will onl
 ### Validation
 
 As you edit a transformer, it is validated by the Jolt library itself (the same validation as `JoltTransformer.Validate()`), and any problems are shown in the editor and the Problems panel. This includes invalid JSON, expression syntax errors, undeclared variables, methods used where they aren't allowed, the wrong number of arguments to a method, and the use of unsafe methods (as warnings). In a Jolt test file (with a `testGroups` array), the transformer in each test is validated on its own.
+
+Without a `.jolt/methods.json` file, calls to methods that aren't in the standard library aren't reported, since they may be custom methods that the extension doesn't know about. The exception is a name that's very close to a standard library method (e.g. `#valeuOf`), which is reported as a warning since it's most likely a misspelling.
 
 Validation also uses your `.jolt/methods.json` files in a trusted workspace. Calls to methods that aren't standard library methods or listed in an applicable `methods.json` file are reported as unknown, and when no `methods.json` file applies to a transformer, unknown methods aren't reported at all. Similarly, you can list the names of the transformers that your application registers, so that `#transformWith()` calls using any other transformer name are reported:
 

@@ -187,6 +187,39 @@ namespace Jolt.LanguageServer.Tests
             Assert.Empty(Validate(text, DocumentContext.Unknown));
         }
 
+        [Theory]
+        [InlineData("valeuOf", "valueOf")]
+        [InlineData("ValueOf", "valueOf")]
+        [InlineData("valuOf", "valueOf")]
+        public void MisspelledLibraryMethods_AreReportedAsWarningsWhenTheExternalMethodsAreUnknown(string misspelled, string suggestion)
+        {
+            var text = $"{{ \"result\": \"#{misspelled}($.a)\" }}";
+
+            var diagnostic = Assert.Single(Validate(text, DocumentContext.Unknown));
+
+            Assert.Equal("#" + misspelled, Covered(text, diagnostic));
+            Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+            Assert.Equal("JLT108", diagnostic.Code);
+            Assert.Contains($"Did you mean '#{suggestion}'?", diagnostic.Message);
+        }
+
+        [Fact]
+        public void MisspelledLibraryMethods_AreErrorsWhenTheExternalMethodsAreKnown()
+        {
+            const string text = "{ \"result\": \"#valeuOf($.a)\" }";
+
+            var diagnostic = Assert.Single(Validate(text));
+
+            Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
+            Assert.DoesNotContain("Did you mean", diagnostic.Message);
+        }
+
+        [Fact]
+        public void UnsafeMethods_AreNotSuggestedForMisspellings()
+        {
+            Assert.Empty(Validate("{ \"result\": \"#evl('1')\" }", DocumentContext.Unknown));
+        }
+
         [Fact]
         public void ExternalMethods_AreResolvedAndTheirArgumentsValidated()
         {
