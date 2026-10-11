@@ -8,6 +8,9 @@ All notable changes to the Jolt Language extension will be documented in this fi
 - Variable hover showing where a variable is declared
 - Go to Definition for variables and custom methods
 - Rename for variables
+- Quick fixes for unknown methods (similar names, or adding the method to an existing `.jolt/methods.json` file) and undeclared variables (similar names, or declaring the variable)
+- Method hover and Go to Definition no longer match method names within string literals
+- JSON escape sequences within string literals (e.g. `'it\\'s'`) are now read as Jolt reads them by completions, signature help, and variable scoping
 - Document formatting and range formatting
 - Outline and breadcrumbs for transformers
 - Language status items for validation, the applicable `.jolt/methods.json` files, and the included Jolt version

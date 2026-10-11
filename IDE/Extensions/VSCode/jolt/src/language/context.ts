@@ -58,6 +58,71 @@ export function getExpressionContext(text: string, offset: number): ExpressionCo
 	return { target: getTarget(location.node, location.textBeforeCursor), textBeforeCursor: location.textBeforeCursor };
 }
 
+/** The offset of a JSON string's text, just after its opening quote. */
+export function getStringContentStart(node: Node): number {
+	return node.offset + 1;
+}
+
+/** The raw text of a JSON string, without its quotes (an unterminated string has no closing quote to remove). */
+export function getStringContent(text: string, node: Node): string {
+	const end = node.offset + node.length;
+	const isTerminated = node.length >= 2 && text[end - 1] === '"';
+
+	return text.slice(getStringContentStart(node), isTerminated ? end - 1 : end);
+}
+
+const jsonEscapes: Record<string, string> = { '"': '"', '\\': '\\', '/': '/', b: '\b', f: '\f', n: '\n', r: '\r', t: '\t' };
+
+/**
+ * Calls back with the index of each character of an expression that is outside of its string literals ('...').
+ * The callback may return the index of the last character it has read (e.g. the end of a token) to continue after it.
+ *
+ * The expression is the raw text of a JSON string, so JSON escape sequences (e.g. \\ or \") are read as the single
+ * character that Jolt sees, which matters within literals: 'it\\'s' in the JSON is the literal 'it\'s' to Jolt.
+ * Characters written as escape sequences are not passed to the callback, as Jolt's syntax never needs them.
+ */
+export function forEachOutsideLiterals(expression: string, callback: (index: number) => number | void): void {
+	let isInLiteral = false;
+	let isLiteralEscape = false;
+
+	for (let i = 0; i < expression.length;) {
+		const length = expression[i] !== '\\' ? 1 : expression[i + 1] === 'u' ? 6 : 2;
+		const current = length === 1 ? expression[i] : decodeJsonEscape(expression.substr(i, length));
+
+		if (isInLiteral) {
+			if (isLiteralEscape) {
+				isLiteralEscape = false;
+			} else if (current === '\\') {
+				isLiteralEscape = true;
+			} else if (current === '\'') {
+				isInLiteral = false;
+			}
+		} else if (current === '\'') {
+			isInLiteral = true;
+		} else if (length === 1) {
+			const last = callback(i);
+
+			if (last !== undefined) {
+				i = last + 1;
+				continue;
+			}
+		}
+
+		i += length;
+	}
+}
+
+function decodeJsonEscape(sequence: string): string {
+	if (sequence[1] === 'u') {
+		const code = parseInt(sequence.substring(2), 16);
+
+		return Number.isNaN(code) ? '�' : String.fromCharCode(code);
+	}
+
+	// An invalid escape is reported by validation, so it is read leniently as the character after the backslash.
+	return jsonEscapes[sequence[1]] ?? sequence[1] ?? '';
+}
+
 /**
  * Whether the given string node is a property name rather than a value.
  */
@@ -106,25 +171,14 @@ function isValueOfKey(node: Node, keyPattern: RegExp): boolean {
 
 function isWithinCallArguments(expression: string): boolean {
 	let depth = 0;
-	let isInLiteral = false;
 
-	for (let i = 0; i < expression.length; i++) {
-		const current = expression[i];
-
-		if (isInLiteral) {
-			if (current === '\\') {
-				i++;
-			} else if (current === '\'') {
-				isInLiteral = false;
-			}
-		} else if (current === '\'') {
-			isInLiteral = true;
-		} else if (current === '(') {
+	forEachOutsideLiterals(expression, i => {
+		if (expression[i] === '(') {
 			depth++;
-		} else if (current === ')' && depth > 0) {
+		} else if (expression[i] === ')' && depth > 0) {
 			depth--;
 		}
-	}
+	});
 
 	return depth > 0;
 }

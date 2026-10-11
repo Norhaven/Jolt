@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { JoltCodeActionProvider } from './codeActions';
 import { CustomMethodsService } from './customMethodsService';
 import { getExpressionContext, getStringLocation } from './language/context';
 import { getFormattingEdits, OffsetRange } from './language/formatting';
@@ -40,6 +41,7 @@ export function activate(context: vscode.ExtensionContext): void {
 		vscode.languages.registerHoverProvider(selector, new JoltHoverProvider(methods)),
 		vscode.languages.registerDefinitionProvider(selector, new JoltDefinitionProvider(methods)),
 		vscode.languages.registerRenameProvider(selector, new JoltRenameProvider()),
+		vscode.languages.registerCodeActionsProvider(selector, new JoltCodeActionProvider(methods), JoltCodeActionProvider.metadata),
 		vscode.languages.registerSignatureHelpProvider(
 			selector,
 			new JoltSignatureHelpProvider(methods),
@@ -210,17 +212,16 @@ async function findMethodAt(
 	document: vscode.TextDocument,
 	position: vscode.Position): Promise<{ method: LibraryMethod; range: vscode.Range } | undefined> {
 
-	const reference = getMethodReferenceAt(document.lineAt(position.line).text, position.character);
+	const reference = getMethodReferenceAt(document.getText(), document.offsetAt(position));
 
-	// Method references only exist within Jolt expressions, which are always inside JSON strings.
-	if (!reference || !getExpressionContext(document.getText(), document.offsetAt(position))) {
+	if (!reference) {
 		return undefined;
 	}
 
 	// Standard library methods come first, matching Jolt, which calls them in preference to custom methods.
 	const method = (await methods.getMethodsFor(document)).find(x => x.name === reference.name);
 
-	return method && { method, range: new vscode.Range(position.line, reference.start, position.line, reference.end) };
+	return method && { method, range: toRange(document, reference) };
 }
 
 function toRange(document: vscode.TextDocument, span: Span): vscode.Range {

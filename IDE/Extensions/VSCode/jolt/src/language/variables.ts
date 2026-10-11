@@ -1,5 +1,5 @@
 import { Node, findNodeAtOffset, parseTree } from 'jsonc-parser';
-import { getStringLocation, isMatchCase, isPropertyName } from './context';
+import { forEachOutsideLiterals, getStringContent, getStringContentStart, getStringLocation, isMatchCase, isPropertyName } from './context';
 
 export interface ScopeVariable {
 	/** The variable name, without the leading "@". */
@@ -81,6 +81,18 @@ export function getVariableCompletions(text: string, offset: number): VariableCo
 			: getBindingsInScope(text, node, textBeforeCursor).map(x => ({ name: x.name, description: x.description })),
 		replaceLength: reference[0].length
 	};
+}
+
+/**
+ * Gets the variables in scope at the given offset of a transformer document (e.g. the "@" of a reference), innermost
+ * first, or an empty list when the offset is not inside a JSON string.
+ */
+export function getVariablesInScopeAt(text: string, offset: number): ScopeVariable[] {
+	const location = getStringLocation(text, offset);
+
+	return location
+		? getBindingsInScope(text, location.node, location.textBeforeCursor).map(x => ({ name: x.name, description: x.description }))
+		: [];
 }
 
 /**
@@ -171,7 +183,7 @@ function resolveBinding(text: string, node: Node, token: Span & { name: string }
 		return declared;
 	}
 
-	const textBeforeReference = text.slice(getContentStart(node), token.start - 1);
+	const textBeforeReference = text.slice(getStringContentStart(node), token.start - 1);
 
 	return getBindingsInScope(text, node, textBeforeReference).find(x => x.name === token.name);
 }
@@ -181,8 +193,8 @@ function resolveBinding(text: string, node: Node, token: Span & { name: string }
  * variables that the property declares or binds.
  */
 function getDeclarationsIn(text: string, node: Node): VariableBinding[] {
-	const content = getContent(text, node);
-	const start = getContentStart(node);
+	const content = getStringContent(text, node);
+	const start = getStringContentStart(node);
 	const declarations: VariableBinding[] = [];
 	const add: AddBinding = x => declarations.push(x);
 
@@ -203,8 +215,8 @@ function getDeclarationsIn(text: string, node: Node): VariableBinding[] {
 function getBindingsInScope(text: string, node: Node, textBeforeCursor: string): VariableBinding[] {
 	const bindings: VariableBinding[] = [];
 	const add: AddBinding = x => bindings.push(x);
-	const content = getContent(text, node);
-	const start = getContentStart(node);
+	const content = getStringContent(text, node);
+	const start = getStringContentStart(node);
 
 	getLambdaParameters(textBeforeCursor, start, content).forEach(add);
 
@@ -230,12 +242,12 @@ function addEnclosingScopes(text: string, node: Node, add: AddBinding): void {
 		if (parent.type === 'property' && parent.children?.[1] === child) {
 			// The cursor is within this property's value, so the bindings made by its key are in scope.
 			const key = parent.children[0];
-			const content = getContent(text, key);
+			const content = getStringContent(text, key);
 
-			addKeyBindings(content, getContentStart(key), add);
+			addKeyBindings(content, getStringContentStart(key), add);
 
 			if (isMatchCase(parent)) {
-				addPatternCaptures(content, getContentStart(key), content, add);
+				addPatternCaptures(content, getStringContentStart(key), content, add);
 			}
 		} else if (parent.type === 'object') {
 			// Earlier properties of an enclosing object have already been evaluated, so their declarations are in
@@ -246,7 +258,7 @@ function addEnclosingScopes(text: string, node: Node, add: AddBinding): void {
 				const key = parent.children![i].children?.[0];
 
 				if (key) {
-					addDeclarations(getContent(text, key), getContentStart(key), add);
+					addDeclarations(getStringContent(text, key), getStringContentStart(key), add);
 				}
 			}
 		}
@@ -342,25 +354,8 @@ function scanExpression(
 	source: string,
 	on: { open?: () => void; close?: () => void; comma?: () => void; lambda: (parameters: VariableBinding[]) => void }): void {
 
-	let isInLiteral = false;
-
-	for (let i = 0; i < expression.length; i++) {
-		const current = expression[i];
-
-		if (isInLiteral) {
-			if (current === '\\') {
-				i++;
-			} else if (current === '\'') {
-				isInLiteral = false;
-			}
-
-			continue;
-		}
-
-		switch (current) {
-			case '\'':
-				isInLiteral = true;
-				break;
+	forEachOutsideLiterals(expression, i => {
+		switch (expression[i]) {
 			case '(':
 			case '[':
 			case '{':
@@ -381,44 +376,33 @@ function scanExpression(
 				if (parameters) {
 					on.lambda([...parameters[1].matchAll(variableReference)]
 						.map(x => declaredAt(x[1], 'lambda parameter', start + i + x.index + 1, source)));
-					i = lambdaParameters.lastIndex - 1;
+
+					return lambdaParameters.lastIndex - 1;
 				}
 				break;
 			}
 		}
-	}
+	});
 }
 
 /**
  * Finds the variable references in a string, outside of string literals, as the spans of their names.
  */
 function findVariableTokens(text: string, node: Node): (Span & { name: string })[] {
-	const content = getContent(text, node);
-	const start = getContentStart(node);
+	const content = getStringContent(text, node);
+	const start = getStringContentStart(node);
 	const tokens: (Span & { name: string })[] = [];
-	let isInLiteral = false;
 
-	for (let i = 0; i < content.length; i++) {
-		const current = content[i];
+	forEachOutsideLiterals(content, i => {
+		variableToken.lastIndex = i;
+		const token = content[i] === '@' ? variableToken.exec(content) : null;
 
-		if (isInLiteral) {
-			if (current === '\\') {
-				i++;
-			} else if (current === '\'') {
-				isInLiteral = false;
-			}
-		} else if (current === '\'') {
-			isInLiteral = true;
-		} else if (current === '@') {
-			variableToken.lastIndex = i;
-			const token = variableToken.exec(content);
+		if (token) {
+			tokens.push({ name: token[1], start: start + i + 1, end: start + i + token[0].length });
 
-			if (token) {
-				tokens.push({ name: token[1], start: start + i + 1, end: start + i + token[0].length });
-				i += token[0].length - 1;
-			}
+			return i + token[0].length - 1;
 		}
-	}
+	});
 
 	return tokens;
 }
@@ -429,17 +413,4 @@ function bind(match: RegExpExecArray, group: number, description: string, start:
 
 function declaredAt(name: string, description: string, offset: number, source: string): VariableBinding {
 	return { name, description, declaration: { start: offset, end: offset + name.length }, declaredIn: source };
-}
-
-/** The offset of a JSON string's text, just after its opening quote. */
-function getContentStart(node: Node): number {
-	return node.offset + 1;
-}
-
-/** The raw text of a JSON string, without its quotes (an unterminated string has no closing quote to remove). */
-function getContent(text: string, node: Node): string {
-	const end = node.offset + node.length;
-	const isTerminated = node.length >= 2 && text[end - 1] === '"';
-
-	return text.slice(getContentStart(node), isTerminated ? end - 1 : end);
 }

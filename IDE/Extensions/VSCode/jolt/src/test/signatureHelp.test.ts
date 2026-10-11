@@ -28,7 +28,9 @@ test('the innermost unclosed call is used', () => {
 
 test('commas within literals and nested brackets do not separate arguments', () => {
 	assert.equal(getCallContext(`#join('a, b', `)?.argumentIndex, 1);
-	assert.equal(getCallContext(`#join('it\\'s, here', `)?.argumentIndex, 1);
+	// Within the JSON, \\' is a backslash followed by a quote, which escapes the quote within the literal.
+	assert.equal(getCallContext(`#join('it\\\\'s, here', `)?.argumentIndex, 1);
+	assert.equal(getCallContext(`#join('ends with \\\\\\\\', `)?.argumentIndex, 1);
 	assert.equal(getCallContext('#f([1, 2, 3], ')?.argumentIndex, 1);
 	assert.equal(getCallContext(`#f({ 'a': 1, 'b': 2 }, `)?.argumentIndex, 1);
 	assert.equal(getCallContext('#f((1, 2), ')?.argumentIndex, 1);

@@ -1,3 +1,5 @@
+import { forEachOutsideLiterals } from './context';
+
 export interface CallContext {
 	/** The name of the method being called, without the leading "#". */
 	name: string;
@@ -22,25 +24,9 @@ const methodBeforeParenthesis = /(->\s*)?#([A-Za-z_]\w*)\s*$/;
  */
 export function getCallContext(expression: string): CallContext | undefined {
 	const frames: Frame[] = [];
-	let isInLiteral = false;
 
-	for (let i = 0; i < expression.length; i++) {
-		const current = expression[i];
-
-		if (isInLiteral) {
-			if (current === '\\') {
-				i++;
-			} else if (current === '\'') {
-				isInLiteral = false;
-			}
-
-			continue;
-		}
-
-		switch (current) {
-			case '\'':
-				isInLiteral = true;
-				break;
+	forEachOutsideLiterals(expression, i => {
+		switch (expression[i]) {
 			case '(': {
 				const method = methodBeforeParenthesis.exec(expression.slice(0, i));
 
@@ -62,7 +48,7 @@ export function getCallContext(expression: string): CallContext | undefined {
 				}
 				break;
 		}
-	}
+	});
 
 	for (let i = frames.length - 1; i >= 0; i--) {
 		const call = frames[i].call;

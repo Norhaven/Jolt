@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
-import { formatVariableDocumentation, getVariableCompletions, getVariableOccurrences, getVariableReferenceAt, isValidVariableName } from '../language/variables';
+import { formatVariableDocumentation, getVariableCompletions, getVariableOccurrences, getVariableReferenceAt, getVariablesInScopeAt, isValidVariableName } from '../language/variables';
 
 const cursor = '¦';
 
@@ -237,4 +237,11 @@ test('valid variable names', () => {
 	assert.ok(!isValidVariableName('2total'));
 	assert.ok(!isValidVariableName('@total'));
 	assert.ok(!isValidVariableName('a b'));
+});
+
+test('the variables in scope at a reference are found, innermost first', () => {
+	const text = '{ "@a": "1", "#foreach(@x in $.b) into \'r\'": [ { "v": "@missing" } ] }';
+
+	assert.deepEqual(getVariablesInScopeAt(text, nth(text, '@missing')).map(x => x.name), ['x', 'a', 'params']);
+	assert.deepEqual(getVariablesInScopeAt(text, 0), []);
 });

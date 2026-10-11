@@ -75,6 +75,12 @@ Validation also uses your `.jolt/methods.json` files in a trusted workspace. Cal
 
 Transformer names from all of the applicable `methods.json` files are combined, and when none of them have a `transformers` property, `#transformWith()` calls aren't checked.
 
+### Quick Fixes
+
+Some validation problems come with quick fixes (`Ctrl+.`, or the light bulb):
+* **Unknown methods:** change the call to a method with a similar name (e.g. `#valeuOf` to `#valueOf`), or add the method to the closest applicable `.jolt/methods.json` file (creating one in the transformer's folder if there isn't one). The new entry's parameters are inferred from the call, including lambdas and the variables they bind, and the file opens on it so that you can fill in its description.
+* **Undeclared variables:** change the reference to a variable in scope with a similar name, or declare the variable just before the property that uses it.
+
 ### Language Status
 
 The language status area of the status bar (the `{ }` next to "Jolt") shows whether validation is running, starting, turned off, or has failed (and why), along with the `methods.json` files that apply to the current transformer, which you can open from there. It also shows the version of Jolt that this extension's completions, hover and validation are based on.

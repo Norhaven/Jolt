@@ -1,26 +1,50 @@
+import { findNodeAtOffset, parseTree } from 'jsonc-parser';
+import { forEachOutsideLiterals, getStringContent, getStringContentStart } from './context';
+
 export interface MethodReference {
 	/** The method name, without the leading "#". */
 	name: string;
-	/** The character index of the leading "#" within the line. */
+	/** The document offset of the leading "#". */
 	start: number;
-	/** The character index just past the end of the method name. */
+	/** The document offset just past the end of the method name. */
 	end: number;
 }
 
-const methodReference = /#([A-Za-z_]\w*)/g;
+const methodReference = /#([A-Za-z_]\w*)/y;
 
 /**
- * Finds the method reference (e.g. "#valueOf") that spans the given character of a line, if any.
+ * Finds the method reference (e.g. "#valueOf") that spans the given offset of a transformer document, if any. Method
+ * references are only found within Jolt expressions (JSON strings), and not within their string literals.
  */
-export function getMethodReferenceAt(lineText: string, character: number): MethodReference | undefined {
-	for (const match of lineText.matchAll(methodReference)) {
-		const start = match.index;
-		const end = start + match[0].length;
+export function getMethodReferenceAt(text: string, offset: number): MethodReference | undefined {
+	const root = parseTree(text, [], { allowTrailingComma: true });
+	const node = root && findNodeAtOffset(root, offset, true);
 
-		if (character >= start && character <= end) {
-			return { name: match[1], start, end };
-		}
+	if (node?.type !== 'string') {
+		return undefined;
 	}
 
-	return undefined;
+	const content = getStringContent(text, node);
+	const contentStart = getStringContentStart(node);
+	let found: MethodReference | undefined;
+
+	forEachOutsideLiterals(content, i => {
+		methodReference.lastIndex = i;
+		const match = content[i] === '#' ? methodReference.exec(content) : null;
+
+		if (!match) {
+			return;
+		}
+
+		const start = contentStart + i;
+		const end = start + match[0].length;
+
+		if (offset >= start && offset <= end) {
+			found = { name: match[1], start, end };
+		}
+
+		return i + match[0].length - 1;
+	});
+
+	return found;
 }
