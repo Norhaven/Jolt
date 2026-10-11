@@ -28,6 +28,14 @@ You may forget what a particular method is for and need a quick refresher on the
 
 ![Method Information](images/method-information-on-hover.png)
 
+### Signature Help
+
+While you're writing a method's arguments, its signature is shown with the current parameter highlighted, including any optional parameters that the completion snippet left out. This also works for piped methods (where the pipe supplies the first parameter) and for your custom methods. To bring it back up within a method's arguments, press `Ctrl+Space`, which also shows completions, or `Ctrl+Shift+Space` for the signature alone.
+
+### Formatting & Outline
+
+Transformers can be formatted with **Format Document** and **Format Selection**, which lay out the JSON while leaving your Jolt expressions untouched. The Outline view and breadcrumbs show the structure of your transformer, with properties that call a method (e.g. `#foreach(...)`) or declare a variable (e.g. `@total`) marked as such.
+
 ### Custom Method Completions
 
 Finally, with a little effort you can also have completions and on-hover documentation for your custom methods. In a trusted workspace, this extension will look for a `.jolt` folder containing a `methods.json` file, starting with the current folder containing the transformer and walking back up to either the workspace root or upon finding a `methods.json` file with its `root` property set to true. All `.jolt/methods.json` files collected in this way will be merged into the overall available methods to a given transformer, with files closer to the transformer's folder overriding any previously defined methods higher up the folder hierarchy. Given this behavior, you can then structure your instance-based Jolt context types accordingly to maximize your method selection.
@@ -60,6 +68,14 @@ Validation also uses your `.jolt/methods.json` files in a trusted workspace. Cal
 ```
 
 Transformer names from all of the applicable `methods.json` files are combined, and when none of them have a `transformers` property, `#transformWith()` calls aren't checked.
+
+### Language Status
+
+The language status area of the status bar (the `{ }` next to "Jolt") shows whether validation is running, starting, turned off, or has failed (and why), along with the `methods.json` files that apply to the current transformer, which you can open from there. If the language server can't be started, the warning offers to show its output, retry, or turn validation off.
+
+The following commands are also available from the Command Palette:
+* **Jolt: Restart Language Server**: stops and restarts validation, e.g. after installing .NET.
+* **Jolt: Show Language Server Output**: shows the language server's log, which is kept across restarts.
 
 ## Requirements
 

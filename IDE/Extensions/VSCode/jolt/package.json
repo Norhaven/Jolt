@@ -67,6 +67,31 @@
     "typescript": "^6.0.3"
   },
   "contributes": {
+    "commands": [
+      {
+        "command": "jolt.restartLanguageServer",
+        "title": "Restart Language Server",
+        "category": "Jolt"
+      },
+      {
+        "command": "jolt.showLanguageServerOutput",
+        "title": "Show Language Server Output",
+        "category": "Jolt"
+      }
+    ],
+    "keybindings": [
+      {
+        "key": "ctrl+space",
+        "command": "runCommands",
+        "args": {
+          "commands": [
+            "editor.action.triggerSuggest",
+            "editor.action.triggerParameterHints"
+          ]
+        },
+        "when": "editorTextFocus && editorLangId == jolt && !editorReadonly && !suggestWidgetVisible"
+      }
+    ],
     "configuration": {
       "title": "Jolt",
       "properties": {

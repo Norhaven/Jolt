@@ -59,15 +59,21 @@ export function getMethodCompletions(
  * variables they bind, so a two-parameter lambda appears as e.g. "@acc;@current: lambda".
  */
 export function formatSignature(method: LibraryMethod, isPiped = false): string {
-	const parameters = method.parameters
+	return `${method.name}(${formatParameters(method, isPiped).join(', ')})`;
+}
+
+/**
+ * Formats each of a method's parameters as they appear in its signature (see formatSignature), leaving out the
+ * first parameter when the method is piped, as the pipe supplies it.
+ */
+export function formatParameters(method: LibraryMethod, isPiped = false): string[] {
+	return method.parameters
 		.slice(isPiped ? 1 : 0)
 		.map(x => {
 			const variables = x.kind === 'lambda' ? `${getLambdaVariables(x).map(name => '@' + name).join(';')}: ` : '';
 
 			return `${x.isVariadic ? '...' : ''}${variables}${x.name}${x.isOptional ? '?' : ''}`;
 		});
-
-	return `${method.name}(${parameters.join(', ')})`;
 }
 
 function getLambdaVariables(parameter: LibraryParameter): string[] {

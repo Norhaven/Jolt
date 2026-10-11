@@ -2,6 +2,15 @@
 
 All notable changes to the Jolt Language extension will be documented in this file.
 
+### Unreleased
+
+- Signature help for library and custom method arguments, also shown by `Ctrl+Space` alongside completions
+- Document formatting and range formatting
+- Outline and breadcrumbs for transformers
+- Language status items for validation and the applicable `.jolt/methods.json` files
+- Restart Language Server and Show Language Server Output commands
+- Show Output, Retry, and Disable Validation actions when the language server can't be started
+
 ### 1.3.0
 
 Larger release for method metadata and a Jolt Language Server. This includes:

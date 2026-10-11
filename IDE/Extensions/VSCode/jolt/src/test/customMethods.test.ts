@@ -205,6 +205,19 @@ test('a root file stops files further up from being merged', async () => {
 	assert.deepEqual(methods.map(x => x.name), ['local']);
 });
 
+test('the applicable paths are the existing files up to the root file, closest first', async () => {
+	const { resolver } = createResolver({
+		'/p/a/b/.jolt/methods.json': methodsFile(undefined, 'closest'),
+		'/p/a/.jolt/methods.json': methodsFile(true, 'local'),
+		'/.jolt/methods.json': methodsFile(undefined, 'global')
+	});
+
+	const paths = await resolver.getApplicablePaths(
+		['/p/a/b/.jolt/methods.json', '/p/a/.jolt/methods.json', '/p/.jolt/methods.json', '/.jolt/methods.json']);
+
+	assert.deepEqual(paths, ['/p/a/b/.jolt/methods.json', '/p/a/.jolt/methods.json']);
+});
+
 test('an invalid file is skipped without stopping files further up from being merged', async () => {
 	const { resolver } = createResolver({
 		'/p/a/.jolt/methods.json': '{ broken',

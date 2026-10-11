@@ -289,14 +289,21 @@ export class CustomMethodsResolver {
 	 * Gets the merged custom methods, given the paths where methods files may exist, closest folder first.
 	 */
 	async getMethods(candidatePaths: readonly string[]): Promise<LibraryMethod[]> {
-		return mergeMethodsFiles(await this.getApplicableFiles(candidatePaths));
+		return mergeMethodsFiles((await this.getApplicableFiles(candidatePaths)).map(x => x.file));
+	}
+
+	/**
+	 * Gets the paths of the methods files that apply, given the paths where methods files may exist, closest folder first.
+	 */
+	async getApplicablePaths(candidatePaths: readonly string[]): Promise<string[]> {
+		return (await this.getApplicableFiles(candidatePaths)).map(x => x.path);
 	}
 
 	/**
 	 * Gets the merged custom methods and transformers, given the paths where methods files may exist, closest folder first.
 	 */
 	async getContext(candidatePaths: readonly string[]): Promise<MethodsContext> {
-		const files = await this.getApplicableFiles(candidatePaths);
+		const files = (await this.getApplicableFiles(candidatePaths)).map(x => x.file);
 
 		const listingTransformers = files.filter(x => x.transformers !== undefined);
 
@@ -325,8 +332,8 @@ export class CustomMethodsResolver {
 		this.files.clear();
 	}
 
-	private async getApplicableFiles(candidatePaths: readonly string[]): Promise<MethodsFile[]> {
-		const applicable: MethodsFile[] = [];
+	private async getApplicableFiles(candidatePaths: readonly string[]): Promise<{ path: string; file: MethodsFile }[]> {
+		const applicable: { path: string; file: MethodsFile }[] = [];
 
 		for (const path of candidatePaths) {
 			const file = await this.getFile(path);
@@ -335,7 +342,7 @@ export class CustomMethodsResolver {
 				continue;
 			}
 
-			applicable.push(file);
+			applicable.push({ path, file });
 
 			if (file.isRoot) {
 				break;

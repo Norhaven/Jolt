@@ -81,6 +81,20 @@ export class CustomMethodsService implements vscode.Disposable {
 		return this.resolver.getContext(getCandidateFiles(document.uri).map(x => x.toString()));
 	}
 
+	/**
+	 * Gets the methods files that apply to the given transformer document, closest first, or undefined when they are
+	 * not used because the workspace is not trusted.
+	 */
+	async getMethodsFilesFor(document: vscode.TextDocument): Promise<vscode.Uri[] | undefined> {
+		if (!vscode.workspace.isTrusted) {
+			return undefined;
+		}
+
+		const paths = await this.resolver.getApplicablePaths(getCandidateFiles(document.uri).map(x => x.toString()));
+
+		return paths.map(x => vscode.Uri.parse(x));
+	}
+
 	dispose(): void {
 		this.disposables.forEach(x => x.dispose());
 	}
