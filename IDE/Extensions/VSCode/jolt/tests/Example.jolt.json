@@ -1,7 +1,11 @@
 {
-    "#foreach(@x;@i in $.path) into 'result'":[
+    "#foreach(@value;@index in $.path) into @results": [
         {
-            "isExample": "@x->#endsWith('example')->#distinct(@x: @x.property)"
+            "name": "@value->#substring(2..10)"
         }
+    ],
+    "#match(@results as @item) into 'result'": [
+        { "#is(array)": "@item->#where(@x: @x.name == 'Bob')" },
+        { "#default()": "nothing" }
     ]
 }

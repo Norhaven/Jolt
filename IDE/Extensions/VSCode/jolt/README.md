@@ -20,11 +20,11 @@ It can be a bit difficult to know at a glance what the available Jolt Library me
 
 The same holds true for variables and understanding which are currently in scope for you to use and which are not. This extension also provides context-sensitive method and variable completions to help speed up your development and maintenance abilities.
 
-![Method And Variable Completions](images/method-and-variable-completions.gif)
+### Code Snippets
 
-### Statement Snippets
+In addition, some of the method and variable completions include more help, such as a `#foreach` loop along with its template, a `#using` block with its statements, a `#match` with its cases, and a variable declaration. Start a new property name with `"#` or `"@` (or type them without the quote) to see them. Choosing one replaces the property name you've started with the whole property, value included, and any commas needed to separate it from its neighbors are added for you.
 
-Where a property would go, completions also offer whole statements with the shape their values need: a `#foreach` loop with its template, a `#using` block with its statements, a `#match` with its cases, and a variable declaration. Start a new property name with `"#` or `"@` (or type them without the quote) to see them. Choosing one replaces the property name you've started with the whole property, value included, and any commas needed to separate it from its neighbors are added for you.
+![Method And Variable Completions/Snippets](images/method-and-variable-completions.gif)
 
 ### Method Information On Hover
 
@@ -91,7 +91,7 @@ Some validation problems come with quick fixes (`Ctrl+.`, or the light bulb):
 
 The language status area of the status bar (the `{ }` next to "Jolt") shows whether validation is running, starting, turned off, or has failed (and why), along with the `methods.json` files that apply to the current transformer, which you can open from there. It also shows the version of Jolt that this extension's completions, hover and validation are based on.
 
-> NOTE: This extension includes its own copy of the Jolt library, so if your application uses a different version of the Jolt NuGet package, its standard library methods may not match what's offered here. The included version is also shown at the end of each standard library method's hover documentation. If the language server can't be started, the warning offers to show its output, retry, or turn validation off.
+> NOTE: This extension currently includes its own copy of the Jolt library, so if your application uses a different version of the Jolt NuGet package, its standard library methods may not match what's offered here. The included version is also shown at the end of each standard library method's hover documentation. If the language server can't be started, the warning offers to show its output, retry, or turn validation off.
 
 The following commands are also available from the Command Palette:
 * **Jolt: Restart Language Server**: stops and restarts validation, e.g. after installing .NET.
@@ -111,35 +111,6 @@ It also contributes the following settings:
 * `jolt.completion.includeUnsafeMethods`: include unsafe library methods (such as `#eval`) in completions. Defaults to false.
 * `jolt.validation.enabled`: validate transformers as you edit them. Defaults to true.
 * `jolt.validation.allowUnsafeMethods`: don't report the use of unsafe library methods, for when your application enables them. Defaults to false.
-
-## Release Notes
-
-### 1.3.0
-
-Release for method metadata and a Jolt Language Server. This includes:
-- Optional custom method return types (in `.jolt/methods.json` files)
-- On-Hover documentation for C# return types
-- On-Hover documentation for library and custom method lambda parameters 
-- Syntax validation using the Jolt library within the Jolt Language Server
-
-### 1.2.0
-
-Targeted release for custom method support. This includes:
-- Custom method definition files (i.e. `.jolt/methods.json`)
-- Code completion support for custom methods in these files
-- On-Hover documentation for custom methods
-
-### 1.1.0
-
-Followup release of the Jolt language extension. This includes:
-- Method completions
-- Variable completions
-- On-Hover documentation
-
-### 1.0.0
-
-Initial release of the Jolt language extension. This includes:
-- Language syntax colorization within `*.jolt.json` files.
 
 ---
 
