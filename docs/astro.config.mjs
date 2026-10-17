@@ -47,11 +47,11 @@ export default defineConfig({
 			sidebar: [
 				{
 					label: 'Getting Started',
-					autogenerate: { directory: 'getting-started' },
+					items: [{ autogenerate: { directory: 'getting-started' } }],
 				},
 				{
 					label: 'Language Guide',
-					autogenerate: { directory: 'guide' },
+					items: [{ autogenerate: { directory: 'guide' } }],
 				},
 				{
 					label: 'Library Reference',
@@ -62,7 +62,7 @@ export default defineConfig({
 				},
 				{
 					label: 'Host Integration (.NET)',
-					autogenerate: { directory: 'host' },
+					items: [{ autogenerate: { directory: 'host' } }],
 				},
 				{
 					label: 'Reference',
@@ -73,7 +73,7 @@ export default defineConfig({
 				},
 				{
 					label: 'Contributing',
-					autogenerate: { directory: 'contributing' },
+					items: [{ autogenerate: { directory: 'contributing' } }],
 				},
 			],
 		}),
