@@ -1,0 +1,100 @@
+{
+  "name": "jolt-expr",
+  "displayName": "Jolt expression",
+  "scopeName": "source.jolt-expr",
+  "patterns": [
+    {
+      "include": "#expression"
+    }
+  ],
+  "repository": {
+    "expression": {
+      "patterns": [
+        {
+          "include": "#string-literal"
+        },
+        {
+          "include": "#method"
+        },
+        {
+          "include": "#variable"
+        },
+        {
+          "include": "#path"
+        },
+        {
+          "include": "#keyword"
+        },
+        {
+          "include": "#constant"
+        },
+        {
+          "include": "#discard"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#operator"
+        },
+        {
+          "include": "#punctuation"
+        }
+      ]
+    },
+    "string-literal": {
+      "name": "string.quoted.single.jolt",
+      "match": "'(?:[^'\"\\\\]|\\\\.)*'"
+    },
+    "method": {
+      "match": "(#)([A-Za-z_][A-Za-z0-9_]*)",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.method.jolt"
+        },
+        "2": {
+          "name": "entity.name.function.jolt"
+        }
+      }
+    },
+    "variable": {
+      "match": "(@)([A-Za-z_][A-Za-z0-9_]*)",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.variable.jolt"
+        },
+        "2": {
+          "name": "variable.other.jolt"
+        }
+      }
+    },
+    "path": {
+      "match": "\\$(?:\\??\\.[A-Za-z_][A-Za-z0-9_]*|\\[[^\\]]*\\])*",
+      "name": "variable.language.path.jolt"
+    },
+    "keyword": {
+      "match": "\\b(into|in|as)\\b",
+      "name": "keyword.control.jolt"
+    },
+    "constant": {
+      "match": "\\b(true|false|null)\\b",
+      "name": "constant.language.jolt"
+    },
+    "discard": {
+      "match": "(?<![A-Za-z0-9_@#$])_(?![A-Za-z0-9_])",
+      "name": "variable.language.discard.jolt"
+    },
+    "number": {
+      "match": "(?<![A-Za-z_])\\d+(?:\\.\\d+)?(?![A-Za-z_])",
+      "name": "constant.numeric.jolt"
+    },
+    "operator": {
+      "match": "->|\\?\\?|\\?\\.|&&|\\|\\||==|!=|<=|>=|\\.\\.|\\^|[+\\-*/<>!]",
+      "name": "keyword.operator.jolt"
+    },
+    "punctuation": {
+      "match": "[:;,]",
+      "name": "punctuation.separator.jolt"
+    }
+  }
+}

@@ -1,0 +1,51 @@
+---
+title: Jolt
+description: An imperative JSON transformation language for .NET — write transformers in JSON, call your own C# methods, get different JSON back.
+template: splash
+hero:
+  tagline: Transform JSON into different JSON. Transformers are written in JSON, keep restructuring separate from business logic, and call into your own C# when they need to.
+  actions:
+    - text: Get started
+      link: getting-started/introduction/
+      icon: right-arrow
+    - text: Library reference
+      link: reference/library/
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+```jolt title="transformer.json"
+{
+    "@items": "#valueOf($.order.items)",
+    "customer": "#valueOf($.order.customer.name)->#toUpperCase()",
+    "total": "@items->#sum(@x: @x.price * @x.quantity)",
+    "#foreach(@x in @items) into 'lines'": [
+        { "sku": "@x.sku", "qty": "@x.quantity" }
+    ]
+}
+```
+
+<CardGrid>
+	<Card title="Methods and pipes" icon="puzzle">
+		Over 80 built-in methods, chainable with `->` so a transform reads left to right.
+	</Card>
+	<Card title="Your C#, callable" icon="seti:c-sharp">
+		Mark a method with `[JoltExternalMethod]` and call it from any transformer, lambdas included.
+	</Card>
+	<Card title="Pattern matching" icon="random">
+		Branch on the shape of your data with `#match`, type patterns, array and object patterns.
+	</Card>
+	<Card title="Validated before it runs" icon="approve-check">
+		`Validate()` reports syntax and structure issues with exact spans — the same engine behind the VS Code extension.
+	</Card>
+</CardGrid>
+
+## Where to next
+
+<CardGrid>
+	<LinkCard title="Install the packages" href="getting-started/installation/" description="Newtonsoft or System.Text.Json, .NET Standard 2.0 through .NET 10." />
+	<LinkCard title="Language guide" href="guide/syntax/" description="Expressions, variables, loops, lambdas, statements and matching." />
+	<LinkCard title="Host integration" href="host/external-methods/" description="Register external methods, compose transformers, stream documents." />
+	<LinkCard title="VS Code extension" href="getting-started/vscode-extension/" description="Syntax coloring, completions, hover docs and live validation." />
+</CardGrid>

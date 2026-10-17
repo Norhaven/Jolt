@@ -590,7 +590,7 @@ In practice, these should help you out, but just in case you need more fine-grai
     "#match($.somePath as @x) into 'result'": [
         { "#is([])": "'Found an empty array'" },
         { "#is([_])": "'Found an array with one or more elements'" },
-        { "#is(['test', _])": "'Found an array whose first element is 'test' and contains at least one more element'" },
+        { "#is(['test', _])": "'Found an array whose first element is `test` and contains at least one more element'" },
         { "#is([_, _])": "'Found an array with at least two elements'" }
     ]
 }
@@ -603,8 +603,8 @@ You can also match the same way with object literals and mix discards in where a
     "#match($.somePath as @x) into 'result'": [
         { "#is({})": "'Found an object with zero or more properties'" },
         { "#is({ 'someName': 'someValue' })": "'Found an object with one specific property with a specific value and zero or more other properties'" },
-        { "#is({ 'someName': { 'nested': _ })": "'Found an object with one specific nested property that contains any value'" },
-        { "#is({ 'someName': [_, 'someValue'])": "'Found an object with one specific property that is an array where the first element is anything and the second is a specific value'" }
+        { "#is({ 'someName': { 'nested': _ } })": "'Found an object with one specific nested property that contains any value'" },
+        { "#is({ 'someName': [_, 'someValue'] })": "'Found an object with one specific property that is an array where the first element is anything and the second is a specific value'" }
     ]
 }
 ```

@@ -1,0 +1,42 @@
+/*
+ * Jolt docs theme. Starlight's own tokens are overridden here; everything else
+ * (layout, sidebar, search, code frames) is stock Starlight.
+ * Accent: an electric amber that reads as "charge" without fighting code colors.
+ */
+
+/* Dark mode (Starlight default) */
+:root {
+	--sl-color-accent-low: #3a2a05;
+	--sl-color-accent: #e8a400;
+	--sl-color-accent-high: #ffe09a;
+	--sl-font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+	--sl-font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Menlo, monospace;
+}
+
+/* Light mode */
+:root[data-theme='light'] {
+	--sl-color-accent-low: #fff1cc;
+	--sl-color-accent: #9a6400;
+	--sl-color-accent-high: #4d3200;
+}
+
+/* Method signature block on generated library pages */
+.jolt-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem 1.5rem;
+	font-size: var(--sl-text-sm);
+	color: var(--sl-color-gray-3);
+	margin-block: 0.5rem 1.25rem;
+}
+
+.jolt-meta strong {
+	color: var(--sl-color-white);
+	font-weight: 600;
+}
+
+/* Keep wide reference tables scrollable on phones instead of overflowing the page */
+.sl-markdown-content table {
+	display: block;
+	overflow-x: auto;
+}

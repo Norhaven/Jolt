@@ -1,0 +1,1275 @@
+# Jolt library method reference — the single source of truth for method documentation.
+#
+# scripts/generate-methods.mjs turns this into:
+#   - one page per method       src/content/docs/reference/library/<name>.md
+#   - the "All methods" table   src/content/docs/reference/library/index.md
+#   - the sidebar groups        src/generated/library-sidebar.json
+#   - executable doc examples   src/generated/doc-examples.json
+#
+# Examples that have `source`, `transformer` and `output` are exported as tests, so keep them exact.
+# Longer prose for a method goes in data/method-details/<name>.md.
+#
+# Parameter type vocabulary: path | value | string | integer | number | boolean | array | object |
+#   range | lambda | statement | pattern | any. "path | value" means a JSON Path or an evaluated value.
+
+categories:
+  paths: Paths and existence
+  control-flow: Control flow
+  iteration: Loops and scoping
+  statements: Statements
+  matching: Pattern matching
+  strings-and-arrays: Strings and arrays
+  strings: Strings
+  sequences: Arrays and sequences
+  aggregation: Grouping and aggregation
+  objects: Objects
+  numbers: Numbers
+  dates: Dates and times
+  types: Types and conversion
+  composition: Composition
+
+methods:
+
+  # ── Paths and existence ──────────────────────────────────────────────
+
+  - name: valueOf
+    category: paths
+    summary: Gets the value of a property at the specified path.
+    signature: "#valueOf(path)"
+    parameters:
+      - { name: path, type: path, description: "A JSON Path into the source document." }
+    returns: { type: any, description: "The value at the path." }
+    validIn: [property-value]
+    examples:
+      - title: Read a nested value
+        source: { "some": { "path": "hello" } }
+        transformer: { "value": "#valueOf($.some.path)" }
+        output: { "value": "hello" }
+    related: [exists, isMissing]
+
+  - name: exists
+    category: paths
+    summary: Returns true if the provided value is not null, false otherwise.
+    signature: "#exists(value)"
+    parameters:
+      - { name: value, type: path | value, description: "The value to test." }
+    returns: { type: boolean }
+    validIn: [property-value]
+    examples:
+      - title: Null and non-null values
+        source: { "a": null, "b": 1 }
+        transformer: { "aExists": "#exists($.a)", "bExists": "#exists($.b)" }
+        output: { "aExists": false, "bExists": true }
+    related: [isNull, isMissing]
+
+  - name: isNull
+    category: paths
+    summary: Returns true if the provided value is null, false otherwise.
+    signature: "#isNull(value)"
+    parameters:
+      - { name: value, type: path | value, description: "The value to test." }
+    returns: { type: boolean }
+    validIn: [property-value]
+    examples:
+      - title: Test for null
+        source: { "a": null }
+        transformer: { "result": "#isNull($.a)" }
+        output: { "result": true }
+    related: [exists, isMissing]
+
+  - name: isMissing
+    category: paths
+    summary: Returns true if the provided path does not exist in the source document, false otherwise.
+    signature: "#isMissing(path)"
+    parameters:
+      - { name: path, type: path, description: "A JSON Path into the source document." }
+    returns: { type: boolean }
+    validIn: [property-value]
+    notes:
+      - A property that exists with a `null` value is **not** missing; use `#isNull` for that.
+    examples:
+      - title: Missing versus present
+        source: { "present": null }
+        transformer: { "present": "#isMissing($.present)", "absent": "#isMissing($.absent)" }
+        output: { "present": false, "absent": true }
+    related: [exists, isNull]
+
+  # ── Control flow ─────────────────────────────────────────────────────
+
+  - name: if
+    category: control-flow
+    summary: Evaluates one of two expressions depending on a boolean condition.
+    signature: "#if(condition, whenTrue, whenFalse)"
+    parameters:
+      - { name: condition, type: boolean, description: "The condition to test." }
+      - { name: whenTrue, type: any, description: "Evaluated and returned when the condition is true." }
+      - { name: whenFalse, type: any, description: "Evaluated and returned when the condition is false." }
+    returns: { type: any }
+    validIn: [property-value]
+    examples:
+      - title: Choose a message
+        source: { "someValue": 7 }
+        transformer: { "result": "#if(#valueOf($.someValue) > 5, 'Greater than 5', 'Less than or equal to 5')" }
+        output: { "result": "Greater than 5" }
+    related: [includeIf, match]
+
+  - name: includeIf
+    category: control-flow
+    summary: Includes the property's object when a path or condition is true, and sets it to null otherwise.
+    signature: "\"#includeIf(condition) into 'name'\": { ... }"
+    parameters:
+      - { name: condition, type: path | boolean, description: "A path or boolean condition." }
+    returns: { type: object, description: "The evaluated object, or null." }
+    validIn: [property-name]
+    examples:
+      - title: Include an object conditionally
+        source: { "someValue": 7 }
+        transformer: { "#includeIf(#valueOf($.someValue) > 5) into 'result'": { "message": "Greater than 5" } }
+        output: { "result": { "message": "Greater than 5" } }
+    related: [if]
+
+  - name: eval
+    category: control-flow
+    summary: Evaluates an arbitrary expression, either from a path or literal value, and returns the result.
+    signature: "#eval(expression)"
+    parameters:
+      - { name: expression, type: path | string, description: "Jolt expression text to evaluate." }
+    returns: { type: any }
+    validIn: [property-name, property-value]
+    unsafe: true
+    notes:
+      - "`#eval` can execute any expression, including ones with unwanted side effects or security implications. Use it only with trusted input. Enable it with `WithUnsafeAllowed` on `JoltOptions`."
+    examples:
+      - title: Evaluate expression text
+        expression: "#eval('1 + 2 == 3')"
+
+  - name: try
+    category: control-flow
+    summary: Evaluates an expression, and if it fails, evaluates a lambda with the exception and returns that result instead.
+    signature: "#try(expression, @e: fallback)"
+    parameters:
+      - { name: expression, type: any, description: "The expression to attempt." }
+      - { name: fallback, type: lambda, description: "Receives the exception as `@e` and returns the replacement value." }
+    returns: { type: any }
+    validIn: [property-value]
+    examples:
+      - title: Fall back to a default
+        source: { "stringValue": "not a number", "defaultValue": 0 }
+        transformer: { "result": "#try(#valueOf($.stringValue)->#toInteger(), @e: #valueOf($.defaultValue))" }
+        output: { "result": 0 }
+    related: [toInteger]
+
+  # ── Loops and scoping ────────────────────────────────────────────────
+
+  - name: foreach
+    category: iteration
+    summary: Loops over the elements of an array or the properties of an object, transforming each with a content template.
+    signature: "\"#foreach(@item;@index? in source) into 'name' | @variable\": [ template ]"
+    parameters:
+      - { name: "@item", type: variable, description: "Bound to each element or property value." }
+      - { name: "@index", type: variable, optional: true, description: "Bound to the zero-based index." }
+      - { name: source, type: path | value, description: "The array or object to iterate." }
+    returns: { type: array, description: "One transformed template per element." }
+    validIn: [property-name]
+    notes:
+      - Variables declared inside the template exist only for one iteration.
+      - When iterating an object, use `#nameOf(@item)` to get the current property name.
+    examples:
+      - title: Two passes through a variable
+        source: { "someArray": [ { "someInteger": 1 }, { "someInteger": 2 } ] }
+        transformer:
+          "#foreach(@x in $.someArray) into @tempResult": [ { "intermediateValue": "@x.someInteger * 2" } ]
+          "#foreach(@x;@i in @tempResult) into 'actualResult'": [ { "finalValue": "@x.intermediateValue + 5", "currentIndex": "@i" } ]
+        output: { "actualResult": [ { "finalValue": 7, "currentIndex": 0 }, { "finalValue": 9, "currentIndex": 1 } ] }
+    related: [nameOf, select, using]
+
+  - name: nameOf
+    category: iteration
+    summary: Returns the name of the property currently being iterated by a loop variable.
+    signature: "#nameOf(@loopVariable)"
+    parameters:
+      - { name: "@loopVariable", type: variable, description: "A `#foreach` variable iterating an object." }
+    returns: { type: string }
+    validIn: [property-name]
+    examples:
+      - title: Keep original property names
+        expression: "\"#foreach(@x in $.someObject) into 'result'\": [ { \"#nameOf(@x)\": \"@x\" } ]"
+    related: [foreach, keysFrom]
+
+  - name: using
+    category: iteration
+    summary: Binds a path or value to a range variable so statements can modify it.
+    signature: "\"#using(source as @variable) into 'name' | @variable\": [ statements ]"
+    parameters:
+      - { name: source, type: path | value, description: "The node to copy and modify." }
+      - { name: "@variable", type: variable, description: "The name statements operate on." }
+    returns: { type: any, description: "The modified copy." }
+    validIn: [property-name]
+    examples:
+      - title: Remove, add and change properties
+        source: { "some": { "integerArray": [ 1, 2, 6, 10 ], "complexObject": { "some": { "path": 5 } } } }
+        transformer:
+          "#using($.some as @x) into 'result'": [ "#removeAt(@x.integerArray)", "#setAt(@x.complexObject.new.value, 3)", "#setAt(@x.complexObject.some.path, 20)" ]
+        output: { "result": { "complexObject": { "new": { "value": 3 }, "some": { "path": 20 } } } }
+    related: [setAt, removeAt, when]
+
+  # ── Statements ───────────────────────────────────────────────────────
+
+  - name: setAt
+    category: statements
+    summary: Adds or modifies a JSON node at a variable-based path, creating missing parents.
+    signature: "#setAt(@variable.path, value)"
+    parameters:
+      - { name: target, type: path, description: "A path rooted at the `#using` variable." }
+      - { name: value, type: any, description: "A literal, outer variable, or non-statement method result." }
+    validIn: [statement]
+    examples:
+      - title: Set a deep value
+        expression: "#setAt(@x.complexObject.new.value, 3)"
+    related: [removeAt, when, using]
+
+  - name: removeAt
+    category: statements
+    summary: Removes a JSON node at a variable-based path.
+    signature: "#removeAt(@variable.path)"
+    parameters:
+      - { name: target, type: path, description: "A path rooted at the `#using` variable." }
+    validIn: [statement]
+    examples:
+      - title: Remove a property
+        expression: "#removeAt(@x.integerArray)"
+    related: [setAt, when, using]
+
+  - name: when
+    category: statements
+    summary: Executes one or more statements when a boolean expression is true.
+    signature: "#when(condition, statement, ...statements)"
+    parameters:
+      - { name: condition, type: boolean, description: "The condition to test." }
+      - { name: statements, type: statement, description: "One or more statements to run." }
+    validIn: [statement]
+    examples:
+      - title: Conditional removal
+        expression: "#when(#exists(@x.integerArray), #removeAt(@x.integerArray))"
+    related: [setAt, removeAt, using]
+
+  # ── Pattern matching ─────────────────────────────────────────────────
+
+  - name: match
+    category: matching
+    summary: Matches a value against cases from top to bottom and returns the value of the first one that matches.
+    signature: "\"#match(source as @variable) into 'name'\": [ { \"case\": \"result\" }, ... ]"
+    parameters:
+      - { name: source, type: path | value, description: "The value to match." }
+      - { name: "@variable", type: variable, description: "Bound to the value for use in cases." }
+    returns: { type: any }
+    validIn: [property-name]
+    examples:
+      - title: Match an array shape
+        source: { "somePath": [ 1, 2 ] }
+        transformer:
+          "#match($.somePath as @x) into 'result'": [ { "#is([])": "'Found an empty array'" }, { "#is([_])": "'Found an array with one or more elements'" }, { "#default()": "'Found something else'" } ]
+        output: { "result": "Found an array with one or more elements" }
+    related: [is, given, default]
+
+  - name: is
+    category: matching
+    summary: Matches the value against a type, array pattern, object pattern, or scalar literal.
+    signature: "#is(pattern)"
+    parameters:
+      - { name: pattern, type: pattern, description: "A type (`object`, `array`, `string`, `integer`, `decimal`, `boolean`, `null`), an array or object pattern, or a literal." }
+    validIn: [match-case]
+    examples:
+      - title: Type pattern
+        expression: "{ \"#is(object)\": \"'Found an object'\" }"
+      - title: Object pattern with bindings
+        expression: "{ \"#is({ 'name': @name, 'values': [@firstValue, _] })\": \"#append('Name is ', @name)\" }"
+    related: [match, given, default]
+
+  - name: given
+    category: matching
+    summary: Matches when an arbitrary boolean expression is true.
+    signature: "#given(condition)"
+    parameters:
+      - { name: condition, type: boolean, description: "Any boolean expression." }
+    validIn: [match-case]
+    examples:
+      - title: Condition on the matched value
+        expression: "{ \"#given(@x > 5)\": \"'Big'\" }"
+    related: [match, is, default]
+
+  - name: default
+    category: matching
+    summary: Always matches; use as the final catch-all case.
+    signature: "#default()"
+    validIn: [match-case]
+    examples:
+      - title: Catch-all
+        expression: "{ \"#default()\": \"'Found something else'\" }"
+    related: [match, is, given]
+
+  # ── Strings and arrays ───────────────────────────────────────────────
+
+  - name: length
+    category: strings-and-arrays
+    summary: Returns the length of a string or array value.
+    signature: "#length(value)"
+    parameters:
+      - { name: value, type: path | string | array, description: "The string or array to measure." }
+    returns: { type: integer }
+    validIn: [property-value]
+    examples:
+      - title: String and array lengths
+        source: { "text": "hello", "items": [ 1, 2, 3 ] }
+        transformer: { "textLength": "#length($.text)", "itemCount": "#valueOf($.items)->#length()" }
+        output: { "textLength": 5, "itemCount": 3 }
+    related: [isEmpty, any]
+
+  - name: indexOf
+    category: strings-and-arrays
+    summary: Returns the zero-based index of the first occurrence of the provided value.
+    signature: "#indexOf(value, search)"
+    parameters:
+      - { name: value, type: path | string | array, description: "The string or array to search." }
+      - { name: search, type: any, description: "The value to find." }
+    returns: { type: integer }
+    validIn: [property-value]
+    examples:
+      - title: Find a character
+        source: { "text": "hello" }
+        transformer: { "result": "#indexOf($.text, 'l')" }
+        output: { "result": 2 }
+    related: [contains]
+
+  - name: contains
+    category: strings-and-arrays
+    summary: Returns true when an array or string contains the provided value.
+    signature: "#contains(value, search)"
+    parameters:
+      - { name: value, type: path | string | array, description: "The string or array to search." }
+      - { name: search, type: any, description: "The value to find." }
+    returns: { type: boolean }
+    validIn: [property-value]
+    examples:
+      - title: Substring and element
+        source: { "text": "hello world", "tags": [ "a", "b" ] }
+        transformer: { "inText": "#contains($.text, 'world')", "inTags": "#contains($.tags, 'c')" }
+        output: { "inText": true, "inTags": false }
+    related: [indexOf, any]
+
+  - name: reverse
+    category: strings-and-arrays
+    summary: Returns the string or array with its elements in reverse order.
+    signature: "#reverse(value)"
+    parameters:
+      - { name: value, type: path | string | array, description: "The string or array to reverse." }
+    returns: { type: string | array }
+    validIn: [property-value]
+    examples:
+      - title: Reverse a string and an array
+        source: { "text": "abc", "items": [ 1, 2, 3 ] }
+        transformer: { "text": "#reverse($.text)", "items": "#reverse($.items)" }
+        output: { "text": "cba", "items": [ 3, 2, 1 ] }
+
+  - name: append
+    category: strings-and-arrays
+    summary: Returns a string or array made by appending one or more strings or arrays.
+    signature: "#append(value, ...values)"
+    parameters:
+      - { name: value, type: path | string | array, description: "The starting string or array." }
+      - { name: values, type: string | array, description: "One or more values to append." }
+    returns: { type: string | array }
+    validIn: [property-value]
+    examples:
+      - title: Build a sentence
+        source: { "name": "Ada" }
+        transformer: { "result": "#append('Hello, ', #valueOf($.name), '!')" }
+        output: { "result": "Hello, Ada!" }
+    related: [joinWith]
+
+  # ── Strings ──────────────────────────────────────────────────────────
+
+  - name: toUpperCase
+    category: strings
+    summary: Returns the uppercase version of a string value.
+    signature: "#toUpperCase(value)"
+    parameters:
+      - { name: value, type: path | string, description: "The string to convert." }
+    returns: { type: string }
+    validIn: [property-value]
+    examples:
+      - title: Uppercase a name
+        source: { "name": "ada" }
+        transformer: { "result": "#toUpperCase($.name)" }
+        output: { "result": "ADA" }
+    related: [toLowerCase]
+
+  - name: toLowerCase
+    category: strings
+    summary: Returns the lowercase version of a string value.
+    signature: "#toLowerCase(value)"
+    parameters:
+      - { name: value, type: path | string, description: "The string to convert." }
+    returns: { type: string }
+    validIn: [property-value]
+    examples:
+      - title: Lowercase a code
+        source: { "code": "ABC" }
+        transformer: { "result": "#toLowerCase($.code)" }
+        output: { "result": "abc" }
+    related: [toUpperCase]
+
+  - name: trim
+    category: strings
+    summary: Returns the string with all leading and trailing whitespace removed.
+    signature: "#trim(value)"
+    parameters:
+      - { name: value, type: path | string, description: "The string to trim." }
+    returns: { type: string }
+    validIn: [property-value]
+    examples:
+      - title: Trim both ends
+        source: { "text": "  padded  " }
+        transformer: { "result": "#trim($.text)" }
+        output: { "result": "padded" }
+    related: [trimStart, trimEnd]
+
+  - name: trimStart
+    category: strings
+    summary: Returns the string with all leading whitespace removed.
+    signature: "#trimStart(value)"
+    parameters:
+      - { name: value, type: path | string, description: "The string to trim." }
+    returns: { type: string }
+    validIn: [property-value]
+    examples:
+      - title: Trim the start
+        source: { "text": "  padded  " }
+        transformer: { "result": "#trimStart($.text)" }
+        output: { "result": "padded  " }
+    related: [trim, trimEnd]
+
+  - name: trimEnd
+    category: strings
+    summary: Returns the string with all trailing whitespace removed.
+    signature: "#trimEnd(value)"
+    parameters:
+      - { name: value, type: path | string, description: "The string to trim." }
+    returns: { type: string }
+    validIn: [property-value]
+    examples:
+      - title: Trim the end
+        source: { "text": "  padded  " }
+        transformer: { "result": "#trimEnd($.text)" }
+        output: { "result": "  padded" }
+    related: [trim, trimStart]
+
+  - name: replace
+    category: strings
+    summary: Returns the string with all occurrences of a substring replaced with another value.
+    signature: "#replace(value, oldValue, newValue)"
+    parameters:
+      - { name: value, type: path | string, description: "The string to search." }
+      - { name: oldValue, type: string, description: "The substring to replace." }
+      - { name: newValue, type: string, description: "The replacement." }
+    returns: { type: string }
+    validIn: [property-value]
+    examples:
+      - title: Replace every occurrence
+        source: { "text": "a-b-c" }
+        transformer: { "result": "#replace($.text, '-', '/')" }
+        output: { "result": "a/b/c" }
+    related: [regexReplace]
+
+  - name: startsWith
+    category: strings
+    summary: Returns true if a string starts with the provided substring, false otherwise.
+    signature: "#startsWith(value, prefix)"
+    parameters:
+      - { name: value, type: path | string, description: "The string to test." }
+      - { name: prefix, type: string, description: "The expected prefix." }
+    returns: { type: boolean }
+    validIn: [property-value]
+    examples:
+      - title: Check a prefix
+        source: { "id": "ORD-123" }
+        transformer: { "result": "#startsWith($.id, 'ORD-')" }
+        output: { "result": true }
+    related: [endsWith]
+
+  - name: endsWith
+    category: strings
+    summary: Returns true if a string ends with the provided substring, false otherwise.
+    signature: "#endsWith(value, suffix)"
+    parameters:
+      - { name: value, type: path | string, description: "The string to test." }
+      - { name: suffix, type: string, description: "The expected suffix." }
+    returns: { type: boolean }
+    validIn: [property-value]
+    examples:
+      - title: Check a suffix
+        source: { "file": "report.pdf" }
+        transformer: { "result": "#endsWith($.file, '.pdf')" }
+        output: { "result": true }
+    related: [startsWith]
+
+  - name: substring
+    category: strings
+    summary: Returns the part of a string that falls within the provided range.
+    signature: "#substring(value, range)"
+    parameters:
+      - { name: value, type: path | string, description: "The source string." }
+      - { name: range, type: range, description: "A range such as `1..3`, `..2` or `^2..`." }
+    returns: { type: string }
+    validIn: [property-value]
+    notes:
+      - "`@text[range]` is shorthand for `#substring(@text, range)`. See [indexing and slicing](../../../guide/indexing-and-slicing/)."
+    examples:
+      - title: Middle of a string
+        source: { "text": "this is an example" }
+        transformer: { "result": "#substring($.text, 1..3)" }
+        output: { "result": "hi" }
+    related: [slice]
+
+  - name: isRegexMatch
+    category: strings
+    summary: Returns true if a string matches the provided regular expression, false otherwise.
+    signature: "#isRegexMatch(value, pattern)"
+    parameters:
+      - { name: value, type: path | string, description: "The string to test." }
+      - { name: pattern, type: string, description: "A .NET regular expression." }
+    returns: { type: boolean }
+    validIn: [property-value]
+    examples:
+      - title: Letters then digits
+        source: { "code": "abc123" }
+        transformer: { "result": "#isRegexMatch($.code, '^[a-z]+[0-9]+$')" }
+        output: { "result": true }
+    related: [regexReplace]
+
+  - name: regexReplace
+    category: strings
+    summary: Returns the string with all matches of a regular expression replaced with another value.
+    signature: "#regexReplace(value, pattern, replacement)"
+    parameters:
+      - { name: value, type: path | string, description: "The string to search." }
+      - { name: pattern, type: string, description: "A .NET regular expression." }
+      - { name: replacement, type: string, description: "The replacement text." }
+    returns: { type: string }
+    validIn: [property-value]
+    examples:
+      - title: Mask digits
+        source: { "code": "a1b2" }
+        transformer: { "result": "#regexReplace($.code, '[0-9]', '_')" }
+        output: { "result": "a_b_" }
+    related: [replace, isRegexMatch]
+
+  - name: joinWith
+    category: strings
+    summary: Returns a string that joins all elements of an array with the provided delimiter.
+    signature: "#joinWith(array, delimiter)"
+    parameters:
+      - { name: array, type: path | array, description: "The elements to join." }
+      - { name: delimiter, type: string, description: "Placed between elements." }
+    returns: { type: string }
+    validIn: [property-name, property-value]
+    examples:
+      - title: Comma-separated list
+        source: { "tags": [ "a", "b", "c" ] }
+        transformer: { "result": "#joinWith($.tags, ',')" }
+        output: { "result": "a,b,c" }
+    related: [splitOn, append]
+
+  - name: splitOn
+    category: strings
+    summary: Returns an array of substrings by splitting a string on the provided delimiter.
+    signature: "#splitOn(value, delimiter)"
+    parameters:
+      - { name: value, type: path | string, description: "The string to split." }
+      - { name: delimiter, type: string, description: "Where to split." }
+    returns: { type: array }
+    validIn: [property-value]
+    examples:
+      - title: Split a list
+        source: { "csv": "a,b,c" }
+        transformer: { "result": "#splitOn($.csv, ',')" }
+        output: { "result": [ "a", "b", "c" ] }
+    related: [joinWith]
+
+  # ── Arrays and sequences ─────────────────────────────────────────────
+
+  - name: slice
+    category: sequences
+    summary: Returns the part of an array that falls within the provided range.
+    signature: "#slice(array, range)"
+    parameters:
+      - { name: array, type: path | array, description: "The source array." }
+      - { name: range, type: range, description: "A range such as `2..4`, `..3` or `^3..`." }
+    returns: { type: array }
+    validIn: [property-value]
+    notes:
+      - "`@array[range]` is shorthand for `#slice(@array, range)`. See [indexing and slicing](../../../guide/indexing-and-slicing/)."
+    examples:
+      - title: Middle of an array
+        source: { "numbers": [ 1, 9, 3, 2, 6 ] }
+        transformer: { "result": "#slice($.numbers, 2..4)" }
+        output: { "result": [ 3, 2 ] }
+    related: [substring, take, skip]
+
+  - name: flatten
+    category: sequences
+    summary: Returns a single array by recursively flattening an array of nested arrays.
+    signature: "#flatten(array)"
+    parameters:
+      - { name: array, type: path | array, description: "The nested array." }
+    returns: { type: array }
+    validIn: [property-value]
+    examples:
+      - title: Flatten nested arrays
+        source: { "nested": [ [ 1, [ 2 ] ], 3 ] }
+        transformer: { "result": "#flatten($.nested)" }
+        output: { "result": [ 1, 2, 3 ] }
+
+  - name: take
+    category: sequences
+    summary: Returns the leading elements of an array, up to the specified count.
+    signature: "#take(array, count)"
+    parameters:
+      - { name: array, type: path | array, description: "The source array." }
+      - { name: count, type: integer, description: "How many elements to take." }
+    returns: { type: array }
+    validIn: [property-value]
+    examples:
+      - title: First two
+        source: { "numbers": [ 1, 2, 3, 4 ] }
+        transformer: { "result": "#take($.numbers, 2)" }
+        output: { "result": [ 1, 2 ] }
+    related: [skip, takeWhile, slice]
+
+  - name: skip
+    category: sequences
+    summary: Returns the array without its leading elements, up to the specified count.
+    signature: "#skip(array, count)"
+    parameters:
+      - { name: array, type: path | array, description: "The source array." }
+      - { name: count, type: integer, description: "How many elements to skip." }
+    returns: { type: array }
+    validIn: [property-value]
+    examples:
+      - title: All but the first two
+        source: { "numbers": [ 1, 2, 3, 4 ] }
+        transformer: { "result": "#skip($.numbers, 2)" }
+        output: { "result": [ 3, 4 ] }
+    related: [take, skipWhile, slice]
+
+  - name: takeWhile
+    category: sequences
+    summary: Returns the leading elements of an array that satisfy a condition.
+    signature: "#takeWhile(array, @x: predicate)"
+    parameters:
+      - { name: array, type: path | array, description: "The source array." }
+      - { name: predicate, type: lambda, description: "Returns true to keep taking." }
+    returns: { type: array }
+    validIn: [property-value]
+    examples:
+      - title: Take until a large value
+        source: { "numbers": [ 1, 2, 6, 3 ] }
+        transformer: { "result": "#takeWhile($.numbers, @x: @x < 5)" }
+        output: { "result": [ 1, 2 ] }
+    related: [skipWhile, take, where]
+
+  - name: skipWhile
+    category: sequences
+    summary: Returns the array without the leading elements that satisfy a condition.
+    signature: "#skipWhile(array, @x: predicate)"
+    parameters:
+      - { name: array, type: path | array, description: "The source array." }
+      - { name: predicate, type: lambda, description: "Returns true to keep skipping." }
+    returns: { type: array }
+    validIn: [property-value]
+    examples:
+      - title: Skip until a large value
+        source: { "numbers": [ 1, 2, 6, 3 ] }
+        transformer: { "result": "#skipWhile($.numbers, @x: @x < 5)" }
+        output: { "result": [ 6, 3 ] }
+    related: [takeWhile, skip]
+
+  - name: distinct
+    category: sequences
+    summary: Returns the items with distinct values of a specified property, or distinct scalar values.
+    signature: "#distinct(array, @x: key?)"
+    parameters:
+      - { name: array, type: path | array, description: "The source array." }
+      - { name: key, type: lambda, optional: true, description: "Selects the value that determines uniqueness." }
+    returns: { type: array }
+    validIn: [property-value]
+    examples:
+      - title: Distinct by property
+        expression: "#distinct($.some.path, @x: @x.propertyName)"
+    related: [groupBy]
+
+  - name: orderBy
+    category: sequences
+    summary: Returns the array in ascending order of a selected value.
+    signature: "#orderBy(array, @x: key)"
+    parameters:
+      - { name: array, type: path | array, description: "The source array." }
+      - { name: key, type: lambda, description: "Selects the value to sort by." }
+    returns: { type: array }
+    validIn: [property-value]
+    examples:
+      - title: Sort by a property
+        source: { "people": [ { "name": "b", "age": 30 }, { "name": "a", "age": 20 } ] }
+        transformer: { "result": "#orderBy($.people, @x: @x.age)" }
+        output: { "result": [ { "name": "a", "age": 20 }, { "name": "b", "age": 30 } ] }
+    related: [orderByDesc]
+
+  - name: orderByDesc
+    category: sequences
+    summary: Returns the array in descending order of a selected value.
+    signature: "#orderByDesc(array, @x: key)"
+    parameters:
+      - { name: array, type: path | array, description: "The source array." }
+      - { name: key, type: lambda, description: "Selects the value to sort by." }
+    returns: { type: array }
+    validIn: [property-value]
+    examples:
+      - title: Sort by a property, descending
+        source: { "people": [ { "name": "a", "age": 20 }, { "name": "b", "age": 30 } ] }
+        transformer: { "result": "#orderByDesc($.people, @x: @x.age)" }
+        output: { "result": [ { "name": "b", "age": 30 }, { "name": "a", "age": 20 } ] }
+    related: [orderBy]
+
+  - name: where
+    category: sequences
+    summary: Returns the elements of an array that match a predicate.
+    signature: "#where(array, @x: predicate)"
+    parameters:
+      - { name: array, type: path | array, description: "The source array." }
+      - { name: predicate, type: lambda, description: "Returns true to keep an element." }
+    returns: { type: array }
+    validIn: [property-value]
+    examples:
+      - title: Filter objects
+        source: { "some": { "complexArray": [ { "some": { "path": 5 } }, { "some": { "path": 30 } } ] } }
+        transformer: { "filteredData": "#valueOf($.some.complexArray)->#where(@x: @x.some.path < 10)" }
+        output: { "filteredData": [ { "some": { "path": 5 } } ] }
+    related: [select, any]
+
+  - name: select
+    category: sequences
+    summary: Returns an array of the results of projecting each element.
+    signature: "#select(array, @x: projection)"
+    parameters:
+      - { name: array, type: path | array, description: "The source array." }
+      - { name: projection, type: lambda, description: "Computes each output element." }
+    returns: { type: array }
+    validIn: [property-value]
+    examples:
+      - title: Project a property
+        source: { "some": { "complexArray": [ { "some": { "path": 5 } }, { "some": { "path": 30 } } ] } }
+        transformer: { "projectedData": "#valueOf($.some.complexArray)->#select(@x: @x.some.path)" }
+        output: { "projectedData": [ 5, 30 ] }
+    related: [where, foreach]
+
+  - name: any
+    category: sequences
+    summary: Returns true if an array or string has contents, or, with a lambda, if any element matches.
+    signature: "#any(value, @x: predicate?)"
+    parameters:
+      - { name: value, type: path | array | string, description: "The array or string to test." }
+      - { name: predicate, type: lambda, optional: true, description: "When given, an element must satisfy it." }
+    returns: { type: boolean }
+    validIn: [property-value]
+    examples:
+      - title: Any element greater than five
+        source: { "some": { "integerArray": [ 1, 2, 6, 10 ] } }
+        transformer: { "hasValues": "#valueOf($.some.integerArray)->#any(@x: @x > 5)" }
+        output: { "hasValues": true }
+    related: [isEmpty, where, contains]
+
+  - name: reduce
+    category: sequences
+    summary: Accumulates a single value by applying a two-parameter lambda to each element, with an optional seed.
+    signature: "#reduce(array, @acc;@current: expression, seed?)"
+    parameters:
+      - { name: array, type: path | array, description: "The source array." }
+      - { name: accumulator, type: lambda, description: "Receives the accumulated value and the current element; returns the new accumulated value." }
+      - { name: seed, type: any, optional: true, description: "The starting value." }
+    returns: { type: any, description: "The final accumulated value, or the seed when the array is empty." }
+    validIn: [property-value]
+    examples:
+      - title: Sum with a seed
+        source: { "numbers": [ 1, 2, 3 ] }
+        transformer: { "result": "#reduce($.numbers, @acc;@current: @acc + @current, 0)" }
+        output: { "result": 6 }
+    related: [sum, zip]
+
+  - name: zip
+    category: sequences
+    summary: Combines two arrays pairwise using a two-parameter lambda.
+    signature: "#zip(first, second, @x;@y: combine)"
+    parameters:
+      - { name: first, type: path | array, description: "The first array." }
+      - { name: second, type: path | array, description: "The second array." }
+      - { name: combine, type: lambda, description: "Receives one element from each array and returns the combined value." }
+    returns: { type: array }
+    validIn: [property-value]
+    examples:
+      - title: Pair numbers with letters
+        source: { "numbers": [ 1, 2 ], "letters": [ "a", "b" ] }
+        transformer: { "result": "#zip($.numbers, $.letters, @x;@y: { 'first': @x, 'second': @y })" }
+        output: { "result": [ { "first": 1, "second": "a" }, { "first": 2, "second": "b" } ] }
+    related: [reduce, select]
+
+  # ── Grouping and aggregation ─────────────────────────────────────────
+
+  - name: groupBy
+    category: aggregation
+    summary: Groups an array's elements by a selected value into key and results pairs.
+    signature: "#groupBy(array, @x: key)"
+    parameters:
+      - { name: array, type: path | array, description: "The source array." }
+      - { name: key, type: lambda, description: "Selects the grouping value." }
+    returns: { type: array, description: "An array of `{ key, results }` objects." }
+    validIn: [property-value]
+    examples:
+      - title: Group by a property
+        source: { "someArray": [ { "groupingProperty": "A", "valueProperty": 1 }, { "groupingProperty": "A", "valueProperty": 2 }, { "groupingProperty": "B", "valueProperty": 3 } ] }
+        transformer: { "groupedArray": "#groupBy($.someArray, @x: @x.groupingProperty)" }
+        output: { "groupedArray": [ { "key": "A", "results": [ { "groupingProperty": "A", "valueProperty": 1 }, { "groupingProperty": "A", "valueProperty": 2 } ] }, { "key": "B", "results": [ { "groupingProperty": "B", "valueProperty": 3 } ] } ] }
+    related: [summarizeWith, distinct]
+
+  - name: summarizeWith
+    category: aggregation
+    summary: Applies an aggregate expression to each group's key and results.
+    signature: "#summarizeWith(groups, @group: summary)"
+    parameters:
+      - { name: groups, type: path | array, description: "Groups shaped like `#groupBy` output: `{ key, results }`." }
+      - { name: summary, type: lambda, description: "Receives each group as `@group` with `@group.key` and `@group.results`." }
+    returns: { type: array, description: "An array of `{ key, value }` objects." }
+    validIn: [property-value]
+    examples:
+      - title: Total per group
+        source: { "someArray": [ { "groupingProperty": "A", "valueProperty": 1 }, { "groupingProperty": "A", "valueProperty": 2 }, { "groupingProperty": "B", "valueProperty": 3 } ] }
+        transformer: { "summarizedArray": "#valueOf($.someArray)->#groupBy(@x: @x.groupingProperty)->#summarizeWith(@group: #sum(@group.results, @y: @y.valueProperty))" }
+        output: { "summarizedArray": [ { "key": "A", "value": 3 }, { "key": "B", "value": 3 } ] }
+    related: [groupBy, sum]
+
+  - name: sum
+    category: aggregation
+    summary: Returns the total of an array of numbers, optionally after a projection.
+    signature: "#sum(array, @x: projection?)"
+    parameters:
+      - { name: array, type: path | array, description: "The numbers, or elements to project." }
+      - { name: projection, type: lambda, optional: true, description: "Selects the number from each element." }
+    returns: { type: number }
+    validIn: [property-value]
+    examples:
+      - title: Sum numbers
+        source: { "numbers": [ 1, 2, 3, 4 ] }
+        transformer: { "result": "#sum($.numbers)" }
+        output: { "result": 10 }
+      - title: Sum a property
+        source: { "items": [ { "price": 2 }, { "price": 3 } ] }
+        transformer: { "result": "#sum($.items, @x: @x.price)" }
+        output: { "result": 5 }
+    related: [average, min, max, reduce]
+
+  - name: average
+    category: aggregation
+    summary: Returns the average of an array of numbers, optionally after a projection.
+    signature: "#average(array, @x: projection?)"
+    parameters:
+      - { name: array, type: path | array, description: "The numbers, or elements to project." }
+      - { name: projection, type: lambda, optional: true, description: "Selects the number from each element." }
+    returns: { type: number }
+    validIn: [property-value]
+    examples:
+      - title: Average numbers
+        source: { "numbers": [ 1, 2, 3, 4 ] }
+        transformer: { "result": "#average($.numbers)" }
+        output: { "result": 2.5 }
+    related: [sum, min, max]
+
+  - name: min
+    category: aggregation
+    summary: Returns the minimum of an array of numbers, optionally after a projection.
+    signature: "#min(array, @x: projection?)"
+    parameters:
+      - { name: array, type: path | array, description: "The numbers, or elements to project." }
+      - { name: projection, type: lambda, optional: true, description: "Selects the number from each element." }
+    returns: { type: number }
+    validIn: [property-value]
+    examples:
+      - title: Smallest number
+        source: { "numbers": [ 3, 1, 4 ] }
+        transformer: { "result": "#min($.numbers)" }
+        output: { "result": 1 }
+    related: [max, sum]
+
+  - name: max
+    category: aggregation
+    summary: Returns the maximum of an array of numbers, optionally after a projection.
+    signature: "#max(array, @x: projection?)"
+    parameters:
+      - { name: array, type: path | array, description: "The numbers, or elements to project." }
+      - { name: projection, type: lambda, optional: true, description: "Selects the number from each element." }
+    returns: { type: number }
+    validIn: [property-value]
+    examples:
+      - title: Largest property value
+        source: { "items": [ { "price": 2 }, { "price": 9 } ] }
+        transformer: { "result": "#max($.items, @x: @x.price)" }
+        output: { "result": 9 }
+    related: [min, sum]
+
+  # ── Objects ──────────────────────────────────────────────────────────
+
+  - name: keysFrom
+    category: objects
+    summary: Returns an array of the property names of an object.
+    signature: "#keysFrom(object)"
+    parameters:
+      - { name: object, type: path | object, description: "The object to read." }
+    returns: { type: array }
+    validIn: [property-value]
+    examples:
+      - title: Property names
+        source: { "obj": { "a": 1, "b": 2 } }
+        transformer: { "result": "#keysFrom($.obj)" }
+        output: { "result": [ "a", "b" ] }
+    related: [valuesFrom, nameOf]
+
+  - name: valuesFrom
+    category: objects
+    summary: Returns an array of the property values of an object.
+    signature: "#valuesFrom(object)"
+    parameters:
+      - { name: object, type: path | object, description: "The object to read." }
+    returns: { type: array }
+    validIn: [property-value]
+    examples:
+      - title: Property values
+        source: { "obj": { "a": 1, "b": 2 } }
+        transformer: { "result": "#valuesFrom($.obj)" }
+        output: { "result": [ 1, 2 ] }
+    related: [keysFrom]
+
+  - name: merge
+    category: objects
+    summary: Deep-copies and merges two or more objects, with later values taking precedence.
+    signature: "#merge(object, ...objects)"
+    parameters:
+      - { name: object, type: path | object, description: "The base object." }
+      - { name: objects, type: path | object, description: "One or more objects merged on top." }
+    returns: { type: object }
+    validIn: [property-value]
+    examples:
+      - title: Later values win
+        source: { "base": { "a": 1, "b": 1 }, "overrides": { "b": 2 } }
+        transformer: { "result": "#merge($.base, $.overrides)" }
+        output: { "result": { "a": 1, "b": 2 } }
+    related: [transformWith]
+
+  # ── Numbers ──────────────────────────────────────────────────────────
+
+  - name: roundTo
+    category: numbers
+    summary: Returns a number rounded to the specified number of decimal places.
+    signature: "#roundTo(value, decimals)"
+    parameters:
+      - { name: value, type: path | number, description: "The number to round." }
+      - { name: decimals, type: integer, description: "Decimal places to keep." }
+    returns: { type: number }
+    validIn: [property-value]
+    examples:
+      - title: Two decimal places
+        source: { "pi": 3.14159 }
+        transformer: { "result": "#roundTo($.pi, 2)" }
+        output: { "result": 3.14 }
+
+  # ── Dates and times ──────────────────────────────────────────────────
+
+  - name: currentDateTime
+    category: dates
+    summary: Returns the current local date and time as an ISO 8601 string.
+    signature: "#currentDateTime()"
+    returns: { type: string }
+    validIn: [property-value]
+    examples:
+      - title: Timestamp
+        expression: "#currentDateTime()"
+    related: [currentDateTimeUtc]
+
+  - name: currentDateTimeUtc
+    category: dates
+    summary: Returns the current UTC date and time as an ISO 8601 string.
+    signature: "#currentDateTimeUtc()"
+    returns: { type: string }
+    validIn: [property-value]
+    examples:
+      - title: UTC timestamp
+        expression: "#currentDateTimeUtc()"
+    related: [currentDateTime]
+
+  - name: parseDateTime
+    category: dates
+    summary: Parses a string into an ISO 8601 date and time, requiring an exact format when one is given.
+    signature: "#parseDateTime(value, format?)"
+    parameters:
+      - { name: value, type: path | string, description: "The date and time text." }
+      - { name: format, type: string, optional: true, description: "A .NET date format string, such as `yyyy-MM-dd`." }
+    returns: { type: string, description: "An ISO 8601 date and time." }
+    validIn: [property-value]
+    examples:
+      - title: Parse a fixed format
+        expression: "#parseDateTime($.some.path, 'yyyy-MM-dd')"
+    related: [formatDateTime]
+
+  - name: formatDateTime
+    category: dates
+    summary: Formats a date and time string using the provided format string.
+    signature: "#formatDateTime(value, format)"
+    parameters:
+      - { name: value, type: path | string, description: "A date and time." }
+      - { name: format, type: string, description: "A .NET date format string, such as `yyyy-MM-dd`." }
+    returns: { type: string }
+    validIn: [property-value]
+    examples:
+      - title: Date only
+        source: { "when": "2026-01-15T10:30:00" }
+        transformer: { "result": "#formatDateTime($.when, 'yyyy-MM-dd')" }
+        output: { "result": "2026-01-15" }
+    related: [parseDateTime]
+
+  - name: addDays
+    category: dates
+    summary: Returns an ISO 8601 date and time with the specified number of days added.
+    signature: "#addDays(value, days)"
+    parameters:
+      - { name: value, type: path | string, description: "A date and time." }
+      - { name: days, type: number, description: "Days to add; negative values subtract." }
+    returns: { type: string }
+    validIn: [property-value]
+    examples:
+      - title: One week later
+        expression: "#addDays($.some.path, 7)"
+    related: [addHours, addMinutes]
+
+  - name: addHours
+    category: dates
+    summary: Returns an ISO 8601 date and time with the specified number of hours added.
+    signature: "#addHours(value, hours)"
+    parameters:
+      - { name: value, type: path | string, description: "A date and time." }
+      - { name: hours, type: number, description: "Hours to add; negative values subtract." }
+    returns: { type: string }
+    validIn: [property-value]
+    examples:
+      - title: Five hours later
+        expression: "#addHours($.some.path, 5)"
+    related: [addDays, addMinutes]
+
+  - name: addMinutes
+    category: dates
+    summary: Returns an ISO 8601 date and time with the specified number of minutes added.
+    signature: "#addMinutes(value, minutes)"
+    parameters:
+      - { name: value, type: path | string, description: "A date and time." }
+      - { name: minutes, type: number, description: "Minutes to add; negative values subtract." }
+    returns: { type: string }
+    validIn: [property-value]
+    examples:
+      - title: Half an hour later
+        expression: "#addMinutes($.some.path, 30)"
+    related: [addDays, addHours]
+
+  # ── Types and conversion ─────────────────────────────────────────────
+
+  - name: isInteger
+    category: types
+    summary: Returns true if the value is a whole number.
+    signature: "#isInteger(value)"
+    parameters:
+      - { name: value, type: path | value, description: "The value to test." }
+    returns: { type: boolean }
+    validIn: [property-value]
+    examples:
+      - title: Integer or not
+        source: { "a": 5, "b": 5.5 }
+        transformer: { "a": "#isInteger($.a)", "b": "#isInteger($.b)" }
+        output: { "a": true, "b": false }
+    related: [isDecimal, toInteger]
+
+  - name: isDecimal
+    category: types
+    summary: Returns true if the value is a floating point number.
+    signature: "#isDecimal(value)"
+    parameters:
+      - { name: value, type: path | value, description: "The value to test." }
+    returns: { type: boolean }
+    validIn: [property-value]
+    examples:
+      - title: Decimal or not
+        source: { "a": 5, "b": 5.5 }
+        transformer: { "a": "#isDecimal($.a)", "b": "#isDecimal($.b)" }
+        output: { "a": false, "b": true }
+    related: [isInteger, toDecimal]
+
+  - name: isString
+    category: types
+    summary: Returns true if the value is a string.
+    signature: "#isString(value)"
+    parameters:
+      - { name: value, type: path | value, description: "The value to test." }
+    returns: { type: boolean }
+    validIn: [property-value]
+    examples:
+      - title: String or not
+        source: { "a": "5", "b": 5 }
+        transformer: { "a": "#isString($.a)", "b": "#isString($.b)" }
+        output: { "a": true, "b": false }
+    related: [toString]
+
+  - name: isBoolean
+    category: types
+    summary: Returns true if the value is a boolean.
+    signature: "#isBoolean(value)"
+    parameters:
+      - { name: value, type: path | value, description: "The value to test." }
+    returns: { type: boolean }
+    validIn: [property-value]
+    examples:
+      - title: Boolean or not
+        source: { "a": true, "b": "true" }
+        transformer: { "a": "#isBoolean($.a)", "b": "#isBoolean($.b)" }
+        output: { "a": true, "b": false }
+    related: [toBoolean]
+
+  - name: isArray
+    category: types
+    summary: Returns true if the value is an array, false otherwise.
+    signature: "#isArray(value)"
+    parameters:
+      - { name: value, type: path | value, description: "The value to test." }
+    returns: { type: boolean }
+    validIn: [property-value]
+    examples:
+      - title: Array or not
+        source: { "a": [ 1 ], "b": { "c": 1 } }
+        transformer: { "a": "#isArray($.a)", "b": "#isArray($.b)" }
+        output: { "a": true, "b": false }
+    related: [isObject, isEmpty]
+
+  - name: isObject
+    category: types
+    summary: Returns true if the value is an object, false otherwise.
+    signature: "#isObject(value)"
+    parameters:
+      - { name: value, type: path | value, description: "The value to test." }
+    returns: { type: boolean }
+    validIn: [property-value]
+    examples:
+      - title: Object or not
+        source: { "a": [ 1 ], "b": { "c": 1 } }
+        transformer: { "a": "#isObject($.a)", "b": "#isObject($.b)" }
+        output: { "a": false, "b": true }
+    related: [isArray]
+
+  - name: isEmpty
+    category: types
+    summary: Returns true if the value is an array or string with no contents, false otherwise.
+    signature: "#isEmpty(value)"
+    parameters:
+      - { name: value, type: path | array | string, description: "The array or string to test." }
+    returns: { type: boolean }
+    validIn: [property-value]
+    examples:
+      - title: Empty array and string
+        source: { "items": [], "text": "x" }
+        transformer: { "items": "#isEmpty($.items)", "text": "#isEmpty($.text)" }
+        output: { "items": true, "text": false }
+    related: [any, length]
+
+  - name: toInteger
+    category: types
+    summary: Returns a value converted to a whole number.
+    signature: "#toInteger(value)"
+    parameters:
+      - { name: value, type: path | value, description: "The value to convert." }
+    returns: { type: integer }
+    validIn: [property-value]
+    notes:
+      - Throws when the value can't be converted. Wrap it in `#try` to supply a fallback.
+    examples:
+      - title: Parse a numeric string
+        source: { "text": "42" }
+        transformer: { "result": "#toInteger($.text)" }
+        output: { "result": 42 }
+    related: [toDecimal, isInteger, try]
+
+  - name: toDecimal
+    category: types
+    summary: Returns a value converted to a floating point number.
+    signature: "#toDecimal(value)"
+    parameters:
+      - { name: value, type: path | value, description: "The value to convert." }
+    returns: { type: number }
+    validIn: [property-value]
+    examples:
+      - title: Parse a decimal string
+        source: { "text": "1.5" }
+        transformer: { "result": "#toDecimal($.text)" }
+        output: { "result": 1.5 }
+    related: [toInteger, isDecimal]
+
+  - name: toString
+    category: types
+    summary: Returns the string representation of a value.
+    signature: "#toString(value)"
+    parameters:
+      - { name: value, type: path | value, description: "The value to convert." }
+    returns: { type: string }
+    validIn: [property-value]
+    examples:
+      - title: Number to string
+        source: { "n": 42 }
+        transformer: { "result": "#toString($.n)" }
+        output: { "result": "42" }
+    related: [isString]
+
+  - name: toBoolean
+    category: types
+    summary: Returns a value converted to a boolean.
+    signature: "#toBoolean(value)"
+    parameters:
+      - { name: value, type: path | value, description: "The value to convert." }
+    returns: { type: boolean }
+    validIn: [property-value]
+    examples:
+      - title: Parse a boolean string
+        source: { "flag": "true" }
+        transformer: { "result": "#toBoolean($.flag)" }
+        output: { "result": true }
+    related: [isBoolean]
+
+  # ── Composition ──────────────────────────────────────────────────────
+
+  - name: transformWith
+    category: composition
+    summary: Transforms a sub-document with a registered, standalone transformer.
+    signature: "#transformWith(source, transformerName, parameters?)"
+    parameters:
+      - { name: source, type: path | value, description: "The sub-document to transform." }
+      - { name: transformerName, type: string, description: "The name the transformer was registered under." }
+      - { name: parameters, type: object, optional: true, description: "Available to the called transformer as `@params`." }
+    returns: { type: any, description: "The called transformer's output." }
+    validIn: [property-value]
+    notes:
+      - Variables from the calling transformer aren't visible in the called one; pass what it needs through `parameters`.
+      - "`Validate()` reports calls to unregistered transformers."
+    examples:
+      - title: Call with parameters
+        expression: "#transformWith($.date, 'DateFormatter', { 'format': 'MM/dd/yyyy' })"
+    related: [merge]

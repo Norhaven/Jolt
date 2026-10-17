@@ -1,0 +1,51 @@
+{
+  "name": "jolt",
+  "displayName": "Jolt transformer",
+  "scopeName": "source.jolt",
+  "embeddedLangs": ["jolt-expr"],
+  "patterns": [{ "include": "#value" }],
+  "repository": {
+    "value": {
+      "patterns": [
+        { "include": "#expression-string" },
+        { "include": "#property-key" },
+        { "include": "#plain-string" },
+        { "include": "#number" },
+        { "include": "#constant" },
+        { "include": "#punctuation" }
+      ]
+    },
+    "expression-string": {
+      "comment": "A JSON string whose content starts like a Jolt expression (method, variable, path, literal, operator or grouping).",
+      "begin": "\"(?=\\s*[#@$!(\\[{'])",
+      "end": "\"",
+      "beginCaptures": { "0": { "name": "punctuation.definition.string.begin.jolt" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.string.end.jolt" } },
+      "contentName": "meta.embedded.expression.jolt",
+      "patterns": [
+        { "match": "\\\\.", "name": "constant.character.escape.json" },
+        { "include": "source.jolt-expr" }
+      ]
+    },
+    "property-key": {
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)",
+      "name": "support.type.property-name.json"
+    },
+    "plain-string": {
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"",
+      "name": "string.quoted.double.json"
+    },
+    "number": {
+      "match": "-?\\b\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b",
+      "name": "constant.numeric.json"
+    },
+    "constant": {
+      "match": "\\b(true|false|null)\\b",
+      "name": "constant.language.json"
+    },
+    "punctuation": {
+      "match": "[{}\\[\\]:,]",
+      "name": "punctuation.separator.json"
+    }
+  }
+}

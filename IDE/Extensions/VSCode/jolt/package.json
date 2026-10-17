@@ -188,16 +188,6 @@
             },
             {
               "scope": [
-                "support.function.unsafe.jolt",
-                "support.function.unsafe.jolt punctuation.definition.function.jolt"
-              ],
-              "settings": {
-                "foreground": "#DCDCAA",
-                "fontStyle": "underline"
-              }
-            },
-            {
-              "scope": [
                 "variable.other.jolt",
                 "variable.other.declaration.jolt",
                 "variable.parameter.jolt",
@@ -313,16 +303,6 @@
             },
             {
               "scope": [
-                "support.function.unsafe.jolt",
-                "support.function.unsafe.jolt punctuation.definition.function.jolt"
-              ],
-              "settings": {
-                "foreground": "#795E26",
-                "fontStyle": "underline"
-              }
-            },
-            {
-              "scope": [
                 "variable.other.jolt",
                 "variable.other.declaration.jolt",
                 "variable.parameter.jolt",
@@ -392,7 +372,18 @@
               }
             }
           ]
-        }
+        },
+        "textMateRules": [
+          {
+            "scope": [
+              "support.function.unsafe.jolt",
+              "support.function.unsafe.jolt punctuation.definition.function.jolt"
+            ],
+            "settings": {
+              "fontStyle": "underline"
+            }
+          }
+        ]
       }
     }
   }

@@ -1,0 +1,67 @@
+# Builds the Starlight site in docs/ and publishes it to GitHub Pages.
+#
+# One-time setup: in the repo's Settings > Pages, set "Source" to "GitHub Actions".
+#
+# By default the site is served as a project site at https://norhaven.github.io/Jolt/.
+# To publish it from a different repo (e.g. Norhaven.github.io) or at the domain root,
+# change DOCS_BASE below.
+
+name: Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'JoltLogo.png'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs
+    env:
+      DOCS_SITE: https://norhaven.github.io
+      DOCS_BASE: /Jolt
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so "Last updated" dates are accurate
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Switch to `npm ci` (and add `cache: npm` above) once package-lock.json is committed.
+      - name: Install
+        run: npm install
+
+      # `prebuild` regenerates the library reference from data/methods.yaml.
+      - name: Build
+        run: npm run build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
