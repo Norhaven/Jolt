@@ -694,14 +694,15 @@ json-number
 ###  Level │ Operator(s)         │ Notes
 ###  ──────┼─────────────────────┼────────────────────────────────────
 ###    0   │  ??                 │ null-coalescing (lowest precedence)
-###    0   │  !  (unary prefix)  │ logical NOT
 ###    1   │  ||                 │ logical OR (short-circuits on true)
 ###    2   │  &&                 │ logical AND (short-circuits on false)
 ###    3   │  ==  !=             │ equality
 ###    4   │  <  >  <=  >=       │ relational
 ###    5   │  +  -               │ addition / subtraction
 ###         │                     │ (+  also overloaded as string concat)
-###    6   │  *  /               │ multiplication / division (highest)
+###    6   │  *  /               │ multiplication / division
+###    7   │  !  (unary prefix)  │ logical NOT (highest; negates a
+###         │                     │ single unary-expr, see §2)
 
 
 ### ══════════════════════════════════════════════════════════════════

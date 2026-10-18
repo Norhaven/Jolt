@@ -30,7 +30,10 @@ namespace Jolt.Parsing.Parsers
 
             _reader.ConsumeCurrent();
 
-            var expressionToNegate = _atomParser.Parse(context);
+            // Only a single operand is negated (e.g. "!a && b" is "(!a) && b"), which gives the unary
+            // operator a tighter binding than any binary operator. Parentheses negate a larger expression.
+
+            var expressionToNegate = _atomParser.ParseOperand(context);
 
             expression = new LogicalNotExpression(expressionToNegate);
 

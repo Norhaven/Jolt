@@ -69,6 +69,8 @@ namespace Jolt.Parsing.Parsers
             return true;
         }
 
+        public Expression? ParseOperand(IJsonContext context) => ReadNextAtom(context);
+
         private Expression? ReadNextAtom(IJsonContext context)
         {
             return AvailableParsers.FirstOrDefault(p => p.CanParse(context))?.Parse(context);

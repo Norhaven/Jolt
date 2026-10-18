@@ -8,7 +8,6 @@ Higher levels bind tighter. For example, `*` binds tighter than `+`, so multipli
 | Operator | Description | Level |
 | -------- | ----------- | ----- |
 | `??` | Null coalescing | 0 |
-| `!` | Logical NOT (unary) | 0 |
 | `\|\|` | Logical OR | 1 |
 | `&&` | Logical AND | 2 |
 | `==` | Equals | 3 |
@@ -21,12 +20,12 @@ Higher levels bind tighter. For example, `*` binds tighter than `+`, so multipli
 | `-` | Subtraction | 5 |
 | `*` | Multiplication | 6 |
 | `/` | Division | 6 |
+| `!` | Logical NOT (unary) | 7 |
+
+Unary `!` binds tighter than any binary operator, so it negates only the operand right after it: `!a && b` is `(!a) && b`. To negate a larger expression, parenthesize it: `!(a && b)`.
 
 <!--
-  TODO(language): Unary `!` is listed at level 0, below every binary operator. Read literally,
-  `!a && b` would parse as `!(a && b)`. Most languages bind unary operators tighter than any
-  binary operator. Confirm what the parser does and either fix the parser or this table.
-  Also document associativity (left for all binary operators?) and where `->` and indexing sit.
+  TODO(language): Document associativity (left for all binary operators?) and where `->` and indexing sit.
 -->
 
 The full grammar is in the [EBNF reference](../grammar/).

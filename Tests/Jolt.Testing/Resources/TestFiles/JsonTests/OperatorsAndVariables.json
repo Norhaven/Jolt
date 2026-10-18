@@ -359,6 +359,42 @@
           "result": {
             "value": true
           }
+        },
+        {
+          "name": "Logical NOT operator binds tighter than a logical AND operator and only negates its immediate operand",
+          "transformer": {
+            "value": "!#valueOf($.falseValue) && #valueOf($.falseValue)"
+          },
+          "result": {
+            "value": false
+          }
+        },
+        {
+          "name": "Logical NOT operator binds tighter than a logical OR operator and only negates its immediate operand",
+          "transformer": {
+            "value": "!#valueOf($.trueValue) || #valueOf($.trueValue)"
+          },
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "name": "Logical NOT operator used as the right operand of a logical AND operator does not negate a following logical OR operator",
+          "transformer": {
+            "value": "#valueOf($.falseValue) && !#valueOf($.trueValue) || #valueOf($.trueValue)"
+          },
+          "result": {
+            "value": true
+          }
+        },
+        {
+          "name": "Logical NOT operator negates a whole parenthesized expression",
+          "transformer": {
+            "value": "!(#valueOf($.falseValue) && #valueOf($.falseValue))"
+          },
+          "result": {
+            "value": true
+          }
         }
       ]
     },

@@ -838,12 +838,11 @@ It's also worth noting that the `summarizeWith` method does not explicitly need 
 
 # Operator Precedence And Grammar
 
-Also, here is a small table of how Jolt regards levels of operator precedence for binary expressions to help you understand how your expressions may be evaluated at runtime. The higher the precedence level, the tighter it binds (e.g. `*` binds tighter than `+` and so multiplication is performed first).
+Also, here is a small table of how Jolt regards levels of operator precedence to help you understand how your expressions may be evaluated at runtime. The higher the precedence level, the tighter it binds (e.g. `*` binds tighter than `+` and so multiplication is performed first). The unary logical NOT `!` binds tighter than any binary operator, so it only negates the operand immediately following it (e.g. `!a && b` is evaluated as `(!a) && b`); use parentheses to negate a larger expression, such as `!(a && b)`.
 
 | Operator | Description | Level
 | -------- | ----------- | -----
 | Null Coalescing | `??` | 0
-| Logical Not (Unary) | `!` | 0
 | Logical Or | `\|\|` | 1
 | Logical And | `&&` | 2
 | Equals | `==` | 3
@@ -856,6 +855,7 @@ Also, here is a small table of how Jolt regards levels of operator precedence fo
 | Subtraction | `-` | 5
 | Multiplication | `*` | 6
 | Division | `/` | 6
+| Logical Not (Unary) | `!` | 7
 
 For reference, the full EBNF grammar lives [over here.](Jolt-EBNF-Grammar.md)
 
