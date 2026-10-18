@@ -638,7 +638,7 @@
       ]
     },
     {
-      "name": "Standard library methods do not throw when given a range variable path that does not exist",
+      "name": "Standard library methods throw when given a range variable path that does not exist",
       "source": {
         "testObject": {
           "first": "value",
@@ -647,74 +647,67 @@
       },
       "tests": [
         {
-          "name": "ToUpperCase returns null for a range variable path that does not exist",
+          "name": "ToUpperCase throws a missing path exception for a range variable path that does not exist",
           "transformer": {
             "@x": "#valueOf($.testObject)",
             "resultValue": "#toUpperCase(@x.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Length returns null for a range variable path that does not exist",
+          "name": "Length throws a missing path exception for a range variable path that does not exist",
           "transformer": {
             "@x": "#valueOf($.testObject)",
             "resultValue": "#length(@x.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Select returns an empty array for a range variable path that does not exist",
+          "name": "Select throws a missing path exception for a range variable path that does not exist",
           "transformer": {
             "@x": "#valueOf($.testObject)",
             "resultValue": "#select(@x.nonExistentValue, @y: @y)"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Sum returns null for a range variable path that does not exist",
+          "name": "Sum throws a missing path exception for a range variable path that does not exist",
           "transformer": {
             "@x": "#valueOf($.testObject)",
             "resultValue": "#sum(@x.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "KeysFrom returns an empty array for a range variable path that does not exist",
+          "name": "KeysFrom throws a missing path exception for a range variable path that does not exist",
           "transformer": {
             "@x": "#valueOf($.testObject)",
             "resultValue": "#keysFrom(@x.nonExistentValue)"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "IsString returns false for a range variable path that does not exist",
+          "name": "IsString throws a missing path exception for a range variable path that does not exist",
           "transformer": {
             "@x": "#valueOf($.testObject)",
             "resultValue": "#isString(@x.nonExistentValue)"
           },
-          "result": {
-            "resultValue": false
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "ToInteger returns null for a range variable path that does not exist",
+          "name": "ToInteger throws a missing path exception for a range variable path that does not exist",
           "transformer": {
             "@x": "#valueOf($.testObject)",
             "resultValue": "#toInteger(@x.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         }
       ]
     }

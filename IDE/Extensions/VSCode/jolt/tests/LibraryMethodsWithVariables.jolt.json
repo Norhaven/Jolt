@@ -1289,8 +1289,7 @@
         {
           "name": "Try executes handler when method chain fails",
           "transformer": {
-            "@x": null,
-            "result": "#try(@x->#length(), @e: -1)"
+            "result": "#try(#toInteger('abc123'), @e: -1)"
           },
           "result": {
             "result": -1

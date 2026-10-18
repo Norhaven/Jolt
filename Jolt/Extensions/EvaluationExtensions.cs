@@ -51,6 +51,16 @@ namespace Jolt.Extensions
             return context.JsonContext.JsonTokenReader.CreateObjectFrom(value);
         }
 
+        public static IJsonToken? CreateNullToken(this EvaluationContext context)
+        {
+            return context.CreateTokenFrom(null);
+        }
+
+        public static IJsonToken? CreateEmptyArray(this EvaluationContext context)
+        {
+            return context.CreateArrayFrom(Array.Empty<IJsonToken>());
+        }
+
         public static bool IsQueryPath(this EvaluationContext context, string path)
         {
             return context.JsonContext.QueryPathProvider.IsQueryPath(path);

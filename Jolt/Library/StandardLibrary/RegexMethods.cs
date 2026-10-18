@@ -15,7 +15,17 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsRegexMatch(object? value, string pattern, EvaluationContext context)
         {
+            if (value is null)
+            {
+                return context.CreateTokenFrom(false);
+            }
+
             var resolved = context.ResolveValueOf<string>(value);
+
+            if (resolved is null)
+            {
+                return context.CreateTokenFrom(false);
+            }
 
             var text = resolved switch
             {
@@ -33,7 +43,17 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? RegexReplace(object? value, string pattern, string replacement, EvaluationContext context)
         {
+            if (value is null)
+            {
+                return context.CreateNullToken();
+            }
+
             var resolved = context.ResolveValueOf<string>(value);
+
+            if (resolved is null)
+            {
+                return context.CreateNullToken();
+            }
 
             var text = resolved switch
             {

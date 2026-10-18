@@ -125,7 +125,17 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? GroupBy(object? value, [LambdaVariables("x")] LambdaMethod keySelectorLambda, EvaluationContext context)
         {
+            if (value is null)
+            {
+                return context.CreateEmptyArray();
+            }
+
             var resolved = context.ResolveValueOf<IJsonArray>(value);
+
+            if (resolved is null)
+            {
+                return context.CreateEmptyArray();
+            }
 
             var grouping = resolved switch
             {
@@ -140,7 +150,17 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? OrderBy(object? value, [OptionalParameter(null)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
+            if (value is null)
+            {
+                return context.CreateEmptyArray();
+            }
+
             var resolved = context.ResolveValueOf<IJsonArray>(value);
+
+            if (resolved is null)
+            {
+                return context.CreateEmptyArray();
+            }
 
             var grouping = resolved switch
             {
@@ -157,7 +177,17 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? OrderByDescending(object? value, [OptionalParameter(null)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
+            if (value is null)
+            {
+                return context.CreateEmptyArray();
+            }
+
             var resolved = context.ResolveValueOf<IJsonArray>(value);
+
+            if (resolved is null)
+            {
+                return context.CreateEmptyArray();
+            }
 
             var grouping = resolved switch
             {
@@ -174,7 +204,17 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Maximum(object? value, [OptionalParameter(default)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
+            if (value is null)
+            {
+                return context.CreateNullToken();
+            }
+
             var resolved = ResolveValueWithOptionalProjection(value, lambda, context);
+
+            if (resolved is null)
+            {
+                return context.CreateNullToken();
+            }
 
             return AsIntegerOrFloatingPoint(resolved, x => x.Max(), x => x.Max(), context);
         }
@@ -183,7 +223,17 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Minimum(object? value, [OptionalParameter(default)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
+            if (value is null)
+            {
+                return context.CreateNullToken();
+            }
+
             var resolved = ResolveValueWithOptionalProjection(value, lambda, context);
+
+            if (resolved is null)
+            {
+                return context.CreateNullToken();
+            }
 
             return AsIntegerOrFloatingPoint(resolved, x => x.Min(), x => x.Min(), context);
         }
@@ -192,7 +242,17 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Sum(object? value, [OptionalParameter(default)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
+            if (value is null)
+            {
+                return context.CreateNullToken();
+            }
+
             var resolved = ResolveValueWithOptionalProjection(value, lambda, context);
+
+            if (resolved is null)
+            {
+                return context.CreateNullToken();
+            }
 
             return AsIntegerOrFloatingPoint(resolved, x => x.Sum(), x => x.Sum(), context);
         }
@@ -201,7 +261,17 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Average(object? value, [OptionalParameter(default)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
+            if (value is null)
+            {
+                return context.CreateNullToken();
+            }
+
             var resolved = ResolveValueWithOptionalProjection(value, lambda, context);
+
+            if (resolved is null)
+            {
+                return context.CreateNullToken();
+            }
 
             object? average = resolved switch
             {
@@ -222,10 +292,15 @@ namespace Jolt.Library.StandardLibrary
         {
             if (value is null)
             {
-                return context.CreateTokenFrom(false);
+                return context.CreateEmptyArray();
             }
 
             var resolved = context.ResolveValueOf<IJsonArray>(value);
+
+            if (resolved is null)
+            {
+                return context.CreateEmptyArray();
+            }
 
             var results = resolved switch
             {
@@ -242,10 +317,15 @@ namespace Jolt.Library.StandardLibrary
         {
             if (value is null)
             {
-                return context.CreateTokenFrom(false);
+                return context.CreateEmptyArray();
             }
 
             var resolved = context.ResolveValueOf<IJsonArray>(value);
+
+            if (resolved is null)
+            {
+                return context.CreateEmptyArray();
+            }
 
             var results = resolved switch
             {
@@ -267,6 +347,11 @@ namespace Jolt.Library.StandardLibrary
 
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
+            if (resolved is null)
+            {
+                return context.CreateTokenFrom(false);
+            }
+
             var empty = resolved switch
             {
                 IJsonArray array => new QueryMethods(array, lambda).Any(context),
@@ -283,10 +368,15 @@ namespace Jolt.Library.StandardLibrary
         {
             if (value is null)
             {
-                return context.CreateTokenFrom(false);
+                return context.CreateEmptyArray();
             }
 
             var resolved = context.ResolveValueOf<IJsonArray>(value);
+
+            if (resolved is null)
+            {
+                return context.CreateEmptyArray();
+            }
 
             var empty = resolved switch
             {
@@ -308,6 +398,11 @@ namespace Jolt.Library.StandardLibrary
 
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
+            if (resolved is null)
+            {
+                return context.CreateEmptyArray();
+            }
+
             var takenItems = resolved switch
             {
                 IJsonArray array => new QueryMethods(array, lambda).TakeWhile(context),
@@ -327,6 +422,12 @@ namespace Jolt.Library.StandardLibrary
             }
 
             var resolved = context.ResolveValueOf<IJsonArray>(value);
+
+            if (resolved is null)
+            {
+                return context.CreateEmptyArray();
+            }
+
             var resolvedAmount = context.ResolveValueOf(amountToTake, typeof(int));
 
             var takenItems = resolved switch
@@ -349,6 +450,11 @@ namespace Jolt.Library.StandardLibrary
 
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
+            if (resolved is null)
+            {
+                return context.CreateEmptyArray();
+            }
+
             var takenItems = resolved switch
             {
                 IJsonArray array => new QueryMethods(array, lambda).SkipWhile(context),
@@ -368,11 +474,22 @@ namespace Jolt.Library.StandardLibrary
             }
 
             var resolved = context.ResolveValueOf<IJsonArray>(value);
-            var resolvedAmount = context.ResolveValueOf(amountToSkip, typeof(int));
 
+            if (resolved is null)
+            {
+                return context.CreateEmptyArray();
+            }
+
+            var resolvedAmount = context.ResolveValueOf(amountToSkip, typeof(long));
+
+            if (resolvedAmount is null)
+            {
+                return context.CreateEmptyArray();
+            }
+            
             var takenItems = resolved switch
             {
-                IJsonArray array => new QueryMethods(array).Skip(context, (int)resolvedAmount),
+                IJsonArray array => new QueryMethods(array).Skip(context, (long)resolvedAmount),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for any with unsupported object type '{value?.GetType()}'")
             };
 
@@ -390,6 +507,11 @@ namespace Jolt.Library.StandardLibrary
 
             var resolved = (IJsonObject)context.ResolveValueOf<IJsonObject>(value);
 
+            if (resolved is null)
+            {
+                return context.CreateEmptyArray();
+            }
+
             return context.CreateArrayFrom(resolved.Select(k => context.CreateTokenFrom(k.PropertyName)).ToArray());
         }
 
@@ -404,6 +526,11 @@ namespace Jolt.Library.StandardLibrary
 
             var resolved = (IJsonObject)context.ResolveValueOf<IJsonObject>(value);
 
+            if (resolved is null)
+            {
+                return context.CreateEmptyArray();
+            }
+
             return context.CreateArrayFrom(resolved.Select(k => k.Value).ToArray());
         }
 
@@ -411,7 +538,17 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Reduce(object? value, [LambdaVariables("acc", "current")] LambdaMethod lambda, [OptionalParameter(default)] object? seed, EvaluationContext context)
         {
+            if (value is null)
+            {
+                return context.CreateNullToken();
+            }
+
             var resolved = context.ResolveValueOf<IJsonArray>(value);
+
+            if (resolved is null)
+            {
+                return context.CreateNullToken();
+            }
 
             var query = resolved switch
             {
@@ -446,8 +583,18 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Zip(object? first, object? second, [LambdaVariables("x", "y")] LambdaMethod lambda, EvaluationContext context)
         {
+            if (first is null || second is null)
+            {
+                return context.CreateEmptyArray();
+            }
+
             var resolvedFirst = context.ResolveValueOf<IJsonArray>(first);
             var resolvedSecond = context.ResolveValueOf<IJsonArray>(second);
+
+            if (resolvedFirst is null || resolvedSecond is null)
+            {
+                return context.CreateEmptyArray();
+            }
 
             var zipped = (resolvedFirst, resolvedSecond) switch
             {
@@ -491,10 +638,16 @@ namespace Jolt.Library.StandardLibrary
 
             if (value is null)
             {
-                return context.CreateTokenFrom(false);
+                return context.CreateEmptyArray();
             }
 
             var resolved = context.ResolveValueOf<IJsonArray>(value);
+
+            if (resolved is null)
+            {
+                return context.CreateEmptyArray();
+            }
+
             var resultToken = context.CreateTokenFrom(resolved);
 
             resultToken = resultToken switch
@@ -508,12 +661,16 @@ namespace Jolt.Library.StandardLibrary
 
         private static object? ResolveValueWithOptionalProjection(object? value, LambdaMethod? projection, EvaluationContext context)
         {
-            if (projection != null)
+            var resolved = context.ResolveValueOf<object>(value);
+
+            // A missing value should stay missing rather than being projected into an empty array.
+
+            if (resolved is null || projection is null)
             {
-                return Select(value, projection, context);
+                return resolved;
             }
 
-            return context.ResolveValueOf<object>(value);
+            return Select(resolved, projection, context);
         }
 
         private static IJsonToken? AsIntegerOrFloatingPoint(object? value, Func<IEnumerable<long>, long?> asInt64, Func<IEnumerable<double>, double> asDecimal, EvaluationContext context)

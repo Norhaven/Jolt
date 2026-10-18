@@ -195,9 +195,9 @@ namespace Jolt.Library
             }
         }
 
-        protected virtual IEnumerable<IJsonToken> Skip(EvaluationContext context, int count)
+        protected virtual IEnumerable<IJsonToken> Skip(EvaluationContext context, long count)
         {
-            var skipped = 0;
+            var skipped = 0L;
 
             foreach (var item in Sequence)
             {

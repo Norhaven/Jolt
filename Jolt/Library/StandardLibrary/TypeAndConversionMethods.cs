@@ -14,15 +14,19 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Merge(object? first, object? second, EvaluationContext context)
         {
-            var firstToken = context.ResolveValueOf<IJsonObject>(first) as IJsonObject;
-            var secondToken = context.ResolveValueOf<IJsonObject>(second) as IJsonObject;
+            // A missing side of the merge is treated as an empty object, so the other side is returned as-is.
 
-            if (firstToken == null || secondToken == null)
+            var firstResolved = first is null ? null : context.ResolveValueOf<IJsonObject>(first);
+            var secondResolved = second is null ? null : context.ResolveValueOf<IJsonObject>(second);
+
+            return (firstResolved, secondResolved) switch
             {
-                throw new ArgumentOutOfRangeException(nameof(first), $"Unable to merge non-object types. Received types '{first?.GetType()}' and '{second?.GetType()}'");
-            }
-
-            return firstToken.MergeWith(secondToken);
+                (null, null) => context.CreateNullToken(),
+                (IJsonObject firstToken, null) => firstToken,
+                (null, IJsonObject secondToken) => secondToken,
+                (IJsonObject firstToken, IJsonObject secondToken) => firstToken.MergeWith(secondToken),
+                _ => throw new ArgumentOutOfRangeException(nameof(first), $"Unable to merge non-object types. Received types '{first?.GetType()}' and '{second?.GetType()}'")
+            };
         }
 
         [JoltLibraryMethod("isMissing")]
@@ -116,7 +120,17 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? RoundTo(object? value, object? decimalPlaces, EvaluationContext context)
         {
+            if (value is null)
+            {
+                return context.CreateNullToken();
+            }
+
             var resolved = context.ResolveValueOf<object>(value);
+
+            if (resolved is null)
+            {
+                return context.CreateNullToken();
+            }
 
             var resolvedValue = context.CreateTokenFrom(resolved);
 
@@ -194,6 +208,11 @@ namespace Jolt.Library.StandardLibrary
             }
 
             var resolved = context.ResolveValueOf<object>(value);
+
+            if (resolved is null)
+            {
+                return context.CreateTokenFrom(false);
+            }
 
             var empty = resolved switch
             {

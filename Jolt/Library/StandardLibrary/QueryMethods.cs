@@ -89,7 +89,7 @@ namespace Jolt.Library.StandardLibrary
             return base.SkipWhile(context);
         }
 
-        public new IEnumerable<IJsonToken> Skip(EvaluationContext context, int count)
+        public new IEnumerable<IJsonToken> Skip(EvaluationContext context, long count)
         {
             return base.Skip(context, count);
         }
