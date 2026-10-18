@@ -28,21 +28,21 @@ namespace Jolt.Playground
     [SupportedOSPlatform("browser")]
     public static partial class PlaygroundEngine
     {
-        private static readonly JsonSerializerOptions ResultJson = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions _resultJson = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
 
         // Output is shown to a person, so keep quotes, apostrophes and non-ASCII text readable rather than escaped.
-        private static readonly JsonSerializerOptions OutputJson = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions _outputJson = new JsonSerializerOptions
         {
             WriteIndented = true,
             IndentSize = 4,
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         };
 
-        private static readonly string[] ExternalMethodNames = PlaygroundMethods.Descriptions.Select(x => x.Name).ToArray();
+        private static readonly string[] _externalMethodNames = PlaygroundMethods.Descriptions.Select(x => x.Name).ToArray();
 
         /// <summary>
         /// Describes the engine: the Jolt version and the external methods the playground registers.
@@ -62,7 +62,7 @@ namespace Jolt.Playground
             {
                 Version = shortVersion,
                 ExternalMethods = PlaygroundMethods.Descriptions.Select(x => new ExternalMethodDescription { Name = x.Name, Signature = x.Signature }).ToList(),
-            }, ResultJson);
+            }, _resultJson);
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Jolt.Playground
         [JSExport]
         public static string Run(string transformerText, string sourceText, string optionsJson)
         {
-            var options = JsonSerializer.Deserialize<RunOptions>(optionsJson, ResultJson) ?? new RunOptions();
+            var options = JsonSerializer.Deserialize<RunOptions>(optionsJson, _resultJson) ?? new RunOptions();
             var result = new RunResult();
 
             try
@@ -86,7 +86,7 @@ namespace Jolt.Playground
                 if (result.TransformerDiagnostics.Any(x => x.Severity == "error") || result.SourceDiagnostics.Count > 0)
                 {
                     result.Skipped = true;
-                    return JsonSerializer.Serialize(result, ResultJson);
+                    return JsonSerializer.Serialize(result, _resultJson);
                 }
 
                 Transform(transformerText, sourceText, options, result);
@@ -97,13 +97,13 @@ namespace Jolt.Playground
                 result.Error = new RunError { Message = $"{ex.GetType().Name}: {ex.Message}" };
             }
 
-            return JsonSerializer.Serialize(result, ResultJson);
+            return JsonSerializer.Serialize(result, _resultJson);
         }
 
         private static List<PlaygroundDiagnostic> ValidateTransformer(string text, RunOptions options)
         {
             // An empty transformer list means #transformWith calls to any name are reported, since none are registered.
-            var context = new DocumentContext(ExternalMethodNames, Array.Empty<string>());
+            var context = new DocumentContext(_externalMethodNames, Array.Empty<string>());
             var diagnostics = DocumentValidator.Validate(text, context, new ValidationSettings(options.AllowUnsafe));
             var lines = new LineIndex(text);
             var unknownMethodCode = GetCode(ExceptionCode.UnableToFindMethodImplementation);
@@ -234,7 +234,7 @@ namespace Jolt.Playground
 
             try
             {
-                return JsonNode.Parse(output)?.ToJsonString(OutputJson) ?? "null";
+                return JsonNode.Parse(output)?.ToJsonString(_outputJson) ?? "null";
             }
             catch (JsonException)
             {

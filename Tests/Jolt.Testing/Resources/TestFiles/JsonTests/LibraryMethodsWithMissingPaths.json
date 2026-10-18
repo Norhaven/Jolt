@@ -1,0 +1,722 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "possibleExceptionCodes": {
+    "missingPathInLibraryCall": "UnableToPerformLibraryCallOnMissingPath",
+    "externalMethodException": "ExternalMethodInvocationCausedAnException"
+  },
+  "testGroups": [
+    {
+      "name": "Standard library string methods do not throw when given a JSON path that does not exist",
+      "source": {
+        "stringValue": "this is a test"
+      },
+      "tests": [
+        {
+          "name": "ToUpperCase returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#toUpperCase($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "ToLowerCase returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#toLowerCase($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Trim returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#trim($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "TrimStart returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#trimStart($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "TrimEnd returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#trimEnd($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Replace returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#replace($.nonExistentValue, 'a', 'b')"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "StartsWith returns false for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#startsWith($.nonExistentValue, 'a')"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "EndsWith returns false for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#endsWith($.nonExistentValue, 'a')"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "Contains returns false for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#contains($.nonExistentValue, 'a')"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "IndexOf returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#indexOf($.nonExistentValue, 'a')"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Substring returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#substring($.nonExistentValue, 0..2)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Length returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#length($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Reverse returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#reverse($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "SplitOn returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#splitOn($.nonExistentValue, ' ')"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Append returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#append($.nonExistentValue, 'a')"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "IsRegexMatch returns false for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#isRegexMatch($.nonExistentValue, 'is')"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "RegexReplace returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#regexReplace($.nonExistentValue, 'is', 'x')"
+          },
+          "result": {
+            "resultValue": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "Standard library date/time methods do not throw when given a JSON path that does not exist",
+      "source": {
+        "isoDateString": "2024-01-15T10:30:00"
+      },
+      "tests": [
+        {
+          "name": "ParseDateTime returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#parseDateTime($.nonExistentValue, 'MM/dd/yyyy')"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "FormatDateTime returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#formatDateTime($.nonExistentValue, 'yyyy-MM-dd')"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "AddDays returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#addDays($.nonExistentValue, 1)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "AddHours returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#addHours($.nonExistentValue, 1)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "AddMinutes returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#addMinutes($.nonExistentValue, 1)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "Standard library array and query methods do not throw when given a JSON path that does not exist",
+      "source": {
+        "integerArray": [ 1, 2, 3 ]
+      },
+      "tests": [
+        {
+          "name": "GroupBy returns an empty array for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#groupBy($.nonExistentValue, @x: @x)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "OrderBy returns an empty array for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#orderBy($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "OrderByDesc returns an empty array for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#orderByDesc($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "Select returns an empty array for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#select($.nonExistentValue, @x: @x)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "Where returns an empty array for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#where($.nonExistentValue, @x: @x > 1)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "Distinct returns an empty array for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#distinct($.nonExistentValue, @x: @x)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "Any returns false for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#any($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "TakeWhile returns an empty array for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#takeWhile($.nonExistentValue, @x: @x > 1)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "Take returns an empty array for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#take($.nonExistentValue, 1)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "SkipWhile returns an empty array for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#skipWhile($.nonExistentValue, @x: @x > 1)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "Skip returns an empty array for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#skip($.nonExistentValue, 1)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "Zip returns an empty array when the first JSON path does not exist",
+          "transformer": {
+            "resultValue": "#zip($.nonExistentValue, $.integerArray, @x;@y: @x + @y)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "Zip returns an empty array when the second JSON path does not exist",
+          "transformer": {
+            "resultValue": "#zip($.integerArray, $.nonExistentValue, @x;@y: @x + @y)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "SummarizeWith returns an empty array for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#summarizeWith($.nonExistentValue, @group: #length(@group.results))"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "Flatten returns an empty array for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#flatten($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "Slice returns an empty array for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#slice($.nonExistentValue, 0..1)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "JoinWith returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#joinWith($.nonExistentValue, ',')"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Reduce returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#reduce($.nonExistentValue, @x;@y: @x + @y)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "Standard library aggregate methods do not throw when given a JSON path that does not exist",
+      "source": {
+        "integerArray": [ 1, 2, 3 ]
+      },
+      "tests": [
+        {
+          "name": "Max works with a JSON path that exists",
+          "transformer": {
+            "resultValue": "#max($.integerArray)"
+          },
+          "result": {
+            "resultValue": 3
+          }
+        },
+        {
+          "name": "Max returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#max($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Min returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#min($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Sum returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#sum($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Average returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#average($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Sum with a projection returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#sum($.nonExistentValue, @x: @x * 2)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "Standard library type and conversion methods do not throw when given a JSON path that does not exist",
+      "source": {
+        "doubleValue": 3.1415
+      },
+      "tests": [
+        {
+          "name": "RoundTo returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#roundTo($.nonExistentValue, 2)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "IsInteger returns false for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#isInteger($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "IsString returns false for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#isString($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "IsDecimal returns false for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#isDecimal($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "IsBoolean returns false for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#isBoolean($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "IsArray returns false for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#isArray($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "IsObject returns false for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#isObject($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "IsEmpty returns false for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#isEmpty($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "ToInteger returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#toInteger($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "ToString returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#toString($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "ToDecimal returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#toDecimal($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "ToBoolean returns null for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#toBoolean($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "Standard library object methods do not throw when given a JSON path that does not exist",
+      "source": {
+        "testObject": {
+          "first": "value",
+          "second": 2
+        }
+      },
+      "tests": [
+        {
+          "name": "KeysFrom returns an empty array for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#keysFrom($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "ValuesFrom returns an empty array for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#valuesFrom($.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "Merge returns the second object when the first JSON path does not exist",
+          "transformer": {
+            "resultValue": "#merge($.nonExistentValue, $.testObject)"
+          },
+          "result": {
+            "resultValue": {
+              "first": "value",
+              "second": 2
+            }
+          }
+        },
+        {
+          "name": "Merge returns the first object when the second JSON path does not exist",
+          "transformer": {
+            "resultValue": "#merge($.testObject, $.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": {
+              "first": "value",
+              "second": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Standard library conditional methods do not throw when given a JSON path that does not exist",
+      "source": {
+        "booleanValue": true
+      },
+      "tests": [
+        {
+          "name": "If evaluates the false branch for a JSON path that does not exist",
+          "transformer": {
+            "resultValue": "#if($.nonExistentValue, 'yes', 'no')"
+          },
+          "result": {
+            "resultValue": "no"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Standard library methods do not throw when given a range variable path that does not exist",
+      "source": {
+        "testObject": {
+          "first": "value",
+          "second": 2
+        }
+      },
+      "tests": [
+        {
+          "name": "ToUpperCase returns null for a range variable path that does not exist",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "#toUpperCase(@x.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Length returns null for a range variable path that does not exist",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "#length(@x.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Select returns an empty array for a range variable path that does not exist",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "#select(@x.nonExistentValue, @y: @y)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "Sum returns null for a range variable path that does not exist",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "#sum(@x.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "KeysFrom returns an empty array for a range variable path that does not exist",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "#keysFrom(@x.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "IsString returns false for a range variable path that does not exist",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "#isString(@x.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "ToInteger returns null for a range variable path that does not exist",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "#toInteger(@x.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        }
+      ]
+    }
+  ]
+}

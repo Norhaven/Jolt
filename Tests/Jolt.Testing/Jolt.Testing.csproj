@@ -35,6 +35,7 @@
     <EmbeddedResource Include="Resources\TestFiles\JsonTests\ExternalMethods.json" />
     <EmbeddedResource Include="Resources\TestFiles\JsonTests\IndexingWithVariables.json" />
     <EmbeddedResource Include="Resources\TestFiles\JsonTests\JsonTest.schema.json" />
+    <EmbeddedResource Include="Resources\TestFiles\JsonTests\LibraryMethodsWithMissingPaths.json" />
     <EmbeddedResource Include="Resources\TestFiles\JsonTests\LibraryMethodsWithVariables.json" />
     <EmbeddedResource Include="Resources\TestFiles\JsonTests\OperatorsAndVariables.json" />
     <EmbeddedResource Include="Resources\TestFiles\Transformers\ArrayLiterals.json" />

@@ -508,23 +508,12 @@ namespace Jolt.Library.StandardLibrary
 
         private static object? ResolveValueWithOptionalProjection(object? value, LambdaMethod? projection, EvaluationContext context)
         {
-            var resolved = context.ResolveValueOf<object>(value);
-
-            if (value is RangeVariable variable)
+            if (projection != null)
             {
-                value = variable.Value;
-
-                if (projection != null)
-                {
-                    value = Select(value, projection, context);
-                }
-            }
-            else if (projection != null)
-            {
-                value = Select(value, projection, context);
+                return Select(value, projection, context);
             }
 
-            return value;
+            return context.ResolveValueOf<object>(value);
         }
 
         private static IJsonToken? AsIntegerOrFloatingPoint(object? value, Func<IEnumerable<long>, long?> asInt64, Func<IEnumerable<double>, double> asDecimal, EvaluationContext context)

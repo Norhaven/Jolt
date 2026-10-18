@@ -238,12 +238,7 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Contains(object? instance, object? value, EvaluationContext context)
         {
-            var resolved = instance switch
-            {
-                RangeVariable variable when variable.Value?.IsString() == true => variable.Value?.ToTypeOf<string>(),
-                RangeVariable variable => variable.Value?.ToTypeOf<IJsonArray>(),
-                _ => context.ResolveQueryPathIfPresent(value)
-            };
+            var resolved = context.ResolveValueOf<object>(instance);
 
             var contains = resolved switch
             {
@@ -293,12 +288,7 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Append(object? value, [VariadicEvaluation] object[]? additionalValues, EvaluationContext context)
         {
-            var resolved = value switch
-            {
-                RangeVariable variable when variable.Value?.IsString() == true => variable.Value?.ToTypeOf<string>(),
-                RangeVariable variable => variable.Value?.ToTypeOf<IJsonArray>(),
-                _ => context.ResolveQueryPathIfPresent(value)
-            };
+            var resolved = context.ResolveValueOf<object>(value);
 
             IJsonToken? resultToken = context.CreateTokenFrom(resolved);
 
@@ -310,7 +300,7 @@ namespace Jolt.Library.StandardLibrary
 
             foreach (var additionalValue in additionalValues ?? Enumerable.Empty<object>())
             {
-                var resolvedValue = additionalValue is RangeVariable variable ? variable.Value?.ToTypeOf<object>() : context.ResolveQueryPathIfPresent(additionalValue);
+                var resolvedValue = context.ResolveValueOf<object>(additionalValue);
 
                 resultToken = (resultToken, resolvedValue) switch
                 {

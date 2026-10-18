@@ -18,6 +18,7 @@ namespace Jolt.Testing.Harness.DotNetFramework.DotNet.Unit
 
         [Theory]
         [InlineData("LibraryMethodsWithVariables")]
+        [InlineData("LibraryMethodsWithMissingPaths")]
         [InlineData("IndexingWithVariables")]
         [InlineData("ExternalMethods")]
         [InlineData("OperatorsAndVariables")]

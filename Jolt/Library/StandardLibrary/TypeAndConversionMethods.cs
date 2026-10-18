@@ -14,8 +14,8 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Merge(object? first, object? second, EvaluationContext context)
         {
-            var firstToken = context.ResolveQueryPathIfPresent(first) as IJsonObject;
-            var secondToken = context.ResolveQueryPathIfPresent(second) as IJsonObject;
+            var firstToken = context.ResolveValueOf<IJsonObject>(first) as IJsonObject;
+            var secondToken = context.ResolveValueOf<IJsonObject>(second) as IJsonObject;
 
             if (firstToken == null || secondToken == null)
             {
@@ -193,12 +193,7 @@ namespace Jolt.Library.StandardLibrary
                 return context.CreateTokenFrom(false);
             }
 
-            var resolved = value switch
-            {
-                RangeVariable variable when variable.Value?.Type == JsonTokenType.Array => variable.Value.ToTypeOf<IJsonArray>(),
-                RangeVariable variable => variable.Value?.ToTypeOf<string>(),
-                _ => context.ResolveQueryPathIfPresent(value)
-            };
+            var resolved = context.ResolveValueOf<object>(value);
 
             var empty = resolved switch
             {

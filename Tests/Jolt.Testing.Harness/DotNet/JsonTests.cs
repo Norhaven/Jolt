@@ -11,6 +11,9 @@ namespace Jolt.Testing.Harness.DotNet
         [JsonTest("LibraryMethodsWithVariables", typeof(TestContext), TestType.DotNet)]
         public void LibraryMethodsWithVariables(EndToEndTest test) { Execute(test); }
 
+        [JsonTest("LibraryMethodsWithMissingPaths", typeof(TestContext), TestType.DotNet)]
+        public void LibraryMethodsWithMissingPaths(EndToEndTest test) { Execute(test); }
+
         [JsonTest("ExternalMethods", typeof(TestContext), TestType.DotNet)]
         public void ExternalMethods(EndToEndTest test) { Execute(test); }
 

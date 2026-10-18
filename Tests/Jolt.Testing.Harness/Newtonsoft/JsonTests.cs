@@ -11,6 +11,9 @@ namespace Jolt.Testing.Harness.Newtonsoft
         [JsonTest("LibraryMethodsWithVariables", typeof(TestContext), TestType.Newtonsoft)]
         public void LibraryMethodsWithVariables(EndToEndTest test) { Execute(test); }
 
+        [JsonTest("LibraryMethodsWithMissingPaths", typeof(TestContext), TestType.Newtonsoft)]
+        public void LibraryMethodsWithMissingPaths(EndToEndTest test) { Execute(test); }
+
         [JsonTest("ExternalMethods", typeof(TestContext), TestType.Newtonsoft)]
         public void ExternalMethods(EndToEndTest test) { Execute(test); }
 

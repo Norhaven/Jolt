@@ -36,7 +36,7 @@ const ready = start().then(
 	(error) => postMessage({ type: 'failed', message: error?.message ?? String(error) }),
 );
 
-self.onmessage = async (event) => {
+self.addEventListener('message', async (event) => {
 	await ready;
 
 	const { id, type, transformer, source, options } = event.data;
@@ -51,4 +51,4 @@ self.onmessage = async (event) => {
 	} catch (error) {
 		postMessage({ id, type: 'error', message: error?.message ?? String(error) });
 	}
-};
+});
