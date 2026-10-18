@@ -5,16 +5,29 @@
             "label": "docs: dev server",
             "type": "shell",
             "command": "npm run dev",
-            "options": { "cwd": "${workspaceFolder}" },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
             "isBackground": true,
             "problemMatcher": {
-                "pattern": { "regexp": "^$" },
+                "pattern": {
+                    "regexp": "^$"
+                },
                 "background": {
                     "activeOnStart": true,
                     "beginsPattern": ".",
                     "endsPattern": "ready in|Local"
                 }
             }
+        },
+        {
+            "label": "docs: build playground engine",
+            "type": "shell",
+            "command": "npm run engine",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": "$msCompile"
         }
     ]
 }

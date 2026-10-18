@@ -49,6 +49,7 @@ export default defineConfig({
 					label: 'Getting Started',
 					items: [{ autogenerate: { directory: 'getting-started' } }],
 				},
+				{ label: 'Playground', slug: 'playground' },
 				{
 					label: 'Language Guide',
 					items: [{ autogenerate: { directory: 'guide' } }],

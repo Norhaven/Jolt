@@ -71,6 +71,34 @@ Each entry in `data/methods.yaml` becomes one page, a row in the [all methods](.
 
 Every example with `source`, `transformer`, and `output` is exported to `src/generated/doc-examples.json` when the site builds. `tests-template/DocExamplesTests.cs` shows how to run them as xUnit tests against the real engine, so a documented example that drifts from actual behavior fails the build.
 
+## The playground
+
+The [playground](../../playground/) runs the real engine in the browser. It has three parts:
+
+| Part | Location |
+| ---- | -------- |
+| The engine, compiled to WebAssembly | `playground/` (a .NET project that references `Jolt` and `Jolt.Json.DotNet` from source) |
+| A Web Worker that hosts the engine | `public/playground/engine-worker.js` |
+| The page and editors (CodeMirror) | `src/components/playground/` and `src/content/docs/playground.mdx` |
+
+Build the engine once before `npm run dev` (it needs the .NET 10 SDK):
+
+```sh
+npm run engine
+```
+
+This publishes `playground/` and copies the runtime into `public/playground/engine/`, which isn't committed. Without it, the playground page loads but reports that the engine hasn't been built.
+
+Validation in the playground compiles in the language server's `Mapping/` and `Validation/` files, so its squiggles match the VS Code extension. The external methods it registers are in `playground/PlaygroundMethods.cs`, matching the [external methods](../../host/external-methods/) page.
+
+### Trimming
+
+Publishing trims unused code, but Jolt finds methods through reflection. `Jolt`, `Jolt.Json.DotNet` and the playground itself are kept whole with `TrimmerRootAssembly` in `Jolt.Playground.csproj`. If something works with `dotnet run` but fails in the published playground (typically "unable to find method"), something else needs rooting there.
+
+### Share links and "Try it"
+
+Playground state is stored in the URL hash as `#code=` followed by deflate-compressed, base64url-encoded JSON. `src/components/playground/share.js` does the encoding, and the generator imports it to build the **Try it in the playground** link under every complete example in `methods.yaml`.
+
 ## Longer explanations
 
 For anything beyond a summary and examples, such as a walkthrough, edge cases, or design rationale, create `data/method-details/<name>.md`. Its contents are appended to the generated page under **Details**. See `data/method-details/summarizeWith.md` for an example.

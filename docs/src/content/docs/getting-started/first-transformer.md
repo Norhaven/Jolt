@@ -60,6 +60,8 @@ The transformer produces:
 }
 ```
 
+[Try this example in the playground →](../../playground/#code=dZBBCsIwEEWvMoxCDdUeQFAQt6IHMC6GOq2FNoFk0o307lKjtRbdhflvwrx_R2-DyxnXeNcGAEBjHrzYhp3GNbyGMSgq5-VIDfeJxt2VNC7HQE3j_GBbrinnCeSFJPiIUC5VOwWEymd8_gxj0JDcvtg4ZlNWhr3GT3CJz06bDpcojowvrGvYjT3NcOmspTrwqVjMs7d8NsgqSCGBBFL4hb2V1XCYxsrvXl7_Po8dKNhsIIkdJKN9oXJvg5H_-31FarWd1WxKuS1U795h9wA)
+
 ## Check your syntax early
 
 Before you have a real source document, `Validate()` reports syntax and structure problems in the transformer itself. See [validation](../../host/validation/).

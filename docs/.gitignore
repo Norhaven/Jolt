@@ -7,3 +7,9 @@ node_modules/
 src/content/docs/reference/library/
 src/generated/
 src/assets/jolt-logo.png
+
+# playground engine: built by `npm run engine` (dotnet publish), copied into public/
+playground/bin/
+playground/obj/
+playground/publish/
+public/playground/engine/

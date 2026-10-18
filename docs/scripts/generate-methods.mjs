@@ -6,6 +6,8 @@
 //   src/content/docs/reference/library/<name>.md     one page per method
 //   src/generated/library-sidebar.json               sidebar groups, read by astro.config.mjs
 //   src/generated/doc-examples.json                  examples with source/transformer/output, for tests
+//                                                    and the playground's example list
+//   src/generated/method-index.json                  names, signatures and summaries for playground completions
 //
 // Run directly with `npm run generate`.
 
@@ -13,6 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse } from 'yaml';
+import { encodeState } from '../src/components/playground/share.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dataFile = path.join(root, 'data/methods.yaml');
@@ -21,6 +24,12 @@ const pagesDir = path.join(root, 'src/content/docs/reference/library');
 const generatedDir = path.join(root, 'src/generated');
 
 const REPO_EDIT_URL = 'https://github.com/Norhaven/Jolt/edit/main/docs/data/methods.yaml';
+
+// Method pages live at /reference/library/<name>/, so this reaches the site root.
+const PLAYGROUND_FROM_METHOD_PAGE = '../../../playground/';
+
+// Offered first in playground completions.
+const COMMON_METHODS = new Set(['valueOf', 'exists', 'if', 'foreach', 'select', 'where', 'sum', 'length', 'toString', 'joinWith']);
 
 const VALID_IN = {
 	'property-value': 'Property value',
@@ -102,6 +111,18 @@ const fence = (lang, code, title) => `\`\`\`${lang}${title ? ` title="${title}"`
 const validInText = (m) => m.validIn.map((v) => VALID_IN[v]).join(', ');
 const sortByName = (a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' });
 
+// ── Playground links ─────────────────────────────────────────────────
+
+// Every complete example (source, transformer and output) gets a "Try it" link that opens it in the playground.
+const tryItLinks = new Map();
+for (const m of methods) {
+	for (const ex of m.examples ?? []) {
+		if (ex.source === undefined) continue;
+		const hash = await encodeState({ source: json(ex.source), transformer: json(ex.transformer) });
+		tryItLinks.set(ex, `${PLAYGROUND_FROM_METHOD_PAGE}#${hash}`);
+	}
+}
+
 // ── Method pages ─────────────────────────────────────────────────────
 
 function renderMethod(m) {
@@ -175,6 +196,8 @@ function renderMethod(m) {
 				out.push(fence('jolt', json(ex.transformer), 'transformer.json'));
 				out.push('');
 				out.push(fence('json', json(ex.output), 'output.json'));
+				out.push('');
+				out.push(`[Try it in the playground →](${tryItLinks.get(ex)})`);
 			}
 			out.push('');
 		}
@@ -271,6 +294,14 @@ const docExamples = methods.flatMap((m) =>
 		})),
 );
 fs.writeFileSync(path.join(generatedDir, 'doc-examples.json'), JSON.stringify(docExamples, null, 2));
+
+const methodIndex = [...methods].sort(sortByName).map((m) => ({
+	name: m.name,
+	signature: m.signature,
+	summary: m.summary,
+	common: COMMON_METHODS.has(m.name) || undefined,
+}));
+fs.writeFileSync(path.join(generatedDir, 'method-index.json'), JSON.stringify(methodIndex, null, 2));
 
 // The header logo lives at the repo root; copy it in when present.
 const logo = path.resolve(root, '../JoltLogo.png');

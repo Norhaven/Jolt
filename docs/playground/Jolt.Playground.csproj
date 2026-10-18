@@ -1,0 +1,70 @@
+<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+  <!--
+    The Jolt engine for the docs site playground, compiled to WebAssembly and called from JavaScript.
+
+    Build it from docs/ with `npm run engine`, which publishes this project and copies the runtime into
+    public/playground/engine/. CI does the same in .github/workflows/docs.yml.
+
+    It references the Jolt projects directly (not the NuGet packages), so the playground always runs the same
+    code as the commit the docs were built from.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Jolt.Playground</RootNamespace>
+    <AssemblyName>Jolt.Playground</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <!-- `npm run engine` publishes into ./publish; keep that output out of the project's own items. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);publish/**</DefaultItemExcludes>
+
+    <!-- Required by the [JSExport] source generator. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- No ICU data download. Culture-sensitive formatting uses the invariant culture, as on the language server. -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+
+    <!--
+      Keep stable file names (dotnet.js rather than dotnet.<hash>.js), since the engine is loaded from a Web Worker
+      rather than from an HTML page with an import map. The copy script also copes with fingerprinted names.
+    -->
+    <WasmFingerprintAssets>false</WasmFingerprintAssets>
+
+    <!-- GitHub Pages doesn't serve precompressed .br/.gz files, so don't spend build time producing them. -->
+    <CompressionEnabled>false</CompressionEnabled>
+
+    <!--
+      Jolt serializes external method results and reads JSON into CLR types with reflection-based System.Text.Json.
+    -->
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Jolt\Jolt.csproj" />
+    <ProjectReference Include="..\..\Jolt.Json.DotNet\Jolt.Json.DotNet.csproj" />
+  </ItemGroup>
+
+  <!--
+    Validation and issue locations are shared with the language server, so the playground reports exactly what the
+    VS Code extension does. These files only depend on Jolt's public API and System.Text.Json.
+  -->
+  <ItemGroup Label="Shared with the language server">
+    <Compile Include="..\..\IDE\LanguageServer\Jolt.LanguageServer\Mapping\*.cs" LinkBase="LanguageServer\Mapping" />
+    <Compile Include="..\..\IDE\LanguageServer\Jolt.LanguageServer\Validation\*.cs" LinkBase="LanguageServer\Validation" />
+    <Compile Include="..\..\IDE\LanguageServer\Jolt.LanguageServer\Protocol\LspTypes.cs" LinkBase="LanguageServer\Protocol" />
+  </ItemGroup>
+
+  <!--
+    Publishing trims unused code, but Jolt finds library methods (Assembly.GetTypes), external methods
+    (Type.GetType by assembly-qualified name) and generic helpers (MakeGenericMethod) through reflection, which the
+    trimmer can't see. Keep these assemblies whole. If a method works under `dotnet run` but reports
+    "unable to find method" in the published playground, a dependency needs rooting here too.
+  -->
+  <ItemGroup Label="Trimming">
+    <TrimmerRootAssembly Include="Jolt" />
+    <TrimmerRootAssembly Include="Jolt.Json.DotNet" />
+    <TrimmerRootAssembly Include="Jolt.Playground" />
+  </ItemGroup>
+</Project>

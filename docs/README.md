@@ -16,6 +16,18 @@ npm run build    # static site in dist/
 | Jolt syntax highlighting | `src/grammars/` |
 | Sidebar | `astro.config.mjs` |
 
+The [playground](https://norhaven.github.io/Jolt/playground/) needs its WebAssembly engine built once (requires the .NET 10 SDK):
+
+```sh
+npm run engine   # dotnet publish playground/ and copy it into public/playground/engine/
+```
+
+| What | Where |
+| ---- | ----- |
+| Playground engine (.NET → WebAssembly) | `playground/` |
+| Playground page and editors | `src/components/playground/`, `src/content/docs/playground.mdx` |
+| Worker hosting the engine | `public/playground/engine-worker.js` |
+
 Library pages under `src/content/docs/reference/library/` are generated from `data/methods.yaml` before every `dev` and `build` (`npm run generate` to do it by hand). They're gitignored; don't edit them.
 
 Examples in `methods.yaml` that have `source`, `transformer` and `output` are also exported to `src/generated/doc-examples.json`. `tests-template/DocExamplesTests.cs` runs them against the engine as xUnit tests.

@@ -15,6 +15,10 @@ on:
       - 'docs/**'
       - 'JoltLogo.png'
       - '.github/workflows/docs.yml'
+      # The playground runs the engine and the language server's validation from source.
+      - 'Jolt/**'
+      - 'Jolt.Json.DotNet/**'
+      - 'IDE/LanguageServer/Jolt.LanguageServer/**'
   workflow_dispatch:
 
 permissions:
@@ -44,9 +48,21 @@ jobs:
         with:
           node-version: 22
 
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      # Optional, but relinks the WebAssembly runtime so the playground download is smaller.
+      - name: Install WebAssembly build tools
+        run: dotnet workload install wasm-tools
+
       # Switch to `npm ci` (and add `cache: npm` above) once package-lock.json is committed.
       - name: Install
         run: npm install
+
+      # Publishes docs/playground to WebAssembly and copies it into public/playground/engine/.
+      - name: Build playground engine
+        run: npm run engine
 
       # `prebuild` regenerates the library reference from data/methods.yaml.
       - name: Build

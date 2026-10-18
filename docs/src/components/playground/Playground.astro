@@ -1,0 +1,391 @@
+---
+// The Jolt playground. Behavior is in main.js; the engine runs in public/playground/engine-worker.js.
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const workerUrl = `${base}playground/engine-worker.js`;
+---
+
+<div class="jolt-playground not-content" data-jolt-playground data-worker-url={workerUrl}>
+	<div class="jp-toolbar">
+		<label class="jp-field">
+			<span class="sr-only">Load an example</span>
+			<select data-examples>
+				<option value="">Examples…</option>
+			</select>
+		</label>
+
+		<fieldset class="jp-options">
+			<legend class="sr-only">Options</legend>
+			<label title="JoltOptions.WithLooseErrorHandling(): errors drop the failing property instead of failing the whole transformation">
+				<input type="checkbox" data-option="looseErrorHandling" /> Loose errors
+			</label>
+			<label title="JoltOptions.WithUnsafeAllowed(): enables #eval">
+				<input type="checkbox" data-option="allowUnsafe" /> Allow unsafe
+			</label>
+			<label title="JoltOptions.WithExecutionTracing(): times every method call">
+				<input type="checkbox" data-option="trace" /> Trace
+			</label>
+		</fieldset>
+
+		<div class="jp-actions">
+			<button type="button" data-action="format">Format</button>
+			<button type="button" data-action="reset">Reset</button>
+			<button type="button" data-action="share" class="jp-primary">Share</button>
+		</div>
+
+		<span class="jp-status" data-status data-state="idle" role="status">Engine idle</span>
+	</div>
+
+	<div class="jp-panes">
+		<section class="jp-pane" aria-labelledby="jp-source-title">
+			<header><h2 id="jp-source-title">Source</h2><span>JSON</span></header>
+			<div class="jp-editor" data-editor="source"></div>
+		</section>
+
+		<section class="jp-pane" aria-labelledby="jp-transformer-title">
+			<header><h2 id="jp-transformer-title">Transformer</h2><span>Jolt</span></header>
+			<div class="jp-editor" data-editor="transformer"></div>
+		</section>
+
+		<section class="jp-pane jp-output" aria-labelledby="jp-output-title">
+			<header><h2 id="jp-output-title">Output</h2><span data-elapsed></span></header>
+			<div class="jp-error" data-error hidden role="alert"></div>
+			<div class="jp-editor" data-editor="output"></div>
+		</section>
+	</div>
+
+	<section class="jp-issues" aria-labelledby="jp-issues-title" aria-live="polite">
+		<h2 id="jp-issues-title">Issues <span class="jp-count" data-issue-count></span></h2>
+		<ul data-issues></ul>
+	</section>
+
+	<details class="jp-panel" data-trace-panel hidden open>
+		<summary>Execution trace</summary>
+		<pre data-trace></pre>
+	</details>
+
+	<details class="jp-panel">
+		<summary>External methods available here</summary>
+		<p>
+			The playground registers the methods from <a href={`${base}host/external-methods/`}>External methods</a>, so
+			those examples can be tried too.
+		</p>
+		<ul class="jp-methods" data-external-methods></ul>
+	</details>
+</div>
+
+<script>
+	import './main.js';
+</script>
+
+<style is:global>
+	/* ── Tokens ───────────────────────────────────────────────────────
+	   Surfaces reuse Starlight's palette, which already flips between themes.
+	   Syntax colors are set per theme below. */
+	.jolt-playground {
+		--jp-text: var(--sl-color-white);
+		--jp-muted: var(--sl-color-gray-3);
+		--jp-border: var(--sl-color-hairline-light);
+		--jp-editor-bg: var(--sl-color-black);
+		--jp-panel-bg: var(--sl-color-gray-6);
+		--jp-active-line: color-mix(in srgb, var(--sl-color-gray-5) 35%, transparent);
+		--jp-selection: color-mix(in srgb, var(--sl-color-accent) 28%, transparent);
+		--jp-bracket: color-mix(in srgb, var(--sl-color-accent) 22%, transparent);
+		--jp-cursor: var(--sl-color-accent-high);
+		--jp-radius: 0.5rem;
+
+		--jp-error: #ff6b6b;
+		--jp-warning: #f0b429;
+
+		--jp-method: #f5b942;
+		--jp-variable: #7cc7ff;
+		--jp-path: #8bd5a6;
+		--jp-string: #e6a0c4;
+		--jp-keyword: #c792ea;
+		--jp-operator: #89ddff;
+		--jp-number: #f78c6c;
+		--jp-constant: #f78c6c;
+		--jp-discard: #8a8f98;
+		--jp-key: #a9c7ef;
+		--jp-plain-string: #c3e88d;
+		--jp-punctuation: var(--sl-color-gray-3);
+	}
+
+	:root[data-theme='light'] .jolt-playground {
+		--jp-error: #c92a2a;
+		--jp-warning: #a15c00;
+
+		--jp-method: #8f5200;
+		--jp-variable: #0b5cad;
+		--jp-path: #1d7a3c;
+		--jp-string: #a3317d;
+		--jp-keyword: #6f42c1;
+		--jp-operator: #0b6e7a;
+		--jp-number: #b5441e;
+		--jp-constant: #b5441e;
+		--jp-discard: #6b7280;
+		--jp-key: #1f4e8c;
+		--jp-plain-string: #2f6b10;
+	}
+
+	.jolt-playground .cm-jolt-method { color: var(--jp-method); font-weight: 600; }
+	.jolt-playground .cm-jolt-variable { color: var(--jp-variable); }
+	.jolt-playground .cm-jolt-path { color: var(--jp-path); }
+	.jolt-playground .cm-jolt-string { color: var(--jp-string); }
+	.jolt-playground .cm-jolt-keyword { color: var(--jp-keyword); font-style: italic; }
+	.jolt-playground .cm-jolt-operator { color: var(--jp-operator); }
+	.jolt-playground .cm-jolt-number { color: var(--jp-number); }
+	.jolt-playground .cm-jolt-constant { color: var(--jp-constant); }
+	.jolt-playground .cm-jolt-discard { color: var(--jp-discard); }
+	.jolt-playground .cm-jolt-key { color: var(--jp-key); }
+	.jolt-playground .cm-jolt-plain-string { color: var(--jp-plain-string); }
+
+	/* ── Layout ───────────────────────────────────────────────────────
+	   Wider than the page's text column, centered on it, never wider than the viewport. */
+	.jolt-playground {
+		--jp-width: min(100rem, calc(100vw - 2.5rem));
+		width: var(--jp-width);
+		margin-inline: calc(50% - var(--jp-width) / 2);
+		margin-block: 1rem 3rem;
+		display: grid;
+		gap: 1rem;
+		color: var(--jp-text);
+		font-size: var(--sl-text-sm);
+	}
+
+	.jolt-playground .sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	.jolt-playground .jp-toolbar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.75rem 1.25rem;
+	}
+
+	.jolt-playground select,
+	.jolt-playground button {
+		font: inherit;
+		color: var(--jp-text);
+		background: var(--jp-panel-bg);
+		border: 1px solid var(--jp-border);
+		border-radius: 0.375rem;
+		padding: 0.375rem 0.75rem;
+		min-height: 2.25rem;
+		cursor: pointer;
+	}
+
+	.jolt-playground select { max-width: 16rem; }
+
+	.jolt-playground button:hover,
+	.jolt-playground select:hover { border-color: var(--sl-color-gray-4); }
+
+	.jolt-playground :is(button, select, input, summary):focus-visible {
+		outline: 2px solid var(--sl-color-accent);
+		outline-offset: 2px;
+	}
+
+	.jolt-playground .jp-primary {
+		background: var(--sl-color-accent);
+		border-color: var(--sl-color-accent);
+		color: var(--sl-color-black);
+		font-weight: 600;
+	}
+
+	.jolt-playground .jp-primary:hover { background: var(--sl-color-accent-high); border-color: var(--sl-color-accent-high); }
+
+	.jolt-playground .jp-options {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem 1rem;
+		border: 0;
+		margin: 0;
+		padding: 0;
+	}
+
+	.jolt-playground .jp-options label {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.375rem;
+		color: var(--jp-muted);
+		cursor: pointer;
+	}
+
+	.jolt-playground .jp-options input { accent-color: var(--sl-color-accent); }
+
+	.jolt-playground .jp-actions { display: flex; gap: 0.5rem; }
+
+	.jolt-playground .jp-status {
+		margin-inline-start: auto;
+		font-size: var(--sl-text-xs);
+		color: var(--jp-muted);
+		display: inline-flex;
+		align-items: center;
+		gap: 0.375rem;
+	}
+
+	.jolt-playground .jp-status::before {
+		content: '';
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: var(--jp-muted);
+	}
+
+	.jolt-playground .jp-status[data-state='loading']::before { background: var(--jp-warning); animation: jp-pulse 1s ease-in-out infinite alternate; }
+	.jolt-playground .jp-status[data-state='ready']::before { background: var(--jp-path); }
+	.jolt-playground .jp-status[data-state='failed']::before { background: var(--jp-error); }
+
+	@keyframes jp-pulse { to { opacity: 0.3; } }
+
+	@media (prefers-reduced-motion: reduce) {
+		.jolt-playground .jp-status[data-state='loading']::before { animation: none; }
+	}
+
+	.jolt-playground .jp-panes {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	@media (min-width: 50rem) {
+		.jolt-playground .jp-panes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+		.jolt-playground .jp-output { grid-column: 1 / -1; }
+	}
+
+	@media (min-width: 80rem) {
+		.jolt-playground .jp-panes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+		.jolt-playground .jp-output { grid-column: auto; }
+	}
+
+	.jolt-playground .jp-pane {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+		border: 1px solid var(--jp-border);
+		border-radius: var(--jp-radius);
+		overflow: hidden;
+		background: var(--jp-editor-bg);
+	}
+
+	.jolt-playground .jp-pane header {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 1rem;
+		padding: 0.5rem 0.875rem;
+		background: var(--jp-panel-bg);
+		border-bottom: 1px solid var(--jp-border);
+	}
+
+	.jolt-playground h2 {
+		margin: 0;
+		font-size: var(--sl-text-sm);
+		font-weight: 600;
+		color: var(--jp-text);
+	}
+
+	.jolt-playground .jp-pane header span {
+		font-size: var(--sl-text-xs);
+		color: var(--jp-muted);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.jolt-playground .jp-editor { height: 22rem; min-height: 0; }
+
+	@media (min-width: 50rem) {
+		.jolt-playground .jp-editor { height: 32rem; }
+	}
+
+	.jolt-playground .jp-error {
+		padding: 0.625rem 0.875rem;
+		border-bottom: 1px solid var(--jp-border);
+		color: var(--jp-error);
+		background: color-mix(in srgb, var(--jp-error) 10%, transparent);
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+	}
+
+	.jolt-playground .jp-error[data-kind='notice'] {
+		color: var(--jp-muted);
+		background: transparent;
+	}
+
+	.jolt-playground .jp-issues h2 { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+
+	.jolt-playground .jp-count:not(:empty) {
+		font-size: var(--sl-text-xs);
+		padding: 0 0.5rem;
+		border-radius: 1rem;
+		background: var(--jp-panel-bg);
+		border: 1px solid var(--jp-border);
+	}
+
+	.jolt-playground .jp-issues ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 0.375rem;
+	}
+
+	.jolt-playground .jp-issues button {
+		width: 100%;
+		text-align: start;
+		display: grid;
+		gap: 0.125rem;
+		border-left: 3px solid var(--jp-error);
+		background: var(--jp-panel-bg);
+		padding: 0.5rem 0.75rem;
+	}
+
+	.jolt-playground .jp-issues button[data-severity='warning'] { border-left-color: var(--jp-warning); }
+	.jolt-playground .jp-issues button[data-severity='info'] { border-left-color: var(--jp-muted); }
+
+	.jolt-playground .jp-issue-where { font-size: var(--sl-text-xs); color: var(--jp-muted); }
+	.jolt-playground .jp-issue-message { overflow-wrap: anywhere; }
+	.jolt-playground .jp-no-issues { color: var(--jp-muted); }
+
+	.jolt-playground .jp-panel {
+		border: 1px solid var(--jp-border);
+		border-radius: var(--jp-radius);
+		background: var(--jp-panel-bg);
+		padding: 0.5rem 0.875rem;
+	}
+
+	.jolt-playground .jp-panel summary { cursor: pointer; font-weight: 600; padding-block: 0.25rem; }
+
+	.jolt-playground .jp-panel[hidden] { display: none; }
+
+	.jolt-playground .jp-panel pre {
+		margin: 0.5rem 0 0.25rem;
+		max-height: 24rem;
+		overflow: auto;
+		font-family: var(--sl-font-mono);
+		font-size: var(--sl-text-xs);
+		line-height: 1.6;
+		color: var(--jp-text);
+	}
+
+	.jolt-playground .jp-panel p { margin: 0.5rem 0; color: var(--jp-muted); }
+	.jolt-playground .jp-panel a { color: var(--sl-color-accent-high); }
+
+	.jolt-playground .jp-methods {
+		margin: 0 0 0.25rem;
+		padding-inline-start: 1.25rem;
+		display: grid;
+		gap: 0.25rem;
+	}
+
+	.jolt-playground .jp-methods code { font-family: var(--sl-font-mono); font-size: var(--sl-text-xs); overflow-wrap: anywhere; }
+
+	@media (max-width: 40rem) {
+		.jolt-playground .jp-status { margin-inline-start: 0; width: 100%; }
+		.jolt-playground select { max-width: 100%; flex: 1; }
+	}
+</style>

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Jolt engine self-test</title>
+	<script type="importmap"></script>
+	<style>
+		body { font: 14px/1.5 system-ui, sans-serif; margin: 2rem; background: #fff; color: #111; }
+		pre { background: #f4f4f5; padding: 1rem; border-radius: 6px; overflow: auto; }
+		@media (prefers-color-scheme: dark) { body { background: #111; color: #eee; } pre { background: #1f1f23; } }
+	</style>
+</head>
+<body>
+	<h1>Jolt engine self-test</h1>
+	<p>
+		<code>dotnet run</code> serves this page to check the WebAssembly engine on its own. The docs site doesn't use it:
+		<code>npm run engine</code> copies only <code>_framework/</code>.
+	</p>
+	<pre id="out">Loading…</pre>
+	<script type="module" src="main.js"></script>
+</body>
+</html>

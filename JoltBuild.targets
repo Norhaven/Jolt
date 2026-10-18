@@ -1,11 +1,12 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+ <!-- docs/ holds the playground's WebAssembly project, which is built by the docs workflow instead. -->
  <ItemGroup Condition="'$(BuildGroup)' == ''">
-    <ProjectReference Include="**/*.csproj" />
+    <ProjectReference Include="**/*.csproj" Exclude="docs/**/*.csproj" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(BuildGroup)' == 'CrossPlatform'">
-    <ProjectReference Include="**/*.csproj" Exclude="Tests/Jolt.Testing.Harness.DotNetFramework/Jolt.Testing.Harness.DotNetFramework.csproj;IDE/Tools/Jolt.LanguageMetadata/Jolt.LanguageMetadata.csproj;IDE/LanguageServer/Jolt.LanguageServer/Jolt.LanguageServer.csproj;IDE/LanguageServer/Jolt.LanguageServer.Tests/Jolt.LanguageServer.Tests.csproj" />
+    <ProjectReference Include="**/*.csproj" Exclude="docs/**/*.csproj;Tests/Jolt.Testing.Harness.DotNetFramework/Jolt.Testing.Harness.DotNetFramework.csproj;IDE/Tools/Jolt.LanguageMetadata/Jolt.LanguageMetadata.csproj;IDE/LanguageServer/Jolt.LanguageServer/Jolt.LanguageServer.csproj;IDE/LanguageServer/Jolt.LanguageServer.Tests/Jolt.LanguageServer.Tests.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildGroup)' == 'WindowsOnly'">
