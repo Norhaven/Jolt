@@ -428,7 +428,7 @@ namespace Jolt.Evaluation
             if (dereference.Variable.ProvidesNullSafeAccess == true && hasDereferenceChain && currentProperty is null)
             {
                 var missingDereferencePaths = dereference.DereferenceChain.Select(x => x.PropertyName).ToArray();
-                return new DereferencedPath(rangeVariable, null, missingDereferencePaths);
+                return new DereferencedPath(rangeVariable, null, missingDereferencePaths, isNullSafe: true);
             }
 
             for (var i = 0; i < dereference.DereferenceChain.Length; i++)
@@ -448,9 +448,14 @@ namespace Jolt.Evaluation
                             return new DereferencedPath(rangeVariable, json, missingDereferencePaths);
                         }
 
-                        if (propertyReference.IsNullSafe)
+                        // A null-safe variable (e.g. '@x?.property') protects the first property in the chain the
+                        // same way that a null-safe property (e.g. '@x.first?.second') protects the one after it.
+
+                        var isNullSafe = propertyReference.IsNullSafe || (i == 0 && dereference.Variable.ProvidesNullSafeAccess == true);
+
+                        if (isNullSafe)
                         {
-                            return new DereferencedPath(rangeVariable, null, missingDereferencePaths);
+                            return new DereferencedPath(rangeVariable, null, missingDereferencePaths, isNullSafe: true);
                         }
 
                         if (i == dereference.DereferenceChain.Length - 1)

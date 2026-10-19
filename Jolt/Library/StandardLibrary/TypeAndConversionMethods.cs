@@ -14,10 +14,11 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Merge(object? first, object? second, EvaluationContext context)
         {
-            // A missing side of the merge is treated as an empty object, so the other side is returned as-is.
+            // A side of the merge reached through a null-safe dereference is treated as an empty object,
+            // so the other side is returned as-is.
 
-            var firstResolved = first is null ? null : context.ResolveValueOf<IJsonObject>(first);
-            var secondResolved = second is null ? null : context.ResolveValueOf<IJsonObject>(second);
+            var firstResolved = context.ResolveValueOf<IJsonObject>(first);
+            var secondResolved = context.ResolveValueOf<IJsonObject>(second);
 
             return (firstResolved, secondResolved) switch
             {
@@ -120,11 +121,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? RoundTo(object? value, object? decimalPlaces, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<object>(value);
 
             if (resolved is null)
@@ -148,7 +144,7 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsInteger(object? value, EvaluationContext context)
         {
-            var resolved = context.ResolveValueOf<object>(value);
+            var resolved = context.ResolveValueOrNullOf<object>(value);
 
             return context.CreateTokenFrom(resolved is int || resolved is long || ((resolved is double || resolved is decimal) && !resolved.ToString().Contains(".")));
         }
@@ -157,7 +153,7 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsString(object? value, EvaluationContext context)
         {
-            var resolved = context.ResolveValueOf<object>(value);
+            var resolved = context.ResolveValueOrNullOf<object>(value);
 
             return context.CreateTokenFrom(resolved is string);
         }
@@ -166,7 +162,7 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsDecimal(object? value, EvaluationContext context)
         {
-            var resolved = context.ResolveValueOf<object>(value);
+            var resolved = context.ResolveValueOrNullOf<object>(value);
 
             return context.CreateTokenFrom(resolved is decimal || resolved is double);
         }
@@ -175,7 +171,7 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsBoolean(object? value, EvaluationContext context)
         {
-            var resolved = context.ResolveValueOf<object>(value);
+            var resolved = context.ResolveValueOrNullOf<object>(value);
 
             return context.CreateTokenFrom(resolved is bool);
         }
@@ -184,7 +180,7 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsArray(object? value, EvaluationContext context)
         {
-            var resolved = context.ResolveValueOf<object>(value);
+            var resolved = context.ResolveValueOrNullOf<object>(value);
 
             return context.CreateTokenFrom(resolved?.GetType().IsArray == true || resolved is IJsonArray);
         }
@@ -193,7 +189,7 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsObject(object? value, EvaluationContext context)
         {
-            var resolved = context.ResolveValueOf<object>(value);
+            var resolved = context.ResolveValueOrNullOf<object>(value);
 
             return context.CreateTokenFrom(resolved?.GetType().IsClass == true || resolved is IJsonObject);
         }
@@ -202,11 +198,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsEmpty(object? value, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateTokenFrom(false);
-            }
-
             var resolved = context.ResolveValueOf<object>(value);
 
             if (resolved is null)

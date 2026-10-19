@@ -133,6 +133,7 @@ namespace Jolt.Exceptions
             [ExceptionCode.UnableToLocateReferencedTransformer] = "Unable to locate referenced transformer '{0}' for use within #transformWith() library call",
             [ExceptionCode.AttemptedToUseUndeclaredVariable] = "Attempted to use undeclared variable '{0}'",
             [ExceptionCode.UnableToPerformLibraryCallOnMissingPath] = "Unable to perform library call using missing path '{0}'",
+            [ExceptionCode.UnableToPerformLibraryCallOnNullValue] = "Unable to perform library call using a null value, consider using the null-safe '?.' operator or the '??' operator to provide a default value",
             [ExceptionCode.UnableToUseMethodWithinMatchBlock] = "Unable to use method '{0}' within a match case block",
             [ExceptionCode.UnableToUseMatchCaseMethodOutsideOfMatchBlock] = "Unable to use match case method '{0}' outside of a match block",
             [ExceptionCode.UnableToEvaluateResultOfGivenExpressionDueToNonBooleanResult] = "Unable to evaluate the result of the #given() expression due to evaluating as non-boolean",

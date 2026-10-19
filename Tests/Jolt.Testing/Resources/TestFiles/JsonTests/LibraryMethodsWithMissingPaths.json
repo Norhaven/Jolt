@@ -2,395 +2,356 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "possibleExceptionCodes": {
     "missingPathInLibraryCall": "UnableToPerformLibraryCallOnMissingPath",
-    "externalMethodException": "ExternalMethodInvocationCausedAnException"
+    "externalMethodException": "ExternalMethodInvocationCausedAnException",
+    "nullValueInLibraryCall": "UnableToPerformLibraryCallOnNullValue"
   },
   "testGroups": [
     {
-      "name": "Standard library string methods do not throw when given a JSON path that does not exist",
+      "name": "Standard library string methods throw when given a JSON path that does not exist",
       "source": {
         "stringValue": "this is a test"
       },
       "tests": [
         {
-          "name": "ToUpperCase returns null for a JSON path that does not exist",
+          "name": "ToUpperCase throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#toUpperCase($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "ToLowerCase returns null for a JSON path that does not exist",
+          "name": "ToLowerCase throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#toLowerCase($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Trim returns null for a JSON path that does not exist",
+          "name": "Trim throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#trim($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "TrimStart returns null for a JSON path that does not exist",
+          "name": "TrimStart throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#trimStart($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "TrimEnd returns null for a JSON path that does not exist",
+          "name": "TrimEnd throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#trimEnd($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Replace returns null for a JSON path that does not exist",
+          "name": "Replace throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#replace($.nonExistentValue, 'a', 'b')"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "StartsWith returns false for a JSON path that does not exist",
+          "name": "StartsWith throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#startsWith($.nonExistentValue, 'a')"
           },
-          "result": {
-            "resultValue": false
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "EndsWith returns false for a JSON path that does not exist",
+          "name": "EndsWith throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#endsWith($.nonExistentValue, 'a')"
           },
-          "result": {
-            "resultValue": false
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Contains returns false for a JSON path that does not exist",
+          "name": "Contains throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#contains($.nonExistentValue, 'a')"
           },
-          "result": {
-            "resultValue": false
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "IndexOf returns null for a JSON path that does not exist",
+          "name": "IndexOf throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#indexOf($.nonExistentValue, 'a')"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Substring returns null for a JSON path that does not exist",
+          "name": "Substring throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#substring($.nonExistentValue, 0..2)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Length returns null for a JSON path that does not exist",
+          "name": "Length throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#length($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Reverse returns null for a JSON path that does not exist",
+          "name": "Reverse throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#reverse($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "SplitOn returns null for a JSON path that does not exist",
+          "name": "SplitOn throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#splitOn($.nonExistentValue, ' ')"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Append returns null for a JSON path that does not exist",
+          "name": "Append throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#append($.nonExistentValue, 'a')"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "IsRegexMatch returns false for a JSON path that does not exist",
+          "name": "IsRegexMatch throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#isRegexMatch($.nonExistentValue, 'is')"
           },
-          "result": {
-            "resultValue": false
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "RegexReplace returns null for a JSON path that does not exist",
+          "name": "RegexReplace throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#regexReplace($.nonExistentValue, 'is', 'x')"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         }
       ]
     },
     {
-      "name": "Standard library date/time methods do not throw when given a JSON path that does not exist",
+      "name": "Standard library date/time methods throw when given a JSON path that does not exist",
       "source": {
         "isoDateString": "2024-01-15T10:30:00"
       },
       "tests": [
         {
-          "name": "ParseDateTime returns null for a JSON path that does not exist",
+          "name": "ParseDateTime throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#parseDateTime($.nonExistentValue, 'MM/dd/yyyy')"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "FormatDateTime returns null for a JSON path that does not exist",
+          "name": "FormatDateTime throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#formatDateTime($.nonExistentValue, 'yyyy-MM-dd')"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "AddDays returns null for a JSON path that does not exist",
+          "name": "AddDays throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#addDays($.nonExistentValue, 1)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "AddHours returns null for a JSON path that does not exist",
+          "name": "AddHours throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#addHours($.nonExistentValue, 1)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "AddMinutes returns null for a JSON path that does not exist",
+          "name": "AddMinutes throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#addMinutes($.nonExistentValue, 1)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         }
       ]
     },
     {
-      "name": "Standard library array and query methods do not throw when given a JSON path that does not exist",
+      "name": "Standard library array and query methods throw when given a JSON path that does not exist",
       "source": {
         "integerArray": [ 1, 2, 3 ]
       },
       "tests": [
         {
-          "name": "GroupBy returns an empty array for a JSON path that does not exist",
+          "name": "GroupBy throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#groupBy($.nonExistentValue, @x: @x)"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "OrderBy returns an empty array for a JSON path that does not exist",
+          "name": "OrderBy throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#orderBy($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "OrderByDesc returns an empty array for a JSON path that does not exist",
+          "name": "OrderByDesc throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#orderByDesc($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Select returns an empty array for a JSON path that does not exist",
+          "name": "Select throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#select($.nonExistentValue, @x: @x)"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Where returns an empty array for a JSON path that does not exist",
+          "name": "Where throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#where($.nonExistentValue, @x: @x > 1)"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Distinct returns an empty array for a JSON path that does not exist",
+          "name": "Distinct throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#distinct($.nonExistentValue, @x: @x)"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Any returns false for a JSON path that does not exist",
+          "name": "Any throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#any($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": false
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "TakeWhile returns an empty array for a JSON path that does not exist",
+          "name": "TakeWhile throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#takeWhile($.nonExistentValue, @x: @x > 1)"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Take returns an empty array for a JSON path that does not exist",
+          "name": "Take throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#take($.nonExistentValue, 1)"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "SkipWhile returns an empty array for a JSON path that does not exist",
+          "name": "SkipWhile throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#skipWhile($.nonExistentValue, @x: @x > 1)"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Skip returns an empty array for a JSON path that does not exist",
+          "name": "Skip throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#skip($.nonExistentValue, 1)"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Zip returns an empty array when the first JSON path does not exist",
+          "name": "Zip throws a missing path exception when the first JSON path does not exist",
           "transformer": {
             "resultValue": "#zip($.nonExistentValue, $.integerArray, @x;@y: @x + @y)"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Zip returns an empty array when the second JSON path does not exist",
+          "name": "Zip throws a missing path exception when the second JSON path does not exist",
           "transformer": {
             "resultValue": "#zip($.integerArray, $.nonExistentValue, @x;@y: @x + @y)"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "SummarizeWith returns an empty array for a JSON path that does not exist",
+          "name": "SummarizeWith throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#summarizeWith($.nonExistentValue, @group: #length(@group.results))"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Flatten returns an empty array for a JSON path that does not exist",
+          "name": "Flatten throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#flatten($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Slice returns an empty array for a JSON path that does not exist",
+          "name": "Slice throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#slice($.nonExistentValue, 0..1)"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "JoinWith returns null for a JSON path that does not exist",
+          "name": "JoinWith throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#joinWith($.nonExistentValue, ',')"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Reduce returns null for a JSON path that does not exist",
+          "name": "Reduce throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#reduce($.nonExistentValue, @x;@y: @x + @y)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         }
       ]
     },
     {
-      "name": "Standard library aggregate methods do not throw when given a JSON path that does not exist",
+      "name": "Standard library aggregate methods throw when given a JSON path that does not exist",
       "source": {
         "integerArray": [ 1, 2, 3 ]
       },
@@ -405,66 +366,60 @@
           }
         },
         {
-          "name": "Max returns null for a JSON path that does not exist",
+          "name": "Max throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#max($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Min returns null for a JSON path that does not exist",
+          "name": "Min throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#min($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Sum returns null for a JSON path that does not exist",
+          "name": "Sum throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#sum($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Average returns null for a JSON path that does not exist",
+          "name": "Average throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#average($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Sum with a projection returns null for a JSON path that does not exist",
+          "name": "Sum with a projection throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#sum($.nonExistentValue, @x: @x * 2)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         }
       ]
     },
     {
-      "name": "Standard library type and conversion methods do not throw when given a JSON path that does not exist",
+      "name": "Standard library type and conversion methods throw when given a JSON path that does not exist, except for type checks",
       "source": {
         "doubleValue": 3.1415
       },
       "tests": [
         {
-          "name": "RoundTo returns null for a JSON path that does not exist",
+          "name": "RoundTo throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#roundTo($.nonExistentValue, 2)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
           "name": "IsInteger returns false for a JSON path that does not exist",
@@ -521,54 +476,49 @@
           }
         },
         {
-          "name": "IsEmpty returns false for a JSON path that does not exist",
+          "name": "IsEmpty throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#isEmpty($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": false
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "ToInteger returns null for a JSON path that does not exist",
+          "name": "ToInteger throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#toInteger($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "ToString returns null for a JSON path that does not exist",
+          "name": "ToString throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#toString($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "ToDecimal returns null for a JSON path that does not exist",
+          "name": "ToDecimal throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#toDecimal($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "ToBoolean returns null for a JSON path that does not exist",
+          "name": "ToBoolean throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#toBoolean($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         }
       ]
     },
     {
-      "name": "Standard library object methods do not throw when given a JSON path that does not exist",
+      "name": "Standard library object methods throw when given a JSON path that does not exist",
       "source": {
         "testObject": {
           "first": "value",
@@ -577,51 +527,41 @@
       },
       "tests": [
         {
-          "name": "KeysFrom returns an empty array for a JSON path that does not exist",
+          "name": "KeysFrom throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#keysFrom($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "ValuesFrom returns an empty array for a JSON path that does not exist",
+          "name": "ValuesFrom throws a missing path exception for a JSON path that does not exist",
           "transformer": {
             "resultValue": "#valuesFrom($.nonExistentValue)"
           },
-          "result": {
-            "resultValue": []
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Merge returns the second object when the first JSON path does not exist",
+          "name": "Merge throws a missing path exception when the first JSON path does not exist",
           "transformer": {
             "resultValue": "#merge($.nonExistentValue, $.testObject)"
           },
-          "result": {
-            "resultValue": {
-              "first": "value",
-              "second": 2
-            }
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "Merge returns the first object when the second JSON path does not exist",
+          "name": "Merge throws a missing path exception when the second JSON path does not exist",
           "transformer": {
             "resultValue": "#merge($.testObject, $.nonExistentValue)"
           },
-          "result": {
-            "resultValue": {
-              "first": "value",
-              "second": 2
-            }
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "missingPathInLibraryCall"
         }
       ]
     },
     {
-      "name": "Standard library conditional methods do not throw when given a JSON path that does not exist",
+      "name": "Standard library conditional methods treat a JSON path that does not exist as false",
       "source": {
         "booleanValue": true
       },
@@ -638,7 +578,7 @@
       ]
     },
     {
-      "name": "Standard library methods throw when given a range variable path that does not exist",
+      "name": "Standard library methods throw when given a range variable path that does not exist, except for type checks",
       "source": {
         "testObject": {
           "first": "value",
@@ -692,13 +632,14 @@
           "innerExceptionCode": "missingPathInLibraryCall"
         },
         {
-          "name": "IsString throws a missing path exception for a range variable path that does not exist",
+          "name": "IsString returns false for a range variable path that does not exist",
           "transformer": {
             "@x": "#valueOf($.testObject)",
             "resultValue": "#isString(@x.nonExistentValue)"
           },
-          "exceptionCode": "externalMethodException",
-          "innerExceptionCode": "missingPathInLibraryCall"
+          "result": {
+            "resultValue": false
+          }
         },
         {
           "name": "ToInteger throws a missing path exception for a range variable path that does not exist",
@@ -708,6 +649,223 @@
           },
           "exceptionCode": "externalMethodException",
           "innerExceptionCode": "missingPathInLibraryCall"
+        }
+      ]
+    },
+    {
+      "name": "Standard library methods throw when given a null value",
+      "source": {
+        "nullValue": null,
+        "testObject": {
+          "first": "value",
+          "second": 2
+        }
+      },
+      "tests": [
+        {
+          "name": "ToUpperCase throws a null value exception for a JSON path with a null value",
+          "transformer": {
+            "resultValue": "#toUpperCase($.nullValue)"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "nullValueInLibraryCall"
+        },
+        {
+          "name": "Length throws a null value exception for a range variable containing null",
+          "transformer": {
+            "@x": null,
+            "resultValue": "#length(@x)"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "nullValueInLibraryCall"
+        },
+        {
+          "name": "Select throws a null value exception for a range variable containing a null JSON value",
+          "transformer": {
+            "@x": "#valueOf($.nullValue)",
+            "resultValue": "#select(@x, @y: @y)"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "nullValueInLibraryCall"
+        },
+        {
+          "name": "Length throws a null value exception when piped a null value",
+          "transformer": {
+            "resultValue": "#valueOf($.nonExistentValue)->#length()"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "nullValueInLibraryCall"
+        },
+        {
+          "name": "IsString returns false for a JSON path with a null value",
+          "transformer": {
+            "resultValue": "#isString($.nullValue)"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "IsArray returns false for a range variable containing null",
+          "transformer": {
+            "@x": null,
+            "resultValue": "#isArray(@x)"
+          },
+          "result": {
+            "resultValue": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Standard library methods return a default value when given a null-safe dereference that does not exist",
+      "source": {
+        "testObject": {
+          "first": "value",
+          "second": 2
+        }
+      },
+      "tests": [
+        {
+          "name": "ToUpperCase returns null for a null-safe dereference that does not exist",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "#toUpperCase(@x?.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "Length returns null for a null-safe dereference that does not exist",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "#length(@x?.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "StartsWith returns false for a null-safe dereference that does not exist",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "#startsWith(@x?.nonExistentValue, 'a')"
+          },
+          "result": {
+            "resultValue": false
+          }
+        },
+        {
+          "name": "Select returns an empty array for a null-safe dereference that does not exist",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "#select(@x?.nonExistentValue, @y: @y)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "Sum returns null for a null-safe dereference that does not exist",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "#sum(@x?.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "KeysFrom returns an empty array for a null-safe dereference that does not exist",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "#keysFrom(@x?.nonExistentValue)"
+          },
+          "result": {
+            "resultValue": []
+          }
+        },
+        {
+          "name": "Merge returns the other object for a null-safe dereference that does not exist",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "#merge(@x?.nonExistentValue, $.testObject)"
+          },
+          "result": {
+            "resultValue": {
+              "first": "value",
+              "second": 2
+            }
+          }
+        },
+        {
+          "name": "Null-coalescing provides a default for a library call on a null-safe dereference that does not exist",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "#toUpperCase(@x?.nonExistentValue) ?? 'n/a'"
+          },
+          "result": {
+            "resultValue": "n/a"
+          }
+        },
+        {
+          "name": "Nested null-safe dereference returns null when an intermediate property does not exist",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "#length(@x.nonExistentValue?.deeper)"
+          },
+          "result": {
+            "resultValue": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "Errors from library calls on null values and missing paths can be handled with #try",
+      "source": {
+        "testObject": {
+          "first": "value",
+          "second": 2
+        }
+      },
+      "tests": [
+        {
+          "name": "Try error handler receives the missing path error code",
+          "transformer": {
+            "resultValue": "#try(#length($.nonExistentValue), @e: @e.code)"
+          },
+          "result": {
+            "resultValue": "JLT563"
+          }
+        },
+        {
+          "name": "Try error handler receives the null value error code",
+          "transformer": {
+            "@x": null,
+            "resultValue": "#try(#length(@x), @e: @e.code)"
+          },
+          "result": {
+            "resultValue": "JLT574"
+          }
+        },
+        {
+          "name": "Try error handler receives the missing path error message",
+          "transformer": {
+            "resultValue": "#try(#length($.nonExistentValue), @e: @e.message)"
+          },
+          "result": {
+            "resultValue": "Unable to perform library call using missing path '$.nonExistentValue'"
+          }
+        },
+        {
+          "name": "Try error handler can choose a fallback based on the error code",
+          "transformer": {
+            "resultValue": "#try(#toUpperCase($.nonExistentValue), @e: #if(@e.code == 'JLT563', 'missing', 'other'))"
+          },
+          "result": {
+            "resultValue": "missing"
+          }
         }
       ]
     }

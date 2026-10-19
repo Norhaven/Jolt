@@ -16,11 +16,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? ToUpperCase(object? value, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<string>(value);
 
             if (resolved is null)
@@ -42,11 +37,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? ToLowerCase(object? value, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<string>(value);
 
             if (resolved is null)
@@ -68,11 +58,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Trim(object? value, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<string>(value);
 
             if (resolved is null)
@@ -94,11 +79,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? TrimStart(object? value, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<string>(value);
 
             if (resolved is null)
@@ -120,11 +100,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? TrimEnd(object? value, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<string>(value);
 
             if (resolved is null)
@@ -146,11 +121,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Replace(object? value, object searchText, object replacementText, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<string>(value);
 
             if (resolved is null)
@@ -175,11 +145,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? StartsWith(object? value, object searchText, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateTokenFrom(false);
-            }
-
             var resolved = context.ResolveValueOf<string>(value);
 
             if (resolved is null)
@@ -203,11 +168,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? EndsWith(object? value, object searchText, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateTokenFrom(false);
-            }
-
             var resolved = context.ResolveValueOf<string>(value);
 
             if (resolved is null)
@@ -231,11 +191,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Reverse(object? value, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<object>(value);
 
             if (resolved is null)
@@ -258,11 +213,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Flatten(object? value, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateEmptyArray();
-            }
-
             var resolved = context.ResolveValueOf<object>(value);
 
             if (resolved is null)
@@ -302,11 +252,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IndexOf(object? value, object searchText, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<string>(value);
 
             if (resolved is null)
@@ -330,11 +275,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyName | LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Substring(object? value, Range range, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             static string AsString(IJsonValue token) => token.AsValue().ToTypeOf<string>();
 
             var resolved = context.ResolveValueOf<string>(value);
@@ -358,11 +298,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Contains(object? instance, object? value, EvaluationContext context)
         {
-            if (instance is null)
-            {
-                return context.CreateTokenFrom(false);
-            }
-
             var resolved = context.ResolveValueOf<object>(instance);
 
             if (resolved is null)
@@ -385,11 +320,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Length(object? value, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<object>(value);
 
             if (resolved is null)
@@ -412,11 +342,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Slice(object? value, Range range, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateEmptyArray();
-            }
-
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
             if (resolved is null)
@@ -438,11 +363,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Append(object? value, [VariadicEvaluation] object[]? additionalValues, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<object>(value);
 
             if (resolved is null)
@@ -481,11 +401,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyName | LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? JoinWith(object? value, string delimiter, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
             if (resolved is null)
@@ -508,11 +423,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? SplitOn(object? value, string delimiter, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<string>(value);
 
             if (resolved is null)
@@ -534,11 +444,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? ParseDateTime(object? value, object? format, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<string>(value);
 
             if (resolved is null)
@@ -570,11 +475,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? FormatDateTime(object? value, object format, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<string>(value);
 
             if (resolved is null)
@@ -618,11 +518,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? AddDays(object? value, object days, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<string>(value);
 
             if (resolved is null)
@@ -652,11 +547,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? AddHours(object? value, object hours, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<string>(value);
 
             if (resolved is null)
@@ -686,11 +576,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? AddMinutes(object? value, object minutes, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<string>(value);
 
             if (resolved is null)

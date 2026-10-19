@@ -149,7 +149,7 @@ methods:
     signature: "#try(expression, @e: fallback)"
     parameters:
       - { name: expression, type: any, description: "The expression to attempt." }
-      - { name: fallback, type: lambda, description: "Receives the exception as `@e` and returns the replacement value." }
+      - { name: fallback, type: lambda, description: "Receives the error as `@e` (with `message`, `exceptionType` and, for errors raised by Jolt, a `code` such as `JLT563`) and returns the replacement value." }
     returns: { type: any }
     validIn: [property-value]
     examples:
@@ -157,6 +157,10 @@ methods:
         source: { "stringValue": "not a number", "defaultValue": 0 }
         transformer: { "result": "#try(#valueOf($.stringValue)->#toInteger(), @e: #valueOf($.defaultValue))" }
         output: { "result": 0 }
+      - title: Choose a fallback by error code
+        source: { "name": "Jolt" }
+        transformer: { "result": "#try(#toUpperCase($.nickname), @e: #if(@e.code == 'JLT563', 'no nickname', 'invalid nickname'))" }
+        output: { "result": "no nickname" }
     related: [toInteger]
 
   # ── Loops and scoping ────────────────────────────────────────────────

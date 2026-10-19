@@ -765,6 +765,77 @@
       ]
     },
     {
+      "name": "Statement methods within a using block can replace existing values",
+      "source": {
+        "some": {
+          "integerArray": [ 1, 2, 6, 10 ],
+          "complexObject": {
+            "some": {
+              "path": 5
+            }
+          }
+        }
+      },
+      "tests": [
+        {
+          "name": "Using block documentation example removes, adds, and replaces properties",
+          "transformer": {
+            "#using($.some as @x) into 'result'": [
+              "#removeAt(@x.integerArray)",
+              "#setAt(@x.complexObject.new.value, 3)",
+              "#setAt(@x.complexObject.some.path, 20)"
+            ]
+          },
+          "result": {
+            "result": {
+              "complexObject": {
+                "new": {
+                  "value": 3
+                },
+                "some": {
+                  "path": 20
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "#setAt replaces an existing value property",
+          "transformer": {
+            "#using($.some as @x) into 'result'": [
+              "#setAt(@x.complexObject.some.path, 20)"
+            ]
+          },
+          "result": {
+            "result": {
+              "integerArray": [ 1, 2, 6, 10 ],
+              "complexObject": {
+                "some": {
+                  "path": 20
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "#setAt replaces an existing object property",
+          "transformer": {
+            "#using($.some as @x) into 'result'": [
+              "#setAt(@x.complexObject.some, 'replaced')"
+            ]
+          },
+          "result": {
+            "result": {
+              "integerArray": [ 1, 2, 6, 10 ],
+              "complexObject": {
+                "some": "replaced"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "keysFrom/valuesFrom work with a path",
       "source": {
         "testObject": {
@@ -1417,7 +1488,7 @@
         {
           "name": "Try with conditional in error handler",
           "transformer": {
-            "result": "#try(#toInteger($.invalidInteger), @e: #if(#contains(@e.message, 'conversion'), 'type error', 'unknown'))"
+            "result": "#try(#toInteger($.invalidInteger), @e: #if(#contains(@e.message, 'format'), 'type error', 'unknown'))"
           },
           "result": {
             "result": "type error"

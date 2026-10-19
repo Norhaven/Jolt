@@ -125,11 +125,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? GroupBy(object? value, [LambdaVariables("x")] LambdaMethod keySelectorLambda, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateEmptyArray();
-            }
-
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
             if (resolved is null)
@@ -150,11 +145,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? OrderBy(object? value, [OptionalParameter(null)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateEmptyArray();
-            }
-
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
             if (resolved is null)
@@ -177,11 +167,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? OrderByDescending(object? value, [OptionalParameter(null)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateEmptyArray();
-            }
-
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
             if (resolved is null)
@@ -204,11 +189,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Maximum(object? value, [OptionalParameter(default)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = ResolveValueWithOptionalProjection(value, lambda, context);
 
             if (resolved is null)
@@ -223,11 +203,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Minimum(object? value, [OptionalParameter(default)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = ResolveValueWithOptionalProjection(value, lambda, context);
 
             if (resolved is null)
@@ -242,11 +217,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Sum(object? value, [OptionalParameter(default)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = ResolveValueWithOptionalProjection(value, lambda, context);
 
             if (resolved is null)
@@ -261,11 +231,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Average(object? value, [OptionalParameter(default)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = ResolveValueWithOptionalProjection(value, lambda, context);
 
             if (resolved is null)
@@ -290,11 +255,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Select(object? value, [LambdaVariables("x")] LambdaMethod lambda, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateEmptyArray();
-            }
-
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
             if (resolved is null)
@@ -315,11 +275,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Distinct(object? value, [LambdaVariables("x")] LambdaMethod lambda, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateEmptyArray();
-            }
-
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
             if (resolved is null)
@@ -340,11 +295,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Any(object? value, [OptionalParameter(default)] [LambdaVariables("x")] LambdaMethod? lambda, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateTokenFrom(false);
-            }
-
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
             if (resolved is null)
@@ -366,11 +316,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Where(object? value, [LambdaVariables("x")] LambdaMethod lambda, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateEmptyArray();
-            }
-
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
             if (resolved is null)
@@ -391,11 +336,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? TakeWhile(object? value, [LambdaVariables("x")] LambdaMethod lambda, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateArrayFrom(Array.Empty<IJsonToken>());
-            }
-
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
             if (resolved is null)
@@ -416,11 +356,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Take(object value, object amountToTake, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateArrayFrom(Array.Empty<IJsonToken>());
-            }
-
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
             if (resolved is null)
@@ -443,11 +378,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? SkipWhile(object? value, [LambdaVariables("x")] LambdaMethod lambda, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateArrayFrom(Array.Empty<IJsonToken>());
-            }
-
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
             if (resolved is null)
@@ -468,11 +398,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Skip(object? value, object amountToSkip, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateArrayFrom(Array.Empty<IJsonToken>());
-            }
-
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
             if (resolved is null)
@@ -500,11 +425,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? KeysFrom(object? value, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateArrayFrom(Array.Empty<IJsonToken>());
-            }
-
             var resolved = (IJsonObject)context.ResolveValueOf<IJsonObject>(value);
 
             if (resolved is null)
@@ -519,11 +439,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? ValuesFrom(object? value, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateArrayFrom(Array.Empty<IJsonToken>());
-            }
-
             var resolved = (IJsonObject)context.ResolveValueOf<IJsonObject>(value);
 
             if (resolved is null)
@@ -538,11 +453,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Reduce(object? value, [LambdaVariables("acc", "current")] LambdaMethod lambda, [OptionalParameter(default)] object? seed, EvaluationContext context)
         {
-            if (value is null)
-            {
-                return context.CreateNullToken();
-            }
-
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
             if (resolved is null)
@@ -583,11 +493,6 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Zip(object? first, object? second, [LambdaVariables("x", "y")] LambdaMethod lambda, EvaluationContext context)
         {
-            if (first is null || second is null)
-            {
-                return context.CreateEmptyArray();
-            }
-
             var resolvedFirst = context.ResolveValueOf<IJsonArray>(first);
             var resolvedSecond = context.ResolveValueOf<IJsonArray>(second);
 
@@ -634,11 +539,6 @@ namespace Jolt.Library.StandardLibrary
 
                     yield return token;
                 }
-            }
-
-            if (value is null)
-            {
-                return context.CreateEmptyArray();
             }
 
             var resolved = context.ResolveValueOf<IJsonArray>(value);

@@ -261,6 +261,8 @@ namespace Jolt.Exceptions
         [Description("JLT572")]
         UnexpectedContentAfterExpression,
         [Description("JLT573")]
-        ExpectedExpressionAfterOperator
+        ExpectedExpressionAfterOperator,
+        [Description("JLT574")]
+        UnableToPerformLibraryCallOnNullValue
     }
 }

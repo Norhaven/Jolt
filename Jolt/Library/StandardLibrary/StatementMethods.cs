@@ -121,6 +121,28 @@ namespace Jolt.Library.StandardLibrary
                 null => context.CreateTokenFrom(null)
             };
 
+            // When the entire path already exists, the token is the node being replaced rather than
+            // an object to add the missing part of the path to, so we need to set it on its parent.
+
+            if (path.MissingPaths.Length == 0)
+            {
+                var parent = token.Parent switch
+                {
+                    IJsonObject obj => obj,
+                    IJsonProperty property => property.Parent as IJsonObject,
+                    _ => default
+                };
+
+                if (parent is null)
+                {
+                    throw context.CreateExecutionErrorFor<StatementMethods>(ExceptionCode.UnableToSetPropertyOnNonObjectReference, token.PropertyName);
+                }
+
+                parent[token.PropertyName] = actualNewValue;
+
+                return parent;
+            }
+
             var current = token as IJsonObject;
 
             if (current is null)
