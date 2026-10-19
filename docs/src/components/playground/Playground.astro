@@ -43,6 +43,7 @@ const workerUrl = `${base}playground/engine-worker.js`;
 
 		<section class="jp-pane" aria-labelledby="jp-transformer-title">
 			<header><h2 id="jp-transformer-title">Transformer</h2><span>Jolt</span></header>
+			<div class="jp-error" data-notice data-kind="notice" hidden role="status"></div>
 			<div class="jp-editor" data-editor="transformer"></div>
 		</section>
 
@@ -310,6 +311,19 @@ const workerUrl = `${base}playground/engine-worker.js`;
 		white-space: pre-wrap;
 		overflow-wrap: anywhere;
 	}
+
+	.jolt-playground .jp-error-inner {
+		margin: 0.375rem 0 0;
+		padding: 0 0 0 1rem;
+		list-style: none;
+		display: grid;
+		gap: 0.25rem;
+		font-size: var(--sl-text-xs);
+	}
+
+	.jolt-playground .jp-error-inner li::before { content: '↳ '; margin-inline-start: -1rem; }
+
+	.jolt-playground .jp-error-type { font-family: var(--sl-font-mono); opacity: 0.85; }
 
 	.jolt-playground .jp-error[data-kind='notice'] {
 		color: var(--jp-muted);

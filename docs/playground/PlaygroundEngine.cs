@@ -94,7 +94,7 @@ namespace Jolt.Playground
             catch (Exception ex)
             {
                 // Anything unexpected is still reported in the playground rather than lost in the worker.
-                result.Error = new RunError { Message = $"{ex.GetType().Name}: {ex.Message}" };
+                result.Error = ToRunError(ex, includeType: true);
             }
 
             return JsonSerializer.Serialize(result, _resultJson);
@@ -206,15 +206,10 @@ namespace Jolt.Playground
                 stopwatch.Stop();
                 result.Output = FormatOutput(output);
             }
-            catch (JoltException ex)
-            {
-                stopwatch.Stop();
-                result.Error = new RunError { Code = GetCode(ex.Code), Message = ex.Message };
-            }
             catch (Exception ex)
             {
                 stopwatch.Stop();
-                result.Error = new RunError { Message = ex.Message };
+                result.Error = ToRunError(ex, includeType: false);
             }
 
             result.ElapsedMilliseconds = stopwatch.Elapsed.TotalMilliseconds;
@@ -260,6 +255,31 @@ namespace Jolt.Playground
             }
 
             return string.Join(Environment.NewLine, entries.Where(x => !nested.Contains(x)).Select(x => x.ToString()));
+        }
+
+        /// <summary>
+        /// Describes an exception along with every inner exception beneath it, since the outer one (e.g. "check
+        /// inner exception for details") often hides the actual cause and a playground user can't unwrap it.
+        /// </summary>
+        private static RunError ToRunError(Exception exception, bool includeType)
+        {
+            var error = new RunError
+            {
+                Code = exception is JoltException jolt ? GetCode(jolt.Code) : null,
+                Message = includeType ? $"{exception.GetType().Name}: {exception.Message}" : exception.Message,
+            };
+
+            for (var inner = exception.InnerException; inner != null; inner = inner.InnerException)
+            {
+                error.InnerErrors.Add(new RunError
+                {
+                    Type = inner.GetType().Name,
+                    Code = inner is JoltException innerJolt ? GetCode(innerJolt.Code) : null,
+                    Message = inner.Message,
+                });
+            }
+
+            return error;
         }
 
         private static string ToSeverity(DiagnosticSeverity severity) => severity switch
@@ -337,9 +357,19 @@ namespace Jolt.Playground
 
     public sealed class RunError
     {
+        /// <summary>
+        /// Gets or sets the exception's type name. Only set for inner errors.
+        /// </summary>
+        public string? Type { get; set; }
+
         public string? Code { get; set; }
 
         public string Message { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the inner exceptions, outermost first.
+        /// </summary>
+        public List<RunError> InnerErrors { get; set; } = new List<RunError>();
     }
 
     public sealed class PlaygroundDiagnostic

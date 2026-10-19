@@ -41,6 +41,7 @@ function start(root) {
 		status: $('[data-status]'),
 		elapsed: $('[data-elapsed]'),
 		error: $('[data-error]'),
+		notice: $('[data-notice]'),
 		issues: $('[data-issues]'),
 		issueCount: $('[data-issue-count]'),
 		trace: $('[data-trace]'),
@@ -131,6 +132,7 @@ function start(root) {
 			if (runId === latestRun) showResult(result, state.options);
 		} catch (error) {
 			if (runId !== latestRun) return;
+			showNotice(null);
 			showDiagnostics(editors.source, []);
 			showDiagnostics(editors.transformer, []);
 			renderIssues([]);
@@ -147,8 +149,10 @@ function start(root) {
 			...result.transformerDiagnostics.map((d) => ({ ...d, editor: 'transformer' })),
 		]);
 
+		showNotice(result.skipped ? 'Fix the errors below to see the output.' : null);
+
 		if (result.skipped) {
-			showError({ message: 'Fix the errors below to see the output.' }, 'notice');
+			showError(null);
 			ui.elapsed.textContent = '';
 		} else if (result.error) {
 			showError(result.error);
@@ -169,7 +173,35 @@ function start(root) {
 	function showError(error, kind = 'error') {
 		ui.error.hidden = !error;
 		ui.error.dataset.kind = kind;
-		ui.error.textContent = error ? (error.code ? `${error.code}: ${error.message}` : error.message) : '';
+		ui.error.replaceChildren();
+		if (!error) return;
+
+		ui.error.append(describeError(error));
+
+		// The outer exception often just says to check the inner one, which a playground user can't do, so list them all.
+		if (error.innerErrors?.length) {
+			const list = document.createElement('ul');
+			list.className = 'jp-error-inner';
+			list.setAttribute('aria-label', 'Inner exceptions');
+			for (const inner of error.innerErrors) {
+				const item = document.createElement('li');
+				if (inner.type) {
+					item.append(Object.assign(document.createElement('span'), { className: 'jp-error-type', textContent: inner.type }), ': ');
+				}
+				item.append(describeError(inner));
+				list.append(item);
+			}
+			ui.error.append(list);
+		}
+	}
+
+	function describeError(error) {
+		return document.createTextNode(error.code ? `${error.code}: ${error.message}` : error.message);
+	}
+
+	function showNotice(message) {
+		ui.notice.hidden = !message;
+		ui.notice.textContent = message ?? '';
 	}
 
 	function renderIssues(issues) {
