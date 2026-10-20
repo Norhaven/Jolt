@@ -25,7 +25,7 @@ Jolt gives you several ways to make decisions in a transformer. For choosing bet
 
 ```jolt
 {
-    "#includeIf($.someValue > 5) into 'result'": {
+    "#includeIf(#valueOf($.someValue) > 5) into 'result'": {
         "message": "Greater than 5"
     }
 }

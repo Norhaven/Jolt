@@ -7,7 +7,7 @@ sidebar:
 
 ## Null-coalescing `??`
 
-`??` returns its left operand when it isn't null, and its right operand otherwise.
+`??` returns its left operand when it isn't null, and its right operand otherwise. The right operand is evaluated only when it's needed.
 
 ```jolt
 {

@@ -765,6 +765,102 @@
       ]
     },
     {
+      "name": "IncludeIf works with conditions that contain method calls and range variables",
+      "source": {
+        "someValue": 7,
+        "someArray": [ 1, "a" ]
+      },
+      "tests": [
+        {
+          "name": "IncludeIf documentation example includes the object when a comparison with a method call is true",
+          "transformer": {
+            "#includeIf(#valueOf($.someValue) > 5) into 'result'": {
+              "message": "Greater than 5"
+            }
+          },
+          "result": {
+            "result": {
+              "message": "Greater than 5"
+            }
+          }
+        },
+        {
+          "name": "IncludeIf sets the property to null when a comparison with a method call is false",
+          "transformer": {
+            "#includeIf(#valueOf($.someValue) > 10) into 'result'": {
+              "message": "Greater than 10"
+            }
+          },
+          "result": {
+            "result": null
+          }
+        },
+        {
+          "name": "IncludeIf includes the object when a property value only method condition is true",
+          "transformer": {
+            "#includeIf(#exists($.someValue)) into 'result'": {
+              "message": "Exists"
+            }
+          },
+          "result": {
+            "result": {
+              "message": "Exists"
+            }
+          }
+        },
+        {
+          "name": "IncludeIf includes the object when a condition uses a method call within a lambda",
+          "transformer": {
+            "#includeIf(#any($.someArray, @x: #isString(@x))) into 'result'": {
+              "message": "Contains a string"
+            }
+          },
+          "result": {
+            "result": {
+              "message": "Contains a string"
+            }
+          }
+        },
+        {
+          "name": "IncludeIf includes the object when a condition uses a method call within a lazily evaluated argument",
+          "transformer": {
+            "#includeIf(#if(#exists($.someValue), #exists($.someArray), false)) into 'result'": {
+              "message": "Both exist"
+            }
+          },
+          "result": {
+            "result": {
+              "message": "Both exist"
+            }
+          }
+        },
+        {
+          "name": "IncludeIf fails when a property name only method is nested in its condition",
+          "transformer": {
+            "@x": "#valueOf($.someValue)",
+            "#includeIf(#nameOf(@x)) into 'result'": {
+              "message": "Never included"
+            }
+          },
+          "exceptionCode": "UnableToUseMethodWithinPropertyValue"
+        },
+        {
+          "name": "IncludeIf includes the object when a range variable condition is true",
+          "transformer": {
+            "@isGreater": "#valueOf($.someValue) > 5",
+            "#includeIf(@isGreater) into 'result'": {
+              "message": "Greater than 5"
+            }
+          },
+          "result": {
+            "result": {
+              "message": "Greater than 5"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Statement methods within a using block can replace existing values",
       "source": {
         "some": {
@@ -1785,6 +1881,338 @@
                 "nested": "value"
               }
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Type check methods work with JSON paths",
+      "source": {
+        "integerValue": 7,
+        "decimalValue": 1.5,
+        "stringValue": "text",
+        "booleanValue": true,
+        "arrayValue": [ 1, 2 ],
+        "objectValue": {
+          "first": "value"
+        },
+        "nullValue": null
+      },
+      "tests": [
+        {
+          "name": "IsInteger returns true for a JSON path to a matching value",
+          "transformer": {
+            "result": "#isInteger($.integerValue)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsInteger returns false for a JSON path to a decimal value",
+          "transformer": {
+            "result": "#isInteger($.decimalValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsInteger returns false for a JSON path to a string value",
+          "transformer": {
+            "result": "#isInteger($.stringValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsDecimal returns true for a JSON path to a matching value",
+          "transformer": {
+            "result": "#isDecimal($.decimalValue)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsDecimal returns false for a JSON path to a integer value",
+          "transformer": {
+            "result": "#isDecimal($.integerValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsDecimal returns false for a JSON path to a string value",
+          "transformer": {
+            "result": "#isDecimal($.stringValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsString returns true for a JSON path to a matching value",
+          "transformer": {
+            "result": "#isString($.stringValue)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsString returns false for a JSON path to a integer value",
+          "transformer": {
+            "result": "#isString($.integerValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsString returns false for a JSON path to a object value",
+          "transformer": {
+            "result": "#isString($.objectValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsBoolean returns true for a JSON path to a matching value",
+          "transformer": {
+            "result": "#isBoolean($.booleanValue)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsBoolean returns false for a JSON path to a string value",
+          "transformer": {
+            "result": "#isBoolean($.stringValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsBoolean returns false for a JSON path to a integer value",
+          "transformer": {
+            "result": "#isBoolean($.integerValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsArray returns true for a JSON path to a matching value",
+          "transformer": {
+            "result": "#isArray($.arrayValue)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsArray returns false for a JSON path to a object value",
+          "transformer": {
+            "result": "#isArray($.objectValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsArray returns false for a JSON path to a string value",
+          "transformer": {
+            "result": "#isArray($.stringValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsObject returns true for a JSON path to a matching value",
+          "transformer": {
+            "result": "#isObject($.objectValue)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsObject returns false for a JSON path to a string value",
+          "transformer": {
+            "result": "#isObject($.stringValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsObject returns false for a JSON path to a array value",
+          "transformer": {
+            "result": "#isObject($.arrayValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsObject returns false for a JSON path to a integer value",
+          "transformer": {
+            "result": "#isObject($.integerValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsObject returns false for a JSON path to a null value",
+          "transformer": {
+            "result": "#isObject($.nullValue)"
+          },
+          "result": {
+            "result": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Type check methods work with range variables",
+      "source": {
+        "integerValue": 7,
+        "decimalValue": 1.5,
+        "stringValue": "text",
+        "booleanValue": true,
+        "arrayValue": [ 1, 2 ],
+        "objectValue": {
+          "first": "value"
+        },
+        "nullValue": null
+      },
+      "tests": [
+        {
+          "name": "IsInteger returns true for a range variable containing a matching value",
+          "transformer": {
+            "@x": "#valueOf($.integerValue)",
+            "result": "#isInteger(@x)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsInteger returns false for a range variable containing a decimal value",
+          "transformer": {
+            "@x": "#valueOf($.decimalValue)",
+            "result": "#isInteger(@x)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsDecimal returns true for a range variable containing a matching value",
+          "transformer": {
+            "@x": "#valueOf($.decimalValue)",
+            "result": "#isDecimal(@x)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsDecimal returns false for a range variable containing a integer value",
+          "transformer": {
+            "@x": "#valueOf($.integerValue)",
+            "result": "#isDecimal(@x)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsString returns true for a range variable containing a matching value",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "result": "#isString(@x)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsString returns false for a range variable containing a integer value",
+          "transformer": {
+            "@x": "#valueOf($.integerValue)",
+            "result": "#isString(@x)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsBoolean returns true for a range variable containing a matching value",
+          "transformer": {
+            "@x": "#valueOf($.booleanValue)",
+            "result": "#isBoolean(@x)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsBoolean returns false for a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "result": "#isBoolean(@x)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsArray returns true for a range variable containing a matching value",
+          "transformer": {
+            "@x": "#valueOf($.arrayValue)",
+            "result": "#isArray(@x)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsArray returns false for a range variable containing a object value",
+          "transformer": {
+            "@x": "#valueOf($.objectValue)",
+            "result": "#isArray(@x)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsObject returns true for a range variable containing a matching value",
+          "transformer": {
+            "@x": "#valueOf($.objectValue)",
+            "result": "#isObject(@x)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsObject returns false for a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "result": "#isObject(@x)"
+          },
+          "result": {
+            "result": false
           }
         }
       ]

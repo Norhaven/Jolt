@@ -260,7 +260,7 @@ namespace Jolt
                     yield return issue;
         }
 
-        private IEnumerable<ValidationIssue> ValidateExpression(Expression expression, EvaluationMode mode, ValidationScope scope, string path)
+        private IEnumerable<ValidationIssue> ValidateExpression(Expression expression, EvaluationMode mode, ValidationScope scope, string path, bool isWithinArguments = false)
         {
             switch (expression)
             {
@@ -272,32 +272,32 @@ namespace Jolt
                 // IndexOrSliceMethodResultExpression must precede MethodCallExpression since it extends it.
 
                 case IndexOrSliceMethodResultExpression indexOrSlice:
-                    foreach (var issue in ValidateMethodCall(indexOrSlice, mode, scope, path))
+                    foreach (var issue in ValidateMethodCall(indexOrSlice, mode, scope, path, isWithinArguments))
                         yield return issue;
-                    foreach (var issue in ValidateExpression(indexOrSlice.ResultRange, mode, scope, path))
+                    foreach (var issue in ValidateExpression(indexOrSlice.ResultRange, mode, scope, path, isWithinArguments))
                         yield return issue;
                     break;
 
                 case MethodCallExpression methodCall:
-                    foreach (var issue in ValidateMethodCall(methodCall, mode, scope, path))
+                    foreach (var issue in ValidateMethodCall(methodCall, mode, scope, path, isWithinArguments))
                         yield return issue;
                     break;
 
                 case BinaryExpression binary:
-                    foreach (var issue in ValidateExpression(binary.Left, mode, scope, path))
+                    foreach (var issue in ValidateExpression(binary.Left, mode, scope, path, isWithinArguments))
                         yield return issue;
-                    foreach (var issue in ValidateExpression(binary.Right, mode, scope, path))
+                    foreach (var issue in ValidateExpression(binary.Right, mode, scope, path, isWithinArguments))
                         yield return issue;
                     break;
 
                 case LogicalNotExpression not:
-                    foreach (var issue in ValidateExpression(not.Operand, mode, scope, path))
+                    foreach (var issue in ValidateExpression(not.Operand, mode, scope, path, isWithinArguments))
                         yield return issue;
                     break;
 
                 case ArrayLiteralExpression arrayLiteral:
                     foreach (var element in arrayLiteral.Elements)
-                        foreach (var issue in ValidateExpression(element, mode, scope, path))
+                        foreach (var issue in ValidateExpression(element, mode, scope, path, isWithinArguments))
                             yield return issue;
                     break;
 
@@ -307,7 +307,7 @@ namespace Jolt
                 case SlicedVariableExpression sliced:
                     if (!scope.IsVariableDeclared(sliced.Variable.Name))
                         yield return UndeclaredVariableIssue(sliced.Variable, path, mode);
-                    foreach (var issue in ValidateExpression(sliced.Range, mode, scope, path))
+                    foreach (var issue in ValidateExpression(sliced.Range, mode, scope, path, isWithinArguments))
                         yield return issue;
                     break;
 
@@ -327,7 +327,7 @@ namespace Jolt
 
                     // The variable is being introduced here, not consumed — only validate the source.
 
-                    foreach (var issue in ValidateExpression(enumerate.EnumerationSource, mode, scope, path))
+                    foreach (var issue in ValidateExpression(enumerate.EnumerationSource, mode, scope, path, isWithinArguments))
                         yield return issue;
                     break;
 
@@ -347,29 +347,35 @@ namespace Jolt
                     var lambdaScope = lambda.Variable is RangeVariablePairExpression lambdaPair
                         ? scope.With(new[] { lambdaPair.Name, lambdaPair.SecondVariable.Name })
                         : scope.With(lambda.Variable.Name);
-                    foreach (var issue in ValidateExpression(lambda.Body, mode, lambdaScope, path))
+                    foreach (var issue in ValidateExpression(lambda.Body, mode, lambdaScope, path, isWithinArguments))
                         yield return issue;
                     break;
 
                 case RangeExpression range:
-                    foreach (var issue in ValidateExpression(range.StartIndex.Index, mode, scope, path))
+                    foreach (var issue in ValidateExpression(range.StartIndex.Index, mode, scope, path, isWithinArguments))
                         yield return issue;
-                    foreach (var issue in ValidateExpression(range.EndIndex.Index, mode, scope, path))
+                    foreach (var issue in ValidateExpression(range.EndIndex.Index, mode, scope, path, isWithinArguments))
                         yield return issue;
                     break;
 
                 case RangeIndexExpression rangeIndex:
-                    foreach (var issue in ValidateExpression(rangeIndex.Index, mode, scope, path))
+                    foreach (var issue in ValidateExpression(rangeIndex.Index, mode, scope, path, isWithinArguments))
                         yield return issue;
                     break;
             }
         }
 
-        private IEnumerable<ValidationIssue> ValidateMethodCall(MethodCallExpression methodCall, EvaluationMode mode, ValidationScope scope, string path)
+        private IEnumerable<ValidationIssue> ValidateMethodCall(MethodCallExpression methodCall, EvaluationMode mode, ValidationScope scope, string path, bool isWithinArguments = false)
         {
             var signature = methodCall.Signature;
 
-            if (mode == EvaluationMode.PropertyName && !signature.IsAllowedAsPropertyName)
+            // Mirrors ExpressionEvaluator: the arguments of a method call in a property name are evaluated as property
+            // values, so a method call within them must be valid in a property value rather than a property name. The
+            // mode itself is still passed along unchanged so issues are reported as being in the property name.
+
+            var contextMode = isWithinArguments ? EvaluationMode.PropertyValue : mode;
+
+            if (contextMode == EvaluationMode.PropertyName && !signature.IsAllowedAsPropertyName)
             {
                 yield return new ValidationIssue(
                     ValidationIssueType.InvalidMethodContext,
@@ -384,7 +390,7 @@ namespace Jolt
             // Statement-only methods are exempt from the property-value check because they legitimately
             // appear in property-value position inside a #using block's statement array.
 
-            if (mode == EvaluationMode.PropertyValue && !signature.IsAllowedAsPropertyValue && !signature.IsAllowedAsStatement)
+            if (contextMode == EvaluationMode.PropertyValue && !signature.IsAllowedAsPropertyValue && !signature.IsAllowedAsStatement)
             {
                 yield return new ValidationIssue(
                     ValidationIssueType.InvalidMethodContext,
@@ -487,7 +493,7 @@ namespace Jolt
 
             foreach (var parameter in methodCall.ParameterValues)
             {
-                foreach (var issue in ValidateExpression(parameter, mode, scope, path))
+                foreach (var issue in ValidateExpression(parameter, mode, scope, path, isWithinArguments: true))
                 {
                     yield return issue;
                 }

@@ -229,6 +229,36 @@
       ]
     },
     {
+      "name": "Property value only method nested in a property name method will succeed",
+      "transformer": {
+        "#includeIf(#exists($.path)) into 'result'": {
+          "value": 1
+        }
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Property value only method in a lambda nested in a property name method will succeed",
+      "transformer": {
+        "#includeIf(#any($.someArray, @x: #exists(@x))) into 'result'": {
+          "value": 1
+        }
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Issue: Property name only method nested in a property name method fails",
+      "transformer": {
+        "@x": "1",
+        "#includeIf(#nameOf(@x)) into 'result'": {
+          "value": 1
+        }
+      },
+      "expectedIssues": [
+        "UnableToUseMethodWithinPropertyValue"
+      ]
+    },
+    {
       "name": "Issue: Unsafe eval method usage fails",
       "transformer": {
         "result": "#eval('1 + 2 == 3')"

@@ -820,6 +820,112 @@
           "exceptionCode": "externalMethodException"
         }
       ]
+    },
+    {
+      "name": "Logical and null-coalescing operators only evaluate their right operand when needed",
+      "source": {
+        "presentValue": 5,
+        "presentText": "text",
+        "trueValue": true,
+        "falseValue": false
+      },
+      "tests": [
+        {
+          "name": "Logical AND does not evaluate its right operand when its left operand is false",
+          "transformer": {
+            "result": "#exists($.missingValue) && #valueOf($.missingValue) > 0"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "Logical AND evaluates its right operand when its left operand is true",
+          "transformer": {
+            "result": "#exists($.presentValue) && #valueOf($.presentValue) > 0"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "Logical AND returns false when its left operand is true and its right operand is false",
+          "transformer": {
+            "result": "#valueOf($.trueValue) && #valueOf($.falseValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "Logical OR does not evaluate its right operand when its left operand is true",
+          "transformer": {
+            "result": "#isMissing($.missingValue) || #valueOf($.missingValue) > 0"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "Logical OR evaluates its right operand when its left operand is false",
+          "transformer": {
+            "result": "#isMissing($.presentValue) || #valueOf($.presentValue) > 0"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "Logical OR returns false when both operands are false",
+          "transformer": {
+            "result": "#valueOf($.falseValue) || #valueOf($.falseValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "Logical AND still fails when its left operand is not a boolean",
+          "transformer": {
+            "result": "#valueOf($.presentValue) && #valueOf($.trueValue)"
+          },
+          "exceptionCode": "UnableToEvaluateLogicalExpressionWithNonBooleanArgument"
+        },
+        {
+          "name": "Logical AND still fails when its evaluated right operand is not a boolean",
+          "transformer": {
+            "result": "#valueOf($.trueValue) && #valueOf($.presentValue)"
+          },
+          "exceptionCode": "UnableToEvaluateLogicalExpressionWithNonBooleanArgument"
+        },
+        {
+          "name": "Logical OR does not fail on a non-boolean right operand that it does not need",
+          "transformer": {
+            "result": "#valueOf($.trueValue) || #valueOf($.presentValue)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "Null coalescing does not evaluate its right operand when its left operand is not null",
+          "transformer": {
+            "result": "#valueOf($.presentText) ?? #toUpperCase($.missingValue)"
+          },
+          "result": {
+            "result": "text"
+          }
+        },
+        {
+          "name": "Null coalescing evaluates its right operand when its left operand is null",
+          "transformer": {
+            "result": "#valueOf($.missingValue) ?? #toUpperCase($.presentText)"
+          },
+          "result": {
+            "result": "TEXT"
+          }
+        }
+      ]
     }
   ]
 }

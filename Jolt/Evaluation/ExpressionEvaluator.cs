@@ -185,21 +185,58 @@ namespace Jolt.Evaluation
                 return potentialPath;
             }
 
-            var leftResult = EvaluateExpression(binary.Left, context).UnwrapWith(context.JsonContext.JsonTokenReader);
-            var rightResult = EvaluateExpression(binary.Right, context).UnwrapWith(context.JsonContext.JsonTokenReader);
-
-            leftResult = UnpackAsDereferencedPathIfPresent(leftResult);
-            rightResult = UnpackAsDereferencedPathIfPresent(rightResult);
-
-            if (leftResult is RangeVariable leftResultVariable)
+            object? EvaluateOperand(Expression operand)
             {
-                leftResult = leftResultVariable.Value?.ToTypeOf<object>();
+                var result = EvaluateExpression(operand, context).UnwrapWith(context.JsonContext.JsonTokenReader);
+
+                result = UnpackAsDereferencedPathIfPresent(result);
+
+                if (result is RangeVariable variable)
+                {
+                    result = variable.Value?.ToTypeOf<object>();
+                }
+
+                return result;
             }
 
-            if (rightResult is RangeVariable rightResultVariable)
+            var leftResult = EvaluateOperand(binary.Left);
+
+            // The logical and null-coalescing operators only evaluate their right operand when the left one doesn't
+            // already decide the result, so that the left can guard against something the right would fail on.
+
+            if (binary.Operator == Operator.LogicalAnd || binary.Operator == Operator.LogicalOr)
             {
-                rightResult = rightResultVariable.Value?.ToTypeOf<object>();
+                if (!(leftResult is bool leftBool))
+                {
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateLogicalExpressionWithNonBooleanArgument, leftResult?.GetType(), binary.Operator);
+                }
+
+                if (binary.Operator == Operator.LogicalAnd && !leftBool)
+                {
+                    return false;
+                }
+
+                if (binary.Operator == Operator.LogicalOr && leftBool)
+                {
+                    return true;
+                }
+
+                var rightLogicalResult = EvaluateOperand(binary.Right);
+
+                if (!(rightLogicalResult is bool rightBool))
+                {
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateLogicalExpressionWithNonBooleanArgument, rightLogicalResult?.GetType(), binary.Operator);
+                }
+
+                return rightBool;
             }
+
+            if (binary.Operator == Operator.NullCoalescing)
+            {
+                return leftResult ?? EvaluateOperand(binary.Right);
+            }
+
+            var rightResult = EvaluateOperand(binary.Right);
 
             if (binary.IsComparison)
             {
@@ -238,28 +275,6 @@ namespace Jolt.Evaluation
                         _ => throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateExpressionWithOperatorAndArguments, leftResult, binary.Operator, rightResult)
                     };
                 }
-            }
-            else if (binary.Operator == Operator.NullCoalescing)
-            {
-                return leftResult ?? rightResult;
-            }
-            else if (binary.Operator == Operator.LogicalAnd || binary.Operator == Operator.LogicalOr)
-            {
-                if (!(leftResult is bool leftBool))
-                {
-                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateLogicalExpressionWithNonBooleanArgument, leftResult?.GetType(), binary.Operator);
-                }
-                if (!(rightResult is bool rightBool))
-                {
-                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateLogicalExpressionWithNonBooleanArgument, rightResult?.GetType(), binary.Operator);
-                }
-
-                return binary.Operator switch
-                {
-                    Operator.LogicalAnd => leftBool && rightBool,
-                    Operator.LogicalOr => leftBool || rightBool,
-                    _ => throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateBooleanExpressionWithCurrentOperator, leftResult, binary.Operator, rightResult)
-                };
             }
             else
             {
@@ -542,6 +557,9 @@ namespace Jolt.Evaluation
                 throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnsafeMethodCallNotAllowed, call.Signature.Name);
             }
 
+            // Method calls in the arguments of a property name method are evaluated as property values (see below),
+            // so these checks require only the property name method itself to be valid in a property name.
+
             if (context.Mode == EvaluationMode.PropertyName && !call.Signature.IsAllowedAsPropertyName)
             {
                 throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMethodWithinPropertyName, call.Signature.Alias);
@@ -577,6 +595,14 @@ namespace Jolt.Evaluation
                 throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMethodOutsideOfStatementBlock, call.Signature.Alias);
             }
 
+            // The arguments of a method call in a property name are values, so they're evaluated as property values.
+            // Otherwise, a method call within them would be treated as though it determined the property itself. That
+            // also applies to anything evaluated later on their behalf, such as lambda bodies or lazy arguments.
+
+            var argumentContext = context.Mode == EvaluationMode.PropertyName
+                ? new EvaluationContext(EvaluationMode.PropertyValue, context.Expression, context.JsonContext, context.Token, context.Scope, context.Transform)
+                : context;
+
             var actualParameterValues = new List<object>();
             var variadicParameterValue = new List<object>();
 
@@ -597,7 +623,7 @@ namespace Jolt.Evaluation
                 var parameter = call.ParameterValues[i];
                 var currentFormalParameter = (lastParameterIsVariadic && i >= lastParameterIndexFromEnd) ? call.Signature.Parameters[lastParameterIndexFromEnd] : call.Signature.Parameters[i];
 
-                var value = currentFormalParameter.IsLazyEvaluated ? parameter : EvaluateExpression(parameter, context);
+                var value = currentFormalParameter.IsLazyEvaluated ? parameter : EvaluateExpression(parameter, argumentContext);
 
                 value = value.UnwrapWith(context.JsonContext.JsonTokenReader);
 
@@ -657,7 +683,7 @@ namespace Jolt.Evaluation
                             }
 
                             var evaluationContext = new EvaluationContext(
-                                context.Mode,
+                                argumentContext.Mode,
                                 lambda.Body,
                                 context.JsonContext,
                                 context.Token,

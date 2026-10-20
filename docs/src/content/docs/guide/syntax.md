@@ -57,6 +57,16 @@ Where an expression sits decides what it can do.
 
 Each method's reference page lists where it's valid under **Valid in**.
 
+The arguments of a method in a property name are values, so any method you call inside them only needs to be valid in a property value:
+
+```jolt
+{
+    "#includeIf(#exists($.discount)) into 'discount'": {
+        "amount": "#valueOf($.discount)"
+    }
+}
+```
+
 ## Paths and values
 
 Most library methods accept either a JSON Path or a value. These are equivalent:

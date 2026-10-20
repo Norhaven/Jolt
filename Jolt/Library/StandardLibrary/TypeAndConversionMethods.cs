@@ -144,7 +144,7 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsInteger(object? value, EvaluationContext context)
         {
-            var resolved = context.ResolveValueOrNullOf<object>(value);
+            var resolved = ResolveForTypeCheck(value, context);
 
             return context.CreateTokenFrom(resolved is int || resolved is long || ((resolved is double || resolved is decimal) && !resolved.ToString().Contains(".")));
         }
@@ -153,7 +153,7 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsString(object? value, EvaluationContext context)
         {
-            var resolved = context.ResolveValueOrNullOf<object>(value);
+            var resolved = ResolveForTypeCheck(value, context);
 
             return context.CreateTokenFrom(resolved is string);
         }
@@ -162,7 +162,7 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsDecimal(object? value, EvaluationContext context)
         {
-            var resolved = context.ResolveValueOrNullOf<object>(value);
+            var resolved = ResolveForTypeCheck(value, context);
 
             return context.CreateTokenFrom(resolved is decimal || resolved is double);
         }
@@ -171,7 +171,7 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsBoolean(object? value, EvaluationContext context)
         {
-            var resolved = context.ResolveValueOrNullOf<object>(value);
+            var resolved = ResolveForTypeCheck(value, context);
 
             return context.CreateTokenFrom(resolved is bool);
         }
@@ -180,18 +180,29 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsArray(object? value, EvaluationContext context)
         {
-            var resolved = context.ResolveValueOrNullOf<object>(value);
+            var resolved = ResolveForTypeCheck(value, context);
 
-            return context.CreateTokenFrom(resolved?.GetType().IsArray == true || resolved is IJsonArray);
+            return context.CreateTokenFrom(resolved is IJsonArray || resolved?.GetType().IsArray == true);
         }
 
         [JoltLibraryMethod("isObject")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsObject(object? value, EvaluationContext context)
         {
+            var resolved = ResolveForTypeCheck(value, context);
+
+            return context.CreateTokenFrom(resolved is IJsonObject);
+        }
+
+        private static object? ResolveForTypeCheck(object? value, EvaluationContext context)
+        {
+            // A path resolves to a JSON token rather than the value it holds, while a range variable or literal
+            // is already a value, so unwrap JSON values to check every source the same way. Arrays and objects
+            // are kept as tokens since that's what they're checked against.
+
             var resolved = context.ResolveValueOrNullOf<object>(value);
 
-            return context.CreateTokenFrom(resolved?.GetType().IsClass == true || resolved is IJsonObject);
+            return resolved is IJsonValue token ? token.ToTypeOf<object>() : resolved;
         }
 
         [JoltLibraryMethod("isEmpty")]

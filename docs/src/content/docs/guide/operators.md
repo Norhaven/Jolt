@@ -86,6 +86,14 @@ Jolt implements addition, subtraction, multiplication, and division (`+`, `-`, `
 
 `&&` binds tighter than `||`, so `combinedResult` would be `true` even without the parentheses.
 
+Because the right operand is skipped when the left one decides the result, the left operand can guard the right one. Here the comparison runs only when `$.discount` exists, so a missing value gives `false` instead of an error:
+
+```jolt
+{
+    "hasDiscount": "#exists($.discount) && #valueOf($.discount) > 0"
+}
+```
+
 ### Logical NOT
 
 `!` negates a boolean value.

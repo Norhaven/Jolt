@@ -58,8 +58,8 @@ methods:
     examples:
       - title: Null and non-null values
         source: { "a": null, "b": 1 }
-        transformer: { "aExists": "#exists($.a)", "bExists": "#exists($.b)" }
-        output: { "aExists": false, "bExists": true }
+        transformer: { "aExists": "#exists($.a)", "bExists": "#exists($.b)", "cExists": "#exists($.c)" }
+        output: { "aExists": true, "bExists": true, "cExists": false }
     related: [isNull, isMissing]
 
   - name: isNull

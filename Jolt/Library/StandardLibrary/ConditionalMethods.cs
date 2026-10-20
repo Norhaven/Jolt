@@ -43,7 +43,7 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyName)]
         public static IJsonToken? IncludeIf(object? result, EvaluationContext context)
         {
-            var resolvedToken = context.ResolveQueryPathIfPresent(result);
+            var resolvedToken = result is RangeVariable variable ? variable.Value?.ToTypeOf<object>() : context.ResolveQueryPathIfPresent(result);
 
             var shouldInclude = resolvedToken switch
             {
