@@ -2,6 +2,10 @@
 
 All notable changes to the Jolt Language extension will be documented in this file.
 
+### 1.5.0
+
+- Upgraded Jolt library used to 2.5.0
+
 ### 1.4.0
 
 - Signature help for library and custom method arguments, also shown by `Ctrl+Space` alongside completions
