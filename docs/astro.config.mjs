@@ -7,7 +7,7 @@ import fs from 'node:fs';
 // (https://norhaven.github.io/Jolt). To serve from the root of the Norhaven.github.io
 // user site instead, set DOCS_BASE=/ in the deploy workflow.
 const site = process.env.DOCS_SITE ?? 'https://norhaven.github.io';
-const base = process.env.DOCS_BASE ?? '/Jolt';
+const base = process.env.DOCS_BASE ?? '/';
 
 const readJson = (path, fallback) =>
 	fs.existsSync(path) ? JSON.parse(fs.readFileSync(path, 'utf8')) : fallback;

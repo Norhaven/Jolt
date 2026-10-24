@@ -38,7 +38,7 @@ jobs:
         working-directory: docs
     env:
       DOCS_SITE: https://norhaven.github.io
-      DOCS_BASE: /Jolt
+      DOCS_BASE: /
     steps:
       - uses: actions/checkout@v4
         with:

@@ -5,7 +5,7 @@
             "type": "chrome",
             "request": "launch",
             "name": "Launch Chrome against localhost",
-            "url": "http://localhost:4321/Jolt/",
+            "url": "http://localhost:4321/",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "docs: dev server"
         }
