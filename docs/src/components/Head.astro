@@ -1,0 +1,16 @@
+---
+// Wraps Starlight's default <head> so site-wide scripts load on every page.
+// Registered as the Head override in astro.config.mjs.
+import Default from '@astrojs/starlight/components/Head.astro';
+---
+
+<Default><slot /></Default>
+
+<script>
+	import '../scripts/site.js';
+</script>
+
+{import.meta.env.PROD && (
+	<!-- Cloudflare Web Analytics: production builds only, so local development isn't tracked. -->
+	<script is:inline defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "b59d987d244048ebb1d25ff94a6c15aa"}'></script>
+)}

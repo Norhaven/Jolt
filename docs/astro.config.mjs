@@ -39,6 +39,10 @@ export default defineConfig({
 			},
 			lastUpdated: true,
 			customCss: ['./src/styles/jolt.css'],
+			components: {
+				// Adds the site-wide script (src/scripts/site.js) to every page.
+				Head: './src/components/Head.astro',
+			},
 			expressiveCode: {
 				shiki: {
 					langs: [joltExprGrammar, joltGrammar],
