@@ -10,7 +10,7 @@ import Default from '@astrojs/starlight/components/Head.astro';
 	import '../scripts/site.js';
 </script>
 
+<!-- Cloudflare Web Analytics: production builds only, so local development isn't tracked. -->
 {import.meta.env.PROD && (
-	<!-- Cloudflare Web Analytics: production builds only, so local development isn't tracked. -->
 	<script is:inline defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "b59d987d244048ebb1d25ff94a6c15aa"}'></script>
 )}
