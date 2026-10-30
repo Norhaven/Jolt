@@ -1,0 +1,139 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+# Builds the Jolt language server and VS Code extension, packages the extension with BuildPackage.ps1, then publishes
+# the same .vsix to the Visual Studio Marketplace and the Open VSX Registry.
+#
+# Both registries authenticate with trusted publishing (GitHub OIDC) rather than a stored PAT. The trusted publisher
+# entries on each registry are bound to this workflow's file name, so update them if this file is renamed or moved.
+# If an entry also pins a GitHub environment, add a matching `environment:` key to that publish job.
+
+name: Publish VS Code Extension
+on:
+  workflow_dispatch: # Run manually from the GitHub UI once the extension version has been bumped
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  ExtensionDirectory: IDE/Extensions/VSCode/jolt
+  PackageDirectory: ${{ github.workspace }}/vsix
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  build:
+    name: Build And Package Extension
+    runs-on: ubuntu-latest
+    outputs:
+      package-name: ${{ steps.package.outputs.package-name }}
+    steps:
+    - uses: actions/checkout@v4
+
+    # The language server targets .NET 8; the metadata generator and tests target .NET 10.
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          8.0.x
+          10.0.x
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: npm
+        cache-dependency-path: ${{ env.ExtensionDirectory }}/package-lock.json
+
+    # Build and test the language server
+    - name: Build Language Server
+      run: dotnet build IDE/LanguageServer/Jolt.LanguageServer --configuration Release
+    - name: Test Language Server
+      run: dotnet test IDE/LanguageServer/Jolt.LanguageServer.Tests --configuration Release --verbosity normal
+
+    # Build and test the extension
+    - name: Install Extension Dependencies
+      working-directory: ${{ env.ExtensionDirectory }}
+      run: npm ci
+    - name: Build Extension
+      working-directory: ${{ env.ExtensionDirectory }}
+      run: npm run compile
+    - name: Test Extension
+      working-directory: ${{ env.ExtensionDirectory }}
+      run: npm test
+
+    # BuildPackage.ps1 calls vsce directly. Packaging runs vscode:prepublish, which regenerates the library metadata,
+    # publishes the language server into the extension's server folder and bundles the extension for production.
+    - name: Install vsce
+      run: npm install --global @vscode/vsce
+    - name: Package Extension
+      id: package
+      run: |
+        ./${{ env.ExtensionDirectory }}/BuildPackage.ps1
+
+        $manifest = Get-Content ${{ env.ExtensionDirectory }}/package.json -Raw | ConvertFrom-Json
+        $packageName = "$($manifest.name)-$($manifest.version).vsix"
+
+        New-Item -ItemType Directory -Force -Path ${{ env.PackageDirectory }} | Out-Null
+        Copy-Item (Join-Path ${{ env.ExtensionDirectory }} $packageName) ${{ env.PackageDirectory }}
+        "package-name=$packageName" >> $env:GITHUB_OUTPUT
+
+    # Publish the package as an artifact, so both registries receive the same build
+    - uses: actions/upload-artifact@v5.0.0
+      with:
+        name: vsix
+        if-no-files-found: error
+        retention-days: 7
+        path: ${{ env.PackageDirectory }}/${{ steps.package.outputs.package-name }}
+
+  publish_vs_marketplace:
+    name: Publish To Visual Studio Marketplace
+    runs-on: ubuntu-latest
+    needs: build
+
+    permissions:
+      contents: read
+      id-token: write  # Enable GitHub OIDC tokens for trusted publishing
+
+    steps:
+    - uses: actions/download-artifact@v6.0.0
+      with:
+        name: vsix
+        path: ${{ env.PackageDirectory }}
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    # --oidc exchanges the job's GitHub OIDC token for a short-lived Marketplace token and never falls back to a PAT
+    - name: Publish Extension
+      run: npx --yes @vscode/vsce publish --oidc --packagePath "${{ env.PackageDirectory }}/${{ needs.build.outputs.package-name }}"
+
+  publish_open_vsx:
+    name: Publish To Open VSX Registry
+    runs-on: ubuntu-latest
+    needs: build
+
+    permissions:
+      contents: read
+      id-token: write  # Enable GitHub OIDC tokens for trusted publishing
+
+    steps:
+    - uses: actions/download-artifact@v6.0.0
+      with:
+        name: vsix
+        path: ${{ env.PackageDirectory }}
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    # --trusted-publishing exchanges the job's GitHub OIDC token for a short-lived Open VSX token, and fails rather than
+    # running without one. OVSX_PAT is deliberately not set, since a PAT would take precedence over trusted publishing.
+    - name: Publish Extension
+      run: npx --yes ovsx@^1.2.0 publish --trusted-publishing --packagePath "${{ env.PackageDirectory }}/${{ needs.build.outputs.package-name }}"
