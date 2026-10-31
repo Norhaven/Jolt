@@ -1,0 +1,18 @@
+{
+    "root": true,
+    "transformers": [ "address" ],
+    "methods": [
+        {
+            "name": "greet",
+            "description": "Greets someone by name.",
+            "example": "#greet($.name)",
+            "returnType": "string",
+            "parameters": [
+                {
+                    "name": "name",
+                    "kind": "value"
+                }
+            ]
+        }
+    ]
+}

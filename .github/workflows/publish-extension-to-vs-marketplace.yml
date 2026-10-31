@@ -3,13 +3,20 @@
 # Builds the Jolt language server and VS Code extension, packages the extension with BuildPackage.ps1, then publishes
 # the same .vsix to the Visual Studio Marketplace and the Open VSX Registry.
 #
+# Publishing only happens when the "publish" input is checked, so a run without it just builds and tests the extension.
+#
 # Both registries authenticate with trusted publishing (GitHub OIDC) rather than a stored PAT. The trusted publisher
 # entries on each registry are bound to this workflow's file name, so update them if this file is renamed or moved.
 # If an entry also pins a GitHub environment, add a matching `environment:` key to that publish job.
 
 name: Publish VS Code Extension
 on:
-  workflow_dispatch: # Run manually from the GitHub UI once the extension version has been bumped
+  workflow_dispatch: # Run manually from the GitHub UI, checking "publish" once the extension version has been bumped
+    inputs:
+      publish:
+        description: Publish to the Visual Studio Marketplace and Open VSX after building and testing
+        type: boolean
+        default: false
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
@@ -65,6 +72,42 @@ jobs:
       working-directory: ${{ env.ExtensionDirectory }}
       run: npm test
 
+    # The integration and UI tests run the extension in a real VS Code, which validates with the language server from
+    # the extension's server folder (packaging publishes it there again, for production).
+    - name: Publish Language Server For Extension Tests
+      working-directory: ${{ env.ExtensionDirectory }}
+      run: npm run build-server
+
+    # The VS Code version that the tests download is pinned in test-support/vscodeTest.cjs.
+    - name: Cache VS Code For Extension Tests
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.ExtensionDirectory }}/.vscode-test
+        key: vscode-test-${{ runner.os }}-${{ hashFiles(format('{0}/test-support/vscodeTest.cjs', env.ExtensionDirectory)) }}
+
+    # VS Code needs a display, which xvfb provides on the runner.
+    - name: Install Virtual Display
+      run: if (-not (Get-Command xvfb-run -ErrorAction SilentlyContinue)) { sudo apt-get update; sudo apt-get install -y xvfb }
+
+    - name: Integration Test Extension
+      working-directory: ${{ env.ExtensionDirectory }}
+      run: xvfb-run -a npm run test:integration
+    - name: UI Test Extension
+      working-directory: ${{ env.ExtensionDirectory }}
+      run: xvfb-run -a npm run test:e2e
+
+    # Includes a screenshot and a trace of each failed UI test (view a trace with "npx playwright show-trace").
+    - name: Upload UI Test Results
+      if: failure()
+      uses: actions/upload-artifact@v5.0.0
+      with:
+        name: ui-test-results
+        if-no-files-found: ignore
+        retention-days: 7
+        path: |
+          ${{ env.ExtensionDirectory }}/playwright-report
+          ${{ env.ExtensionDirectory }}/test-results
+
     # BuildPackage.ps1 calls vsce directly. Packaging runs vscode:prepublish, which regenerates the library metadata,
     # publishes the language server into the extension's server folder and bundles the extension for production.
     - name: Install vsce
@@ -93,6 +136,7 @@ jobs:
     name: Publish To Visual Studio Marketplace
     runs-on: ubuntu-latest
     needs: build
+    if: inputs.publish
 
     permissions:
       contents: read
@@ -117,6 +161,7 @@ jobs:
     name: Publish To Open VSX Registry
     runs-on: ubuntu-latest
     needs: build
+    if: inputs.publish
 
     permissions:
       contents: read

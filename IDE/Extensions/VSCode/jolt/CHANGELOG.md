@@ -2,6 +2,10 @@
 
 All notable changes to the Jolt Language extension will be documented in this file.
 
+### 1.6.0
+
+- Colorization now applies to the Dark Modern, Dark+, Light Modern, and Light+ themes in newer versions of VS Code
+
 ### 1.5.0
 
 - Upgraded Jolt library used to 2.5.0

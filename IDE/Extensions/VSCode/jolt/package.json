@@ -56,16 +56,23 @@
     "watch": "node esbuild.mjs --watch",
     "package": "npm run check-types && node esbuild.mjs --production",
     "check-types": "tsc --noEmit",
-    "test": "tsc -p tsconfig.test.json && node --test \"out/test/**/*.test.js\""
+    "test": "tsc -p tsconfig.test.json && node --test \"out/test/**/*.test.js\"",
+    "test:integration": "npm run compile && tsc -p integration && vscode-test",
+    "test:e2e": "npm run compile && playwright test"
   },
   "dependencies": {
     "jsonc-parser": "^3.3.1",
     "vscode-languageclient": "^10.1.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^22.20.4",
     "@types/vscode": "~1.101.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.1.0",
     "esbuild": "^0.28.2",
+    "mocha": "^12.0.3",
     "ovsx": "^1.2.0",
     "typescript": "^6.0.3"
   },
@@ -143,7 +150,7 @@
     ],
     "configurationDefaults": {
       "editor.tokenColorCustomizations": {
-        "[Dark 2026][Default Dark Modern][Default Dark+][Visual Studio Dark]": {
+        "[Dark 2026][Dark Modern][Dark+][Default Dark Modern][Default Dark+][Visual Studio Dark]": {
           "textMateRules": [
             {
               "scope": [
@@ -258,7 +265,7 @@
             }
           ]
         },
-        "[Light 2026][Default Light Modern][Default Light+][Visual Studio Light]": {
+        "[Light 2026][Light Modern][Light+][Default Light Modern][Default Light+][Visual Studio Light]": {
           "textMateRules": [
             {
               "scope": [

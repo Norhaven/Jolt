@@ -13,3 +13,11 @@ esbuild.mjs
 images/**
 BuildPackage.ps1
 server/**/*.pdb
+out-integration/**
+integration/**
+e2e/**
+test-support/**
+test-results/**
+playwright-report/**
+.vscode-test.mjs
+playwright.config.ts

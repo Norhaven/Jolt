@@ -1,0 +1,9 @@
+{
+    "#foreach(@person in $.people) into 'people'": [
+        {
+            "name": "@person.name->#toUpperCase()",
+            "greeting": "#greet(@person.name)"
+        }
+    ],
+    "total": "#length($.people)"
+}

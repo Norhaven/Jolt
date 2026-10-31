@@ -104,8 +104,10 @@ Validation uses the Jolt language server, which needs .NET 8 or later. If a suit
 ## Extension Settings
 
 This extension offers default colorization settings via the `editor.tokenColorCustomizations` setting. This supports the following themes:
-* **Dark Mode** (via `Dark 2026`, `Default Dark Modern`, `Default Dark+`, or `Visual Studio Dark`)
-* **Light Mode** (via `Light 2026`, `Default Light Modern`, `Default Light+`, or `Visual Studio Light`)
+* **Dark Mode** (via `Dark 2026`, `Dark Modern`, `Dark+`, or `Visual Studio Dark`)
+* **Light Mode** (via `Light 2026`, `Light Modern`, `Light+`, or `Visual Studio Light`)
+
+Older versions of VS Code name these themes `Default Dark Modern`, `Default Dark+`, `Default Light Modern`, and `Default Light+`, which are also supported.
 
 It also contributes the following settings:
 * `jolt.completion.includeUnsafeMethods`: include unsafe library methods (such as `#eval`) in completions. Defaults to false.

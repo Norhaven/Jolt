@@ -3,3 +3,7 @@ node_modules/
 dist/
 out/
 server/
+.vscode-test/
+out-integration/
+test-results/
+playwright-report/
