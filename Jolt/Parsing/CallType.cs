@@ -11,6 +11,7 @@ namespace Jolt.Parsing
     {
         Unknown = 0,
         Static = 1,
-        Instance = 2
+        Instance = 2,
+        Delegate = 3
     }
 }

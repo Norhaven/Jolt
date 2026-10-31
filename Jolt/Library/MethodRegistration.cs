@@ -41,6 +41,24 @@ namespace Jolt.Library
         public static MethodRegistration FromInstanceMethod(string methodName, string? alias = default) => new MethodRegistration(methodName, alias);
 
         /// <summary>
+        /// Creates a method registration that invokes the provided delegate, which is an alternative to registering a type
+        /// that contains the method. The method's parameters are those of the delegate, and a final <c>params</c> array
+        /// parameter accepts any number of arguments.
+        /// </summary>
+        /// <param name="name">The name used in the JSON transformer to identify the method to invoke.</param>
+        /// <param name="method">The delegate to invoke.</param>
+        /// <returns>An instance of <see cref="MethodRegistration"/>.</returns>
+        public static MethodRegistration FromDelegate(string name, Delegate method)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("A delegate method registration requires a name.", nameof(name));
+            }
+
+            return new MethodRegistration(name, method ?? throw new ArgumentNullException(nameof(method)));
+        }
+
+        /// <summary>
         /// Gets the assembly-qualified type name that contains the method.
         /// </summary>
         public string FullyQualifiedTypeName { get; }
@@ -59,6 +77,11 @@ namespace Jolt.Library
         /// Gets the alias for the method to register.
         /// </summary>
         public string? Alias { get; }
+
+        /// <summary>
+        /// Gets the delegate to invoke, when this is a delegate method registration.
+        /// </summary>
+        public Delegate? MethodDelegate { get; }
 
         /// <summary>
         /// Initializes an instance of <see cref="MethodRegistration"/> with the provided parameters as a static method.
@@ -85,6 +108,17 @@ namespace Jolt.Library
             MethodName = instanceMethodName;
             Alias = alias;
             CallType = CallType.Instance;
+        }
+
+        // Private, since a public (string, Delegate) constructor would make existing calls such as
+        // new MethodRegistration("name", null) ambiguous with the instance method constructor.
+        private MethodRegistration(string name, Delegate method)
+        {
+            FullyQualifiedTypeName = string.Empty;
+            MethodName = name;
+            Alias = name;
+            CallType = CallType.Delegate;
+            MethodDelegate = method;
         }
     }
 }

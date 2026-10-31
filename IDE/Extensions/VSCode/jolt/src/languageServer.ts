@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, State, TransportKind } from 'vscode-languageclient/node';
 import { CustomMethodsService } from './customMethodsService';
+import { TransformResult } from './language/preview';
 
 /** Whether the language server is validating transformers, and if not, why. */
 export type ServerStatus =
@@ -15,6 +16,17 @@ const dotnetRuntimeVersion = '8.0';
 
 /** The language server's notification describing what the host application provides to a transformer. */
 const documentContextNotification = 'jolt/didChangeDocumentContext';
+
+/** The language server's request that runs a transformer against a preview input file. */
+const transformRequest = 'jolt/transform';
+
+/** A preview input file to send with a transform request, leaving out its text when the server already has it. */
+export interface TransformInput {
+	uri: vscode.Uri;
+	/** Changes whenever the input file's text does, so that the server can keep the text it was last sent. */
+	revision: string;
+	text?: string;
+}
 
 const enabledSetting = 'jolt.validation.enabled';
 
@@ -68,6 +80,22 @@ export class LanguageServerController implements vscode.Disposable {
 			await this.stop();
 			await (isEnabled() ? this.start() : this.stopAndDisable());
 		});
+	}
+
+	/**
+	 * Runs a transformer against a preview input file, or returns undefined when the server isn't running.
+	 */
+	async transform(transformer: vscode.TextDocument, input: TransformInput, token?: vscode.CancellationToken): Promise<TransformResult | undefined> {
+		const client = this.client;
+
+		if (!client || this.currentStatus.state !== 'running') {
+			return undefined;
+		}
+
+		return client.sendRequest<TransformResult>(transformRequest, {
+			transformer: { uri: client.code2ProtocolConverter.asUri(transformer.uri), text: transformer.getText() },
+			input: { uri: client.code2ProtocolConverter.asUri(input.uri), revision: input.revision, text: input.text }
+		}, token);
 	}
 
 	async stop(): Promise<void> {
@@ -231,6 +259,22 @@ export async function disableValidation(): Promise<void> {
 		: vscode.ConfigurationTarget.Global;
 
 	await configuration.update(enabledSetting, false, target);
+}
+
+/**
+ * Turns validation on where it is turned off, so that a workspace setting turning it off does not override the change.
+ */
+export async function enableValidation(): Promise<void> {
+	const configuration = vscode.workspace.getConfiguration();
+	const target = configuration.inspect<boolean>(enabledSetting)?.workspaceValue === false
+		? vscode.ConfigurationTarget.Workspace
+		: vscode.ConfigurationTarget.Global;
+
+	await configuration.update(enabledSetting, true, target);
+}
+
+export function isValidationEnabled(): boolean {
+	return isEnabled();
 }
 
 function getAllowUnsafeMethods(): boolean {

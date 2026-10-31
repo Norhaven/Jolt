@@ -24,5 +24,8 @@ suite('Activation', () => {
 
 		assert.ok(commands.includes('jolt.restartLanguageServer'));
 		assert.ok(commands.includes('jolt.showLanguageServerOutput'));
+		assert.ok(commands.includes('jolt.openPreview'));
+		assert.ok(commands.includes('jolt.choosePreviewInput'));
+		assert.ok(commands.includes('jolt.openPreviewInput'));
 	});
 });

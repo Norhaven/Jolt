@@ -137,5 +137,47 @@ namespace Jolt.LanguageServer.Tests
 
             Assert.Empty(NextPublished().Diagnostics);
         }
+
+        private Task<JsonElement> TransformAsync(string transformer, string revision, string? inputText) =>
+            _client.InvokeWithParameterObjectAsync<JsonElement>(JoltLanguageServer.TransformRequest, new
+            {
+                transformer = new { uri = Uri, text = transformer },
+                input = new { uri = "file:///c%3A/transformers/.jolt/example/order.input.json", revision, text = inputText },
+            });
+
+        [Fact]
+        public async Task Transform_KeepsTheInputTextForItsRevision()
+        {
+            const string transformer = "{ \"id\": \"#valueOf($.id)\" }";
+
+            await _client.InvokeWithParameterObjectAsync<JsonElement>("initialize", new { capabilities = new { } });
+
+            // The server hasn't seen the input file yet, so it asks for its text.
+            Assert.Equal("inputRequired", (await TransformAsync(transformer, "1", null)).GetProperty("outcome").GetString());
+
+            var sent = await TransformAsync(transformer, "1", "{ \"input\": { \"id\": 7 } }");
+
+            Assert.Equal("success", sent.GetProperty("outcome").GetString());
+            Assert.Contains("7", sent.GetProperty("output").GetString());
+
+            // The same revision is reused without its text, and a new revision needs its text again.
+            Assert.Equal("success", (await TransformAsync("{ \"other\": \"#valueOf($.id)\" }", "1", null)).GetProperty("outcome").GetString());
+            Assert.Equal("inputRequired", (await TransformAsync(transformer, "2", null)).GetProperty("outcome").GetString());
+        }
+
+        [Fact]
+        public async Task Transform_UsesTheTransformersDocumentContext()
+        {
+            const string transformer = "{ \"region\": \"#lookupRegion($.country)\" }";
+
+            await _client.InvokeWithParameterObjectAsync<JsonElement>("initialize", new { capabilities = new { } });
+            await NotifyAsync(JoltLanguageServer.DocumentContextNotification, new { textDocument = new { uri = Uri }, methods = new[] { new { name = "lookupRegion" } } });
+
+            var result = await TransformAsync(transformer, "1", "{ \"input\": { \"country\": \"DE\" } }");
+
+            // The methods.json files list the method, so calling it without a mock is reported as such.
+            Assert.Equal("error", result.GetProperty("outcome").GetString());
+            Assert.Contains("has no mock", result.GetRawText());
+        }
     }
 }

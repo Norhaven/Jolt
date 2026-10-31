@@ -662,7 +662,7 @@ namespace Jolt.Evaluation
                         }
                     }
                 }
-                else if (value is LambdaMethod lambda && currentFormalParameter.Type != typeof(LambdaMethod))
+                else if (value is LambdaMethod lambda && currentFormalParameter.Type != typeof(LambdaMethod) && !IsUntypedExternalParameter(call.Signature, currentFormalParameter))
                 {
                     if (!currentFormalParameter.IsDelegate)
                     {
@@ -862,6 +862,18 @@ namespace Jolt.Evaluation
             return true;
         }
 
+        /// <summary>
+        /// Determines whether an external method's parameter is untyped (an object, or a params array of them), which
+        /// accepts a lambda as the <see cref="LambdaMethod"/> itself. This lets a method take any arguments, such as a
+        /// stand-in for a method that isn't available, without knowing which of them are lambdas.
+        /// </summary>
+        private static bool IsUntypedExternalParameter(MethodSignature signature, MethodParameter parameter)
+        {
+            var type = parameter.IsVariadic && parameter.Type.IsArray ? parameter.Type.GetElementType() : parameter.Type;
+
+            return !signature.IsSystemMethod && type == typeof(object);
+        }
+
         private static object? InvokeMethod(MethodSignature method, IEnumerable<object?> actualParameterValues, EvaluationContext context)
         {
             try
@@ -895,6 +907,13 @@ namespace Jolt.Evaluation
                     }
 
                     return methodInfo.Invoke(context.JsonContext.MethodContext, actualParameterValues.ToArray());
+                }
+
+                else if (method.CallType == CallType.Delegate && method.MethodDelegate != null)
+                {
+                    context.JsonContext.WriteInfoFor<ExpressionEvaluator>($"Attempting to invoke delegate method '{method.Name}'");
+
+                    return method.MethodDelegate.DynamicInvoke(actualParameterValues.ToArray());
                 }
 
                 throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToInvokeMethodWithUnknownCallType, method.CallType);

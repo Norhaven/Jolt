@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Jolt preview input",
+  "description": "A source document to preview a Jolt transformer with, along with the values that its custom methods return in the preview. Input files for orders.jolt.json are kept in .jolt/orders/ next to it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["input"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "input": {
+      "description": "The source document to run the transformer against."
+    },
+    "mocks": {
+      "type": "object",
+      "description": "The values that custom methods return in the preview, by method name, since their implementations are in the host application. Calling a custom method that's listed in a .jolt/methods.json file without a mock is an error.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["returns"],
+        "properties": {
+          "returns": {
+            "description": "The value that every call to the method returns, whatever its arguments."
+          }
+        }
+      },
+      "default": {}
+    }
+  }
+}

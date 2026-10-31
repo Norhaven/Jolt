@@ -875,9 +875,21 @@ var instanceRegistration = MethodRegistration.FromInstanceMethod(nameof(Transfor
 ```
 You'll notice that you don't have to provide an instance type for the instance method, just the name of the method itself. This is because the transformer will assume that you sent in an appropriate method context instance when it was created and will just use whatever you provide during method resolution. Include the registrations and an instance for your methods (if needed) when you create the `JoltJsonTransformer` instance.
 ```csharp
-var transformer = JoltJsonTransformer.DefaultWith(transformerJson, new[] { staticRegistration, instanceRegistration }, new TransformerMethods());
+var transformer = JoltJsonTransformer.DefaultWith(transformerJson, new TransformerMethods(), new[] { staticRegistration, instanceRegistration });
 ```
 That's it! You can pass in your source JSON document to the `Transform` method call just like before and collect the transformed result.
+
+## Delegate Registration
+
+If you'd rather not create a class to hold your methods, you can register a delegate instead with `MethodRegistration.FromDelegate`, giving it the name that the transformer calls it by. Its parameters are those of the delegate, so it works the same way as a method on a class, lambda parameters included, and it can use any state that it captures.
+```csharp
+var prefix = "Hello, ";
+var greet = MethodRegistration.FromDelegate("greet", (string name) => prefix + name);
+var sum = MethodRegistration.FromDelegate("sumOf", (IEnumerable<long> values, Func<long, long> selector) => values.Select(selector).Sum());
+
+var transformer = JoltJsonTransformer.DefaultWith(transformerJson, null, new[] { greet, sum });
+```
+Your transformer could then use `#greet(#valueOf($.name))` or `#sumOf(#valueOf($.numbers), @x: @x * 2)`. A delegate whose last parameter is a `params` array accepts any number of arguments for it, and when that array (or any parameter) is of type `object`, a lambda argument is passed to it as the `LambdaMethod` itself rather than being rejected.
 
 ## Transformer Registration
 

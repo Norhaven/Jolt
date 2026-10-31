@@ -87,6 +87,27 @@ Some validation problems come with quick fixes (`Ctrl+.`, or the light bulb):
 * **Unknown methods:** change the call to a method with a similar name (e.g. `#valeuOf` to `#valueOf`), or add the method to the closest applicable `.jolt/methods.json` file (creating one in the transformer's folder if there isn't one). The new entry's parameters are inferred from the call, including lambdas and the variables they bind, and the file opens on it so that you can fill in its description.
 * **Undeclared variables:** change the reference to a variable in scope with a similar name, or declare the variable just before the property that uses it.
 
+### Preview
+
+You can see what a transformer produces without leaving the editor. Use the **Open Preview to the Side** button in a transformer's title bar (or **Jolt: Open Preview to the Side**) to run it against an input file and show its output beside it. The preview runs again as you edit the transformer or the input file, saved or not, and its first lines describe the run: the input file used, how long it took, and any error (along with the output of the last successful run).
+
+A transformer's input files are kept in a folder named after it, inside a `.jolt` folder next to it. For `orders.jolt.json`, they'd be in `.jolt/orders/`, such as `.jolt/orders/multi-item-order.input.json`. When a transformer has no input files yet, the preview offers to create one, asking for its name. Use the **Choose Preview Input** button in the preview's title bar to switch to another input file or create a new one, and **Open Preview Input File** to edit the current one.
+
+An input file holds the source document in its `input` property. Since your custom methods are part of your application, the preview can't call them, so `mocks` gives the value that each one returns instead, whatever its arguments:
+
+```json
+{
+    "input": { "order": { "country": "DE", "items": [] } },
+    "mocks": {
+        "lookupRegion": { "returns": "EMEA" }
+    }
+}
+```
+
+New input files include a mock to fill in for each custom method that the transformer calls (from your `.jolt/methods.json` files, in a trusted workspace). Calling a custom method from a `methods.json` file that has no mock is reported in the preview. A mock for a standard library method is ignored, since Jolt always calls the standard library method, and the preview warns about it.
+
+The preview runs transformers with the language server, so it needs validation to be turned on. If it's off when you open a preview, you'll be asked whether to turn it on. Transformers that take longer than 10 seconds to run are reported as timed out, and Jolt test files (with a `testGroups` array) can't be previewed.
+
 ### Language Status
 
 The language status area of the status bar (the `{ }` next to "Jolt") shows whether validation is running, starting, turned off, or has failed (and why), along with the `methods.json` files that apply to the current transformer, which you can open from there. It also shows the version of Jolt that this extension's completions, hover and validation are based on.

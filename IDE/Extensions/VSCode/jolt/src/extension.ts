@@ -20,6 +20,7 @@ import {
 	VariableReference
 } from './language/variables';
 import { LanguageServerController } from './languageServer';
+import { PreviewController } from './preview';
 import { JoltStatus, restartCommand, showOutputCommand } from './status';
 
 let languageServer: LanguageServerController | undefined;
@@ -36,6 +37,7 @@ export function activate(context: vscode.ExtensionContext): void {
 		methods,
 		server,
 		new JoltStatus(server, methods),
+		new PreviewController(context, server, methods),
 		vscode.commands.registerCommand(restartCommand, () => server.restart()),
 		vscode.commands.registerCommand(showOutputCommand, () => server.output.show()),
 		vscode.languages.registerCompletionItemProvider(selector, new JoltCompletionProvider(methods), '#', '>', '@'),

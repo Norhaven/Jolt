@@ -87,8 +87,59 @@
         "command": "jolt.showLanguageServerOutput",
         "title": "Show Language Server Output",
         "category": "Jolt"
+      },
+      {
+        "command": "jolt.openPreview",
+        "title": "Open Preview to the Side",
+        "category": "Jolt",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "jolt.choosePreviewInput",
+        "title": "Choose Preview Input",
+        "category": "Jolt",
+        "icon": "$(list-selection)"
+      },
+      {
+        "command": "jolt.openPreviewInput",
+        "title": "Open Preview Input File",
+        "category": "Jolt",
+        "icon": "$(go-to-file)"
       }
     ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "jolt.openPreview",
+          "when": "resourceLangId == jolt && resourceScheme != jolt-preview",
+          "group": "navigation"
+        },
+        {
+          "command": "jolt.choosePreviewInput",
+          "when": "resourceScheme == jolt-preview",
+          "group": "navigation@1"
+        },
+        {
+          "command": "jolt.openPreviewInput",
+          "when": "resourceScheme == jolt-preview",
+          "group": "navigation@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "jolt.openPreview",
+          "when": "editorLangId == jolt || resourceScheme == jolt-preview"
+        },
+        {
+          "command": "jolt.choosePreviewInput",
+          "when": "editorLangId == jolt || resourceScheme == jolt-preview"
+        },
+        {
+          "command": "jolt.openPreviewInput",
+          "when": "editorLangId == jolt || resourceScheme == jolt-preview"
+        }
+      ]
+    },
     "keybindings": [
       {
         "key": "ctrl+space",
@@ -146,6 +197,10 @@
       {
         "fileMatch": "**/.jolt/methods.json",
         "url": "./schemas/jolt-methods.schema.json"
+      },
+      {
+        "fileMatch": "**/.jolt/*/*.input.json",
+        "url": "./schemas/jolt-preview-input.schema.json"
       }
     ],
     "configurationDefaults": {

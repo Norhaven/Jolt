@@ -1,3 +1,4 @@
+using Jolt.LanguageServer.Preview;
 using Jolt.LanguageServer.Protocol;
 using Jolt.LanguageServer.Validation;
 using StreamJsonRpc;
@@ -18,23 +19,28 @@ namespace Jolt.LanguageServer
     internal sealed class JoltLanguageServer : IDisposable
     {
         public const string DocumentContextNotification = "jolt/didChangeDocumentContext";
+        public const string TransformRequest = "jolt/transform";
 
         private static readonly TimeSpan DefaultValidationDelay = TimeSpan.FromMilliseconds(250);
+        private static readonly TimeSpan DefaultTransformTimeout = TimeSpan.FromSeconds(10);
 
         private readonly object _lock = new object();
         private readonly Dictionary<string, OpenDocument> _documents = new Dictionary<string, OpenDocument>(StringComparer.Ordinal);
         private readonly Dictionary<string, DocumentContext> _contexts = new Dictionary<string, DocumentContext>(StringComparer.Ordinal);
+        private readonly Dictionary<string, (string Revision, PreviewInput Input)> _previewInputs = new Dictionary<string, (string Revision, PreviewInput Input)>(StringComparer.Ordinal);
         private readonly Func<PublishDiagnosticsParams, Task> _publish;
         private readonly Action<int>? _exit;
         private readonly TimeSpan _validationDelay;
+        private readonly TimeSpan _transformTimeout;
         private ValidationSettings _settings = ValidationSettings.Default;
         private bool _isShutdownRequested;
 
-        public JoltLanguageServer(Func<PublishDiagnosticsParams, Task> publish, Action<int>? exit = null, TimeSpan? validationDelay = null)
+        public JoltLanguageServer(Func<PublishDiagnosticsParams, Task> publish, Action<int>? exit = null, TimeSpan? validationDelay = null, TimeSpan? transformTimeout = null)
         {
             _publish = publish;
             _exit = exit;
             _validationDelay = validationDelay ?? DefaultValidationDelay;
+            _transformTimeout = transformTimeout ?? DefaultTransformTimeout;
         }
 
         [JsonRpcMethod("initialize", UseSingleObjectParameterDeserialization = true)]
@@ -176,6 +182,69 @@ namespace Jolt.LanguageServer
                     ScheduleValidation(uri, TimeSpan.Zero);
                 }
             }
+        }
+
+        /// <summary>
+        /// Runs a transformer against a preview input file. The input file's text is kept for its revision, so that
+        /// the client only sends it again when it changes, since it may hold a large document.
+        /// </summary>
+        [JsonRpcMethod(TransformRequest, UseSingleObjectParameterDeserialization = true)]
+        public async Task<TransformResult> TransformAsync(TransformParams parameters, CancellationToken cancellation)
+        {
+            var inputDocument = parameters.Input;
+            PreviewInput? input = null;
+
+            if (inputDocument.Text != null)
+            {
+                // Parsed outside the lock, since a large document would hold up validation.
+                input = PreviewInput.Parse(inputDocument.Text);
+
+                lock (_lock)
+                {
+                    _previewInputs[inputDocument.Uri] = (inputDocument.Revision, input);
+                }
+            }
+            else
+            {
+                lock (_lock)
+                {
+                    if (_previewInputs.TryGetValue(inputDocument.Uri, out var cached) && cached.Revision == inputDocument.Revision)
+                    {
+                        input = cached.Input;
+                    }
+                }
+            }
+
+            if (input is null)
+            {
+                return new TransformResult { Outcome = TransformOutcome.InputRequired };
+            }
+
+            DocumentContext context;
+            ValidationSettings settings;
+
+            lock (_lock)
+            {
+                context = _contexts.TryGetValue(parameters.Transformer.Uri, out var documentContext) ? documentContext : DocumentContext.Unknown;
+                settings = _settings;
+            }
+
+            var run = Task.Run(() => TransformRunner.Run(parameters.Transformer.Text, input, context, settings));
+            var completed = await Task.WhenAny(run, Task.Delay(_transformTimeout, cancellation)).ConfigureAwait(false);
+
+            cancellation.ThrowIfCancellationRequested();
+
+            if (completed != run)
+            {
+                // A transformation can't be stopped part way through, so it's left to finish in the background.
+                return new TransformResult
+                {
+                    Outcome = TransformOutcome.TimedOut,
+                    Error = new TransformError { Message = $"The transformer didn't finish within {_transformTimeout.TotalSeconds:0.#} seconds." },
+                };
+            }
+
+            return await run.ConfigureAwait(false);
         }
 
         public void Dispose()

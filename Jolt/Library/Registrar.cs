@@ -32,6 +32,17 @@ namespace Jolt.Library
 
         public static MethodSignature GetExternalMethodRegistration(MethodRegistration registration, IMessageProvider messageProvider, object? methodContext = default)
         {
+            if (registration.CallType == CallType.Delegate && registration.MethodDelegate != null)
+            {
+                var method = registration.MethodDelegate.Method;
+
+                // Unlike type-based registrations, a delegate can't carry Jolt's own parameter attributes, so a params
+                // array is what makes its final parameter variadic.
+                var parameters = method.GetParameters().Select(x => new MethodParameter(x.ParameterType, x.Name, false, x.GetCustomAttribute<ParamArrayAttribute>() != null, false, null, x.ParameterType.IsAllowedDelegate())).ToArray();
+
+                return new MethodSignature(registration.MethodName, registration.MethodDelegate, method.ReturnType, parameters);
+            }
+
             if (string.IsNullOrWhiteSpace(registration.FullyQualifiedTypeName))
             {
                 if (methodContext is null)
