@@ -2622,7 +2622,8 @@
             "tags": null
           }
         },
-        "tags": [ "a", "b" ]
+        "tags": [ "a", "b" ],
+        "nicknames": [ null, " bo " ]
       },
       "tests": [
         {
@@ -2716,6 +2717,48 @@
           "transformer": {
             "@p": "#valueOf($.person)",
             "result": "@p?.nickname->#toUpperCase()"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "nullValueInLibraryCall"
+        },
+        {
+          "name": "Pipes work after indexing or slicing a variable or method result",
+          "transformer": {
+            "@word": "#valueOf($.person.name)",
+            "@names": "#valueOf($.nicknames)",
+            "indexedString": "@word[1]->#toUpperCase()",
+            "slicedString": "@word[^4..]->#trim()->#toUpperCase()",
+            "slicedArray": "@names[1..] -> #length()",
+            "indexedArray": "@names[1]->#trim()",
+            "indexedArrayFromEnd": "@names[^1]->#trim()->#toUpperCase()",
+            "indexedMethodResult": "#valueOf($.nicknames)[1]->#trim()",
+            "nullConditionalString": "@word[1..4]?->#toUpperCase()",
+            "nullConditionalPresent": "@names[1]?->#trim()",
+            "nullConditionalNull": "@names[0]?->#trim()->#toUpperCase()",
+            "nullConditionalDefaulted": "@names[0]?->#trim() ?? 'none'",
+            "nullConditionalMethodResult": "#valueOf($.nicknames)[0]?->#trim()",
+            "nullConditionalSlice": "@names[..1]?->#length()"
+          },
+          "result": {
+            "indexedString": "A",
+            "slicedString": "ADA",
+            "slicedArray": 1,
+            "indexedArray": "bo",
+            "indexedArrayFromEnd": "BO",
+            "indexedMethodResult": "bo",
+            "nullConditionalString": "ADA",
+            "nullConditionalPresent": "bo",
+            "nullConditionalNull": null,
+            "nullConditionalDefaulted": "none",
+            "nullConditionalMethodResult": null,
+            "nullConditionalSlice": 1
+          }
+        },
+        {
+          "name": "A pipe after indexing a null element passes it to the method",
+          "transformer": {
+            "@names": "#valueOf($.nicknames)",
+            "result": "@names[0]->#toUpperCase()"
           },
           "exceptionCode": "externalMethodException",
           "innerExceptionCode": "nullValueInLibraryCall"

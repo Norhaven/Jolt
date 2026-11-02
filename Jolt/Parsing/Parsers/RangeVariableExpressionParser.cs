@@ -153,7 +153,9 @@ namespace Jolt.Parsing.Parsers
 
                 if (indexerExpression is RangeExpression parsedRange)
                 {
-                    expression = new SlicedVariableExpression((RangeVariableExpression)expression, parsedRange);
+                    // A method can be piped from the indexed or sliced variable (e.g. "@x[0]?->#trim()"), just as from the variable itself.
+
+                    expression = ParsePipedMethodCallsFrom(context, new SlicedVariableExpression((RangeVariableExpression)expression, parsedRange));
 
                     return true;
                 }

@@ -107,7 +107,6 @@ unary-expr
 ### piped method calls, or a primary that cannot start a pipe chain.
 postfix-expr
     = pipe-source { pipe-suffix }
-    | sliced-variable              (* @name[…]  — not pipeable             *)
     | json-path                    (* $.some.path — not pipeable, see §10  *)
     | string-literal               (* 'text'                                *)
     | number-literal
@@ -118,7 +117,8 @@ postfix-expr
 ### The expressions a pipe chain can start from.
 pipe-source
     = method-call [ index-suffix ] (* #m(…), #m(…)[…]                      *)
-    | var-chain                    (* @name, @name.prop, @name?.prop        *)
+    | var-reference                (* @name, @name.prop, @name?.prop,
+                                      @name[…]                              *)
     | array-literal                (* [ … ]   inline array                  *)
     | object-literal               (* { … }   inline object                 *)
     | "(" value-expression ")"
@@ -499,7 +499,11 @@ var-path
 ### A var-reference may be used as a standalone expression (the variable
 ### itself), dereferenced further with dot-steps and null-safe steps, or
 ### indexed / sliced.  Indexing applies to the variable itself and
-### cannot be combined with dereference steps or followed by a pipe.
+### cannot be combined with dereference steps.  A single index gives one
+### element or character ("@x[1]" on [8, null] gives null, so
+### "@x[1]?->#m()" skips #m); a range always gives an array or string,
+### even when it holds only one element ("@x[1..2]" gives [null]).
+### Indexing a null variable is an error.
 
 var-reference
     = var-chain
@@ -863,12 +867,13 @@ json-number
 #
 ### [N-14] MORE PIPE SOURCES (NEW)
 ###        A pipe chain may now start from an object literal, a
-###        parenthesized expression or a dereferenced variable property
-###        ("@x.name->#trim()"), as well as the existing method calls,
+###        parenthesized expression, a dereferenced variable property
+###        ("@x.name->#trim()") or an indexed / sliced variable
+###        ("@x[1..]?->#length()"), as well as the existing method calls,
 ###        variables and array literals.  pipe-source (§2) lists these.
-###        JSON paths and sliced variables ("@x[0]") still cannot start a
-###        chain, and the pipe target always begins with "#" (the previous
-###        revision omitted it from pipe-suffix).
+###        JSON paths still cannot start a chain, and the pipe target
+###        always begins with "#" (the previous revision omitted it from
+###        pipe-suffix).
 #
 ### [N-15] NULL-SAFE DEREFERENCE ALIGNED WITH C# (CHANGED)
 ###        "?." now short-circuits the rest of its chain, including any

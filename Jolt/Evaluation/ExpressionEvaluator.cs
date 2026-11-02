@@ -359,7 +359,7 @@ namespace Jolt.Evaluation
 
             if (leftResult is long left && rightResult is long right)
             {
-                var isIdenticalIndices = range.StartIndex == range.EndIndex;
+                var isIdenticalIndices = range.IsSingleIndex;
                 var leftIndex = new Index((int)left, range.StartIndex.IsOffsetFromEnd);
 
                 var rightIndex = (isIdenticalIndices, range.EndIndex.IsOffsetFromEnd) switch
@@ -427,7 +427,13 @@ namespace Jolt.Evaluation
                     var method = context.JsonContext.ReferenceResolver.GetMethod(nameof(StringAndArrayMethods.Slice).ToLowerInvariant());
                     var call = new MethodCallExpression(method, new Expression[] { new RangeVariableExpression(variableName), indexOrSliceRange });
 
-                    return ExecuteMethodCall(call, context, isRootExpression);
+                    var slice = ExecuteMethodCall(call, context, isRootExpression);
+
+                    // A single index (e.g. "[1]") gives the element itself, while a range (e.g. "[1..2]") always gives an array.
+
+                    return indexOrSliceRange.IsSingleIndex && slice is IJsonArray elements
+                        ? elements.First()
+                        : slice;
                 }
                 else
                 {

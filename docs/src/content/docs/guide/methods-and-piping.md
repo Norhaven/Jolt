@@ -44,7 +44,7 @@ If you know C# extension methods, this is the same idea. Any method, including y
 }
 ```
 
-You can also pipe from an array literal, an object literal (such as `{ 'country': 'US' }->#merge($.address)`) or a parenthesized expression (such as `(#valueOf($.price) * 1.2)->#roundTo(2)`), or directly from a variable, or from one of its properties:
+You can also pipe from an array literal, an object literal (such as `{ 'country': 'US' }->#merge($.address)`) or a parenthesized expression (such as `(#valueOf($.price) * 1.2)->#roundTo(2)`), or directly from a variable, one of its properties, or an index or slice of it (such as `@names[1..]->#length()`):
 
 ```jolt
 {
