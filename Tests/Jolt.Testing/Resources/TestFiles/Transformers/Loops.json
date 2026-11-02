@@ -20,7 +20,7 @@
   "#foreach(@x in $.exampleBaseProperty) into 'RootObject'": {
     "#foreach(@y in @x.testArray) into @temp": [
         {
-          "#nameOf(@x)": "@y.text",
+          "#nameOf(@x)": "@y",
           "#nameOf(@y)": "@x.value"
         }
       ],

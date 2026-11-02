@@ -69,6 +69,83 @@ namespace Jolt.Parsing
         }
 
         /// <summary>
+        /// Reads a null-conditional piped method call (e.g. "?->#trim(") once its question mark has been consumed.
+        /// </summary>
+        private IEnumerable<ExpressionToken> ReadNullConditionalPipedMethodCallStart(ITokenStream<char> stream)
+        {
+            if (stream.CurrentToken == ExpressionToken.ArrowBody)
+            {
+                stream.ConsumeCurrent();
+            }
+
+            if (stream.CurrentToken != ExpressionToken.ArrowHead)
+            {
+                throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedPipedMethodCallAfterArrowOperatorButFoundDifferentToken, stream.CurrentToken);
+            }
+
+            stream.ConsumeCurrent();
+
+            return ReadPipedMethodCallStart(stream, isNullConditional: true);
+        }
+
+        /// <summary>
+        /// Reads the start of a piped method call (e.g. "#trim(") once its arrow operator has been consumed.
+        /// </summary>
+        private IEnumerable<ExpressionToken> ReadPipedMethodCallStart(ITokenStream<char> stream, bool isNullConditional = false)
+        {
+            while (stream.CurrentToken == ExpressionToken.Whitespace)
+            {
+                stream.ConsumeCurrent();
+            }
+
+            // This should be a piped method call (if on the value side) or else that's a problem.
+
+            if (stream.CurrentToken != ExpressionToken.Hash)
+            {
+                throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedPipedMethodCallAfterArrowOperatorButFoundDifferentToken, stream.CurrentToken);
+            }
+
+            yield return TokenFromCurrent(stream, isNullConditional ? ExpressionTokenCategory.StartOfNullConditionalPipedMethodCall : ExpressionTokenCategory.StartOfPipedMethodCall);
+            yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.Identifier, ExpressionToken.OpenParentheses);
+            yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfMethodParameters);
+        }
+
+        /// <summary>
+        /// Reads a dereferenced property name, which may contain a hyphen (e.g. "@x.first-name") but ends at the arrow operator
+        /// of a piped method call (e.g. "@x.name->#trim()"), in which case the arrow operator is consumed as well.
+        /// </summary>
+        private ExpressionToken TokenForPropertyName(ITokenStream<char> stream, ExpressionTokenCategory category, out bool isPiped, params char[] terminators)
+        {
+            var terminatorsOrArrowBody = terminators.Concat(new[] { ExpressionToken.ArrowBody }).ToArray();
+            var name = new StringBuilder();
+
+            isPiped = false;
+
+            while (true)
+            {
+                name.Append(TokenUntilMatchedWith(stream, category, terminatorsOrArrowBody).Value);
+
+                if (stream.CurrentToken != ExpressionToken.ArrowBody)
+                {
+                    break;
+                }
+
+                stream.ConsumeCurrent();
+
+                if (stream.CurrentToken == ExpressionToken.ArrowHead)
+                {
+                    stream.ConsumeCurrent();
+                    isPiped = true;
+                    break;
+                }
+
+                name.Append(ExpressionToken.ArrowBody);
+            }
+
+            return new ExpressionToken(name.ToString(), category);
+        }
+
+        /// <summary>
         /// Consumes the closing quote of a quoted value (e.g. 'text' or into 'name'), which must be there.
         /// </summary>
         private void ConsumeClosingQuote(ITokenStream<char> stream)
@@ -292,17 +369,9 @@ namespace Jolt.Parsing
                 {
                     stream.ConsumeCurrent();
 
-                    // This should be a piped method call (if on the value side) or else that's a problem.
-
-                    if (stream.CurrentToken == ExpressionToken.Hash)
+                    foreach (var token in ReadPipedMethodCallStart(stream))
                     {
-                        yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfPipedMethodCall);
-                        yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.Identifier, ExpressionToken.OpenParentheses);
-                        yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfMethodParameters);
-                    }        
-                    else
-                    {
-                        throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedPipedMethodCallAfterArrowOperatorButFoundDifferentToken, stream.CurrentToken);
+                        yield return token;
                     }
                 }
                 else
@@ -314,7 +383,12 @@ namespace Jolt.Parsing
             {
                 yield return TokenFromCurrent(stream, ExpressionTokenCategory.StartOfMethodCall);
                 yield return TokenUntilNotMatchedWith(stream, ExpressionTokenCategory.Identifier, x => char.IsLetterOrDigit(x));
-                yield return TokenUntilNotMatchedWith(stream, ExpressionTokenCategory.StartOfMethodParameters, x => x == ExpressionToken.OpenParentheses);
+
+                // Only the method's own parenthesis starts its parameters, since its first parameter may be parenthesized too (e.g. "#roundTo((@a + @b), 2)").
+
+                yield return stream.CurrentToken == ExpressionToken.OpenParentheses
+                    ? TokenFromCurrent(stream, ExpressionTokenCategory.StartOfMethodParameters)
+                    : TokenUntilNotMatchedWith(stream, ExpressionTokenCategory.StartOfMethodParameters, x => x == ExpressionToken.OpenParentheses);
             }
             else if (stream.CurrentToken == ExpressionToken.At)
             {
@@ -325,6 +399,20 @@ namespace Jolt.Parsing
                 if (isNullSafeVariableDereference)
                 {
                     stream.ConsumeCurrent();
+
+                    // A null-conditional pipe straight from the variable (e.g. "@x?->#trim()") ends what's read with it.
+
+                    if (stream.CurrentToken == ExpressionToken.ArrowBody)
+                    {
+                        yield return variable;
+
+                        foreach (var token in ReadNullConditionalPipedMethodCallStart(stream))
+                        {
+                            yield return token;
+                        }
+
+                        yield break;
+                    }
 
                     if (stream.CurrentToken != ExpressionToken.Dot)
                     {
@@ -388,6 +476,18 @@ namespace Jolt.Parsing
                         {
                             stream.ConsumeCurrent();
 
+                            // A null-conditional pipe from the dereferenced property (e.g. "@x.name?->#trim()") ends the chain of properties.
+
+                            if (stream.CurrentToken == ExpressionToken.ArrowBody)
+                            {
+                                foreach (var pipedToken in ReadNullConditionalPipedMethodCallStart(stream))
+                                {
+                                    yield return pipedToken;
+                                }
+
+                                break;
+                            }
+
                             if (stream.CurrentToken != ExpressionToken.Dot)
                             {
                                 throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedDotAfterQuestionMarkForNullSafePropertyAccessButFoundDifferentToken, stream.CurrentToken);
@@ -395,7 +495,17 @@ namespace Jolt.Parsing
 
                             stream.ConsumeCurrent();
 
-                            yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.NullSafePropertyDereference, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot, ExpressionToken.QuestionMark);
+                            yield return TokenForPropertyName(stream, ExpressionTokenCategory.NullSafePropertyDereference, out var isPiped, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot, ExpressionToken.QuestionMark);
+
+                            if (isPiped)
+                            {
+                                foreach (var pipedToken in ReadPipedMethodCallStart(stream))
+                                {
+                                    yield return pipedToken;
+                                }
+
+                                break;
+                            }
                         }
                         else
                         {
@@ -409,9 +519,20 @@ namespace Jolt.Parsing
                             }
                             else
                             {
-                                var token = TokenUntilMatchedWith(stream, ExpressionTokenCategory.PropertyDereference, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.CloseSquareBracket, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot, ExpressionToken.QuestionMark);
+                                var token = TokenForPropertyName(stream, ExpressionTokenCategory.PropertyDereference, out var isPiped, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.CloseSquareBracket, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot, ExpressionToken.QuestionMark);
 
-                                if (stream.CurrentToken == ExpressionToken.QuestionMark)
+                                if (isPiped)
+                                {
+                                    yield return token;
+
+                                    foreach (var pipedToken in ReadPipedMethodCallStart(stream))
+                                    {
+                                        yield return pipedToken;
+                                    }
+
+                                    break;
+                                }
+                                else if (stream.CurrentToken == ExpressionToken.QuestionMark)
                                 {
                                     yield return new ExpressionToken(token.Value, ExpressionTokenCategory.NullSafePropertyDereference);
                                 }
@@ -516,6 +637,15 @@ namespace Jolt.Parsing
                     stream.ConsumeCurrent();
 
                     yield return TokenFrom("??", ExpressionTokenCategory.NullCoalescing);
+                }
+                else if (stream.CurrentToken == ExpressionToken.ArrowBody)
+                {
+                    // A null-conditional pipe after a method call, indexer or parenthesized expression (e.g. "#valueOf($.a)?->#trim()").
+
+                    foreach (var token in ReadNullConditionalPipedMethodCallStart(stream))
+                    {
+                        yield return token;
+                    }
                 }
                 else
                 {

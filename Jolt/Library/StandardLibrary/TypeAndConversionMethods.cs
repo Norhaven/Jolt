@@ -38,12 +38,14 @@ namespace Jolt.Library.StandardLibrary
 
             if (pathOrValue is DereferencedPath dereferenced)
             {
-                return context.CreateTokenFrom(dereferenced.MissingPaths.Length > 0);
+                // A chain skipped by a null-safe dereference gives null, rather than finding a missing property.
+
+                return context.CreateTokenFrom(dereferenced.MissingPaths.Length > 0 && !dereferenced.IsNullSafe);
             }
 
-            if (pathOrValue is string path && context.JsonContext.QueryPathProvider.IsQueryPath(path))
+            if (pathOrValue is QueryPathReference path)
             {
-                var tokenValue = context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, path, JsonQueryMode.StartFromRoot);
+                var tokenValue = context.SelectTokenAt(path);
                 var tokenMissing = tokenValue == null;
 
                 return context.CreateTokenFrom(tokenMissing);
@@ -56,22 +58,19 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IsNull(object? pathOrValue, EvaluationContext context)
         {
-            var valueExists = pathOrValue != null;
+            // A missing path or property isn't null, since there's no value at all, but a chain skipped by a null-safe dereference gives null.
 
-            if (pathOrValue is DereferencedPath dereferenced)
+            var isNull = pathOrValue switch
             {
-                return context.CreateTokenFrom(dereferenced.MissingPaths.Length == 0 && dereferenced.ObtainableToken.AsValue().ValueType == JsonValueType.Null);
-            }
+                null => true,
+                DereferencedPath dereferenced => dereferenced.IsNullSafe || (dereferenced.MissingPaths.Length == 0 && ValueResolutionExtensions.IsNull(dereferenced.ObtainableToken)),
+                QueryPathReference path => context.SelectTokenAt(path) is IJsonToken token && ValueResolutionExtensions.IsNull(token),
+                RangeVariable variable => ValueResolutionExtensions.IsNull(variable.Value),
+                IJsonToken token => ValueResolutionExtensions.IsNull(token),
+                _ => false
+            };
 
-            if (pathOrValue is string path && context.JsonContext.QueryPathProvider.IsQueryPath(path))
-            {
-                var tokenValue = context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, path, JsonQueryMode.StartFromRoot);
-                var tokenNull = tokenValue != null && tokenValue.Type == JsonTokenType.Value && tokenValue.AsValue().ValueType == JsonValueType.Null;
-
-                return context.CreateTokenFrom(tokenNull);
-            }
-
-            return context.CreateTokenFrom(!valueExists);
+            return context.CreateTokenFrom(isNull);
         }
 
         [JoltLibraryMethod("exists")]
@@ -105,9 +104,9 @@ namespace Jolt.Library.StandardLibrary
                 return context.CreateTokenFrom(tokenExists);
             }
 
-            if (pathOrValue is string path && context.JsonContext.QueryPathProvider.IsQueryPath(path))
+            if (pathOrValue is QueryPathReference path)
             {
-                var tokenValue = context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, path, JsonQueryMode.StartFromRoot);
+                var tokenValue = context.SelectTokenAt(path);
 
                 var tokenExists = tokenValue != null && tokenValue.Type != JsonTokenType.Null;
 
@@ -129,11 +128,11 @@ namespace Jolt.Library.StandardLibrary
             }
 
             var resolvedValue = context.CreateTokenFrom(resolved);
+            var places = context.ResolveArgumentOf<object>(decimalPlaces);
 
             object? rounded = resolvedValue switch
             {
-                IJsonValue token when token.ValueType == JsonValueType.Number && decimalPlaces is long i => Math.Round(token.ToTypeOf<double>(), (int)i),
-                IJsonValue token when token.ValueType == JsonValueType.Number && decimalPlaces is IJsonValue val && val.ValueType == JsonValueType.Number => Math.Round(token.ToTypeOf<double>(), val.ToTypeOf<int>()),
+                IJsonValue token when token.ValueType == JsonValueType.Number && places is long i => Math.Round(token.ToTypeOf<double>(), (int)i),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to determine rounding for unsupported object types '{value?.GetType()}' and '{decimalPlaces?.GetType()}'")
             };
 

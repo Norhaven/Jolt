@@ -13,7 +13,7 @@ namespace Jolt.Library.StandardLibrary
     {
         [JoltLibraryMethod("isRegexMatch")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? IsRegexMatch(object? value, string pattern, EvaluationContext context)
+        public static IJsonToken? IsRegexMatch(object? value, object pattern, EvaluationContext context)
         {
             var resolved = context.ResolveValueOf<string>(value);
 
@@ -29,14 +29,14 @@ namespace Jolt.Library.StandardLibrary
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to perform regex match for unsupported object type '{value?.GetType()}'")
             };
 
-            var isMatch = Regex.IsMatch(text, pattern);
+            var isMatch = Regex.IsMatch(text, context.ResolveArgumentOf<string>(pattern));
 
             return context.CreateTokenFrom(isMatch);
         }
 
         [JoltLibraryMethod("regexReplace")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? RegexReplace(object? value, string pattern, string replacement, EvaluationContext context)
+        public static IJsonToken? RegexReplace(object? value, object pattern, object replacement, EvaluationContext context)
         {
             var resolved = context.ResolveValueOf<string>(value);
 
@@ -52,7 +52,7 @@ namespace Jolt.Library.StandardLibrary
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to perform regex replace for unsupported object type '{value?.GetType()}'")
             };
 
-            var replaced = Regex.Replace(text, pattern, replacement);
+            var replaced = Regex.Replace(text, context.ResolveArgumentOf<string>(pattern), context.ResolveArgumentOf<string>(replacement));
 
             return context.CreateTokenFrom(replaced);
         }

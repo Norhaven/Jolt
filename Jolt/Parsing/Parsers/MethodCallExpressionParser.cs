@@ -20,7 +20,7 @@ namespace Jolt.Parsing.Parsers
 
         public override bool CanParse(IJsonContext context)
         {
-            return IsInCategory(ExpressionTokenCategory.StartOfMethodCall, ExpressionTokenCategory.StartOfPipedMethodCall);
+            return IsInCategory(ExpressionTokenCategory.StartOfMethodCall, ExpressionTokenCategory.StartOfPipedMethodCall, ExpressionTokenCategory.StartOfNullConditionalPipedMethodCall);
         }
 
         public override bool TryParse(IJsonContext context, out Expression? expression)
@@ -78,15 +78,29 @@ namespace Jolt.Parsing.Parsers
             return expression;
         }
 
+        /// <summary>
+        /// Gets whether a token starts a piped method call, i.e. with either '->' or the null-conditional '?->'.
+        /// </summary>
+        public static bool IsStartOfPipe(ExpressionToken? token)
+        {
+            return token?.Category == ExpressionTokenCategory.StartOfPipedMethodCall || token?.Category == ExpressionTokenCategory.StartOfNullConditionalPipedMethodCall;
+        }
+
         public bool TryParse(IJsonContext context, out MethodCallExpression? methodCall, Expression? invocationSource)
         {
             methodCall = default;
 
-            if (!_reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.StartOfMethodCall ||
-                                                     x.Category == ExpressionTokenCategory.StartOfPipedMethodCall, out var methodStart))
+            if (!_reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.StartOfMethodCall || IsStartOfPipe(x), out var methodStart))
             {
                 return false;
             }
+
+            var pipe = methodStart.Category switch
+            {
+                ExpressionTokenCategory.StartOfPipedMethodCall => PipeOperator.Pipe,
+                ExpressionTokenCategory.StartOfNullConditionalPipedMethodCall => PipeOperator.NullConditionalPipe,
+                _ => PipeOperator.None
+            };
 
             if (!_reader.TryConsumeNext(out var potentiallyQualifiedMethodName))
             {
@@ -151,11 +165,11 @@ namespace Jolt.Parsing.Parsers
 
             if (isInto && _reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.GeneratedNameIdentifier, out var generatedName))
             {
-                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), generatedName.Value).WithSpan(nameSpan);
+                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), generatedName.Value, pipe: pipe).WithSpan(nameSpan);
             }
             else if (isInto && _reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.RangeVariable, out var rangeVariable))
             {
-                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), rangeVariable.Value, new RangeVariable(rangeVariable.Value)).WithSpan(nameSpan);
+                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), rangeVariable.Value, new RangeVariable(rangeVariable.Value), pipe).WithSpan(nameSpan);
             }
             else if (_reader.TryMatchNextAndConsume(x => x.Category == ExpressionTokenCategory.StartOfIndexerOrArrayLiteral, out var indexer))
             {                
@@ -171,10 +185,10 @@ namespace Jolt.Parsing.Parsers
                     throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToCloseIndexerExpressionAtPosition, _reader.Position);
                 }
 
-                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray()).WithSpan(nameSpan);
+                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), pipe: pipe).WithSpan(nameSpan);
                 methodCall = new IndexOrSliceMethodResultExpression((RangeExpression)range, methodCall);
 
-                if (_reader.CurrentToken?.Category == ExpressionTokenCategory.StartOfPipedMethodCall)
+                if (IsStartOfPipe(_reader.CurrentToken))
                 {
                     if (!TryParse(context, out var pipedMethodCall, methodCall))
                     {
@@ -186,7 +200,7 @@ namespace Jolt.Parsing.Parsers
                     return true;
                 }
             }
-            else if (_reader.CurrentToken?.Category == ExpressionTokenCategory.StartOfPipedMethodCall)
+            else if (IsStartOfPipe(_reader.CurrentToken))
             {
                 if (!TryParse(context, out var pipedMethodCall))
                 {
@@ -196,7 +210,7 @@ namespace Jolt.Parsing.Parsers
                 // We're piping the initial method call results into the first argument of the target method,
                 // so we need to switch the evaluation order around a little bit.
 
-                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), default).WithSpan(nameSpan);
+                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), pipe: pipe).WithSpan(nameSpan);
 
                 var leftMostMethodCall = (MethodCallExpression)pipedMethodCall;
                 MethodCallExpression? previousCall = default;
@@ -228,7 +242,7 @@ namespace Jolt.Parsing.Parsers
             }
             else
             {
-                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray()).WithSpan(nameSpan);
+                methodCall = new MethodCallExpression(methodSignature, actualParameters.ToArray(), pipe: pipe).WithSpan(nameSpan);
             }
 
             return true;

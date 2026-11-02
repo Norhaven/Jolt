@@ -263,6 +263,8 @@ namespace Jolt.Exceptions
         [Description("JLT573")]
         ExpectedExpressionAfterOperator,
         [Description("JLT574")]
-        UnableToPerformLibraryCallOnNullValue
+        UnableToPerformLibraryCallOnNullValue,
+        [Description("JLT575")]
+        UnableToOrderUnsortableArrayWithoutLambda
     }
 }

@@ -6,7 +6,9 @@
     "nonLambdaUsedForDelegate": "DelegateParameterRequiresLambdaArgument",
     "unableToConvertArrayToType": "UnableToConvertJsonArrayToRequiredParameterType",
     "usedNonStatementMethodInWhen": "AttemptedToUseNonStatementMethodWithinWhenLibraryCall",
-    "externalMethodException": "ExternalMethodInvocationCausedAnException"
+    "externalMethodException": "ExternalMethodInvocationCausedAnException",
+    "nullValueInLibraryCall": "UnableToPerformLibraryCallOnNullValue",
+    "dereferencedMissingProperty": "AttemptedToDereferenceMissingPath"
   },
   "testGroups": [
     {
@@ -2213,6 +2215,617 @@
           },
           "result": {
             "result": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Piped methods work with dereferenced range variable properties",
+      "source": {
+        "person": {
+          "name": " Jane Doe ",
+          "age": 42,
+          "first-name": "Jane",
+          "address": {
+            "city": "springfield"
+          }
+        },
+        "people": [
+          { "name": "alice" },
+          { "name": "bob" }
+        ]
+      },
+      "tests": [
+        {
+          "name": "A method can be piped from a dereferenced property",
+          "transformer": {
+            "@x": "#valueOf($.person)",
+            "result": "@x.age->#isInteger()"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "A method can be piped from a dereferenced property with whitespace around the arrow operator",
+          "transformer": {
+            "@x": "#valueOf($.person)",
+            "result": "@x.name -> #trim()"
+          },
+          "result": {
+            "result": "Jane Doe"
+          }
+        },
+        {
+          "name": "A method can be piped from a null-safe dereferenced property",
+          "transformer": {
+            "@x": "#valueOf($.person)",
+            "result": "@x?.name->#trim()"
+          },
+          "result": {
+            "result": "Jane Doe"
+          }
+        },
+        {
+          "name": "A method can be piped from a nested dereferenced property",
+          "transformer": {
+            "@x": "#valueOf($.person)",
+            "result": "@x.address.city->#toUpperCase()"
+          },
+          "result": {
+            "result": "SPRINGFIELD"
+          }
+        },
+        {
+          "name": "Piped methods can be chained from a dereferenced property",
+          "transformer": {
+            "@x": "#valueOf($.person)",
+            "result": "@x.name->#trim()->#toUpperCase()"
+          },
+          "result": {
+            "result": "JANE DOE"
+          }
+        },
+        {
+          "name": "A method can be piped with whitespace after the arrow operator",
+          "transformer": {
+            "result": "#valueOf($.person.name) ->   #trim()"
+          },
+          "result": {
+            "result": "Jane Doe"
+          }
+        },
+        {
+          "name": "A hyphenated property can be dereferenced",
+          "transformer": {
+            "@x": "#valueOf($.person)",
+            "result": "@x.first-name"
+          },
+          "result": {
+            "result": "Jane"
+          }
+        },
+        {
+          "name": "A method can be piped from a hyphenated dereferenced property",
+          "transformer": {
+            "@x": "#valueOf($.person)",
+            "result": "@x.first-name->#toUpperCase()"
+          },
+          "result": {
+            "result": "JANE"
+          }
+        },
+        {
+          "name": "A method can be piped from a dereferenced foreach loop variable",
+          "transformer": {
+            "#foreach(@p in $.people) into 'names'": [
+              {
+                "name": "@p.name->#toUpperCase()"
+              }
+            ]
+          },
+          "result": {
+            "names": [
+              { "name": "ALICE" },
+              { "name": "BOB" }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Standard library methods accept variables and dereferenced variable properties for every parameter",
+      "source": {
+        "v": {
+          "text": " Jane Doe ",
+          "prefix": " Jane",
+          "suffix": "Doe ",
+          "word": "Doe",
+          "replacement": "Smith",
+          "numbers": [ 3, 1, 2 ],
+          "count": 2,
+          "decimal": 3.14159,
+          "flag": true,
+          "date": "2024-01-15T10:30:00",
+          "format": "yyyy-MM-dd",
+          "parseFormat": "yyyy-MM-ddTHH:mm:ss",
+          "delimiter": ",",
+          "csv": "a,b,c",
+          "letters": [ "a", "b" ]
+        }
+      },
+      "tests": [
+        {
+          "name": "String methods accept dereferenced properties for their search and replacement parameters",
+          "transformer": {
+            "@v": "#valueOf($.v)",
+            "replace": "#replace(@v.text, @v.word, @v.replacement)",
+            "startsWith": "#startsWith(@v.text, @v.prefix)",
+            "endsWith": "#endsWith(@v.text, @v.suffix)",
+            "indexOf": "#indexOf(@v.text, @v.word)",
+            "contains": "#contains(@v.text, @v.word)",
+            "joinWith": "#joinWith(@v.letters, @v.delimiter)",
+            "splitOn": "#splitOn(@v.csv, @v.delimiter)",
+            "isRegexMatch": "#isRegexMatch(@v.text, @v.prefix)",
+            "regexReplace": "#regexReplace(@v.text, @v.word, @v.replacement)"
+          },
+          "result": {
+            "replace": " Jane Smith ",
+            "startsWith": true,
+            "endsWith": true,
+            "indexOf": 6,
+            "contains": true,
+            "joinWith": "a,b",
+            "splitOn": [ "a", "b", "c" ],
+            "isRegexMatch": true,
+            "regexReplace": " Jane Smith "
+          }
+        },
+        {
+          "name": "String methods accept variables for their search and replacement parameters",
+          "transformer": {
+            "@text": "#valueOf($.v.text)",
+            "@word": "#valueOf($.v.word)",
+            "@replacement": "#valueOf($.v.replacement)",
+            "@letters": "#valueOf($.v.letters)",
+            "@csv": "#valueOf($.v.csv)",
+            "@delimiter": "#valueOf($.v.delimiter)",
+            "contains": "#contains(@text, @word)",
+            "joinWith": "#joinWith(@letters, @delimiter)",
+            "splitOn": "#splitOn(@csv, @delimiter)",
+            "isRegexMatch": "#isRegexMatch(@text, @word)",
+            "regexReplace": "#regexReplace(@text, @word, @replacement)"
+          },
+          "result": {
+            "contains": true,
+            "joinWith": "a,b",
+            "splitOn": [ "a", "b", "c" ],
+            "isRegexMatch": true,
+            "regexReplace": " Jane Smith "
+          }
+        },
+        {
+          "name": "Date methods accept dereferenced properties for their format and amount parameters",
+          "transformer": {
+            "@v": "#valueOf($.v)",
+            "parseDateTime": "#parseDateTime(@v.date, @v.parseFormat)",
+            "formatDateTime": "#formatDateTime(@v.date, @v.format)",
+            "addDays": "#addDays(@v.date, @v.count)",
+            "addHours": "#addHours(@v.date, @v.count)",
+            "addMinutes": "#addMinutes(@v.date, @v.count)"
+          },
+          "result": {
+            "parseDateTime": "2024-01-15T10:30:00.0000000",
+            "formatDateTime": "2024-01-15",
+            "addDays": "2024-01-17T10:30:00.0000000",
+            "addHours": "2024-01-15T12:30:00.0000000",
+            "addMinutes": "2024-01-15T10:32:00.0000000"
+          }
+        },
+        {
+          "name": "Count and rounding parameters accept dereferenced properties",
+          "transformer": {
+            "@v": "#valueOf($.v)",
+            "take": "#take(@v.numbers, @v.count)",
+            "skip": "#skip(@v.numbers, @v.count)",
+            "roundTo": "#roundTo(@v.decimal, @v.count)"
+          },
+          "result": {
+            "take": [ 3, 1 ],
+            "skip": [ 2 ],
+            "roundTo": 3.14
+          }
+        },
+        {
+          "name": "Rounding parameters accept variables",
+          "transformer": {
+            "@decimal": "#valueOf($.v.decimal)",
+            "@count": "#valueOf($.v.count)",
+            "roundTo": "#roundTo(@decimal, @count)"
+          },
+          "result": {
+            "roundTo": 3.14
+          }
+        },
+        {
+          "name": "Conditional methods accept dereferenced properties as their condition",
+          "transformer": {
+            "@v": "#valueOf($.v)",
+            "if": "#if(@v.flag, 'yes', 'no')",
+            "#includeIf(@v.flag) into 'included'": {
+              "message": "included"
+            }
+          },
+          "result": {
+            "if": "yes",
+            "included": {
+              "message": "included"
+            }
+          }
+        },
+        {
+          "name": "When accepts variables and dereferenced properties as its condition",
+          "transformer": {
+            "@flag": "#valueOf($.v.flag)",
+            "#using($.v as @x) into 'result'": [
+              "#when(@x.flag, #setAt(@x.fromDereference, true))",
+              "#when(@flag, #setAt(@x.fromVariable, true))"
+            ]
+          },
+          "result": {
+            "result": {
+              "text": " Jane Doe ",
+              "prefix": " Jane",
+              "suffix": "Doe ",
+              "word": "Doe",
+              "replacement": "Smith",
+              "numbers": [ 3, 1, 2 ],
+              "count": 2,
+              "decimal": 3.14159,
+              "flag": true,
+              "date": "2024-01-15T10:30:00",
+              "format": "yyyy-MM-dd",
+              "parseFormat": "yyyy-MM-ddTHH:mm:ss",
+              "delimiter": ",",
+              "csv": "a,b,c",
+              "letters": [ "a", "b" ],
+              "fromDereference": true,
+              "fromVariable": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "JSON paths are resolved wherever they appear, while string literals are always text",
+      "source": {
+        "text": " Jane Doe ",
+        "prefix": " Jane",
+        "word": "Doe",
+        "replacement": "Smith",
+        "numbers": [ 3, 1, 2 ],
+        "letters": [ "a", "b" ],
+        "count": 2,
+        "decimal": 3.14159,
+        "flag": true,
+        "date": "2024-01-15T10:30:00",
+        "format": "yyyy-MM-dd",
+        "delimiter": ","
+      },
+      "tests": [
+        {
+          "name": "Library methods resolve JSON paths given after their first parameter",
+          "transformer": {
+            "replace": "#replace($.text, $.word, $.replacement)",
+            "startsWith": "#startsWith($.text, $.prefix)",
+            "contains": "#contains($.numbers, $.count)",
+            "joinWith": "#joinWith($.letters, $.delimiter)",
+            "isRegexMatch": "#isRegexMatch($.text, $.prefix)",
+            "formatDateTime": "#formatDateTime($.date, $.format)",
+            "addDays": "#addDays($.date, $.count)",
+            "roundTo": "#roundTo($.decimal, $.count)",
+            "take": "#take($.numbers, $.count)"
+          },
+          "result": {
+            "replace": " Jane Smith ",
+            "startsWith": true,
+            "contains": true,
+            "joinWith": "a,b",
+            "isRegexMatch": true,
+            "formatDateTime": "2024-01-15",
+            "addDays": "2024-01-17T10:30:00.0000000",
+            "roundTo": 3.14,
+            "take": [ 3, 1 ]
+          }
+        },
+        {
+          "name": "String literals that look like JSON paths are treated as text",
+          "transformer": {
+            "toUpperCase": "#toUpperCase('$.word')",
+            "length": "#length('$.word')",
+            "startsWith": "#startsWith($.text, '$.prefix')",
+            "isMissing": "#isMissing('$.nonExistentValue')"
+          },
+          "result": {
+            "toUpperCase": "$.WORD",
+            "length": 6,
+            "startsWith": false,
+            "isMissing": false
+          }
+        },
+        {
+          "name": "JSON paths are resolved in operators, literals and conditional branches",
+          "transformer": {
+            "comparison": "#valueOf($.count) == $.count",
+            "not": "!$.flag",
+            "array": "[$.count, 1]",
+            "object": "{ 'word': $.word }",
+            "if": "#if($.flag, $.word, $.replacement)"
+          },
+          "result": {
+            "comparison": true,
+            "not": false,
+            "array": [ 2, 1 ],
+            "object": { "word": "Doe" },
+            "if": "Doe"
+          }
+        },
+        {
+          "name": "IndexOf finds the index of an element in an array",
+          "transformer": {
+            "@numbers": "#valueOf($.numbers)",
+            "number": "#indexOf($.numbers, 1)",
+            "letter": "#indexOf($.letters, 'b')",
+            "fromPath": "#indexOf($.numbers, $.count)",
+            "fromVariable": "#indexOf(@numbers, 2)",
+            "missing": "#indexOf($.numbers, 9)"
+          },
+          "result": {
+            "number": 1,
+            "letter": 1,
+            "fromPath": 2,
+            "fromVariable": 2,
+            "missing": -1
+          }
+        },
+        {
+          "name": "Append adds any value to an array as an element, and an array's elements one by one",
+          "transformer": {
+            "number": "#append($.numbers, 4)",
+            "mixed": "#append($.numbers, $.letters, true, { 'a': 1 }, $.count)"
+          },
+          "result": {
+            "number": [ 3, 1, 2, 4 ],
+            "mixed": [ 3, 1, 2, "a", "b", true, { "a": 1 }, 2 ]
+          }
+        },
+        {
+          "name": "Append leaves the source array unchanged",
+          "transformer": {
+            "appended": "#append($.letters, 'c')",
+            "original": "#valueOf($.letters)"
+          },
+          "result": {
+            "appended": [ "a", "b", "c" ],
+            "original": [ "a", "b" ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Null-conditional operators skip the rest of a piped chain when they find null or nothing",
+      "source": {
+        "person": {
+          "name": " ada ",
+          "nickname": null,
+          "details": {
+            "tags": null
+          }
+        },
+        "tags": [ "a", "b" ]
+      },
+      "tests": [
+        {
+          "name": "A null-conditional pipe skips the method for a null or missing property",
+          "transformer": {
+            "@p": "#valueOf($.person)",
+            "nullProperty": "@p.nickname?->#toUpperCase()",
+            "missingProperty": "@p.alias?->#toUpperCase()",
+            "presentProperty": "@p.name?->#toUpperCase()"
+          },
+          "result": {
+            "nullProperty": null,
+            "missingProperty": null,
+            "presentProperty": " ADA "
+          }
+        },
+        {
+          "name": "A null-conditional pipe skips every method after it in the chain",
+          "transformer": {
+            "@p": "#valueOf($.person)",
+            "skipped": "@p.nickname?->#trim()->#toUpperCase()",
+            "notSkipped": "@p.name?->#trim()->#toUpperCase()",
+            "defaulted": "@p.nickname?->#trim()->#toUpperCase() ?? 'none'"
+          },
+          "result": {
+            "skipped": null,
+            "notSkipped": "ADA",
+            "defaulted": "none"
+          }
+        },
+        {
+          "name": "A null-conditional pipe works after a variable, a method call and with whitespace",
+          "transformer": {
+            "@nickname": "#valueOf($.person.nickname)",
+            "variable": "@nickname?->#toUpperCase()",
+            "methodCall": "#valueOf($.person.nickname)?->#toUpperCase()",
+            "withWhitespace": "#valueOf($.tags) ?-> #take(1)"
+          },
+          "result": {
+            "variable": null,
+            "methodCall": null,
+            "withWhitespace": [ "a" ]
+          }
+        },
+        {
+          "name": "A null-safe dereference skips a chain piped from it when the value before it is null or missing",
+          "transformer": {
+            "@p": "#valueOf($.person)",
+            "@nobody": null,
+            "nullVariable": "@nobody?.name->#toUpperCase()->#trim()",
+            "missingProperty": "@p.alias?.first->#toUpperCase()",
+            "nullProperty": "@p.nickname?.first->#toUpperCase()",
+            "nullNestedProperty": "@p.details.tags?.first->#length()",
+            "presentProperty": "@p?.name->#trim()"
+          },
+          "result": {
+            "nullVariable": null,
+            "missingProperty": null,
+            "nullProperty": null,
+            "nullNestedProperty": null,
+            "presentProperty": "ada"
+          }
+        },
+        {
+          "name": "Null-safe dereferences, null-conditional pipes and null-coalescing combine to handle optional values",
+          "transformer": {
+            "@p": "#valueOf($.person)",
+            "@nobody": null,
+            "nickname": "@p?.nickname?->#toUpperCase() ?? 'none'",
+            "nobodysNickname": "@nobody?.nickname?->#toUpperCase() ?? 'none'",
+            "tagCount": "#length(@p.details?.tags ?? [])",
+            "missingDetailsTagCount": "#length(@p.missingDetails?.tags ?? [])"
+          },
+          "result": {
+            "nickname": "none",
+            "nobodysNickname": "none",
+            "tagCount": 0,
+            "missingDetailsTagCount": 0
+          }
+        },
+        {
+          "name": "Dereferencing a property of a null property throws a dereference exception",
+          "transformer": {
+            "@p": "#valueOf($.person)",
+            "result": "@p.nickname.length"
+          },
+          "exceptionCode": "dereferencedMissingProperty"
+        },
+        {
+          "name": "A null-safe dereference passes a null property after it to a chain piped from it",
+          "transformer": {
+            "@p": "#valueOf($.person)",
+            "result": "@p?.nickname->#toUpperCase()"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "nullValueInLibraryCall"
+        }
+      ]
+    },
+    {
+      "name": "Ordering by the elements themselves requires values that can be sorted as they are",
+      "source": {
+        "names": [ "b", "B", "a", null ],
+        "numbers": [ 3, null, 1.5, 2 ],
+        "integers": [ 3, 1, 2 ],
+        "flags": [ true, false, null ],
+        "mixed": [ 1, "test", { "name": "something" } ],
+        "objects": [ { "v": 2 }, { "v": 1 } ],
+        "numbersAndStrings": [ 1, "1" ]
+      },
+      "tests": [
+        {
+          "name": "Arrays of strings, numbers or booleans are ordered by their values, with nulls first",
+          "transformer": {
+            "names": "#orderBy($.names)",
+            "namesDescending": "#orderByDesc($.names)",
+            "numbers": "#orderBy($.numbers)",
+            "numbersDescending": "#orderByDesc($.numbers)",
+            "flags": "#orderBy($.flags)",
+            "literal": "['b', 'a']->#orderBy()",
+            "empty": "#orderBy([])"
+          },
+          "result": {
+            "names": [ null, "B", "a", "b" ],
+            "namesDescending": [ "b", "a", "B", null ],
+            "numbers": [ null, 1.5, 2, 3 ],
+            "numbersDescending": [ 3, 2, 1.5, null ],
+            "flags": [ null, false, true ],
+            "literal": [ "a", "b" ],
+            "empty": []
+          }
+        },
+        {
+          "name": "A lambda decides the order, even for an array that could be ordered by its values",
+          "transformer": {
+            "integers": "#orderBy($.integers, @x: 0 - @x)",
+            "objects": "#orderBy($.objects, @x: @x.v)"
+          },
+          "result": {
+            "integers": [ 3, 2, 1 ],
+            "objects": [ { "v": 1 }, { "v": 2 } ]
+          }
+        },
+        {
+          "name": "Ordering mixed values without a lambda is an error",
+          "transformer": {
+            "result": "#orderBy($.mixed)"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToOrderUnsortableArrayWithoutLambda"
+        },
+        {
+          "name": "Ordering numbers and strings without a lambda is an error",
+          "transformer": {
+            "result": "#orderByDesc($.numbersAndStrings)"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToOrderUnsortableArrayWithoutLambda"
+        },
+        {
+          "name": "Ordering objects without a lambda is an error",
+          "transformer": {
+            "result": "#orderBy($.objects)"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToOrderUnsortableArrayWithoutLambda"
+        }
+      ]
+    },
+    {
+      "name": "Methods can be piped from parenthesized expressions",
+      "source": {
+        "a": 1.5,
+        "b": 2.25,
+        "missing": null
+      },
+      "tests": [
+        {
+          "name": "The result of a parenthesized expression is piped into a method",
+          "transformer": {
+            "sum": "(#valueOf($.a) + #valueOf($.b))->#roundTo(1)",
+            "withWhitespace": "(#valueOf($.a) + #valueOf($.b)) -> #roundTo(1)",
+            "chained": "(#valueOf($.a))->#toString()->#length()",
+            "coalesced": "(#valueOf($.missing) ?? 'x')->#toUpperCase()",
+            "nullConditional": "(#valueOf($.missing))?->#toUpperCase()"
+          },
+          "result": {
+            "sum": 3.8,
+            "withWhitespace": 3.8,
+            "chained": 3,
+            "coalesced": "X",
+            "nullConditional": null
+          }
+        },
+        {
+          "name": "A parenthesized expression can be a method's first parameter, piped or not",
+          "transformer": {
+            "parenthesized": "#toString((#valueOf($.a) * 2))",
+            "piped": "#length((#valueOf($.a))->#toString())"
+          },
+          "result": {
+            "parenthesized": "3",
+            "piped": 3
           }
         }
       ]

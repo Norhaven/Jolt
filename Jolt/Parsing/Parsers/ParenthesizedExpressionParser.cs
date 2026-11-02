@@ -37,7 +37,7 @@ namespace Jolt.Parsing.Parsers
                 throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToCloseParenthesizedExpressionAtPosition, _reader.Position);
             }
 
-            expression = parenthesizedExpression;
+            expression = ParsePipedMethodCallsFrom(context, parenthesizedExpression!);
 
             return true;
         }

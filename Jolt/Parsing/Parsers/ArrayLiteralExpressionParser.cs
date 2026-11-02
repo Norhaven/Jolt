@@ -52,20 +52,7 @@ namespace Jolt.Parsing.Parsers
 
             _reader.ExpectAndConsume(ExpressionTokenCategory.EndOfIndexerOrArrayLiteral);
 
-            expression = new ArrayLiteralExpression(elements);
-
-            // We're explicitly checking for completed because this array may be the only thing in the property value
-            // and we don't want to check the category for a non-existent token which will throw an exception.
-
-            if (!_reader.IsCompleted && _reader.IsCategory(ExpressionTokenCategory.StartOfPipedMethodCall))
-            {
-                if (!_atomParser.TryParse(context, out var methodExpression))
-                {
-                    throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToCompleteParsingOfPipedMethodCall);
-                }
-
-                expression = ((MethodCallExpression)methodExpression).WithParameters(new[] { expression });
-            }
+            expression = ParsePipedMethodCallsFrom(context, new ArrayLiteralExpression(elements));
 
             return true;
         }

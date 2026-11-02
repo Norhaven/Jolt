@@ -27,9 +27,9 @@ namespace Jolt.Library.StandardLibrary
 
             var closestViableSourceToken = enumeration.Source switch
             {
-                string path => context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, path, JsonQueryMode.StartFromClosestMatch),
+                QueryPathReference path => context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, path.Path, JsonQueryMode.StartFromClosestMatch),
                 RangeVariable variable => variable.Value,
-                DereferencedPath path when path.MissingPaths.Any() => throw context.CreateExecutionErrorFor<LoopAndQueryMethods>(ExceptionCode.AttemptedToDereferenceMissingPath, path.MissingPaths.Join('.'), path.ObtainableToken.PropertyName),
+                DereferencedPath path when path.MissingPaths.Any() => default,
                 DereferencedPath path => path.ObtainableToken,
                 _ => throw context.CreateExecutionErrorFor<LoopAndQueryMethods>(ExceptionCode.UnableToPerformLoopLibraryCallDueToInvalidParameter, enumeration.Source)
             };
@@ -152,15 +152,13 @@ namespace Jolt.Library.StandardLibrary
                 return context.CreateEmptyArray();
             }
 
-            var grouping = resolved switch
+            var ordered = resolved switch
             {
-                IJsonArray array when array.ContainsOnlyNumbers() && array.ContainsAtLeastOneDecimal() => array.OrderBy(x => x.ToTypeOf<double>()),
-                IJsonArray array when array.ContainsOnlyNumbers() => array.OrderBy(x => x.ToTypeOf<long>()),
-                IJsonArray array => array.OrderBy(x => new QueryMethods(array,lambda).ExecuteLambda(x, context)?.ToTypeOf<object>()),
+                IJsonArray array => Order(array, lambda, descending: false, context),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to perform an order by using unsupported object type '{value?.GetType()}'")
             };
 
-            return context.CreateTokenFrom(grouping);
+            return context.CreateTokenFrom(ordered);
         }
 
         [JoltLibraryMethod("orderByDesc")]
@@ -174,15 +172,72 @@ namespace Jolt.Library.StandardLibrary
                 return context.CreateEmptyArray();
             }
 
-            var grouping = resolved switch
+            var ordered = resolved switch
             {
-                IJsonArray array when array.ContainsOnlyNumbers() && array.ContainsAtLeastOneDecimal() => array.OrderByDescending(x => x.ToTypeOf<double>()),
-                IJsonArray array when array.ContainsOnlyNumbers() => array.OrderByDescending(x => x.ToTypeOf<long>()),
-                IJsonArray array => array.OrderByDescending(x => new QueryMethods(array, lambda).ExecuteLambda(x, context)?.ToTypeOf<object>()),
+                IJsonArray array => Order(array, lambda, descending: true, context),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to perform an order by using unsupported object type '{value?.GetType()}'")
             };
 
-            return context.CreateTokenFrom(grouping);
+            return context.CreateTokenFrom(ordered);
+        }
+
+        /// <summary>
+        /// Orders an array by the value that a lambda selects from each element or, without a lambda, by the elements themselves.
+        /// Without a lambda, the elements must all be numbers, all strings or all booleans, along with any nulls (which come first,
+        /// as they do in C#). Strings are compared ordinally, so that the order doesn't depend on the current culture.
+        /// </summary>
+        private static IEnumerable<IJsonToken> Order(IJsonArray array, LambdaMethod? lambda, bool descending, EvaluationContext context)
+        {
+            Func<IJsonToken, object?> keySelector;
+            IComparer<object?> comparer = Comparer<object?>.Default;
+
+            if (lambda != null)
+            {
+                keySelector = x => new QueryMethods(array, lambda).ExecuteLambda(x, context)?.ToTypeOf<object>();
+            }
+            else
+            {
+                var values = array.Where(x => !ValueResolutionExtensions.IsNull(x)).ToArray();
+                var kinds = values.Select(DescribeSortableKind).Distinct().ToArray();
+
+                if (kinds.Length > 1 || kinds.Any(x => x is "arrays" || x is "objects"))
+                {
+                    throw context.CreateExecutionErrorFor<LoopAndQueryMethods>(ExceptionCode.UnableToOrderUnsortableArrayWithoutLambda, string.Join(", ", kinds));
+                }
+
+                // Integers are compared as integers unless there's a decimal among them, so that large integers keep their precision.
+
+                var hasDecimal = values.Any(x => !(x.AsValue().ToTypeOf<object>() is long));
+
+                keySelector = x => ValueResolutionExtensions.IsNull(x) ? null : x.AsValue().ToTypeOf<object>() switch
+                {
+                    long integer when hasDecimal => (double)integer,
+                    var value => value
+                };
+
+                if (kinds.FirstOrDefault() == "strings")
+                {
+                    comparer = Comparer<object?>.Create((x, y) => string.CompareOrdinal((string?)x, (string?)y));
+                }
+            }
+
+            return descending ? array.OrderByDescending(keySelector, comparer) : array.OrderBy(keySelector, comparer);
+        }
+
+        private static string DescribeSortableKind(IJsonToken token)
+        {
+            return token.Type switch
+            {
+                JsonTokenType.Array => "arrays",
+                JsonTokenType.Object => "objects",
+                _ => token.AsValue().ValueType switch
+                {
+                    JsonValueType.Number => "numbers",
+                    JsonValueType.String => "strings",
+                    JsonValueType.Boolean => "booleans",
+                    var other => other.ToString().ToLowerInvariant()
+                }
+            };
         }
 
         [JoltLibraryMethod("max")]
@@ -363,11 +418,11 @@ namespace Jolt.Library.StandardLibrary
                 return context.CreateEmptyArray();
             }
 
-            var resolvedAmount = context.ResolveValueOf(amountToTake, typeof(int));
+            var resolvedAmount = context.ResolveArgumentOf<int>(context.ResolveValueOf(amountToTake, typeof(int)));
 
             var takenItems = resolved switch
             {
-                IJsonArray array => new QueryMethods(array).Take(context, (int)resolvedAmount),
+                IJsonArray array => new QueryMethods(array).Take(context, resolvedAmount),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for any with unsupported object type '{value?.GetType()}'")
             };
 
@@ -414,7 +469,7 @@ namespace Jolt.Library.StandardLibrary
             
             var takenItems = resolved switch
             {
-                IJsonArray array => new QueryMethods(array).Skip(context, (long)resolvedAmount),
+                IJsonArray array => new QueryMethods(array).Skip(context, context.ResolveArgumentOf<long>(resolvedAmount)),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to check contents for any with unsupported object type '{value?.GetType()}'")
             };
 
@@ -593,7 +648,6 @@ namespace Jolt.Library.StandardLibrary
 
             var decimalValue = value switch
             {
-                IEnumerable<decimal> decimals => asDecimal(decimals.Cast<double>()),
                 IEnumerable<double> doubles => asDecimal(doubles),
                 IJsonArray array when array.ContainsOnlyNumbers() => asDecimal(array.Select(x => x.AsValue().ToTypeOf<double>())),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get integer or floating point value for unsupported object type '{value?.GetType()}'")

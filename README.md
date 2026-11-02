@@ -629,11 +629,18 @@ As a final note, there are a few additional operations that you can take advanta
     "coalescingResult": "#valueOf($.some.nullableValue) ?? 'default value'"
 }
 ```
-You can also use the null-safe path dereferencing operator `?.` in your JSON paths to prevent null reference errors when traversing the source document, as below, which will return null when the property is null instead of throwing an error.
+Dereferencing a property that doesn't exist gives null, while dereferencing a property of a null or missing value (such as `@x.nullableObject.property` when `nullableObject` is null) throws an error. You can use the null-safe dereferencing operator `?.` to prevent that error. It works the same way as C#'s `?.` operator: when the value to its left is null or missing, the rest of the chain (including any methods piped from it) is skipped and the chain gives null instead. Each `?.` guards only the value to its left, so `@x?.nullableObject.property` still throws when `nullableObject` is null.
 ```json
 {
     "@x": "#valueOf($.some)",
     "safeDereference": "@x.nullableObject?.property"
+}
+```
+Similarly, the null-conditional pipe operator `?->` pipes a value into a method only when that value isn't null or missing. Otherwise, neither that method nor any method piped after it in the same chain is called, and the chain gives null. Null and missing values count the same for both operators. Use `->` instead to pass a null value to the method.
+```json
+{
+    "@x": "#valueOf($.some)",
+    "safePipe": "@x.nullableValue?->#trim()->#toUpperCase() ?? 'default value'"
 }
 ```
 
@@ -641,12 +648,12 @@ You can also use the null-safe path dereferencing operator `?.` in your JSON pat
 
 This package comes with quite a few methods built into it to get you started, all of which are documented here and represent the most common things that you may want to do when transforming a JSON file. If you find that an opportunity for a new library method exists, please raise an issue and it will be considered. For more detail on the individual library methods, please see the Jolt wiki [over here.](https://github.com/Norhaven/Jolt/wiki)
 
-Additionally, keep in mind that you can pass range variables as parameters into nearly all standard library methods. You can also use the piped method syntax directly off of a range variable, so for example the following transformer represents a valid use of both of those concepts together.
+Additionally, keep in mind that you can pass range variables as parameters into nearly all standard library methods. You can also use the piped method syntax directly off of a range variable or one of its properties, so for example the following transformer represents a valid use of both of those concepts together.
 
 ```json
 {
     "@someVariable": "#valueOf($.some.arrayPath)",
-    "result": "@someVariable->#select(@y: @y->#length())"
+    "result": "@someVariable->#select(@y: @y.name->#length())"
 }
 ```
 
@@ -661,7 +668,7 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | eval | Evaluates an arbitrary expression, either from a path or literal value, and returns the result | `#eval('1 + 2 == 3')` | Property Name/Value, Unsafe*
 | foreach | Evaluates a path and loops over the array elements or object properties it finds there to create its property values, naming the property as the string literal referred to by the `into` keyword | `"#foreach(@x in $.some.path) into 'result'": [ { "templateValue": "#valueOf($.other.path)" } ]` | Property Name
 | nameOf | Returns the name of the property being evaluated by the provided loop variable | `"#nameOf(@x)": "#valueOf($.some.path)"` | Property Name
-| indexOf | Returns the zero-based index value of the first occurrence of the provided value | `#indexOf(#valueOf($.some.path), 'some string')` | Property Value
+| indexOf | Returns the zero-based index value of the first occurrence of the provided value in a string or array, or -1 if it isn't found | `#indexOf(#valueOf($.some.path), 'some string')` | Property Value
 | length | Returns the length of a string or array value | `#length($.some.path)` | Property Value
 | toUpperCase | Returns the uppercase version of a string value | `#toUpperCase($.some.path)` | Property Value
 | toLowerCase | Returns the lowercase version of a string value | `#toLowerCase($.some.path)` | Property Value
@@ -679,8 +686,8 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | flatten | Returns a single array that is the result of recursively flattening an array of nested arrays | `#flatten($.some.path)` | Property Value
 | groupBy | Returns a JSON object that represents the grouping of an array's contents by its individual property values | `#groupBy($.some.path, @x: @x.propertyName)` | Property Value
 | summarizeWith | Returns an object array that's the result of applying an aggregate method to a grouped array's key and/or results | `#summarizeWith($.some.group, @group: #someAggregateMethod(@group.key, @group.results))` | Property Value **
-| orderBy | Returns an array in ascending order as determined by its individual property values | `#orderBy($.some.path, @x: @x.propertyName)` | Property Value
-| orderByDesc | Returns an array in descending order as determined by its individual property values | `#orderByDesc($.some.path, @x: @x.propertyName)` | Property Value
+| orderBy | Returns an array in ascending order as determined by its individual property values, or by the elements themselves without a lambda (for an array of only numbers, only strings or only booleans, along with any nulls, which come first) | `#orderBy($.some.path, @x: @x.propertyName)` | Property Value
+| orderByDesc | Returns an array in descending order as determined by its individual property values, or by the elements themselves without a lambda (for an array of only numbers, only strings or only booleans, along with any nulls, which come last) | `#orderByDesc($.some.path, @x: @x.propertyName)` | Property Value
 | take | Returns an array containing the leading elements of an array up to the specified count | `#take($.some.path, 5)` | Property Value
 | skip | Returns an array excluding the leading elements of an array up to the specified count | `#skip($.some.path, 5)` | Property Value
 | takeWhile | Returns an array containing the leading elements of an array that satisfy a specified condition | `#takeWhile($.some.path, @x: @x.propertyName > 5)` | Property Value
@@ -699,7 +706,7 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 | average | Returns the average value found within an array of numbers  (optionally with a projection lambda) | `#average($.some.path, @x: @x.someValue)` | Property Value
 | joinWith | Returns a string that joins all elements of an array with the provided delimiter | `#joinWith($.some.path, ',')` | Property Name/Value
 | splitOn | Returns an array of substrings from a string value splitting on the provided delimiter | `#splitOn($.some.path, ',')` | Property Value
-| append | Returns a string or array made from appending one or more strings or arrays onto them | `#append($.some.path, 'one', 'two')` | Property Value
+| append | Returns a string or array made from appending one or more values onto them. An array's elements are appended to an array one by one, and any other value is appended to it as a single element | `#append($.some.path, 'one', 'two')` | Property Value
 | currentDateTime | Returns the current date and time as a string in ISO 8601 format | `#currentDateTime()` | Property Value
 | currentDateTimeUtc | Returns the current date and time in UTC as a string in ISO 8601 format | `#currentDateTimeUtc()` | Property Value
 | parseDateTime | Returns a string in ISO 8601 format that represents the date and time value of the provided string, requires exact format with optional format string | `#parseDateTime($.some.path, 'yyyy-MM-dd')` | Property Value

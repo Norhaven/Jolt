@@ -28,7 +28,7 @@ The argument here is a JSON Path query. It selects the value at that path in the
 
 ## Piping
 
-The `->` operator passes the result of one expression as the **first argument** of the next method. That argument is then left out of the second call.
+The `->` operator passes the result of one expression as the **first argument** of the next method. That argument is then left out of the second call. To skip the method (and the rest of the chain) when that result is null, use [`?->`](../null-handling/) instead.
 
 ```jolt
 {
@@ -44,12 +44,12 @@ If you know C# extension methods, this is the same idea. Any method, including y
 }
 ```
 
-You can also pipe directly from a variable:
+You can also pipe from an array literal, an object literal (such as `{ 'country': 'US' }->#merge($.address)`) or a parenthesized expression (such as `(#valueOf($.price) * 1.2)->#roundTo(2)`), or directly from a variable, or from one of its properties:
 
 ```jolt
 {
     "@someVariable": "#valueOf($.some.arrayPath)",
-    "result": "@someVariable->#select(@y: @y->#length())"
+    "result": "@someVariable->#select(@y: @y.name->#length())"
 }
 ```
 

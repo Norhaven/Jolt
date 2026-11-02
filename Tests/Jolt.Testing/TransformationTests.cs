@@ -74,6 +74,11 @@ namespace Jolt.Testing
             transformerWithParams.ExpectsPropertyEqualTo(TargetProperty.SourcePathValue, "test.source.path", "because that is the value at the source path in the selected document sub-path");
             transformerWithParams.ExpectsPropertyNonNull<object>(TargetProperty.IntegerValue, "because that parameter was provided to the secondary transformer");
             transformerWithParams.ExpectsPropertyNonNull<string>(TargetProperty.TextValue, "because that parameter was provided to the secondary transformer");
+
+            var transformerFromObjectLiteral = json["transformerFromObjectLiteral"] as IJsonObject;
+
+            transformerFromObjectLiteral.ExpectsNonNull("because the object literal should have been piped into the secondary transformer");
+            transformerFromObjectLiteral.ExpectsPropertyEqualTo(TargetProperty.SourcePathValue, "literal.source.path", "because that is the value at the source path in the piped object literal");
         }
 
         public virtual async Task ArrayLiteral_IsSuccessful_AtSingleLevel(TransformerTest test)

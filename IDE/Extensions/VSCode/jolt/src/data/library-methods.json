@@ -115,7 +115,7 @@
     },
     {
       "name": "append",
-      "description": "Returns a string or array made from appending one or more strings or arrays onto them",
+      "description": "Returns a string or array made from appending one or more values onto them. An array's elements are appended to an array one by one, and any other value is appended to it as a single element",
       "example": "#append($.some.path, 'one', 'two')",
       "validOn": [
         "propertyValue"
@@ -507,7 +507,7 @@
     },
     {
       "name": "indexOf",
-      "description": "Returns the zero-based index value of the first occurrence of the provided value",
+      "description": "Returns the zero-based index value of the first occurrence of the provided value in a string or array, or -1 if it isn't found",
       "example": "#indexOf(#valueOf($.some.path), 'some string')",
       "validOn": [
         "propertyValue"
@@ -733,7 +733,7 @@
         },
         {
           "name": "pattern",
-          "kind": "string",
+          "kind": "value",
           "isOptional": false,
           "isVariadic": false,
           "isLazy": false
@@ -781,7 +781,7 @@
         },
         {
           "name": "delimiter",
-          "kind": "string",
+          "kind": "value",
           "isOptional": false,
           "isVariadic": false,
           "isLazy": false
@@ -957,7 +957,7 @@
     },
     {
       "name": "orderBy",
-      "description": "Returns an array in ascending order as determined by its individual property values",
+      "description": "Returns an array in ascending order as determined by its individual property values, or by the elements themselves without a lambda (for an array of only numbers, only strings or only booleans, along with any nulls, which come first)",
       "example": "#orderBy($.some.path, @x: @x.propertyName)",
       "validOn": [
         "propertyValue"
@@ -987,7 +987,7 @@
     },
     {
       "name": "orderByDesc",
-      "description": "Returns an array in descending order as determined by its individual property values",
+      "description": "Returns an array in descending order as determined by its individual property values, or by the elements themselves without a lambda (for an array of only numbers, only strings or only booleans, along with any nulls, which come last)",
       "example": "#orderByDesc($.some.path, @x: @x.propertyName)",
       "validOn": [
         "propertyValue"
@@ -1100,14 +1100,14 @@
         },
         {
           "name": "pattern",
-          "kind": "string",
+          "kind": "value",
           "isOptional": false,
           "isVariadic": false,
           "isLazy": false
         },
         {
           "name": "replacement",
-          "kind": "string",
+          "kind": "value",
           "isOptional": false,
           "isVariadic": false,
           "isLazy": false
@@ -1378,7 +1378,7 @@
         },
         {
           "name": "delimiter",
-          "kind": "string",
+          "kind": "value",
           "isOptional": false,
           "isVariadic": false,
           "isLazy": false

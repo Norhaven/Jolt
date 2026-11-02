@@ -3,7 +3,8 @@
   "possibleExceptionCodes": {
     "missingPathInLibraryCall": "UnableToPerformLibraryCallOnMissingPath",
     "externalMethodException": "ExternalMethodInvocationCausedAnException",
-    "nullValueInLibraryCall": "UnableToPerformLibraryCallOnNullValue"
+    "nullValueInLibraryCall": "UnableToPerformLibraryCallOnNullValue",
+    "dereferencedMissingProperty": "AttemptedToDereferenceMissingPath"
   },
   "testGroups": [
     {
@@ -578,7 +579,7 @@
       ]
     },
     {
-      "name": "Standard library methods throw when given a range variable path that does not exist, except for type checks",
+      "name": "Standard library methods treat a range variable property that does not exist as null, throwing except for type checks",
       "source": {
         "testObject": {
           "first": "value",
@@ -587,52 +588,52 @@
       },
       "tests": [
         {
-          "name": "ToUpperCase throws a missing path exception for a range variable path that does not exist",
+          "name": "ToUpperCase throws a null value exception for a range variable property that does not exist",
           "transformer": {
             "@x": "#valueOf($.testObject)",
             "resultValue": "#toUpperCase(@x.nonExistentValue)"
           },
           "exceptionCode": "externalMethodException",
-          "innerExceptionCode": "missingPathInLibraryCall"
+          "innerExceptionCode": "nullValueInLibraryCall"
         },
         {
-          "name": "Length throws a missing path exception for a range variable path that does not exist",
+          "name": "Length throws a null value exception for a range variable property that does not exist",
           "transformer": {
             "@x": "#valueOf($.testObject)",
             "resultValue": "#length(@x.nonExistentValue)"
           },
           "exceptionCode": "externalMethodException",
-          "innerExceptionCode": "missingPathInLibraryCall"
+          "innerExceptionCode": "nullValueInLibraryCall"
         },
         {
-          "name": "Select throws a missing path exception for a range variable path that does not exist",
+          "name": "Select throws a null value exception for a range variable property that does not exist",
           "transformer": {
             "@x": "#valueOf($.testObject)",
             "resultValue": "#select(@x.nonExistentValue, @y: @y)"
           },
           "exceptionCode": "externalMethodException",
-          "innerExceptionCode": "missingPathInLibraryCall"
+          "innerExceptionCode": "nullValueInLibraryCall"
         },
         {
-          "name": "Sum throws a missing path exception for a range variable path that does not exist",
+          "name": "Sum throws a null value exception for a range variable property that does not exist",
           "transformer": {
             "@x": "#valueOf($.testObject)",
             "resultValue": "#sum(@x.nonExistentValue)"
           },
           "exceptionCode": "externalMethodException",
-          "innerExceptionCode": "missingPathInLibraryCall"
+          "innerExceptionCode": "nullValueInLibraryCall"
         },
         {
-          "name": "KeysFrom throws a missing path exception for a range variable path that does not exist",
+          "name": "KeysFrom throws a null value exception for a range variable property that does not exist",
           "transformer": {
             "@x": "#valueOf($.testObject)",
             "resultValue": "#keysFrom(@x.nonExistentValue)"
           },
           "exceptionCode": "externalMethodException",
-          "innerExceptionCode": "missingPathInLibraryCall"
+          "innerExceptionCode": "nullValueInLibraryCall"
         },
         {
-          "name": "IsString returns false for a range variable path that does not exist",
+          "name": "IsString returns false for a range variable property that does not exist",
           "transformer": {
             "@x": "#valueOf($.testObject)",
             "resultValue": "#isString(@x.nonExistentValue)"
@@ -642,13 +643,21 @@
           }
         },
         {
-          "name": "ToInteger throws a missing path exception for a range variable path that does not exist",
+          "name": "ToInteger throws a null value exception for a range variable property that does not exist",
           "transformer": {
             "@x": "#valueOf($.testObject)",
             "resultValue": "#toInteger(@x.nonExistentValue)"
           },
           "exceptionCode": "externalMethodException",
-          "innerExceptionCode": "missingPathInLibraryCall"
+          "innerExceptionCode": "nullValueInLibraryCall"
+        },
+        {
+          "name": "Dereferencing a range variable property that does not exist throws a dereference exception",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "#toUpperCase(@x.nonExistentValue.deeper)"
+          },
+          "exceptionCode": "dereferencedMissingProperty"
         }
       ]
     },
@@ -718,106 +727,164 @@
       ]
     },
     {
-      "name": "Standard library methods return a default value when given a null-safe dereference that does not exist",
+      "name": "A null-safe dereference gives null when the value before it is null or missing, which standard library methods treat as any other null",
       "source": {
         "testObject": {
           "first": "value",
-          "second": 2
+          "second": 2,
+          "nullValue": null
         }
       },
       "tests": [
         {
-          "name": "ToUpperCase returns null for a null-safe dereference that does not exist",
+          "name": "A null-safe dereference of a null variable gives null without dereferencing the rest of the chain",
+          "transformer": {
+            "@x": null,
+            "resultValue": "@x?.first.second"
+          },
+          "result": {
+            "resultValue": null
+          }
+        },
+        {
+          "name": "A null-safe dereference of a property that does not exist or is null gives null without dereferencing the rest of the chain",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "missingValue": "@x.nonExistentValue?.deeper.deepest",
+            "nullValue": "@x.nullValue?.deeper.deepest"
+          },
+          "result": {
+            "missingValue": null,
+            "nullValue": null
+          }
+        },
+        {
+          "name": "A null-safe dereference of a present value dereferences the property after it as usual",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "presentValue": "@x?.first",
+            "missingValue": "@x?.nonExistentValue"
+          },
+          "result": {
+            "presentValue": "value",
+            "missingValue": null
+          }
+        },
+        {
+          "name": "A null-safe dereference only guards the value before it",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "@x?.nonExistentValue.deeper"
+          },
+          "exceptionCode": "dereferencedMissingProperty"
+        },
+        {
+          "name": "ToUpperCase throws a null value exception for a null-safe dereference of a null variable",
+          "transformer": {
+            "@x": null,
+            "resultValue": "#toUpperCase(@x?.first)"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "nullValueInLibraryCall"
+        },
+        {
+          "name": "ToUpperCase throws a null value exception for a null-safe dereference of a property that does not exist",
           "transformer": {
             "@x": "#valueOf($.testObject)",
             "resultValue": "#toUpperCase(@x?.nonExistentValue)"
           },
-          "result": {
-            "resultValue": null
-          }
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "nullValueInLibraryCall"
         },
         {
-          "name": "Length returns null for a null-safe dereference that does not exist",
+          "name": "Null-coalescing provides a default for a null-safe dereference that gives null",
           "transformer": {
-            "@x": "#valueOf($.testObject)",
-            "resultValue": "#length(@x?.nonExistentValue)"
+            "@x": null,
+            "resultValue": "#toUpperCase(@x?.first ?? 'n/a')"
           },
           "result": {
-            "resultValue": null
+            "resultValue": "N/A"
           }
         },
         {
-          "name": "StartsWith returns false for a null-safe dereference that does not exist",
+          "name": "A null-conditional pipe skips a library call on a null-safe dereference that gives null",
           "transformer": {
             "@x": "#valueOf($.testObject)",
-            "resultValue": "#startsWith(@x?.nonExistentValue, 'a')"
-          },
-          "result": {
-            "resultValue": false
-          }
-        },
-        {
-          "name": "Select returns an empty array for a null-safe dereference that does not exist",
-          "transformer": {
-            "@x": "#valueOf($.testObject)",
-            "resultValue": "#select(@x?.nonExistentValue, @y: @y)"
-          },
-          "result": {
-            "resultValue": []
-          }
-        },
-        {
-          "name": "Sum returns null for a null-safe dereference that does not exist",
-          "transformer": {
-            "@x": "#valueOf($.testObject)",
-            "resultValue": "#sum(@x?.nonExistentValue)"
-          },
-          "result": {
-            "resultValue": null
-          }
-        },
-        {
-          "name": "KeysFrom returns an empty array for a null-safe dereference that does not exist",
-          "transformer": {
-            "@x": "#valueOf($.testObject)",
-            "resultValue": "#keysFrom(@x?.nonExistentValue)"
-          },
-          "result": {
-            "resultValue": []
-          }
-        },
-        {
-          "name": "Merge returns the other object for a null-safe dereference that does not exist",
-          "transformer": {
-            "@x": "#valueOf($.testObject)",
-            "resultValue": "#merge(@x?.nonExistentValue, $.testObject)"
-          },
-          "result": {
-            "resultValue": {
-              "first": "value",
-              "second": 2
-            }
-          }
-        },
-        {
-          "name": "Null-coalescing provides a default for a library call on a null-safe dereference that does not exist",
-          "transformer": {
-            "@x": "#valueOf($.testObject)",
-            "resultValue": "#toUpperCase(@x?.nonExistentValue) ?? 'n/a'"
+            "resultValue": "@x?.nonExistentValue?->#toUpperCase() ?? 'n/a'"
           },
           "result": {
             "resultValue": "n/a"
           }
         },
         {
-          "name": "Nested null-safe dereference returns null when an intermediate property does not exist",
+          "name": "Type checks treat a skipped null-safe dereference as null and a property that does not exist as missing",
           "transformer": {
             "@x": "#valueOf($.testObject)",
-            "resultValue": "#length(@x.nonExistentValue?.deeper)"
+            "@n": null,
+            "skippedIsNull": "#isNull(@n?.first)",
+            "skippedIsMissing": "#isMissing(@n?.first)",
+            "skippedExists": "#exists(@n?.first)",
+            "missingIsNull": "#isNull(@x?.nonExistentValue)",
+            "missingIsMissing": "#isMissing(@x?.nonExistentValue)"
           },
           "result": {
-            "resultValue": null
+            "skippedIsNull": true,
+            "skippedIsMissing": false,
+            "skippedExists": false,
+            "missingIsNull": false,
+            "missingIsMissing": true
           }
+        },
+        {
+          "name": "IsNull is true for a null value however it was reached, and false for a missing one",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "@n": null,
+            "nullProperty": "#isNull(@x.nullValue)",
+            "nullPropertyAfterNullSafe": "#isNull(@x?.nullValue)",
+            "pipedNullProperty": "@x.nullValue->#isNull()",
+            "nullVariable": "#isNull(@n)",
+            "nullPath": "#isNull($.testObject.nullValue)",
+            "nullMethodResult": "#isNull(#valueOf($.testObject.nullValue))",
+            "nullLiteral": "#isNull(null)",
+            "presentProperty": "#isNull(@x.first)",
+            "missingProperty": "#isNull(@x.nonExistentValue)",
+            "missingPath": "#isNull($.testObject.nonExistentValue)"
+          },
+          "result": {
+            "nullProperty": true,
+            "nullPropertyAfterNullSafe": true,
+            "pipedNullProperty": true,
+            "nullVariable": true,
+            "nullPath": true,
+            "nullMethodResult": true,
+            "nullLiteral": true,
+            "presentProperty": false,
+            "missingProperty": false,
+            "missingPath": false
+          }
+        },
+        {
+          "name": "A property containing null exists but isn't missing",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "isMissing": "#isMissing(@x.nullValue)",
+            "exists": "#exists(@x.nullValue)",
+            "value": "@x.nullValue"
+          },
+          "result": {
+            "isMissing": false,
+            "exists": false,
+            "value": null
+          }
+        },
+        {
+          "name": "Dereferencing a property of a property containing null throws a dereference exception",
+          "transformer": {
+            "@x": "#valueOf($.testObject)",
+            "resultValue": "@x.nullValue.deeper"
+          },
+          "exceptionCode": "dereferencedMissingProperty"
         }
       ]
     },

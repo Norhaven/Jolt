@@ -100,6 +100,8 @@ namespace Jolt.Parsing
         [Description("a type literal")]
         TypeLiteral,
         [Description("a discard character")]
-        Discard
+        Discard,
+        [Description("the start of a null-conditional piped method call")]
+        StartOfNullConditionalPipedMethodCall
     }
 }

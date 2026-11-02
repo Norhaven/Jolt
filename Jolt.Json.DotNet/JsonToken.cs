@@ -155,6 +155,13 @@ namespace Jolt.Json.DotNet
             }
             else if (typeof(T) == typeof(string))
             {
+                // A string value created in code (rather than parsed) would otherwise give its JSON text, quotes included.
+
+                if (_token is Nodes.JsonValue value && value.TryGetValue<string>(out var text))
+                {
+                    return (T)(object)text;
+                }
+
                 return (T)(object)_token.ToString();
             }
             else if (_token is Nodes.JsonObject || _token is Nodes.JsonArray)

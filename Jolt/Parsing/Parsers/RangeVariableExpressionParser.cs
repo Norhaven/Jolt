@@ -92,19 +92,28 @@ namespace Jolt.Parsing.Parsers
             }
             else if (_reader.CurrentToken?.Category == ExpressionTokenCategory.PropertyDereference || _reader.CurrentToken?.Category == ExpressionTokenCategory.NullSafePropertyDereference)
             {
-                while (_reader.CurrentToken.Category == ExpressionTokenCategory.PropertyDereference || _reader.CurrentToken.Category == ExpressionTokenCategory.NullSafePropertyDereference)
+                if (!_reader.TryConsumeUntilMatchOrEnd(x => x.Category != ExpressionTokenCategory.PropertyDereference && x.Category != ExpressionTokenCategory.NullSafePropertyDereference, out var dereferenceChain))
                 {
-                    if (!_reader.TryConsumeUntilMatchOrEnd(x => x.Category != ExpressionTokenCategory.PropertyDereference && x.Category != ExpressionTokenCategory.NullSafePropertyDereference, out var dereferenceChain))
+                    throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToParsePropertyDereferenceChain, _reader.CurrentToken.Value);
+                }
+
+                expression = new PropertyDereferenceExpression((RangeVariableExpression)expression, dereferenceChain.Select(x => new DereferenceExpression(x.Value, x.Category == ExpressionTokenCategory.NullSafePropertyDereference)).ToArray());
+
+                // A method can be piped from the dereferenced property (e.g. "@x.name->#trim()"), just as from the variable itself.
+
+                if (MethodCallExpressionParser.IsStartOfPipe(_reader.CurrentToken))
+                {
+                    if (!methodCallParser.TryParse(context, out var pipedMethod, expression))
                     {
-                        throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToParsePropertyDereferenceChain, _reader.CurrentToken.Value);
+                        throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToCompleteParsingOfPipedMethodCall);
                     }
 
-                    expression = new PropertyDereferenceExpression((RangeVariableExpression)expression, dereferenceChain.Select(x => new DereferenceExpression(x.Value, x.Category == ExpressionTokenCategory.NullSafePropertyDereference)).ToArray());
-
-                    return true;
+                    expression = pipedMethod;
                 }
+
+                return true;
             }
-            else if (_reader.CurrentToken?.Category == ExpressionTokenCategory.StartOfPipedMethodCall && methodCallParser.TryParse(context, out var method, (RangeVariableExpression)expression))
+            else if (MethodCallExpressionParser.IsStartOfPipe(_reader.CurrentToken) && methodCallParser.TryParse(context, out var method, (RangeVariableExpression)expression))
             {
                 expression = method;
 

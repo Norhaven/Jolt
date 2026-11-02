@@ -72,7 +72,7 @@ namespace Jolt.Parsing.Parsers
 
             _reader.ExpectAndConsume(ExpressionTokenCategory.EndOfObjectLiteral);
 
-            expression = new ObjectLiteralExpression(properties);
+            expression = ParsePipedMethodCallsFrom(context, new ObjectLiteralExpression(properties));
 
             return true;
         }

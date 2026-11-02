@@ -66,19 +66,21 @@ namespace Jolt.Extensions
             return context.JsonContext.QueryPathProvider.IsQueryPath(path);
         }
 
+        /// <summary>
+        /// Selects the token at a JSON path, starting from the root, or returns null when the path doesn't exist.
+        /// </summary>
+        public static IJsonToken? SelectTokenAt(this EvaluationContext context, QueryPathReference path)
+        {
+            return context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, path.Path, JsonQueryMode.StartFromRoot);
+        }
+
+        /// <summary>
+        /// Resolves a JSON path to the token at that path (or null when it doesn't exist), leaving any other value as it is.
+        /// A string literal is never treated as a path, even when it looks like one.
+        /// </summary>
         public static object? ResolveQueryPathIfPresent(this EvaluationContext context, object? potentialPath)
         {
-            if (potentialPath is null)
-            {
-                return default;
-            }
-
-            if (potentialPath is string value && context.IsQueryPath(value))
-            {
-                return context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, value, JsonQueryMode.StartFromRoot);
-            }
-
-            return potentialPath;
+            return potentialPath is QueryPathReference path ? context.SelectTokenAt(path) : potentialPath;
         }
         
         public static JoltException CreateExecutionErrorFor<T>(this EvaluationContext context, ExceptionCode exceptionCode, params object[] parameters)

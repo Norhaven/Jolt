@@ -377,11 +377,11 @@ methods:
 
   - name: append
     category: strings-and-arrays
-    summary: Returns a string or array made by appending one or more strings or arrays.
+    summary: Returns a string or array made by appending one or more values. An array's elements are appended to an array one by one, and any other value is appended to it as a single element.
     signature: "#append(value, ...values)"
     parameters:
       - { name: value, type: path | string | array, description: "The starting string or array." }
-      - { name: values, type: string | array, description: "One or more values to append." }
+      - { name: values, type: any, description: "One or more values to append. Only strings can be appended to a string." }
     returns: { type: string | array }
     validIn: [property-value]
     examples:
@@ -389,6 +389,10 @@ methods:
         source: { "name": "Ada" }
         transformer: { "result": "#append('Hello, ', #valueOf($.name), '!')" }
         output: { "result": "Hello, Ada!" }
+      - title: Add elements to an array
+        source: { "tags": ["a", "b"], "more": ["c"] }
+        transformer: { "result": "#append($.tags, $.more, 1)" }
+        output: { "result": ["a", "b", "c", 1] }
     related: [joinWith]
 
   # ── Strings ──────────────────────────────────────────────────────────
@@ -714,11 +718,11 @@ methods:
 
   - name: orderBy
     category: sequences
-    summary: Returns the array in ascending order of a selected value.
-    signature: "#orderBy(array, @x: key)"
+    summary: "Returns the array in ascending order of a selected value, or of the elements themselves. Without a lambda, the array must hold only numbers, only strings or only booleans (along with any nulls), which are ordered by their values; strings are compared by character code. Any other array, such as one mixing numbers and strings or holding objects, raises error JLT575. Nulls come first."
+    signature: "#orderBy(array, @x: key?)"
     parameters:
       - { name: array, type: path | array, description: "The source array." }
-      - { name: key, type: lambda, description: "Selects the value to sort by." }
+      - { name: key, type: lambda, optional: true, description: "Selects the value to sort by." }
     returns: { type: array }
     validIn: [property-value]
     examples:
@@ -726,15 +730,19 @@ methods:
         source: { "people": [ { "name": "b", "age": 30 }, { "name": "a", "age": 20 } ] }
         transformer: { "result": "#orderBy($.people, @x: @x.age)" }
         output: { "result": [ { "name": "a", "age": 20 }, { "name": "b", "age": 30 } ] }
+      - title: Sort values
+        source: { "names": [ "carol", "alice", "bob" ] }
+        transformer: { "result": "#orderBy($.names)" }
+        output: { "result": [ "alice", "bob", "carol" ] }
     related: [orderByDesc]
 
   - name: orderByDesc
     category: sequences
-    summary: Returns the array in descending order of a selected value.
-    signature: "#orderByDesc(array, @x: key)"
+    summary: "Returns the array in descending order of a selected value, or of the elements themselves. Without a lambda, the array must hold only numbers, only strings or only booleans (along with any nulls), which are ordered by their values; strings are compared by character code. Any other array, such as one mixing numbers and strings or holding objects, raises error JLT575. Nulls come last."
+    signature: "#orderByDesc(array, @x: key?)"
     parameters:
       - { name: array, type: path | array, description: "The source array." }
-      - { name: key, type: lambda, description: "Selects the value to sort by." }
+      - { name: key, type: lambda, optional: true, description: "Selects the value to sort by." }
     returns: { type: array }
     validIn: [property-value]
     examples:

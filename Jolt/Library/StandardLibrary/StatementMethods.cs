@@ -16,7 +16,7 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue | LibraryMethodTarget.StatementBlock)]
         public static EvaluationResult? When(object? result, [LazyEvaluation][VariadicEvaluation] object[]? expressions, EvaluationContext context)
         {
-            var resolved = context.ResolveQueryPathIfPresent(result);
+            var resolved = context.ResolveValueOrNullOf<object>(result);
 
             var isTrue = resolved switch
             {
@@ -113,10 +113,10 @@ namespace Jolt.Library.StandardLibrary
 
             var actualNewValue = newValue switch
             {
-                DereferencedPath pathValue when pathValue.MissingPaths.Length == 0 => pathValue.ObtainableToken,
-                DereferencedPath pathValue => throw context.CreateExecutionErrorFor<StatementMethods>(ExceptionCode.AttemptedToDereferenceMissingPath, pathValue.MissingPaths.Join('.'), pathValue.ObtainableToken.PropertyName),
+                DereferencedPath pathValue when pathValue.MissingPaths.Length == 0 && pathValue.ObtainableToken != null => pathValue.ObtainableToken,
+                DereferencedPath _ => context.CreateTokenFrom(null),
                 RangeVariable variable => context.CreateTokenFrom(variable.Value),
-                string pathValue => context.ResolveQueryPathIfPresent(pathValue) is IJsonToken pathToken ? pathToken : context.CreateTokenFrom(pathValue),
+                QueryPathReference pathValue => context.SelectTokenAt(pathValue) ?? context.CreateTokenFrom(null),
                 object obj => context.CreateTokenFrom(obj),
                 null => context.CreateTokenFrom(null)
             };
@@ -170,7 +170,7 @@ namespace Jolt.Library.StandardLibrary
 
             var closestViableSourceToken = variable.Source switch
             {
-                string path => context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, path, JsonQueryMode.StartFromRoot),
+                QueryPathReference path => context.SelectTokenAt(path),
                 RangeVariable rangeVariable => rangeVariable.Value,
                 _ => throw context.CreateExecutionErrorFor<StatementMethods>(ExceptionCode.UnableToPerformUsingLibraryCallDueToInvalidParameter, variable.Source)
             };

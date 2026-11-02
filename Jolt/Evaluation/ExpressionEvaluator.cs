@@ -28,6 +28,10 @@ namespace Jolt.Evaluation
         {
             var result = EvaluateExpression(context.Expression, context, isRootExpression: true);
 
+            // A path on its own (e.g. a lambda body or the branch of an #if) gives the value at that path.
+
+            result = context.ResolveQueryPathIfPresent(result);
+
             if (result is EvaluationResult evaluationResult)
             {
                 return evaluationResult;
@@ -72,7 +76,7 @@ namespace Jolt.Evaluation
                 VariableAliasExpression variable => UnwrapVariableAlias(variable, context),
                 LiteralExpression literal => UnwrapLiteralValue(literal, context),
                 PathExpression path => ExtractPath(path, context),
-                MethodCallExpression call => ExecuteMethodCall(call, context, isRootExpression),
+                MethodCallExpression call => EndChain(ExecuteMethodCall(call, context, isRootExpression)),
                 BinaryExpression binary => EvaluateBinaryExpression(binary, context),
                 LambdaMethodExpression lambda => EvaluateLambdaExpression(lambda, context),
                 ArrayLiteralExpression array => EvaluateArrayLiteral(array, context),
@@ -86,7 +90,7 @@ namespace Jolt.Evaluation
 
         private object? EvaluateLogicalNotExpression(LogicalNotExpression not, EvaluationContext context)
         {
-            var expressionResult = EvaluateExpression(not.Operand, context).UnwrapWith(context.JsonContext.JsonTokenReader);
+            var expressionResult = ResolveOperandValue(EvaluateExpression(not.Operand, context).UnwrapWith(context.JsonContext.JsonTokenReader), context);
 
             if (!(expressionResult is bool value))
             {
@@ -107,7 +111,7 @@ namespace Jolt.Evaluation
                                select EvaluateExpression(element, context) into evaluatedElement
                                let isPatternMatchVariable = evaluatedElement is RangeVariable variable && !context.Scope.ContainsVariable(variable.Name)
                                let value = isPatternMatchVariable && evaluatedElement is RangeVariable variable ? new MatchDiscard(MatchKind.Variable, variable.Name) : evaluatedElement
-                               select context.CreateTokenFrom(value);
+                               select context.CreateTokenFrom(context.ResolveQueryPathIfPresent(value));
 
             return context.CreateArrayFrom(jsonElements.ToArray());
         }
@@ -119,7 +123,7 @@ namespace Jolt.Evaluation
                                  let propertyValue = EvaluateExpression(property.PropertyValue, context)
                                  let isPatternMatchVariable = propertyValue is RangeVariable variable && !context.Scope.ContainsVariable(variable.Name)
                                  let value = isPatternMatchVariable && propertyValue is RangeVariable variable ? new MatchDiscard(MatchKind.Variable, variable.Name) : propertyValue
-                                 select new KeyValuePair<string, IJsonToken>(propertyName, context.CreateTokenFrom(value));
+                                 select new KeyValuePair<string, IJsonToken>(propertyName, context.CreateTokenFrom(context.ResolveQueryPathIfPresent(value)));
 
             return context.CreateTokenFrom(jsonProperties.ToDictionary(x => x.Key, x => x.Value));
         }
@@ -172,14 +176,9 @@ namespace Jolt.Evaluation
             {
                 if (potentialPath is DereferencedPath path)
                 {
-                    if (path.MissingPaths.Any())
-                    {
-                        var missing = path.MissingPaths.Join('.');
+                    // A missing property, or a chain skipped by a null-safe dereference, gives null.
 
-                        throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.AttemptedToDereferenceMissingPath, missing, path.ObtainableToken.PropertyName);
-                    }
-
-                    return path.ObtainableToken.ToTypeOf<object>();
+                    return path.MissingPaths.Length > 0 ? null : path.ObtainableToken?.ToTypeOf<object>();
                 }
 
                 return potentialPath;
@@ -191,12 +190,7 @@ namespace Jolt.Evaluation
 
                 result = UnpackAsDereferencedPathIfPresent(result);
 
-                if (result is RangeVariable variable)
-                {
-                    result = variable.Value?.ToTypeOf<object>();
-                }
-
-                return result;
+                return ResolveOperandValue(result, context);
             }
 
             var leftResult = EvaluateOperand(binary.Left);
@@ -327,7 +321,20 @@ namespace Jolt.Evaluation
 
         private object ExtractPath(PathExpression path, EvaluationContext context)
         {
-            return path.PathQuery;
+            return new QueryPathReference(path.PathQuery);
+        }
+
+        /// <summary>
+        /// Gets the plain value of an operand, resolving a path or variable to the value it holds.
+        /// </summary>
+        private static object? ResolveOperandValue(object? value, EvaluationContext context)
+        {
+            return value switch
+            {
+                QueryPathReference path => context.SelectTokenAt(path)?.ToTypeOf<object>(),
+                RangeVariable variable => variable.Value?.ToTypeOf<object>(),
+                _ => value
+            };
         }
 
         private Range EvaluateRange(RangeExpression range, EvaluationContext context)
@@ -438,67 +445,71 @@ namespace Jolt.Evaluation
             var rangeVariable = EvaluateExpression(dereference.Variable, context) as RangeVariable;
 
             var currentProperty = rangeVariable?.Value;
-            var hasDereferenceChain = dereference.DereferenceChain.Length > 0;
-
-            if (dereference.Variable.ProvidesNullSafeAccess == true && hasDereferenceChain && currentProperty is null)
-            {
-                var missingDereferencePaths = dereference.DereferenceChain.Select(x => x.PropertyName).ToArray();
-                return new DereferencedPath(rangeVariable, null, missingDereferencePaths, isNullSafe: true);
-            }
+            var currentName = rangeVariable?.Name ?? dereference.Variable.Name;
 
             for (var i = 0; i < dereference.DereferenceChain.Length; i++)
             {
                 var propertyReference = dereference.DereferenceChain[i];
 
+                // Following C#, a null-safe dereference guards the value to its left: '@x?.first' gives null without looking for
+                // 'first' when '@x' is null or missing, and skips the rest of the chain (including any piped methods) along with it.
+                // A null-safe variable (e.g. '@x?.first') is the same as a null-safe dereference of its first property.
+
+                var isNullSafe = propertyReference.IsNullSafe || (i == 0 && dereference.Variable.ProvidesNullSafeAccess == true);
+
+                if (ValueResolutionExtensions.IsNull(currentProperty))
+                {
+                    if (isNullSafe)
+                    {
+                        var skippedDereferencePaths = dereference.DereferenceChain[i..].Select(x => x.PropertyName).ToArray();
+
+                        return new DereferencedPath(rangeVariable, null, skippedDereferencePaths, isNullSafe: true);
+                    }
+
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.AttemptedToDereferenceMissingPath, propertyReference.PropertyName, currentName);
+                }
+
                 if (currentProperty is IJsonObject json)
                 {
                     var node = json[propertyReference.PropertyName];
 
+                    // Both JSON libraries give null for a property containing a JSON null, so it's only missing if the property isn't there.
+                    // Statement methods still get the containing object for it, so that '#setAt' can replace the null.
+
+                    if (node is null && !context.Token.IsWithinStatementBlock && json.HasProperty(propertyReference.PropertyName))
+                    {
+                        node = context.CreateNullToken();
+                    }
+
                     if (node is null)
                     {
                         var missingDereferencePaths = dereference.DereferenceChain[i..].Select(x => x.PropertyName).ToArray();
+
+                        // Statement methods (e.g. '#setAt') need the deepest object that exists, so that they can add the rest of the path to it.
 
                         if (context.Token.IsWithinStatementBlock)
                         {
                             return new DereferencedPath(rangeVariable, json, missingDereferencePaths);
                         }
 
-                        // A null-safe variable (e.g. '@x?.property') protects the first property in the chain the
-                        // same way that a null-safe property (e.g. '@x.first?.second') protects the one after it.
-
-                        var isNullSafe = propertyReference.IsNullSafe || (i == 0 && dereference.Variable.ProvidesNullSafeAccess == true);
-
-                        if (isNullSafe)
-                        {
-                            return new DereferencedPath(rangeVariable, null, missingDereferencePaths, isNullSafe: true);
-                        }
+                        // A missing last property gives null, while one with more properties to dereference after it is an error (unless null-safe).
 
                         if (i == dereference.DereferenceChain.Length - 1)
                         {
                             return new DereferencedPath(rangeVariable, null, missingDereferencePaths);
                         }
-
-                        throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.AttemptedToDereferenceMissingPath, propertyReference.PropertyName, currentProperty.PropertyName);
                     }
 
                     currentProperty = node;
+                    currentName = propertyReference.PropertyName;
                 }
-                else if (currentProperty is IJsonValue value)
+                else if (currentProperty is IJsonValue)
                 {
-                    if (i < dereference.DereferenceChain.Length - 1)
-                    {
-                        throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.EncounteredValueInDereferenceChainButExpectedObject, propertyReference);
-                    }
-
-                    return new DereferencedPath(rangeVariable, value);
-                }
-                else if (currentProperty is null)
-                {
-
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.EncounteredValueInDereferenceChainButExpectedObject, propertyReference.PropertyName);
                 }
                 else
                 {
-                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.EncounteredNonObjectInDereferenceChainButExpectedObject, propertyReference);
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.EncounteredNonObjectInDereferenceChainButExpectedObject, propertyReference.PropertyName);
                 }
             }
 
@@ -623,13 +634,41 @@ namespace Jolt.Evaluation
                 var parameter = call.ParameterValues[i];
                 var currentFormalParameter = (lastParameterIsVariadic && i >= lastParameterIndexFromEnd) ? call.Signature.Parameters[lastParameterIndexFromEnd] : call.Signature.Parameters[i];
 
-                var value = currentFormalParameter.IsLazyEvaluated ? parameter : EvaluateExpression(parameter, argumentContext);
+                var isPipedValue = i == 0 && call.Pipe != PipeOperator.None && !currentFormalParameter.IsLazyEvaluated;
+
+                // A piped value that is itself a method call is part of the same chain, so it can skip the rest of the chain.
+
+                var value = currentFormalParameter.IsLazyEvaluated
+                    ? parameter
+                    : isPipedValue && parameter is MethodCallExpression pipedCall
+                        ? ExecuteMethodCall(pipedCall, argumentContext, isRootExpression: false)
+                        : EvaluateExpression(parameter, argumentContext);
 
                 value = value.UnwrapWith(context.JsonContext.JsonTokenReader);
+
+                if (isPipedValue && (value is SkippedChain || IsSkippedByNullConditional(call, value, context)))
+                {
+                    return SkippedChain.Instance;
+                }
+
+                // External methods take the value that a path, variable or dereferenced property holds, rather than the
+                // reference itself. A library method that takes the path as text (e.g. #valueOf) is given its text instead.
 
                 if (!call.Signature.IsSystemMethod && value is RangeVariable variable)
                 {
                     value = variable.Value?.ToTypeOf<object>();
+                }
+                else if (!call.Signature.IsSystemMethod && value is DereferencedPath path)
+                {
+                    value = UnwrapDereferencedPathForExternalMethod(path);
+                }
+                else if (!call.Signature.IsSystemMethod && value is QueryPathReference externalPath)
+                {
+                    value = context.SelectTokenAt(externalPath)?.ToTypeOf<object>();
+                }
+                else if (value is QueryPathReference textPath && currentFormalParameter.Type == typeof(string))
+                {
+                    value = textPath.Path;
                 }
 
                 if (value is IJsonArray array)
@@ -872,6 +911,57 @@ namespace Jolt.Evaluation
             var type = parameter.IsVariadic && parameter.Type.IsArray ? parameter.Type.GetElementType() : parameter.Type;
 
             return !signature.IsSystemMethod && type == typeof(object);
+        }
+
+        /// <summary>
+        /// Stands in for the result of a chain of piped method calls that a null-conditional operator ('?.' or '?->') cut short,
+        /// so that the rest of the chain is skipped too. The chain as a whole then gives null (see <see cref="EndChain"/>).
+        /// </summary>
+        private sealed class SkippedChain
+        {
+            public static readonly SkippedChain Instance = new SkippedChain();
+        }
+
+        private static object? EndChain(object? result)
+        {
+            return result is SkippedChain ? default : result;
+        }
+
+        /// <summary>
+        /// Gets whether a value piped into a method skips it (and the rest of its chain), which happens when a null-safe
+        /// dereference skipped its chain (e.g. "@x?.name->#trim()" when '@x' is null) or a null-conditional pipe finds
+        /// null or nothing (e.g. "@x.name?->#trim()" when 'name' is null or missing).
+        /// </summary>
+        private static bool IsSkippedByNullConditional(MethodCallExpression call, object? value, EvaluationContext context)
+        {
+            static bool IsNullOrMissing(DereferencedPath path) => path.MissingPaths.Length > 0 || ValueResolutionExtensions.IsNull(path.ObtainableToken);
+
+            if (value is DereferencedPath { IsNullSafe: true })
+            {
+                return true;
+            }
+
+            if (call.Pipe != PipeOperator.NullConditionalPipe)
+            {
+                return false;
+            }
+
+            return value switch
+            {
+                null => true,
+                IJsonToken token => ValueResolutionExtensions.IsNull(token),
+                RangeVariable variable => ValueResolutionExtensions.IsNull(variable.Value),
+                DereferencedPath path => IsNullOrMissing(path),
+                QueryPathReference path => ValueResolutionExtensions.IsNull(context.SelectTokenAt(path)),
+                _ => false
+            };
+        }
+
+        private static object? UnwrapDereferencedPathForExternalMethod(DereferencedPath path)
+        {
+            // A missing property, or a chain skipped by a null-safe dereference, gives null.
+
+            return path.MissingPaths.Length > 0 ? null : path.ObtainableToken?.ToTypeOf<object>();
         }
 
         private static object? InvokeMethod(MethodSignature method, IEnumerable<object?> actualParameterValues, EvaluationContext context)

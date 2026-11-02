@@ -9,7 +9,7 @@ namespace Jolt.Expressions
         public RangeExpression ResultRange { get; }
 
         public IndexOrSliceMethodResultExpression(RangeExpression resultRange, MethodCallExpression method)
-            :base(method.Signature, method.ParameterValues, method.GeneratedName, method.GeneratedVariable)
+            :base(method.Signature, method.ParameterValues, method.GeneratedName, method.GeneratedVariable, method.Pipe)
         {
             ResultRange = resultRange;
             Span = method.Span;

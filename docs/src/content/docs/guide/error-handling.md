@@ -39,7 +39,7 @@ The lambda's `@e` describes what went wrong:
 }
 ```
 
-For values that are expected to be missing, the null-safe `?.` operator is usually simpler than `#try`. See [null handling](../null-handling/).
+For values that are expected to be missing, the null-conditional `?->` operator or the `??` operator is usually simpler than `#try`. See [null handling](../null-handling/).
 
 ## Catching problems before runtime
 

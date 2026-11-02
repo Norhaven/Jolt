@@ -17,7 +17,7 @@ namespace Jolt.Library.StandardLibrary
         public static IJsonToken? Transform(object? content, object? transformerName, [OptionalParameter(default)] IJsonObject parameters, EvaluationContext context)
         {
             var source = (IJsonToken)context.ResolveValueOf<object?>(content);
-            var name = (string)context.ResolveValueOf<string>(transformerName);
+            var name = context.ResolveArgumentOf<string>(context.ResolveValueOf<string>(transformerName));
             var transformer = context.JsonContext.TransformerRegistrations.FirstOrDefault(x => x.TransformerName == name);
 
             if (transformer is null)

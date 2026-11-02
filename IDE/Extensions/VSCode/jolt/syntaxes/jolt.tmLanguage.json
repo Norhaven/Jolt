@@ -652,6 +652,11 @@
 			"comment": "§2 / §14 operators and §6 range operators.",
 			"patterns": [
 				{
+					"comment": "§3 pipe '->' and null-conditional pipe '?->', matched before '-' and '>' so that each arrow is one operator.",
+					"name": "keyword.operator.pipe.jolt",
+					"match": "\\??->"
+				},
+				{
 					"name": "keyword.operator.null-coalescing.jolt",
 					"match": "\\?\\?"
 				},

@@ -14,8 +14,9 @@ A transformer is ordinary JSON. Jolt looks for **expressions** inside its proper
 | `#name(...)` | A [method call](../methods-and-piping/). Names are case-sensitive. | `#valueOf($.a)` |
 | `$...` | A JSON Path into the source document | `$.order.items` |
 | `@name` | A [range variable](../variables/) | `@total` |
-| `'text'` | A string literal | `'hello'` |
+| `'text'` | A string literal, which is always text, even when it looks like a path (e.g. `'$.a'`) | `'hello'` |
 | `->` | [Pipe](../methods-and-piping/#piping) a value into a method's first parameter | `@x->#length()` |
+| `?->` | [Pipe](../null-handling/) a value only when it isn't null, otherwise skip the rest of the chain | `@x.name?->#trim()` |
 | `@x: ...` | A [lambda](../lambdas/) | `@x: @x.price > 10` |
 | `a..b`, `^n` | A [range](../indexing-and-slicing/) | `@text[1..3]` |
 | `into` | Names the output of a property-name construct | `#foreach(@x in $.a) into 'b'` |

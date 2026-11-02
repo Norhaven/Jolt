@@ -16,17 +16,23 @@ namespace Jolt.Expressions
         public string? GeneratedName { get; }
         public RangeVariable GeneratedVariable { get; }
 
-        public MethodCallExpression(MethodSignature signature, Expression[] parameterValues, string? generatedName = null, RangeVariable generatedVariable = default)
+        /// <summary>
+        /// Gets how the first parameter was supplied, i.e. whether it was piped into the method.
+        /// </summary>
+        public PipeOperator Pipe { get; }
+
+        public MethodCallExpression(MethodSignature signature, Expression[] parameterValues, string? generatedName = null, RangeVariable generatedVariable = default, PipeOperator pipe = PipeOperator.None)
         {
             Signature = signature;
             ParameterValues = parameterValues;
             GeneratedName = generatedName;
             GeneratedVariable = generatedVariable;
+            Pipe = pipe;
         }
 
         public MethodCallExpression WithParameters(IEnumerable<Expression> parameters)
         {
-            return new MethodCallExpression(Signature, parameters.ToArray(), GeneratedName, GeneratedVariable) { Span = Span };
+            return new MethodCallExpression(Signature, parameters.ToArray(), GeneratedName, GeneratedVariable, Pipe) { Span = Span };
         }
     }
 }

@@ -12,8 +12,8 @@ namespace Jolt.Evaluation
         public string[] MissingPaths { get; }
 
         /// <summary>
-        /// Gets whether the path stopped early at a null-safe ('?.') dereference, meaning that the
-        /// missing portion of the path should be treated as null rather than as an error.
+        /// Gets whether the path stopped early at a null-safe ('?.') dereference because the value to its left was null or missing,
+        /// meaning that the whole chain (including any methods piped from it) gives null. The skipped properties are in <see cref="MissingPaths"/>.
         /// </summary>
         public bool IsNullSafe { get; }
 

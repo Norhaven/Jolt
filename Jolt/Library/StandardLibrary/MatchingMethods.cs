@@ -27,7 +27,7 @@ namespace Jolt.Library.StandardLibrary
 
             var closestViableSourceToken = sourceAlias.Source switch
             {
-                string path => context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, path, JsonQueryMode.StartFromRoot),
+                QueryPathReference path => context.SelectTokenAt(path),
                 RangeVariable rangeVariable => rangeVariable.Value,
                 _ => throw context.CreateExecutionErrorFor<MatchingMethods>(ExceptionCode.UnableToPerformUsingLibraryCallDueToInvalidParameter, sourceAlias.Source)
             };

@@ -128,8 +128,8 @@ namespace Jolt.Library.StandardLibrary
                 return context.CreateNullToken();
             }
 
-            var search = searchText is RangeVariable searchVariable && searchVariable.Value?.IsValue() == true ? searchVariable.Value.ToTypeOf<string>() : searchText?.ToString();
-            var replacement = replacementText is RangeVariable replVariable && replVariable.Value?.IsValue() == true ? replVariable.Value.ToTypeOf<string>() : replacementText?.ToString();
+            var search = context.ResolveArgumentOf<string>(searchText);
+            var replacement = context.ResolveArgumentOf<string>(replacementText);
 
             var replaced = resolved switch
             {
@@ -152,7 +152,7 @@ namespace Jolt.Library.StandardLibrary
                 return context.CreateTokenFrom(false);
             }
 
-            var search = searchText is RangeVariable searchVariable && searchVariable.Value?.IsValue() == true ? searchVariable.Value.ToTypeOf<string>() : searchText?.ToString();
+            var search = context.ResolveArgumentOf<string>(searchText);
 
             var startsWith = resolved switch
             {
@@ -175,7 +175,7 @@ namespace Jolt.Library.StandardLibrary
                 return context.CreateTokenFrom(false);
             }
 
-            var search = searchText is RangeVariable searchVariable && searchVariable.Value?.IsValue() == true ? searchVariable.Value.ToTypeOf<string>() : searchText?.ToString();
+            var search = context.ResolveArgumentOf<string>(searchText);
 
             var endsWith = resolved switch
             {
@@ -252,23 +252,39 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? IndexOf(object? value, object searchText, EvaluationContext context)
         {
-            var resolved = context.ResolveValueOf<string>(value);
+            var resolved = context.ResolveValueOf<object>(value);
 
             if (resolved is null)
             {
                 return context.CreateNullToken();
             }
 
-            var search = searchText is RangeVariable searchVariable && searchVariable.Value?.IsValue() == true ? searchVariable.Value.ToTypeOf<string>() : searchText?.ToString();
-
             var index = resolved switch
             {
-                string text => text.IndexOf(search),
-                IJsonValue jsonValue when jsonValue.ValueType == JsonValueType.String => jsonValue.ToTypeOf<string>().IndexOf(search),
-                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get index of '{search}' for unsupported object type '{value?.GetType()}'")
+                string text => text.IndexOf(context.ResolveArgumentOf<string>(searchText)),
+                IJsonValue jsonValue when jsonValue.ValueType == JsonValueType.String => jsonValue.ToTypeOf<string>().IndexOf(context.ResolveArgumentOf<string>(searchText)),
+                IJsonArray array => IndexOfElement(array, context.CreateTokenFrom(context.ResolveArgumentOf<object>(searchText))),
+                _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get index for unsupported object type '{resolved.GetType()}'")
             };
 
             return context.CreateTokenFrom(index);
+        }
+
+        private static int IndexOfElement(IJsonArray array, IJsonToken? element)
+        {
+            var index = 0;
+
+            foreach (var item in array)
+            {
+                if (Equals(item, element))
+                {
+                    return index;
+                }
+
+                index++;
+            }
+
+            return -1;
         }
 
         [JoltLibraryMethod("substring")]
@@ -307,9 +323,9 @@ namespace Jolt.Library.StandardLibrary
 
             var contains = resolved switch
             {
-                string text when value is string valueText => text.Contains(valueText),
-                IJsonArray array => array.Contains(context.CreateTokenFrom(value)),
-                IJsonValue token when token.ValueType == JsonValueType.String => token.AsValue().ToTypeOf<string>().Contains(value?.ToString()),
+                string text => text.Contains(context.ResolveArgumentOf<string>(value)),
+                IJsonArray array => IndexOfElement(array, context.CreateTokenFrom(context.ResolveArgumentOf<object>(value))) >= 0,
+                IJsonValue token when token.ValueType == JsonValueType.String => token.AsValue().ToTypeOf<string>().Contains(context.ResolveArgumentOf<string>(value)),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to determine contents for unsupported object type '{value?.GetType()}'")
             };
 
@@ -372,20 +388,16 @@ namespace Jolt.Library.StandardLibrary
 
             IJsonToken? resultToken = context.CreateTokenFrom(resolved);
 
-            IJsonArray Concat(IJsonArray array, string value)
-            {
-                array.Add(context.CreateTokenFrom(value));
-                return array;
-            }
-
             foreach (var additionalValue in additionalValues ?? Enumerable.Empty<object>())
             {
                 var resolvedValue = context.ResolveValueOf<object>(additionalValue);
 
+                // An array is appended element by element, while any other value is appended to an array as a single element.
+
                 resultToken = (resultToken, resolvedValue) switch
                 {
                     (IJsonArray first, IJsonArray second) => context.CreateArrayFrom(first.Concat(second).ToArray()),
-                    (IJsonArray first, string second) => Concat(first, second),
+                    (IJsonArray first, var second) => context.CreateArrayFrom(first.Concat(new[] { context.CreateTokenFrom(second) }).ToArray()),
                     (IJsonObject first, IJsonObject second) => context.CreateObjectFrom(first.Concat(second).ToArray()),
                     (IEnumerable<object> first, IEnumerable<object> second) => context.CreateTokenFrom(first.Concat(second).ToArray()),
                     (IJsonValue first, string second) when first.IsString() => context.CreateTokenFrom($"{first.ToTypeOf<string>()}{second}"),
@@ -399,7 +411,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("joinWith")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyName | LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? JoinWith(object? value, string delimiter, EvaluationContext context)
+        public static IJsonToken? JoinWith(object? value, object delimiter, EvaluationContext context)
         {
             var resolved = context.ResolveValueOf<IJsonArray>(value);
 
@@ -408,11 +420,13 @@ namespace Jolt.Library.StandardLibrary
                 return context.CreateNullToken();
             }
 
+            var separator = context.ResolveArgumentOf<string>(delimiter);
+
             var joined = resolved switch
             {
-                IEnumerable<string> strings => string.Join(delimiter, strings),
-                IJsonArray array when array.ContainsOnlyStrings() => string.Join(delimiter, array.Select(x => x.AsValue().ToTypeOf<string>())),
-                IJsonArray array => string.Join(delimiter, array.Select(x => x.AsValue().ToTypeOf<object>()?.ToString())),
+                IEnumerable<string> strings => string.Join(separator, strings),
+                IJsonArray array when array.ContainsOnlyStrings() => string.Join(separator, array.Select(x => x.AsValue().ToTypeOf<string>())),
+                IJsonArray array => string.Join(separator, array.Select(x => x.AsValue().ToTypeOf<object>()?.ToString())),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to join with unsupported object type '{value?.GetType()}'")
             };
 
@@ -421,7 +435,7 @@ namespace Jolt.Library.StandardLibrary
 
         [JoltLibraryMethod("splitOn")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyValue)]
-        public static IJsonToken? SplitOn(object? value, string delimiter, EvaluationContext context)
+        public static IJsonToken? SplitOn(object? value, object delimiter, EvaluationContext context)
         {
             var resolved = context.ResolveValueOf<string>(value);
 
@@ -430,10 +444,12 @@ namespace Jolt.Library.StandardLibrary
                 return context.CreateNullToken();
             }
 
+            var separator = context.ResolveArgumentOf<string>(delimiter);
+
             var split = resolved switch
             {
-                string text => text.Split(delimiter),
-                IJsonValue jsonValue when jsonValue.ValueType == JsonValueType.String => jsonValue.ToTypeOf<string>().Split(delimiter),
+                string text => text.Split(separator),
+                IJsonValue jsonValue when jsonValue.ValueType == JsonValueType.String => jsonValue.ToTypeOf<string>().Split(separator),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to split with unsupported object type '{value?.GetType()}'")
             };
 
@@ -450,7 +466,7 @@ namespace Jolt.Library.StandardLibrary
             {
                 return context.CreateNullToken();
             }
-            var formatStr = format is RangeVariable formatVariable && formatVariable.Value?.IsValue() == true ? formatVariable.Value.ToTypeOf<string>() : format?.ToString();
+            var formatStr = context.ResolveArgumentOf<string>(format);
 
             try
             {
@@ -481,7 +497,7 @@ namespace Jolt.Library.StandardLibrary
             {
                 return context.CreateNullToken();
             }
-            var formatStr = format is RangeVariable formatVariable && formatVariable.Value?.IsValue() == true ? formatVariable.Value.ToTypeOf<string>() : format?.ToString();
+            var formatStr = context.ResolveArgumentOf<string>(format);
 
             try
             {
@@ -524,7 +540,7 @@ namespace Jolt.Library.StandardLibrary
             {
                 return context.CreateNullToken();
             }
-            var daysValue = days is RangeVariable daysVariable && daysVariable.Value?.IsValue() == true ? daysVariable.Value.ToTypeOf<double>() : Convert.ToDouble(days);
+            var daysValue = context.ResolveArgumentOf<double>(days);
 
             try
             {
@@ -553,7 +569,7 @@ namespace Jolt.Library.StandardLibrary
             {
                 return context.CreateNullToken();
             }
-            var hoursValue = hours is RangeVariable hoursVariable && hoursVariable.Value?.IsValue() == true ? hoursVariable.Value.ToTypeOf<double>() : Convert.ToDouble(hours);
+            var hoursValue = context.ResolveArgumentOf<double>(hours);
 
             try
             {
@@ -582,7 +598,7 @@ namespace Jolt.Library.StandardLibrary
             {
                 return context.CreateNullToken();
             }
-            var minutesValue = minutes is RangeVariable minutesVariable && minutesVariable.Value?.IsValue() == true ? minutesVariable.Value.ToTypeOf<double>() : Convert.ToDouble(minutes);
+            var minutesValue = context.ResolveArgumentOf<double>(minutes);
 
             try
             {

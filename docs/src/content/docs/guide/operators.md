@@ -107,7 +107,7 @@ Because the right operand is skipped when the left one decides the result, the l
 
 ## Null-handling operators
 
-`??` (null-coalescing) and `?.` (null-safe dereferencing) are covered in [null handling](../null-handling/).
+`??` (null-coalescing), `?.` (null-safe dereferencing) and `?->` (null-conditional piping) are covered in [null handling](../null-handling/).
 
 ## Precedence
 

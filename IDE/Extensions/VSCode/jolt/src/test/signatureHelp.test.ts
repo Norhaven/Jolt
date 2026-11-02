@@ -19,6 +19,7 @@ test('commas advance the active argument', () => {
 test('a piped call is recognized', () => {
 	assert.deepEqual(getCallContext('$.a->#take(3, '), { name: 'take', isPiped: true, argumentIndex: 1 });
 	assert.deepEqual(getCallContext('$.a -> #take('), { name: 'take', isPiped: true, argumentIndex: 0 });
+	assert.deepEqual(getCallContext('@x.items?->#take('), { name: 'take', isPiped: true, argumentIndex: 0 });
 });
 
 test('the innermost unclosed call is used', () => {

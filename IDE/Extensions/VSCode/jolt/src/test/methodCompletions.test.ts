@@ -87,6 +87,11 @@ test('completing directly after the pipe operator inserts the hash', () => {
 	assert.equal(completion?.replaceLength, 0);
 });
 
+test('the null-conditional pipe operator is a pipe', () => {
+	assert.equal(snippetFor('propertyValue', '@x.name?->#', 'toUpperCase'), 'toUpperCase()$0');
+	assert.equal(complete('propertyValue', '@x?->')?.find(x => x.method.name === 'length')?.snippet, '#length()$0');
+});
+
 test('signatures mark optional and variadic parameters', () => {
 	const method = (name: string) => libraryMethods.find(x => x.name === name)!;
 

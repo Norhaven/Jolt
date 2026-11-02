@@ -16,7 +16,7 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyName | LibraryMethodTarget.PropertyValue)]
         public static EvaluationResult? If(object? result, [LazyEvaluation] Expression trueExpression, [LazyEvaluation] Expression falseExpression, EvaluationContext context)
         {
-            var resolved = result is RangeVariable variable ? variable.Value?.ToTypeOf<bool?>() : context.ResolveQueryPathIfPresent(result);
+            var resolved = context.ResolveValueOrNullOf<object>(result);
 
             var isTrue = resolved switch
             {
@@ -43,7 +43,7 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyName)]
         public static IJsonToken? IncludeIf(object? result, EvaluationContext context)
         {
-            var resolvedToken = result is RangeVariable variable ? variable.Value?.ToTypeOf<object>() : context.ResolveQueryPathIfPresent(result);
+            var resolvedToken = context.ResolveValueOrNullOf<object>(result);
 
             var shouldInclude = resolvedToken switch
             {
