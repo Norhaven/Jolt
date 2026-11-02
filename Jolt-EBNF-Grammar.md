@@ -1,5 +1,5 @@
 ### Jolt EBNF Grammar
-### Derived from the Jolt language documentation (updated README).
+### Derived from the Jolt language documentation and the parser in Jolt/Parsing.
 
 ### Notation used throughout:
 ###   =          defines a production rule
@@ -61,10 +61,10 @@ json-scalar
 ### §2  VALUE EXPRESSIONS
 ### ══════════════════════════════════════════════════════════════════
 
-### An expression is a binary expression tree whose leaves are primaries.
-### Unary logical-NOT is a prefix on any primary.
+### An expression is a binary expression tree whose leaves are postfix
+### expressions.  Unary logical-NOT is a prefix on any postfix expression.
 ### Pipe-chains and index/slice suffixes bind more tightly than any
-### binary operator and are attached directly to a primary.
+### operator, including "!", and are attached directly to their source.
 
 value-expression
     = null-coalesce-expr
@@ -98,27 +98,29 @@ multiplicative-expr
     = unary-expr { ( "*" | "/" ) unary-expr }
     ;
 
-### Unary logical-NOT prefixes the entire chained primary.
+### Unary logical-NOT prefixes the entire postfix-expr, pipe chain included.
 unary-expr
     = [ "!" ] postfix-expr
     ;
 
-### A postfix-expr is a primary optionally followed by any mix of
-### pipe-suffixes and index/slice-suffixes.
+### A postfix-expr is a pipe-source optionally followed by a chain of
+### piped method calls, or a primary that cannot start a pipe chain.
 postfix-expr
-    = primary { pipe-suffix | index-suffix }
-    ;
-
-primary
-    = method-call
-    | var-reference                (* @name, @name.prop, @name?.prop, @name[…] *)
-    | json-path                    (* $.some.path                               *)
-    | array-literal                (* [ … ]   inline array                      *)
-    | object-literal               (* { … }   inline object                     *)
-    | string-literal               (* 'text'                                     *)
+    = pipe-source { pipe-suffix }
+    | sliced-variable              (* @name[…]  — not pipeable             *)
+    | json-path                    (* $.some.path — not pipeable, see §10  *)
+    | string-literal               (* 'text'                                *)
     | number-literal
     | boolean-literal
     | "null"
+    ;
+
+### The expressions a pipe chain can start from.
+pipe-source
+    = method-call [ index-suffix ] (* #m(…), #m(…)[…]                      *)
+    | var-chain                    (* @name, @name.prop, @name?.prop        *)
+    | array-literal                (* [ … ]   inline array                  *)
+    | object-literal               (* { … }   inline object                 *)
     | "(" value-expression ")"
     ;
 
@@ -129,13 +131,22 @@ primary
 
 ### Pipe: threads the preceding result as the first argument of the
 ### next call.  When used as a pipe target, that first argument is
-### omitted from the explicit argument list.
+### omitted from the explicit argument list.  A piped call's result may
+### itself be indexed or sliced before the chain continues.
 pipe-suffix
-    = "->" method-name "(" [ argument-list ] ")"
+    = pipe-operator "#" method-name "(" [ argument-list ] ")" [ index-suffix ]
     ;
 
-### Index / slice: postfix bracket notation on a var-reference or
-### any postfix-expr (including a method-call result).
+pipe-operator
+    = "->"     (* pipe: always calls the method, even with a null or
+                  missing value                                        *)
+    | "?->"    (* null-conditional pipe: when the value is null or
+                  missing, skips this call and the rest of the chain,
+                  and the chain gives null                             *)
+    ;
+
+### Index / slice: postfix bracket notation on a variable (§10) or on a
+### method-call result, including a piped one.
 index-suffix
     = "[" index-or-range "]"
     ;
@@ -231,7 +242,7 @@ key-expression
     | match-key            (* "#match(… as @x) into …"         *)
     | include-if-key       (* "#includeIf(…) into …"           *)
     | name-of-key          (* "#nameOf(@x)"                    *)
-    | join-with-key        (* "#joinWith(…)"   (dual position) *)
+    | dual-position-key    (* "#joinWith(…)", "#valueOf(…)", … *)
     | match-arm-key        (* "#is(…)"  "#given(…)"  "#default()" *)
     | var-declaration-key  (* "@varName"                        *)
     | plain-string-key     (* ordinary JSON property name       *)
@@ -290,10 +301,18 @@ name-of-key
     = "#nameOf" "(" var-reference ")"
     ;
 
-### ── §7.6  joinWith (dual-position) ───────────────────────────────
+### ── §7.6  Dual-position methods ──────────────────────────────────
 
-join-with-key
-    = "#joinWith" "(" argument-list ")"
+### Methods valid in both a property name and a property value; in a
+### key, the result becomes the output property's name.  The arguments
+### are value expressions as usual.
+dual-position-key
+    = "#" dual-position-method "(" [ argument-list ] ")"
+    ;
+
+dual-position-method
+    = "valueOf" | "if" | "try" | "substring" | "joinWith"
+    | "eval"                       (* UNSAFE, opt-in required *)
     ;
 
 ### ── §7.7  Match-arm keys (valid only inside a match-case-list) ────
@@ -469,7 +488,7 @@ when-stmt
 ### A var-path is a scoped variable followed by dot-separated property
 ### steps (which may not yet exist — setAt creates missing nodes).
 var-path
-    = var-name { ( "." | "?." ) identifier }
+    = var-name { ( "." | "?." ) property-name }
     ;
 
 
@@ -478,24 +497,42 @@ var-path
 ### ══════════════════════════════════════════════════════════════════
 
 ### A var-reference may be used as a standalone expression (the variable
-### itself) or dereferenced further with dot-steps, null-safe steps, or
-### index suffixes.
+### itself), dereferenced further with dot-steps and null-safe steps, or
+### indexed / sliced.  Indexing applies to the variable itself and
+### cannot be combined with dereference steps or followed by a pipe.
 
 var-reference
+    = var-chain
+    | sliced-variable
+    ;
+
+var-chain
     = var-name { var-path-step }
     ;
 
+sliced-variable
+    = var-name index-suffix
+    ;
+
+### Dereferencing a property that doesn't exist gives null; dereferencing
+### a property of a null or missing value is an error (JLT530) unless the
+### step is null-safe.  As in C#, "?." guards only the value to its left,
+### and when that value is null or missing it short-circuits the rest of
+### the chain — further steps and any methods piped from it — giving null.
 var-path-step
-    = "." identifier          (* ordinary property dereference  *)
-    | "?." identifier         (* null-safe property dereference *)
-    | index-suffix            (* [ range-expression ]           *)
+    = "." property-name       (* ordinary property dereference  *)
+    | "?." property-name      (* null-safe property dereference *)
     ;
 
 var-name
     = "@" identifier
     ;
 
-### JSON Path — subset of RFC 9535 / Goessner path notation.
+### JSON Path — subset of RFC 9535 / Goessner path notation.  The path
+### text is passed through to the JSON Path engine and runs until
+### whitespace, "," or ")"; Jolt operators such as "?." and "->" are not
+### recognized inside it.  To pipe from a path or guard it against null,
+### wrap it: "#valueOf($.a)?->#trim()", "#valueOf($.a) ?? 'default'".
 json-path
     = "$" { path-step }
     ;
@@ -504,7 +541,6 @@ path-step
     = "." identifier                          (* child          *)
     | ".." identifier                         (* recursive desc *)
     | "[" ( integer-literal | "*" | string-literal ) "]"
-    | "?." identifier                         (* null-safe child *)
     ;
 
 
@@ -513,8 +549,9 @@ path-step
 ### ══════════════════════════════════════════════════════════════════
 
 ### Array and object literals may appear anywhere a value-expression
-### is valid (including as arguments to method calls and as #transform
-### parameter objects).
+### is valid (including as arguments to method calls and as #transformWith
+### parameter objects).  Array and object literals may also start a
+### pipe chain (§3).
 
 array-literal
     = "[" [ literal-element { "," literal-element } ] "]"
@@ -539,6 +576,17 @@ object-literal-pair
 
 identifier
     = letter { letter | digit | "_" }
+    ;
+
+### A dereferenced property name may also contain hyphens
+### (e.g. "@x.first-name").  A "-" immediately followed by ">" is not
+### part of the name; it starts a pipe ("@x.name->#trim()").
+property-name
+    = property-name-char { property-name-char }
+    ;
+
+property-name-char
+    = letter | digit | "_" | "-"
     ;
 
 ### Jolt string literals use single quotes inside expression strings.
@@ -586,7 +634,7 @@ json-number
 ### "?" = argument is optional.
 #
 ### ── Existence / Type Testing ──────────────────────────────────────
-###   valueOf(path|expr)
+###   valueOf(path)
 ###   exists(path|expr)
 ###   isNull(path|expr)
 ###   isMissing(path)
@@ -595,7 +643,7 @@ json-number
 ###   isDecimal(path|expr)
 ###   isBoolean(path|expr)
 ###   isArray(path|expr)
-###   isObject(path|expr)          ← NEW in this revision
+###   isObject(path|expr)
 ###   isEmpty(path|expr)
 ###   any(path|expr [, λ?])
 #
@@ -624,10 +672,10 @@ json-number
 ###   toBoolean(path|expr)
 ###   toString(path|expr)
 ###   roundTo(path|expr, places)
-###   max(path|expr [, λ?])        ← optional projection lambda added
-###   min(path|expr [, λ?])        ← optional projection lambda added
-###   sum(path|expr [, λ?])        ← optional projection lambda added
-###   average(path|expr [, λ?])    ← optional projection lambda added
+###   max(path|expr [, λ?])
+###   min(path|expr [, λ?])
+###   sum(path|expr [, λ?])
+###   average(path|expr [, λ?])
 #
 ### ── Date / Time ───────────────────────────────────────────────────
 ###   currentDateTime()
@@ -645,16 +693,16 @@ json-number
 ###   distinct(path|expr [, λ?])
 ###   where(path|expr, λ)
 ###   select(path|expr, λ)
-###   orderBy(path|expr, λ)
-###   orderByDesc(path|expr, λ)
-###   take(path|expr, count)       ← NEW in this revision
-###   skip(path|expr, count)       ← NEW in this revision
+###   orderBy(path|expr [, λ?])
+###   orderByDesc(path|expr [, λ?])
+###   take(path|expr, count)
+###   skip(path|expr, count)
 ###   takeWhile(path|expr, λ)
 ###   skipWhile(path|expr, λ)
-###   reduce(path|expr, λ(@acc;@cur) [, seed])   ← NEW in this revision
-###   zip(path|expr, path|expr, λ(@x;@y))        ← NEW in this revision
-###   keysFrom(path|expr)          ← NEW in this revision
-###   valuesFrom(path|expr)        ← NEW in this revision
+###   reduce(path|expr, λ(@acc;@cur) [, seed])
+###   zip(path|expr, path|expr, λ(@x;@y))
+###   keysFrom(path|expr)
+###   valuesFrom(path|expr)
 ###   groupBy(path|expr, λ)
 ###   summarizeWith(path|expr, λ)
 ###   merge(path|expr {, path|expr})
@@ -666,7 +714,7 @@ json-number
 ###   try(expr, λ(@e))
 ###   nameOf(@var)                 — key-position only
 #
-### ── Pattern Matching ─────────────────────────────────────────────  ← NEW section
+### ── Pattern Matching ─────────────────────────────────────────────
 ###   match(path|var as @x) into target  — key-position only
 ###   is(pattern)                         — match-arm key only
 ###   given(expr)                         — match-arm key only
@@ -678,7 +726,7 @@ json-number
 ###   when(cond, stmt {, stmt})
 #
 ### ── Composition ───────────────────────────────────────────────────
-###   transform(path|expr, 'name' [, object-literal])
+###   transformWith(path|expr, 'name' [, object-literal])
 ###   foreach(binding in source) into target   — key-position only
 ###   using(source as @var) into target        — key-position only
 ###   eval(expr)                               — UNSAFE, opt-in required
@@ -693,7 +741,8 @@ json-number
 #
 ###  Level │ Operator(s)         │ Notes
 ###  ──────┼─────────────────────┼────────────────────────────────────
-###    0   │  ??                 │ null-coalescing (lowest precedence)
+###    0   │  ??                 │ null-coalescing (lowest precedence;
+###         │                     │ right side evaluated only when needed)
 ###    1   │  ||                 │ logical OR (short-circuits on true)
 ###    2   │  &&                 │ logical AND (short-circuits on false)
 ###    3   │  ==  !=             │ equality
@@ -701,8 +750,13 @@ json-number
 ###    5   │  +  -               │ addition / subtraction
 ###         │                     │ (+  also overloaded as string concat)
 ###    6   │  *  /               │ multiplication / division
-###    7   │  !  (unary prefix)  │ logical NOT (highest; negates a
-###         │                     │ single unary-expr, see §2)
+###    7   │  !  (unary prefix)  │ logical NOT (highest operator; negates
+###         │                     │ a single postfix-expr, see §2)
+#
+### Not in the README table: the postfix forms "->", "?->", "." , "?."
+### and "[…]" (§3, §10) are part of the operand itself, so they bind
+### tighter than every operator above — "!@x->#isEmpty()" negates the
+### result of the whole pipe chain.
 
 
 ### ══════════════════════════════════════════════════════════════════
@@ -710,7 +764,7 @@ json-number
 ### ══════════════════════════════════════════════════════════════════
 #
 ### @params  — injected automatically when a sub-transformer is invoked
-###            via #transform(path, 'Name', { … }); contains the object
+###            via #transformWith(path, 'Name', { … }); contains the object
 ###            literal passed as the third argument.  Not user-declarable.
 
 
@@ -799,3 +853,40 @@ json-number
 ###        Custom C### types returned by external methods are serialized
 ###        using camel-case property names.  Grammar-neutral; relevant
 ###        to runtime implementors.
+#
+### [N-13] NULL-CONDITIONAL PIPE ?-> (NEW)
+###        pipe-operator (§3) adds "?->" alongside "->".  When the piped
+###        value is null or missing, the call and every later call in the
+###        same chain are skipped and the chain gives null.  Skipping
+###        stops at the end of the chain: when the chain is another
+###        method's argument, that method is still called with null.
+#
+### [N-14] MORE PIPE SOURCES (NEW)
+###        A pipe chain may now start from an object literal, a
+###        parenthesized expression or a dereferenced variable property
+###        ("@x.name->#trim()"), as well as the existing method calls,
+###        variables and array literals.  pipe-source (§2) lists these.
+###        JSON paths and sliced variables ("@x[0]") still cannot start a
+###        chain, and the pipe target always begins with "#" (the previous
+###        revision omitted it from pipe-suffix).
+#
+### [N-15] NULL-SAFE DEREFERENCE ALIGNED WITH C# (CHANGED)
+###        "?." now short-circuits the rest of its chain, including any
+###        methods piped from it, rather than only the next step.  Each
+###        "?." still guards only the value to its left.  "?." is a
+###        variable dereference only; the previous revision also listed
+###        it as a JSON path step, which the parser does not support.
+#
+### [N-16] PROPERTY NAMES WITH HYPHENS (CLARIFIED)
+###        Dereferenced property names use property-name (§12), which
+###        allows "-", rather than identifier.
+#
+### [N-17] DUAL-POSITION METHODS (CORRECTED)
+###        #valueOf, #if, #try, #substring and #eval are valid in a
+###        property name as well as #joinWith; §7.6 now covers them all.
+#
+### [N-18] #transformWith, NOT #transform (CORRECTED)
+###        The library registers the composition method as
+###        #transformWith; §13 and §15 now use that name.  #orderBy and
+###        #orderByDesc take an optional key lambda, and #valueOf takes
+###        only a path.
