@@ -265,6 +265,14 @@ namespace Jolt.Exceptions
         [Description("JLT574")]
         UnableToPerformLibraryCallOnNullValue,
         [Description("JLT575")]
-        UnableToOrderUnsortableArrayWithoutLambda
+        UnableToOrderUnsortableArrayWithoutLambda,
+        [Description("JLT576")]
+        UnableToUseNonStatementExpressionWithinStatementBlock,
+        [Description("JLT577")]
+        UnableToPipeIntoStatementMethod,
+        [Description("JLT578")]
+        UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable,
+        [Description("JLT579")]
+        UnableToUseStatementMethodWithoutStatements
     }
 }

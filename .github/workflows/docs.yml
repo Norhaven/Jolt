@@ -19,6 +19,8 @@ on:
       - 'Jolt/**'
       - 'Jolt.Json.DotNet/**'
       - 'IDE/LanguageServer/Jolt.LanguageServer/**'
+      # Generation checks data/methods.yaml against the engine's library methods.
+      - 'IDE/Extensions/VSCode/jolt/src/data/library-methods.json'
   workflow_dispatch:
 
 permissions:

@@ -13,7 +13,7 @@ namespace Jolt.Library.StandardLibrary
     internal sealed class StatementMethods
     {
         [JoltLibraryMethod("when")]
-        [MethodIsValidOn(LibraryMethodTarget.PropertyValue | LibraryMethodTarget.StatementBlock)]
+        [MethodIsValidOn(LibraryMethodTarget.StatementBlock)]
         public static EvaluationResult? When(object? result, [LazyEvaluation][VariadicEvaluation] object[]? expressions, EvaluationContext context)
         {
             var resolved = context.ResolveValueOrNullOf<object>(result);
@@ -32,47 +32,29 @@ namespace Jolt.Library.StandardLibrary
 
             EvaluationResult? currentResult = default;
 
+            // These have already been verified as statements by StatementRules, regardless of the condition.
+
             foreach (var expression in expressions)
             {
-                if (expression is MethodCallExpression methodCall)
-                {
-                    if (!methodCall.Signature.IsAllowedAsStatement)
-                    {
-                        throw context.CreateExecutionErrorFor<StatementMethods>(ExceptionCode.AttemptedToUseNonStatementMethodWithinWhenLibraryCall, methodCall.Signature.Name);
-                    }
+                var evaluationContext = new EvaluationContext(
+                    context.Mode,
+                    (MethodCallExpression)expression,
+                    context.JsonContext,
+                    context.Token,
+                    context.Scope,
+                    context.Transform
+                );
 
-                    var evaluationContext = new EvaluationContext(
-                        context.Mode,
-                        methodCall,
-                        context.JsonContext,
-                        context.Token,
-                        context.Scope,
-                        context.Transform
-                    );
-
-                    currentResult = context.JsonContext.ExpressionEvaluator.Evaluate(evaluationContext);
-
-                    continue;
-                }
-
-                throw context.CreateExecutionErrorFor<StatementMethods>(ExceptionCode.AttemptedToUseNonMethodExpressionWithinWhenLibraryCall, expression.GetType().Name);
+                currentResult = context.JsonContext.ExpressionEvaluator.Evaluate(evaluationContext);
             }
 
             return currentResult;
         }
 
         [JoltLibraryMethod("removeAt")]
-        [MethodIsValidOn(LibraryMethodTarget.PropertyValue | LibraryMethodTarget.StatementBlock)]
+        [MethodIsValidOn(LibraryMethodTarget.StatementBlock)]
         public static IJsonToken? RemoveAt(DereferencedPath path, EvaluationContext context)
         {
-            // Ensure that non-scoped variables outside of the 'using' block aren't able to be
-            // modified just because we're in statement mode for some other use.
-
-            if (!context.Scope.ContainsVariable(path.SourceVariable.Name, onlyCheckTopLayer: true))
-            {
-                throw context.CreateExecutionErrorFor<StatementMethods>(ExceptionCode.AttemptedToIndirectlyModifyVariableWithinUsingBlock, path.SourceVariable.Name);
-            }
-
             if (path.MissingPaths.Length > 0)
             {
                 var missing = path.MissingPaths.Join('.');
@@ -98,17 +80,9 @@ namespace Jolt.Library.StandardLibrary
         }
 
         [JoltLibraryMethod("setAt")]
-        [MethodIsValidOn(LibraryMethodTarget.PropertyValue | LibraryMethodTarget.StatementBlock)]
+        [MethodIsValidOn(LibraryMethodTarget.StatementBlock)]
         public static IJsonToken? SetAt(DereferencedPath path, object? newValue, EvaluationContext context)
         {
-            // Ensure that non-scoped variables outside of the 'using' block aren't able to be
-            // modified just because we're in statement mode for some other use.
-
-            if (!context.Scope.ContainsVariable(path.SourceVariable.Name, onlyCheckTopLayer: true))
-            {
-                throw context.CreateExecutionErrorFor<StatementMethods>(ExceptionCode.AttemptedToIndirectlyModifyVariableWithinUsingBlock, path.SourceVariable.Name);
-            }
-
             var token = path.ObtainableToken;
 
             var actualNewValue = newValue switch
@@ -196,7 +170,7 @@ namespace Jolt.Library.StandardLibrary
             {
                 foreach (var statement in statements)
                 {
-                    var currentEvaluationToken = new EvaluationToken(context.Token.PropertyName, context.Token.ResolvedPropertyName, token, statement, default, true, isWithinStatementBlock: true);
+                    var currentEvaluationToken = new EvaluationToken(context.Token.PropertyName, context.Token.ResolvedPropertyName, token, statement, default, true, statementVariableName: loopVariable.Name);
 
                     context.Transform(currentEvaluationToken, context.Scope);
                 }

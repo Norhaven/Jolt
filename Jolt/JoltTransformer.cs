@@ -117,6 +117,13 @@ namespace Jolt
 
                 try
                 {
+                    // Anything in a 'using' block that isn't an expression would otherwise be passed over without complaint.
+
+                    if (current.IsWithinStatementBlock && !IsExpressionText(current.CurrentTransformerToken))
+                    {
+                        throw _context.CreateExecutionErrorFor<JoltTransformer<TContext>>(ExceptionCode.UnableToUseNonStatementExpressionWithinStatementBlock, current.CurrentTransformerToken?.ToString() ?? "null");
+                    }
+
                     // We need to check up front if the property name contains an expression and evaluate that first because
                     // some property name expressions will be responsible for generating their own values. Also, in some cases,
                     // we have already evaluated the name and need to continue to evaluate the property value portion instead of
@@ -212,6 +219,13 @@ namespace Jolt
             return token.CurrentTransformerToken;
         }
 
+        private bool IsExpressionText(IJsonToken token)
+        {
+            return token is IJsonValue value
+                && value.ValueType == JsonValueType.String
+                && _context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracketOrOpenCurlyBraceOrLogicalNot(value.ToTypeOf<string>());
+        }
+
         private EvaluationResult? TransformExpression(EvaluationToken token, string expressionText, EvaluationMode evaluationMode, IEvaluationScope scope)
         {
             _context.WriteDebugFor<JoltTransformer<TContext>>($"Transforming expression '{expressionText}' in '{evaluationMode}' mode.");
@@ -221,9 +235,25 @@ namespace Jolt
 
             if (!_context.ExpressionParser.TryParseExpression(actualTokens, _context, out var expression))
             {
+                if (token.IsWithinStatementBlock)
+                {
+                    throw _context.CreateExecutionErrorFor<JoltTransformer<TContext>>(ExceptionCode.UnableToUseNonStatementExpressionWithinStatementBlock, expressionText);
+                }
+
                 _context.WriteInfoFor<JoltTransformer<TContext>>($"Expression '{expressionText}' could not be parsed, skipping transformation.");
 
                 return new EvaluationResult(token.PropertyName, null, token.CurrentTransformerToken);
+            }
+
+            // Checking the whole statement up front means that where a statement is used is verified whether or
+            // not it would have been reached, and before anything that it changes has been changed.
+
+            if (token.StatementVariableName != null)
+            {
+                foreach (var violation in StatementRules.GetViolationsFor(expression!, token.StatementVariableName, x => scope.ContainsVariable(x)))
+                {
+                    throw _context.CreateExecutionErrorFor<JoltTransformer<TContext>>(violation.Code, violation.Parameters);
+                }
             }
 
             var evaluationContext = new EvaluationContext(

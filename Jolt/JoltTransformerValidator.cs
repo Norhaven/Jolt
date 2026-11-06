@@ -1,6 +1,7 @@
 using Jolt.Evaluation;
 using Jolt.Exceptions;
 using Jolt.Expressions;
+using Jolt.Extensions;
 using Jolt.Parsing;
 using Jolt.Structure;
 using System;
@@ -16,6 +17,7 @@ namespace Jolt
     public sealed class JoltTransformerValidator<TContext> where TContext : IJsonContext
     {
         private const string TransformWithMethodName = "transformWith";
+        private const string UsingMethodName = "using";
 
         private readonly TContext _context;
 
@@ -88,12 +90,21 @@ namespace Jolt
 
                         if (property.Value != null)
                         {
-                            foreach (var issue in ValidateValue(property.Value, childScope))
+                            var issues = IsUsingBlock(nameMethodCall, out var usingVariableName)
+                                ? ValidateStatements(property.Value, usingVariableName!, childScope)
+                                : ValidateValue(property.Value, childScope);
+
+                            foreach (var issue in issues)
                                 yield return issue;
                         }
 
                         valueAlreadyHandled = true;
                     }
+
+                    // The root is covered by the property name check, but any statements within its arguments aren't.
+
+                    foreach (var statement in StatementRules.FindStatementsWithin(nameExpression).Where(x => !ReferenceEquals(x, nameExpression)))
+                        yield return StatementOutsideOfUsingBlockIssue(statement, property.FullPath, EvaluationMode.PropertyName);
                 }
             }
 
@@ -106,6 +117,82 @@ namespace Jolt
                     yield return issue;
             }
         }
+
+        private static bool IsUsingBlock(MethodCallExpression methodCall, out string? usingVariableName)
+        {
+            usingVariableName = default;
+
+            if (!methodCall.Signature.IsSystemMethod || methodCall.Signature.Alias != UsingMethodName)
+            {
+                return false;
+            }
+
+            usingVariableName = methodCall.ParameterValues.OfType<VariableAliasExpression>().FirstOrDefault()?.AliasVariable.Name;
+
+            return usingVariableName != null;
+        }
+
+        private IEnumerable<ValidationIssue> ValidateStatements(IJsonToken statements, string usingVariableName, ValidationScope scope)
+        {
+            if (statements.Type != JsonTokenType.Array)
+            {
+                yield return StatementIssue(new StatementViolation(ExceptionCode.UnableToPerformUsingLibraryCallOnNonArrayToken, default, statements.Type), statements.FullPath, UsingMethodName);
+                yield break;
+            }
+
+            foreach (var statement in statements.AsArray())
+            {
+                // A JSON null may not have a token of its own, depending on the JSON library in use.
+
+                var path = statement?.FullPath ?? statements.FullPath;
+                var text = statement is IJsonValue value && value.ValueType == JsonValueType.String ? value.ToTypeOf<string>() : default;
+
+                if (text is null || !_context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracketOrOpenCurlyBraceOrLogicalNot(text))
+                {
+                    var description = text ?? statement?.ToString() ?? "null";
+
+                    yield return StatementIssue(new StatementViolation(ExceptionCode.UnableToUseNonStatementExpressionWithinStatementBlock, default, description), path, description);
+                    continue;
+                }
+
+                if (!TryReadAndParseExpression(path, text, EvaluationMode.PropertyValue, out var expression, out var issue))
+                {
+                    yield return issue!;
+                    continue;
+                }
+
+                if (expression is null)
+                {
+                    continue;
+                }
+
+                foreach (var violation in StatementRules.GetViolationsFor(expression, usingVariableName, scope.IsVariableDeclared))
+                    yield return StatementIssue(violation, path, text);
+
+                foreach (var validationIssue in ValidateExpression(expression, EvaluationMode.PropertyValue, scope, path))
+                    yield return validationIssue;
+            }
+        }
+
+        private ValidationIssue StatementIssue(StatementViolation violation, string path, string symbol) =>
+            new ValidationIssue(
+                ValidationIssueType.InvalidMethodContext,
+                violation.Code,
+                _context.CreateExecutionErrorFor<JoltTransformerValidator<TContext>>(violation.Code, violation.Parameters).Message,
+                path,
+                symbol,
+                false,
+                violation.Span);
+
+        private ValidationIssue StatementOutsideOfUsingBlockIssue(MethodCallExpression statement, string path, EvaluationMode mode) =>
+            new ValidationIssue(
+                ValidationIssueType.InvalidMethodContext,
+                ExceptionCode.UnableToUseMethodOutsideOfStatementBlock,
+                _context.CreateExecutionErrorFor<JoltTransformerValidator<TContext>>(ExceptionCode.UnableToUseMethodOutsideOfStatementBlock, statement.Signature.Alias).Message,
+                path,
+                statement.Signature.Alias,
+                mode == EvaluationMode.PropertyName,
+                statement.Span);
 
         private static ValidationScope BuildChildScope(MethodCallExpression methodCall, ValidationScope scope)
         {
@@ -243,8 +330,13 @@ namespace Jolt
                             if (!TryReadAndParseExpression(token.FullPath, str, EvaluationMode.PropertyValue, out var expr, out var issue))
                                 yield return issue!;
                             else if (expr != null)
+                            {
+                                foreach (var statement in StatementRules.FindStatementsWithin(expr))
+                                    yield return StatementOutsideOfUsingBlockIssue(statement, token.FullPath, EvaluationMode.PropertyValue);
+
                                 foreach (var validationIssue in ValidateExpression(expr, EvaluationMode.PropertyValue, scope, token.FullPath))
                                     yield return validationIssue;
+                            }
                         }
                     }
 
@@ -387,8 +479,8 @@ namespace Jolt
                     methodCall.Span);
             }
 
-            // Statement-only methods are exempt from the property-value check because they legitimately
-            // appear in property-value position inside a #using block's statement array.
+            // Statement methods are exempt from the property-value check because where they
+            // may appear is decided by StatementRules, which has its own issues to report.
 
             if (contextMode == EvaluationMode.PropertyValue && !signature.IsAllowedAsPropertyValue && !signature.IsAllowedAsStatement)
             {

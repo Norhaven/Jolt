@@ -32,6 +32,27 @@ test('strings within a #using array are a statement block target', () => {
 
 test('method arguments within a statement are a property value target', () => {
 	assert.equal(contextAt('{ "#using($.a as @x) into \'r\'": [ "#when(#¦)" ] }')?.target, 'propertyValue');
+	assert.equal(contextAt('{ "#using($.a as @x) into \'r\'": [ "#setAt(#¦)" ] }')?.target, 'propertyValue');
+	assert.equal(contextAt('{ "#using($.a as @x) into \'r\'": [ "#setAt(@x.a, #¦)" ] }')?.target, 'propertyValue');
+	assert.equal(contextAt('{ "#using($.a as @x) into \'r\'": [ "#when(#a(1, 2) > (#¦" ] }')?.target, 'propertyValue');
+	assert.equal(contextAt('{ "#using($.a as @x) into \'r\'": [ "#when(true, #setAt(@x.a, #¦" ] }')?.target, 'propertyValue');
+	assert.equal(contextAt('{ "#using($.a as @x) into \'r\'": [ "#when(true, [#¦" ] }')?.target, 'propertyValue');
+});
+
+test('the statements of #when are a statement block target', () => {
+	assert.equal(contextAt('{ "#using($.a as @x) into \'r\'": [ "#when(true, #¦)" ] }')?.target, 'statementBlock');
+	assert.equal(contextAt('{ "#using($.a as @x) into \'r\'": [ "#when(#a(1, 2), #setAt(@x.a, 1), #¦" ] }')?.target, 'statementBlock');
+	assert.equal(contextAt('{ "#using($.a as @x) into \'r\'": [ "#when(true, #when(false, #¦" ] }')?.target, 'statementBlock');
+});
+
+test('parentheses around a statement are a statement block target', () => {
+	assert.equal(contextAt('{ "#using($.a as @x) into \'r\'": [ "(#¦" ] }')?.target, 'statementBlock');
+	assert.equal(contextAt('{ "#using($.a as @x) into \'r\'": [ "#when(true, (#¦" ] }')?.target, 'statementBlock');
+});
+
+test('piping within a #using array is not a statement block target', () => {
+	assert.equal(contextAt('{ "#using($.a as @x) into \'r\'": [ "@x.a->#¦" ] }')?.target, 'propertyValue');
+	assert.equal(contextAt('{ "#using($.a as @x) into \'r\'": [ "#when(true, @x.a?->#¦" ] }')?.target, 'propertyValue');
 });
 
 test('keys within a #match case list are a match block target', () => {

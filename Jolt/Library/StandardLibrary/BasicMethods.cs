@@ -31,6 +31,16 @@ namespace Jolt.Library.StandardLibrary
                 throw context.CreateExecutionErrorFor<BasicMethods>(ExceptionCode.UnableToParseEvalLibraryCallExpression, pathOrLiteral);
             }
 
+            // The text wasn't known when the statement it's within was checked, so it needs to be held to the same rules here.
+
+            if (context.Token.IsWithinStatementBlock)
+            {
+                foreach (var statement in StatementRules.FindStatementsWithin(expression))
+                {
+                    throw context.CreateExecutionErrorFor<BasicMethods>(ExceptionCode.UnableToUseMethodWithinNonRootStatementBlock, statement.Signature.Alias);
+                }
+            }
+
             var evaluationContext = new EvaluationContext(
                 context.Mode,
                 expression,

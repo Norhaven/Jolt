@@ -140,23 +140,49 @@ export function isMatchCase(property: Node): boolean {
 }
 
 function getTarget(node: Node, textBeforeCursor: string): MethodTarget {
+	const parent = node.parent;
+
+	if (parent?.type === 'array' && isValueOfKey(parent, /^#using\s*\(/) && isStatementPosition(textBeforeCursor)) {
+		return 'statementBlock';
+	}
+
 	// Arguments to a method call are always value expressions, regardless of where the call itself sits.
 	if (isWithinCallArguments(textBeforeCursor)) {
 		return 'propertyValue';
 	}
-
-	const parent = node.parent;
 
 	if (parent && isPropertyName(node)) {
 		// The keys of the single-property objects in a #match case list are match arms (#is, #given, #default).
 		return isMatchCase(parent) ? 'matchBlock' : 'propertyName';
 	}
 
-	if (parent?.type === 'array' && isValueOfKey(parent, /^#using\s*\(/)) {
-		return 'statementBlock';
-	}
-
 	return 'propertyValue';
+}
+
+/**
+ * Whether an entry of a #using array is at a place that takes a statement: its root, the parameters of #when after
+ * its condition, and within parentheses around either of those. Statements can't be piped into.
+ */
+function isStatementPosition(expression: string): boolean {
+	const groups: { isTransparent: boolean; isWhen: boolean; parameter: number }[] = [];
+
+	forEachOutsideLiterals(expression, i => {
+		const current = expression[i];
+
+		if (current === '(') {
+			const name = /#(\w+)\s*$/.exec(expression.slice(0, i))?.[1];
+
+			groups.push({ isTransparent: !name, isWhen: name === 'when', parameter: 0 });
+		} else if (current === '[' || current === '{') {
+			groups.push({ isTransparent: false, isWhen: false, parameter: 0 });
+		} else if (current === ')' || current === ']' || current === '}') {
+			groups.pop();
+		} else if (current === ',' && groups.length > 0) {
+			groups[groups.length - 1].parameter++;
+		}
+	});
+
+	return !/->\s*#?\w*$/.test(expression) && groups.every(x => x.isTransparent || (x.isWhen && x.parameter > 0));
 }
 
 function isValueOfKey(node: Node, keyPattern: RegExp): boolean {

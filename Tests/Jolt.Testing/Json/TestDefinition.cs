@@ -12,6 +12,7 @@ namespace Jolt.Testing.Json
         public IJsonObject Result { get; set; }
         public string ExceptionCode { get; set; }
         public string InnerExceptionCode { get; set; }
+        public string RootExceptionCode { get; set; }
         public string ExceptionType { get; set; }
     }
 }

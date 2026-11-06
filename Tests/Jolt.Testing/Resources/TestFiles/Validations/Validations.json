@@ -390,6 +390,197 @@
       "expectedIssues": [
         "ExpectedTokenButFoundEndOfExpression"
       ]
+    },
+    {
+      "name": "Statements with property value expressions as their values and conditions will succeed",
+      "transformer": {
+        "@outer": "#valueOf($.path)",
+        "#using($.someObject as @x) into 'result'": [
+          "#setAt(@x.first, @outer)",
+          "#setAt(@x.second, @x.first)",
+          "#setAt(@x.third, #valueOf($.path) + 1)",
+          "#setAt(@x.fourth, @x.first->#toString())",
+          "#setAt(@x.fifth, #if(@x.first == 1, @x.second, @outer))",
+          "#setAt(@x.sixth, @x)",
+          "#when(@x.first, #removeAt(@x.second))",
+          "#when(#exists(@x.first), #when(@outer, #setAt(@x.second, 1), #removeAt(@x.third)))",
+          "(#removeAt(@x.first))",
+          "#when(!@x.first, (#removeAt(@x.second)))"
+        ]
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Statement within a nested #foreach's using block will succeed",
+      "transformer": {
+        "#foreach(@item in $.someArray) into 'result'": [
+          {
+            "#using(@item as @x) into 'value'": [
+              "#setAt(@x.field, @item.other)"
+            ]
+          }
+        ]
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Issue: Non-statement method as a using entry fails",
+      "transformer": {
+        "#using($.someObject as @x) into 'result'": [ "#valueOf($.path)" ]
+      },
+      "expectedIssues": [
+        "UnableToUseMethodWithinStatementBlock"
+      ]
+    },
+    {
+      "name": "Issue: Variable as a using entry fails",
+      "transformer": {
+        "#using($.someObject as @x) into 'result'": [ "@x.field" ]
+      },
+      "expectedIssues": [
+        "UnableToUseNonStatementExpressionWithinStatementBlock"
+      ]
+    },
+    {
+      "name": "Issue: Parenthesized non-statement as a using entry fails",
+      "transformer": {
+        "#using($.someObject as @x) into 'result'": [ "(1 + 2)" ]
+      },
+      "expectedIssues": [
+        "UnableToUseNonStatementExpressionWithinStatementBlock"
+      ]
+    },
+    {
+      "name": "Issue: Non-expression using entries fail",
+      "transformer": {
+        "#using($.someObject as @x) into 'result'": [ "text", 5, true, null, { "property": "#setAt(@x.field, 5)" }, [ "#setAt(@x.field, 5)" ] ]
+      },
+      "expectedIssues": [
+        "UnableToUseNonStatementExpressionWithinStatementBlock",
+        "UnableToUseNonStatementExpressionWithinStatementBlock",
+        "UnableToUseNonStatementExpressionWithinStatementBlock",
+        "UnableToUseNonStatementExpressionWithinStatementBlock",
+        "UnableToUseNonStatementExpressionWithinStatementBlock",
+        "UnableToUseNonStatementExpressionWithinStatementBlock"
+      ]
+    },
+    {
+      "name": "Issue: Using block that isn't an array fails",
+      "transformer": {
+        "#using($.someObject as @x) into 'result'": "#setAt(@x.field, 5)"
+      },
+      "expectedIssues": [
+        "UnableToPerformUsingLibraryCallOnNonArrayToken"
+      ]
+    },
+    {
+      "name": "Issue: Piping into statements fails",
+      "transformer": {
+        "#using($.someObject as @x) into 'result'": [
+          "@x.field->#removeAt()",
+          "@x.field?->#setAt(5)",
+          "#when(@x.field, @x.other->#removeAt())"
+        ]
+      },
+      "expectedIssues": [
+        "UnableToPipeIntoStatementMethod",
+        "UnableToPipeIntoStatementMethod",
+        "UnableToPipeIntoStatementMethod"
+      ]
+    },
+    {
+      "name": "Issue: Paths that aren't a dereference of the using variable fail",
+      "transformer": {
+        "@outer": "#valueOf($.path)",
+        "#using($.someObject as @x) into 'result'": [
+          "#removeAt(@x)",
+          "#removeAt(#valueOf($.path))",
+          "#setAt(@outer, 5)",
+          "#setAt($.path, 5)",
+          "#setAt('field', 5)",
+          "#setAt(@x?.field, 5)"
+        ]
+      },
+      "expectedIssues": [
+        "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable",
+        "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable",
+        "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable",
+        "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable",
+        "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable",
+        "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+      ]
+    },
+    {
+      "name": "Issue: Dereference of a variable outside of the using block as a path fails",
+      "transformer": {
+        "@outer": "#valueOf($.path)",
+        "#using($.someObject as @x) into 'result'": [ "#when(false, #setAt(@outer.field, 5))" ]
+      },
+      "expectedIssues": [
+        "AttemptedToIndirectlyModifyVariableWithinUsingBlock"
+      ]
+    },
+    {
+      "name": "Issue: Non-statements given to #when fail",
+      "transformer": {
+        "#using($.someObject as @x) into 'result'": [
+          "#when(false, #valueOf($.path))",
+          "#when(false, @x)",
+          "#when(false, 1)",
+          "#when(false)"
+        ]
+      },
+      "expectedIssues": [
+        "AttemptedToUseNonStatementMethodWithinWhenLibraryCall",
+        "AttemptedToUseNonMethodExpressionWithinWhenLibraryCall",
+        "AttemptedToUseNonMethodExpressionWithinWhenLibraryCall",
+        "UnableToUseStatementMethodWithoutStatements"
+      ]
+    },
+    {
+      "name": "Issue: Statements nested within statement parameters fail",
+      "transformer": {
+        "#using($.someObject as @x) into 'result'": [
+          "#setAt(@x.first, #removeAt(@x.second))",
+          "#when(#removeAt(@x.first), #removeAt(@x.second))",
+          "#setAt(@x.first, #if(true, #removeAt(@x.second), 0))",
+          "#setAt(@x.first, { 'property': #removeAt(@x.second) })",
+          "#setAt(@x.first, @x.second ?? #removeAt(@x.third))",
+          "#setAt(@x.first, #valueOf($.someArray)->#select(@n: #setAt(@n.value, 1)))"
+        ]
+      },
+      "expectedIssues": [
+        "UnableToUseMethodWithinNonRootStatementBlock",
+        "UnableToUseMethodWithinNonRootStatementBlock",
+        "UnableToUseMethodWithinNonRootStatementBlock",
+        "UnableToUseMethodWithinNonRootStatementBlock",
+        "UnableToUseMethodWithinNonRootStatementBlock",
+        "UnableToUseMethodWithinNonRootStatementBlock"
+      ]
+    },
+    {
+      "name": "Issue: Statements outside of a using block fail",
+      "transformer": {
+        "@outer": "#valueOf($.path)",
+        "first": "#setAt(@outer.field, 5)",
+        "second": "#removeAt(@outer.field)",
+        "third": "#when(true, #removeAt(@outer.field))",
+        "fourth": "#if(true, #removeAt(@outer.field), 0)",
+        "fifth": "@outer ?? #removeAt(@outer.field)",
+        "sixth": "{ 'property': #removeAt(@outer.field) }",
+        "seventh": [ "#removeAt(@outer.field)" ],
+        "#includeIf(#if(true, #removeAt(@outer.field), false)) into 'eighth'": { "value": 1 }
+      },
+      "expectedIssues": [
+        "UnableToUseMethodOutsideOfStatementBlock",
+        "UnableToUseMethodOutsideOfStatementBlock",
+        "UnableToUseMethodOutsideOfStatementBlock",
+        "UnableToUseMethodOutsideOfStatementBlock",
+        "UnableToUseMethodOutsideOfStatementBlock",
+        "UnableToUseMethodOutsideOfStatementBlock",
+        "UnableToUseMethodOutsideOfStatementBlock",
+        "UnableToUseMethodOutsideOfStatementBlock"
+      ]
     }
   ]
 }

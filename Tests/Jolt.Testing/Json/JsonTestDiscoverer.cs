@@ -62,7 +62,8 @@ namespace Jolt.Testing.Json
                             ExternalMethodSource = testGroup.ExternalMethodSource,
                             ExceptionCode = test.ExceptionCode,
                             ExceptionType = test.ExceptionType,
-                            InnerExceptionCode = test.InnerExceptionCode
+                            InnerExceptionCode = test.InnerExceptionCode,
+                            RootExceptionCode = test.RootExceptionCode
                         };
 
                         LogDiagnostic($"[DISCOVERY] Created test case: '{endToEndTest.Name}' with:\nSource - {endToEndTest.Source}\nTransformer - {endToEndTest.Transformer}\nResult - {endToEndTest.Result}");

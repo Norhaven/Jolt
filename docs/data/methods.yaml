@@ -101,7 +101,7 @@ methods:
     summary: Evaluates one of two expressions depending on a boolean condition.
     signature: "#if(condition, whenTrue, whenFalse)"
     parameters:
-      - { name: condition, type: boolean, description: "The condition to test." }
+      - { name: condition, type: boolean, description: "Any property value expression that does not contain a statement." }
       - { name: whenTrue, type: any, description: "Evaluated and returned when the condition is true." }
       - { name: whenFalse, type: any, description: "Evaluated and returned when the condition is false." }
     returns: { type: any }
@@ -224,8 +224,8 @@ methods:
     summary: Adds or modifies a JSON node at a variable-based path, creating missing parents.
     signature: "#setAt(@variable.path, value)"
     parameters:
-      - { name: target, type: path, description: "A path rooted at the `#using` variable." }
-      - { name: value, type: any, description: "A literal, outer variable, or non-statement method result." }
+      - { name: target, type: path, description: "A dereference of the `#using` variable, such as `@x.some.path`." }
+      - { name: value, type: any, description: "Any property value expression that does not contain a statement." }
     validIn: [statement]
     examples:
       - title: Set a deep value
@@ -237,7 +237,7 @@ methods:
     summary: Removes a JSON node at a variable-based path.
     signature: "#removeAt(@variable.path)"
     parameters:
-      - { name: target, type: path, description: "A path rooted at the `#using` variable." }
+      - { name: target, type: path, description: "A dereference of the `#using` variable, such as `@x.some.path`." }
     validIn: [statement]
     examples:
       - title: Remove a property
@@ -249,7 +249,7 @@ methods:
     summary: Executes one or more statements when a boolean expression is true.
     signature: "#when(condition, statement, ...statements)"
     parameters:
-      - { name: condition, type: boolean, description: "The condition to test." }
+      - { name: condition, type: boolean, description: "Any property value expression that does not contain a statement." }
       - { name: statements, type: statement, description: "One or more statements to run." }
     validIn: [statement]
     examples:

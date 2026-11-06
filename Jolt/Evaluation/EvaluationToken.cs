@@ -16,10 +16,11 @@ namespace Jolt.Evaluation
         public SourceToken? CurrentSource { get; }
         public bool IsPendingValueEvaluation { get; }
         public RangeVariable? ParentRangeVariable { get; }
-        public bool IsWithinStatementBlock { get; }
+        public string? StatementVariableName { get; }
+        public bool IsWithinStatementBlock => StatementVariableName != null;
         public bool IsWithinMatchBlock { get; }
 
-        public EvaluationToken(string? propertyName, string? resolvedPropertyName, IJsonToken? parentToken, IJsonToken currentTransformerToken, SourceToken? currentSource = null, bool isPendingValueEvaluation = false, RangeVariable? parentRangeVariable = null, bool isWithinStatementBlock = false, bool isWithinMatchBlock = false)
+        public EvaluationToken(string? propertyName, string? resolvedPropertyName, IJsonToken? parentToken, IJsonToken currentTransformerToken, SourceToken? currentSource = null, bool isPendingValueEvaluation = false, RangeVariable? parentRangeVariable = null, string? statementVariableName = null, bool isWithinMatchBlock = false)
         {
             PropertyName = propertyName;
             ResolvedPropertyName = resolvedPropertyName;
@@ -28,12 +29,12 @@ namespace Jolt.Evaluation
             CurrentSource = currentSource;
             IsPendingValueEvaluation = isPendingValueEvaluation;
             ParentRangeVariable = parentRangeVariable;
-            IsWithinStatementBlock = isWithinStatementBlock;
+            StatementVariableName = statementVariableName;
             IsWithinMatchBlock = isWithinMatchBlock;
         }
 
         public EvaluationToken(EvaluationToken token, IJsonToken currentTransformerToken, SourceToken? currentSource = null)
-            : this(token.PropertyName, token.ResolvedPropertyName, token.ParentToken, currentTransformerToken, currentSource, token.IsPendingValueEvaluation, token.ParentRangeVariable, token.IsWithinStatementBlock, token.IsWithinMatchBlock)
+            : this(token.PropertyName, token.ResolvedPropertyName, token.ParentToken, currentTransformerToken, currentSource, token.IsPendingValueEvaluation, token.ParentRangeVariable, token.StatementVariableName, token.IsWithinMatchBlock)
         {
         }
     }

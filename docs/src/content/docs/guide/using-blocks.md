@@ -85,7 +85,7 @@ As with `#foreach`, you can send a `#using` block's output into a variable inste
 
 ## Values from outside the block
 
-`#setAt` values can come from an outer-scoped variable or a non-statement method call, the same as a `#when` condition can.
+A `#setAt` value or a `#when` condition can be any property value expression, such as a literal, an outer-scoped variable, a dereference of the `#using` variable, or a non-statement method call.
 
 ```jolt
 {
@@ -97,3 +97,12 @@ As with `#foreach`, you can send a `#using` block's output into a variable inste
     ]
 }
 ```
+
+## Where statements are allowed
+
+Statements only work in two places: as an entry in a `#using` array, and as one of the statements given to `#when`. Anywhere else is an error, and that's checked whether or not the statement would have been reached.
+
+- Each entry in the array must be a single statement. Parentheses around it are fine, but other expressions, literals, and nested objects or arrays aren't.
+- A statement must be called directly, so `@x.path->#removeAt()` isn't allowed.
+- The path given to `#setAt` or `#removeAt` must be a dereference of the `#using` variable, such as `@x.some.path`. It can't be computed, null-safe (`@x?.path`), or the variable on its own.
+- A `#setAt` value or `#when` condition can't contain a statement, however deeply it's nested.

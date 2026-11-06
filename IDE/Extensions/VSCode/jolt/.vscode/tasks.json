@@ -17,6 +17,40 @@
 			"presentation": {
 				"reveal": "silent"
 			}
+		},
+		{
+			// Rebuilds everything the extension is built from, in order: Jolt and its library method list (which the
+			// metadata tool reads from the built library), the language server published into ./server, and the extension.
+			"label": "Build Extension With Latest Jolt",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"Build Library Method Metadata",
+				"Build Language Server",
+				"Build Extension"
+			],
+			"problemMatcher": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"label": "Build Library Method Metadata",
+			"type": "npm",
+			"script": "build-metadata",
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "Build Language Server",
+			"type": "npm",
+			"script": "build-server",
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "Build Extension",
+			"type": "npm",
+			"script": "compile",
+			"problemMatcher": "$tsc"
 		}
 	]
 }

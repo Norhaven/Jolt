@@ -69,7 +69,11 @@ Each entry in `data/methods.yaml` becomes one page, a row in the [all methods](.
 
 ## Examples are tests
 
-Every example with `source`, `transformer`, and `output` is exported to `src/generated/doc-examples.json` when the site builds. `tests-template/DocExamplesTests.cs` shows how to run them as xUnit tests against the real engine, so a documented example that drifts from actual behavior fails the build.
+Every example with `source`, `transformer`, and `output` is exported to `src/generated/doc-examples.json` when the site builds. `DocExampleTests` in `Tests/Jolt.Testing.Harness` runs each one against the real engine, with both the System.Text.Json and Newtonsoft libraries, so a documented example that drifts from actual behavior fails the build. Run `npm run generate` in `docs/` before `dotnet test` so the tests have the latest examples.
+
+## Methods are checked against the engine
+
+`npm run generate` also compares `methods.yaml` with the library methods the engine registers, read from `IDE/Extensions/VSCode/jolt/src/data/library-methods.json` (regenerate it with `dotnet run --project IDE/Tools/Jolt.LanguageMetadata`). It fails when a library method isn't documented, a documented method doesn't exist, or `unsafe` doesn't match. A `validIn` that differs from where the engine accepts the method is reported as a warning.
 
 ## The playground
 

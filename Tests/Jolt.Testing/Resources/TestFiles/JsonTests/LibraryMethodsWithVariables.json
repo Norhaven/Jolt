@@ -674,6 +674,417 @@
           "rootExceptionCode": "usedNonStatementMethodInWhen"
         },
         {
+          "name": "#when method fails with non-statement method call error when condition is false",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#when(!#valueOf($.booleanValue), #valueOf($.integerValue))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "usedNonStatementMethodInWhen"
+        },
+        {
+          "name": "#when method fails with non-method expression as a statement when condition is false",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#when(!#valueOf($.booleanValue), @x.first)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToUseNonMethodExpressionWithinWhenLibraryCall"
+        },
+        {
+          "name": "#when method fails without any statements",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#when(#valueOf($.booleanValue))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseStatementMethodWithoutStatements"
+        },
+        {
+          "name": "#when method works with a nested #when statement",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#when(#valueOf($.booleanValue), #when(@x.second == 2, #removeAt(@x.first)))" ]
+          },
+          "result": {
+            "resultObject": {
+              "second": 2,
+              "third": [ 1, 2, 3 ]
+            }
+          }
+        },
+        {
+          "name": "Parentheses around a statement are allowed",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [
+              "(#removeAt(@x.first))",
+              "((#setAt(@x.second, 5)))",
+              "#when(#valueOf($.booleanValue), (#setAt(@x.added, 'new value')))"
+            ]
+          },
+          "result": {
+            "resultObject": {
+              "second": 5,
+              "third": [ 1, 2, 3 ],
+              "added": "new value"
+            }
+          }
+        },
+        {
+          "name": "#setAt allows any property value expression as its value",
+          "transformer": {
+            "@outer": "#valueOf($.integerValue)",
+            "#using($.testObject as @x) into 'resultObject'": [
+              "#setAt(@x.fromVariable, @outer)",
+              "#setAt(@x.fromDereference, @x.second)",
+              "#setAt(@x.fromArithmetic, @x.second * 2 + @outer)",
+              "#setAt(@x.fromPipe, @x.third->#length())",
+              "#setAt(@x.fromConditional, #if(@x.second == 2, 'two', 'other'))",
+              "#setAt(@x.fromLambda, @x.third->#where(@n: @n > 1))",
+              "#setAt(@x.fromArrayLiteral, [ @x.second, @outer ])",
+              "#setAt(@x.fromObjectLiteral, { 'second': @x.second })",
+              "#setAt(@x.fromCoalesce, @x.missing ?? @x.first)",
+              "#removeAt(@x.third)"
+            ]
+          },
+          "result": {
+            "resultObject": {
+              "first": "value",
+              "second": 2,
+              "fromVariable": 1,
+              "fromDereference": 2,
+              "fromArithmetic": 5,
+              "fromPipe": 3,
+              "fromConditional": "two",
+              "fromLambda": [ 2, 3 ],
+              "fromArrayLiteral": [ 2, 1 ],
+              "fromObjectLiteral": { "second": 2 },
+              "fromCoalesce": "value"
+            }
+          }
+        },
+        {
+          "name": "#setAt allows the using variable itself as its value",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [
+              "#removeAt(@x.third)",
+              "#setAt(@x.copy, @x)"
+            ]
+          },
+          "result": {
+            "resultObject": {
+              "first": "value",
+              "second": 2,
+              "copy": {
+                "first": "value",
+                "second": 2
+              }
+            }
+          }
+        },
+        {
+          "name": "A method that isn't a statement fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#valueOf($.integerValue)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinStatementBlock"
+        },
+        {
+          "name": "A variable fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "@x.first" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "A parenthesized expression that isn't a statement fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "(1 + 2)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "A parenthesized statement within a larger expression fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "(#setAt(@x.first, 1)) == 1" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "A negated statement fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "!#removeAt(@x.first)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "An array literal fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "[ #removeAt(@x.first) ]" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "A plain string fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "text" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "A number fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ 5 ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "A null fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ null ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "A JSON object fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ { "property": "#setAt(@x.first, 1)" } ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "A JSON array fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ [ "#setAt(@x.first, 1)" ] ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "A nested using block fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ { "#using($.testObject as @y) into 'other'": [ "#setAt(@y.first, 1)" ] } ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "Indexing a statement fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x.first, 1)[0]" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "Piping into #removeAt fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "@x.first->#removeAt()" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToPipeIntoStatementMethod"
+        },
+        {
+          "name": "Piping into #setAt fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "@x.first?->#setAt(1)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToPipeIntoStatementMethod"
+        },
+        {
+          "name": "Piping into a statement within #when fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#when(!#valueOf($.booleanValue), @x.first->#removeAt())" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToPipeIntoStatementMethod"
+        },
+        {
+          "name": "Piping a statement's result fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x.first, 1)->#toString()" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinStatementBlock"
+        },
+        {
+          "name": "#removeAt fails with the using variable itself as a path",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#removeAt(@x)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+        },
+        {
+          "name": "#removeAt fails with a method call as a path",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#removeAt(#valueOf($.stringValue))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+        },
+        {
+          "name": "#setAt fails with a variable holding a string as a path",
+          "transformer": {
+            "@path": "#valueOf($.stringValue)",
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@path, 1)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+        },
+        {
+          "name": "#setAt fails with a JSON path as a path",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt($.testObject.first, 1)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+        },
+        {
+          "name": "#setAt fails with a literal as a path",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt('first', 1)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+        },
+        {
+          "name": "#setAt fails with a null-safe dereference as a path",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x?.first, 1)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+        },
+        {
+          "name": "#setAt fails with a dereference of a variable outside of the using block as a path, even if it's not reached",
+          "transformer": {
+            "@outer": "#valueOf($.testObject)",
+            "#using($.testObject as @x) into 'resultObject'": [ "#when(!#valueOf($.booleanValue), #setAt(@outer.first, 1))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToIndirectlyModifyVariableWithinUsingBlock"
+        },
+        {
+          "name": "A statement as the value of #setAt fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x.first, #removeAt(@x.second))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinNonRootStatementBlock"
+        },
+        {
+          "name": "A statement as the condition of #when fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#when(#removeAt(@x.second), #removeAt(@x.first))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinNonRootStatementBlock"
+        },
+        {
+          "name": "A statement within a branch of #if fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x.first, #if(true, #removeAt(@x.second), 0))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinNonRootStatementBlock"
+        },
+        {
+          "name": "A statement within the unreached branch of #if fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x.first, #if(true, 0, #removeAt(@x.second)))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinNonRootStatementBlock"
+        },
+        {
+          "name": "A statement within the body of #try fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x.first, #try(#removeAt(@x.second), @e: 0))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinNonRootStatementBlock"
+        },
+        {
+          "name": "A statement within a lambda fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x.first, @x.third->#select(@n: #setAt(@n.value, 1)))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinNonRootStatementBlock"
+        },
+        {
+          "name": "A statement within an object literal fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x.first, { 'property': #removeAt(@x.second) })" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinNonRootStatementBlock"
+        },
+        {
+          "name": "A statement within the right side of a null coalesce fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x.first, @x.second ?? #removeAt(@x.third))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinNonRootStatementBlock"
+        },
+        {
+          "name": "#setAt as a property value fails",
+          "transformer": {
+            "@outer": "#valueOf($.testObject)",
+            "result": "#setAt(@outer.first, 1)"
+          },
+          "exceptionCode": "UnableToUseMethodOutsideOfStatementBlock"
+        },
+        {
+          "name": "#removeAt as a property value fails",
+          "transformer": {
+            "@outer": "#valueOf($.testObject)",
+            "result": "#removeAt(@outer.first)"
+          },
+          "exceptionCode": "UnableToUseMethodOutsideOfStatementBlock"
+        },
+        {
+          "name": "#when as a property value fails",
+          "transformer": {
+            "result": "#when(false, #valueOf($.integerValue))"
+          },
+          "exceptionCode": "UnableToUseMethodOutsideOfStatementBlock"
+        },
+        {
+          "name": "A statement as an entry in an ordinary array fails",
+          "transformer": {
+            "@outer": "#valueOf($.testObject)",
+            "result": [ "#removeAt(@outer.first)" ]
+          },
+          "exceptionCode": "UnableToUseMethodOutsideOfStatementBlock"
+        },
+        {
+          "name": "A statement as a property name fails",
+          "transformer": {
+            "@outer": "#valueOf($.testObject)",
+            "#setAt(@outer.first, 1)": 5
+          },
+          "exceptionCode": "invalidMethodUseInPropertyName"
+        },
+        {
+          "name": "A statement within a method call in a property value fails",
+          "transformer": {
+            "@outer": "#valueOf($.testObject)",
+            "result": "#if(true, #setAt(@outer.first, 1), 0)"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodOutsideOfStatementBlock"
+        },
+        {
           "name": "#when method works with #setAt/#removeAt when condition is true",
           "transformer": {
             "#using($.testObject as @x) into 'resultObject'": [

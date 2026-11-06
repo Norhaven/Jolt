@@ -30,6 +30,8 @@ npm run engine   # dotnet publish playground/ and copy it into public/playground
 
 Library pages under `src/content/docs/reference/library/` are generated from `data/methods.yaml` before every `dev` and `build` (`npm run generate` to do it by hand). They're gitignored; don't edit them.
 
-Examples in `methods.yaml` that have `source`, `transformer` and `output` are also exported to `src/generated/doc-examples.json`. `tests-template/DocExamplesTests.cs` runs them against the engine as xUnit tests.
+Generating also checks `methods.yaml` against the engine's library methods (from `IDE/Extensions/VSCode/jolt/src/data/library-methods.json`, which `IDE/Tools/Jolt.LanguageMetadata` builds from the Jolt assembly). A method that's undocumented, unknown, or marked unsafe differently fails generation; a different `validIn` is a warning.
+
+Examples in `methods.yaml` that have `source`, `transformer` and `output` are also exported to `src/generated/doc-examples.json`. `DocExampleTests` in `Tests/Jolt.Testing.Harness` runs them against the engine with both JSON libraries, so run `npm run generate` before `dotnet test`.
 
 Deployment: `.github/workflows/docs.yml` builds and publishes on every push to `main` that touches `docs/`. Set **Settings → Pages → Source** to **GitHub Actions** once.

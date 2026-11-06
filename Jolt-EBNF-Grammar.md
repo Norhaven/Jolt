@@ -454,7 +454,9 @@ pattern-capture
 ### ══════════════════════════════════════════════════════════════════
 
 ### The value paired with a using-key is a JSON array of statement
-### strings.  Statements are only valid in this position.
+### strings.  Statements are only valid in this position and as the
+### statements of a when-stmt.  They are never piped into, and any
+### other kind of entry in the array is an error.
 
 statement-block
     = "[" [ '"' statement '"' { "," '"' statement '"' } ] "]"
@@ -464,14 +466,15 @@ statement
     = remove-at-stmt
     | set-at-stmt
     | when-stmt
+    | "(" statement ")"     (* parentheses are discarded *)
     ;
 
 remove-at-stmt
     = "#removeAt" "(" var-path ")"
     ;
 
-### set-at now accepts outer-scope variables and method calls as its
-### value argument, not only literals.
+### set-at accepts any value-expression as its value argument, as long
+### as it doesn't contain a statement at any depth.
 set-at-stmt
     = "#setAt" "(" var-path "," set-at-value ")"
     ;
@@ -480,15 +483,17 @@ set-at-value
     = value-expression     (* includes var-references, method calls, literals *)
     ;
 
-### when executes one or more statements conditionally.
+### when executes one or more statements conditionally.  Its condition
+### may not contain a statement at any depth.
 when-stmt
     = "#when" "(" value-expression "," statement { "," statement } ")"
     ;
 
-### A var-path is a scoped variable followed by dot-separated property
-### steps (which may not yet exist — setAt creates missing nodes).
+### A var-path is the using-key's variable followed by dot-separated
+### property steps (which may not yet exist — setAt creates missing
+### nodes).  It has at least one step, and none of them are null-safe.
 var-path
-    = var-name { ( "." | "?." ) property-name }
+    = var-name "." property-name { "." property-name }
     ;
 
 
@@ -724,7 +729,7 @@ json-number
 ###   given(expr)                         — match-arm key only
 ###   default()                           — match-arm key only
 #
-### ── Mutation Statements (using-block only) ────────────────────────
+### ── Mutation Statements (using-block and when statements only) ───
 ###   removeAt(@x.path)
 ###   setAt(@x.path, value-expression)
 ###   when(cond, stmt {, stmt})

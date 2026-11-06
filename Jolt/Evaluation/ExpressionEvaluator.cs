@@ -582,7 +582,9 @@ namespace Jolt.Evaluation
                 throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMethodWithinPropertyName, call.Signature.Alias);
             }
 
-            if (context.Mode == EvaluationMode.PropertyValue && !call.Signature.IsAllowedAsPropertyValue)
+            // Statements are evaluated in property value mode, but where they may appear is decided by StatementRules.
+
+            if (context.Mode == EvaluationMode.PropertyValue && !call.Signature.IsAllowedAsPropertyValue && !call.Signature.IsAllowedAsStatement)
             {
                 throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMethodWithinPropertyValue, call.Signature.Alias);
             }
@@ -592,19 +594,9 @@ namespace Jolt.Evaluation
                 throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMatchCaseMethodOutsideOfMatchBlock, call.Signature.Alias);
             }
 
-            if (isRootExpression && context.Mode == EvaluationMode.PropertyValue && context.Token.IsWithinStatementBlock && !call.Signature.IsAllowedAsStatement)
-            {
-                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMethodWithinStatementBlock, call.Signature.Alias);
-            }
-
             if (isRootExpression && context.Mode == EvaluationMode.PropertyName && context.Token.IsWithinMatchBlock && !call.Signature.IsAllowedAsMatchCase)
             {
                 throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMethodWithinMatchBlock, call.Signature.Alias);
-            }
-
-            if (!isRootExpression && context.Token.IsWithinStatementBlock && call.Signature.IsAllowedAsStatement)
-            {
-                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToUseMethodWithinNonRootStatementBlock, call.Signature.Alias);
             }
 
             if (!context.Token.IsWithinStatementBlock && call.Signature.IsAllowedAsStatement)

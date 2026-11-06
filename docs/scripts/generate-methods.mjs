@@ -23,6 +23,9 @@ const detailsDir = path.join(root, 'data/method-details');
 const pagesDir = path.join(root, 'src/content/docs/reference/library');
 const generatedDir = path.join(root, 'src/generated');
 
+// The engine's registered library methods, generated from the Jolt assembly by IDE/Tools/Jolt.LanguageMetadata.
+const libraryManifestFile = path.join(root, '../IDE/Extensions/VSCode/jolt/src/data/library-methods.json');
+
 const REPO_EDIT_URL = 'https://github.com/Norhaven/Jolt/edit/main/docs/data/methods.yaml';
 
 // Method pages live at /reference/library/<name>/, so this reaches the site root.
@@ -36,6 +39,14 @@ const VALID_IN = {
 	'property-name': 'Property name',
 	statement: 'Statement',
 	'match-case': 'Match case',
+};
+
+// The library manifest's validOn names for each validIn value.
+const LIBRARY_VALID_ON = {
+	propertyValue: 'property-value',
+	propertyName: 'property-name',
+	statementBlock: 'statement',
+	matchBlock: 'match-case',
 };
 
 // ── Load and validate ────────────────────────────────────────────────
@@ -70,10 +81,48 @@ for (const m of methods) {
 		if (!byName.has(String(r).toLowerCase())) errors.push(`method "${m.name}": related method "${r}" does not exist`);
 	}
 }
+checkAgainstLibrary();
 
 if (errors.length) {
 	console.error(`data/methods.yaml has ${errors.length} problem(s):\n  - ${errors.join('\n  - ')}`);
 	process.exit(1);
+}
+
+// ── Drift check ──────────────────────────────────────────────────────
+
+// Compares methods.yaml with the methods the engine actually registers, read from the manifest that
+// IDE/Tools/Jolt.LanguageMetadata generates from the Jolt assembly. A method missing from either side, or a
+// different unsafe flag, is an error. A different validIn is only a warning, since the docs may deliberately
+// list fewer places than the engine accepts.
+function checkAgainstLibrary() {
+	if (!fs.existsSync(libraryManifestFile)) {
+		console.warn(`warning: ${path.relative(root, libraryManifestFile)} not found, skipping the check against the engine's methods`);
+		return;
+	}
+
+	const library = new Map(JSON.parse(fs.readFileSync(libraryManifestFile, 'utf8')).methods.map((x) => [x.name, x]));
+	const documented = new Map(methods.filter((m) => m.name).map((m) => [m.name, m]));
+
+	for (const name of library.keys()) {
+		if (!documented.has(name)) errors.push(`library method "${name}" is not documented (add it to data/methods.yaml)`);
+	}
+
+	for (const [name, m] of documented) {
+		const actual = library.get(name);
+		if (!actual) {
+			errors.push(`method "${name}": not a library method (check the name's casing, or remove it if the method no longer exists)`);
+			continue;
+		}
+		if ((m.unsafe === true) !== actual.isUnsafe) {
+			errors.push(`method "${name}": unsafe is ${m.unsafe === true} here but ${actual.isUnsafe} in the library`);
+		}
+
+		const expected = actual.validOn.map((x) => LIBRARY_VALID_ON[x] ?? x).sort();
+		const given = [...(m.validIn ?? [])].sort();
+		if (expected.join() !== given.join()) {
+			console.warn(`warning: method "${name}": validIn is [${given.join(', ')}] but the library allows [${expected.join(', ')}]`);
+		}
+	}
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────

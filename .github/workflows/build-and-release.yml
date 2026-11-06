@@ -61,6 +61,18 @@ jobs:
       uses: NuGet/setup-nuget@v1.0.5      
     - name: "Set up VSTest"
       uses: darenm/Setup-VSTest@v1.3
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    # Generate the library reference examples (docs/src/generated/doc-examples.json) that DocExampleTests runs.
+    # This also fails the build if docs/data/methods.yaml has drifted from the engine's library methods.
+    - name: Generate documentation examples
+      working-directory: docs
+      run: |
+        npm ci
+        npm run generate
 
     # Restore packages
     - name: .NET Cross-platform Package Restore
