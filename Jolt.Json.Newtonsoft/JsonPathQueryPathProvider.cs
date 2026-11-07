@@ -18,6 +18,22 @@ namespace Jolt.Json.Newtonsoft
             return path?.StartsWith("$") == true;
         }
 
+        public override bool IsValidQueryPath(string path)
+        {
+            // Newtonsoft doesn't expose its path parser, but it runs as soon as a query is created and before anything is evaluated.
+
+            try
+            {
+                new JObject().SelectTokens(path);
+
+                return true;
+            }
+            catch (global::Newtonsoft.Json.JsonException)
+            {
+                return false;
+            }
+        }
+
         public override IJsonToken? SelectNodeAtPath(IEnumerable<IJsonToken> source, string queryPath, JsonQueryMode queryMode)
         {
             var queryToken = queryMode switch

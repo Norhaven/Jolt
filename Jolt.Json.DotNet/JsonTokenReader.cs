@@ -69,9 +69,7 @@ namespace Jolt.Json.DotNet
         {
             if (value is null)
             {
-                // System.Text.Json represents a JSON null as a null node, so this wraps one to give a null token rather than no token at all.
-
-                return new JsonValue(default);
+                return JsonValue.CreateNull();
             }
             else if (value is IJsonToken token)
             {

@@ -16,7 +16,13 @@ namespace Jolt.Json.Newtonsoft
         public IJsonToken? this[int index] 
         {
             get => _arrayElements[index];
-            set => _arrayElements[index] = value;
+            set
+            {
+                // Newtonsoft copies a token that already has a parent, so this needs to use what the array actually holds.
+
+                ((JArray)_token)[index] = (value as JsonToken)?.UnderlyingNode ?? JValue.CreateNull();
+                _arrayElements[index] = FromObject(((JArray)_token)[index]);
+            }
         }
 
         public JsonArrayElementType ElementTypes => _arrayElements.DetermineElementTypes();

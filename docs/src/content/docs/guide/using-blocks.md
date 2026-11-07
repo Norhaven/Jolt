@@ -57,7 +57,7 @@ Statements are allowed only inside a `#using` block, and they must operate on th
 
 ## Conditional statements
 
-[`#when`](../../reference/library/when/) takes a boolean expression and one or more statements to run when it's true.
+[`#when`](../../reference/library/when/) takes a boolean expression and one or more statements to run when it's true. A condition that gives null is an error, as described in [Missing and null values](#missing-and-null-values).
 
 ```jolt
 {
@@ -97,6 +97,30 @@ A `#setAt` value or a `#when` condition can be any property value expression, su
     ]
 }
 ```
+
+## Missing and null values
+
+Inside a statement's value or condition, a dereference follows the [same rules](../null-handling/#dereferencing-missing-and-null-properties) as anywhere else. A property that doesn't exist gives null, and dereferencing a property of a value that is null or missing throws error `JLT530`, unless you use `?.`.
+
+Statements see the changes made by earlier statements, so a property that an earlier `#setAt` created can be read, and one that an earlier `#removeAt` removed is missing.
+
+```jolt
+{
+    "#using($.some as @x) into 'result'": [
+        "#setAt(@x.first, @x.missing)",
+        "#setAt(@x.second, @x.missing?.path)",
+        "#setAt(@x.third, @x.missing?.path ?? 'default')",
+        "#when(@x.missing?.path ?? false, #removeAt(@x.integerArray))"
+    ]
+}
+```
+
+- A null `#setAt` value sets null at the path.
+- A null `#when` condition throws error `JLT580` rather than counting as false. Use `??` to choose what null should mean, as in the last statement above, or test for it with a method such as [`#exists`](../../reference/library/exists/).
+
+The path given to `#setAt` is different, because it says where to write rather than what to read. It creates any missing or null parts of the path.
+
+The path given to `#removeAt` must exist. A property whose value is null exists and is removed, while a property that doesn't exist throws error `JLT530`.
 
 ## Where statements are allowed
 

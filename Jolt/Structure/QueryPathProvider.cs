@@ -27,6 +27,8 @@ namespace Jolt.Structure
 
         public abstract bool IsQueryPath(string path);
 
+        public abstract bool IsValidQueryPath(string path);
+
         public abstract IJsonToken? SelectNodeAtPath(IEnumerable<IJsonToken> closureSources, string path, JsonQueryMode queryMode);
     }
 }

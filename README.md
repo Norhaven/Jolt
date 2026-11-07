@@ -496,7 +496,7 @@ This would output the following JSON:
 ```
 It's worth noting that statements are only allowed as an entry in a `using` block or as a statement given to `#when`, must be called directly rather than piped into, and must have a path that is a dereference of the scoped range variable specified there (e.g. `@x.some.path`). Values and conditions may be any property value expression that doesn't itself contain a statement. You may also notice that the `#setAt()` call was allowed to take a path that did not actually exist at the time of use. This is because that particular method will take care of creating the missing pieces of the JSON hierarchy for you if they don't currently exist.
 
-You can also conditionally execute statements within a `using` block by using the `#when` method, which takes a boolean expression and at least one statement method.
+You can also conditionally execute statements within a `using` block by using the `#when` method, which takes a boolean expression and at least one statement method. A condition that gives null is an error, so use the `??` operator to choose what null should mean when it might be missing (e.g. `#when(@x.missing?.path ?? false, ...)`).
 ```json
 {
     "#using($.some as @x) into 'result'": [

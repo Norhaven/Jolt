@@ -15,6 +15,13 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.PropertyName | LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? ValueOf(string path, EvaluationContext context)
         {
+            // A path written directly has already been checked by the parser, but it's only text at this point (e.g. "#valueOf('$.a')").
+
+            if (context.JsonContext.QueryPathProvider.IsQueryPath(path) && !context.JsonContext.QueryPathProvider.IsValidQueryPath(path))
+            {
+                throw context.JsonContext.CreateParsingErrorFor<BasicMethods>(ExceptionCode.UnableToParseJsonPath, path);
+            }
+
             // ValueOf will always start a search from the root, other similar methods may search differently.
 
             return context.JsonContext.QueryPathProvider.SelectNodeAtPath(context.Scope.AvailableClosures, path, JsonQueryMode.StartFromRoot);

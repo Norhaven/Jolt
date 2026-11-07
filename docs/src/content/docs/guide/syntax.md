@@ -43,6 +43,14 @@ Where an expression sits decides what it can do.
 { "total": "#sum($.items, @x: @x.price)" }
 ```
 
+An expression that's an element of an array works the same way, and its result takes the element's place. Other elements stay where they are:
+
+```jolt
+{ "summary": [ "total", "#sum($.items, @x: @x.price)", "#length($.items)" ] }
+```
+
+With [loose error handling](../error-handling/), an element whose expression fails becomes null, so that the elements after it keep their positions.
+
 **Property names** declare variables or introduce constructs that shape the output, such as `#foreach`, `#using`, `#match`, and `#includeIf`. The `into` keyword names the resulting property, or stores it in a variable.
 
 ```jolt
@@ -67,6 +75,22 @@ The arguments of a method in a property name are values, so any method you call 
     }
 }
 ```
+
+## JSON paths
+
+A path starts at `$` and selects a value from the source document. Everything inside square brackets is part of the path, so names and filters can contain spaces, commas and parentheses:
+
+```jolt
+{
+    "simple": "#valueOf($.order.items[0].sku)",
+    "bracketedName": "#valueOf($['some name'])",
+    "filtered": "#valueOf($.order.items[?(@.sku == 'abc')].price)"
+}
+```
+
+Outside of square brackets, a path ends at whitespace or at anything that can follow a value, such as `,`, `)`, `]`, `}` or an operator. That means `($.price*2)` and `[$.first,$.second]` work without spaces. A name containing one of those characters needs bracket notation, as in `$['a+b']`. A `-` stays part of the name, so subtraction needs spaces: `($.price - 1)`.
+
+A path that can't be parsed throws error `JLT581`, which validating the transformer also reports. Use a path that selects one value, because a path that matches several isn't handled the same way by the two JSON libraries yet, and neither are all of the less common forms of path syntax.
 
 ## Paths and values
 

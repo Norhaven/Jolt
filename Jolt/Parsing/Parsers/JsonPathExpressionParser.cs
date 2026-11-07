@@ -32,6 +32,13 @@ namespace Jolt.Parsing.Parsers
 
             if (isPath)
             {
+                var path = _reader.CurrentToken.Value;
+
+                if (!context.QueryPathProvider.IsValidQueryPath(path))
+                {
+                    throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToParseJsonPath, path);
+                }
+
                 _reader.ConsumeCurrent();
 
                 if (_reader.CurrentToken?.Category == ExpressionTokenCategory.As)

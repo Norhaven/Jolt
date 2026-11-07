@@ -56,12 +56,17 @@ namespace Jolt.Json.DotNet
         public string FullPath => _token?.GetPath() ?? string.Empty;
 
         public JsonToken(Nodes.JsonNode? token)
+            : this(token, JsonTokenType.Value)
+        {
+        }
+
+        protected JsonToken(Nodes.JsonNode? token, JsonTokenType typeWithoutNode)
         {
             _token = token;
 
             if (_token is null)
             {
-                Type = JsonTokenType.Value;
+                Type = typeWithoutNode;
             }
             else
             {
@@ -99,6 +104,11 @@ namespace Jolt.Json.DotNet
 
         public IJsonToken? Copy()
         {
+            if (_token is null && Type == JsonTokenType.Null)
+            {
+                return JsonValue.CreateNull();
+            }
+
             var copiedToken = _token?.DeepClone();
 
             return FromObject(copiedToken);
@@ -119,6 +129,13 @@ namespace Jolt.Json.DotNet
         {
             if (_token is null)
             {
+                // A JSON null can't become a value type, which would otherwise quietly give its default (e.g. zero).
+
+                if (Type == JsonTokenType.Null && default(T) != null)
+                {
+                    throw new InvalidCastException($"Unable to convert a JSON null to type '{typeof(T)}'");
+                }
+
                 return default;
             }
 
@@ -279,7 +296,7 @@ namespace Jolt.Json.DotNet
 
                     if (property.Value is null && otherValue is null)
                     {
-                        return true;
+                        continue;
                     }
 
                     if (property.Value?.DeepEquals(otherValue, comparers) != true)

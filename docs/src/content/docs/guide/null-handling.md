@@ -90,7 +90,7 @@ For a `$` path, put a default on the value before calling the method, or check f
 }
 ```
 
-[`#exists`](../../reference/library/exists/), [`#isMissing`](../../reference/library/ismissing/), [`#isNull`](../../reference/library/isnull/) and the type checks (`#isString`, `#isInteger`, `#isDecimal`, `#isBoolean`, `#isArray` and `#isObject`) never throw for missing or null values, because testing for them is what they're for. A condition in `#if` or `#when` that doesn't exist is treated as false.
+[`#exists`](../../reference/library/exists/), [`#isMissing`](../../reference/library/ismissing/), [`#isNull`](../../reference/library/isnull/) and the type checks (`#isString`, `#isInteger`, `#isDecimal`, `#isBoolean`, `#isArray` and `#isObject`) never throw for missing or null values, because testing for them is what they're for. A condition in `#if` that doesn't exist is treated as false, while a null condition in [`#when`](../../reference/library/when/) throws error `JLT580`.
 
 To recover from these errors instead, see [error handling](../error-handling/).
 

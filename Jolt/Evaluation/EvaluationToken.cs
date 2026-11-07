@@ -19,8 +19,9 @@ namespace Jolt.Evaluation
         public string? StatementVariableName { get; }
         public bool IsWithinStatementBlock => StatementVariableName != null;
         public bool IsWithinMatchBlock { get; }
+        public int? ParentArrayIndex { get; }
 
-        public EvaluationToken(string? propertyName, string? resolvedPropertyName, IJsonToken? parentToken, IJsonToken currentTransformerToken, SourceToken? currentSource = null, bool isPendingValueEvaluation = false, RangeVariable? parentRangeVariable = null, string? statementVariableName = null, bool isWithinMatchBlock = false)
+        public EvaluationToken(string? propertyName, string? resolvedPropertyName, IJsonToken? parentToken, IJsonToken currentTransformerToken, SourceToken? currentSource = null, bool isPendingValueEvaluation = false, RangeVariable? parentRangeVariable = null, string? statementVariableName = null, bool isWithinMatchBlock = false, int? parentArrayIndex = null)
         {
             PropertyName = propertyName;
             ResolvedPropertyName = resolvedPropertyName;
@@ -31,10 +32,11 @@ namespace Jolt.Evaluation
             ParentRangeVariable = parentRangeVariable;
             StatementVariableName = statementVariableName;
             IsWithinMatchBlock = isWithinMatchBlock;
+            ParentArrayIndex = parentArrayIndex;
         }
 
         public EvaluationToken(EvaluationToken token, IJsonToken currentTransformerToken, SourceToken? currentSource = null)
-            : this(token.PropertyName, token.ResolvedPropertyName, token.ParentToken, currentTransformerToken, currentSource, token.IsPendingValueEvaluation, token.ParentRangeVariable, token.StatementVariableName, token.IsWithinMatchBlock)
+            : this(token.PropertyName, token.ResolvedPropertyName, token.ParentToken, currentTransformerToken, currentSource, token.IsPendingValueEvaluation, token.ParentRangeVariable, token.StatementVariableName, token.IsWithinMatchBlock, token.ParentArrayIndex)
         {
         }
     }

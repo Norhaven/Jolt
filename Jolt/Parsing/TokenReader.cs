@@ -111,6 +111,119 @@ namespace Jolt.Parsing
         }
 
         /// <summary>
+        /// Reads a JSON path, which is passed on to the JSON library without being interpreted here. Anything within square brackets
+        /// is part of the path (e.g. "$['a b']" or "$.a[?(@.b > 1)]"). Outside of them, the path ends at whatever can follow a value.
+        /// A hyphen can be part of a name, but ends the path at the arrow operator of a piped method call, which is consumed as well.
+        /// </summary>
+        private static ExpressionToken TokenForPath(ITokenStream<char> stream, out bool isPiped)
+        {
+            const char DoubleQuote = '"';
+            const char Backslash = '\\';
+
+            var path = new StringBuilder();
+            var nesting = 0;
+            var quote = default(char?);
+
+            isPiped = false;
+
+            while (!stream.IsCompleted)
+            {
+                var current = stream.CurrentToken;
+
+                if (quote != null)
+                {
+                    path.Append(stream.ConsumeCurrent());
+
+                    if (current == Backslash && !stream.IsCompleted)
+                    {
+                        path.Append(stream.ConsumeCurrent());
+                    }
+                    else if (current == quote)
+                    {
+                        quote = default;
+                    }
+
+                    continue;
+                }
+
+                if (nesting == 0)
+                {
+                    if (EndsPath(current, path))
+                    {
+                        break;
+                    }
+
+                    if (current == ExpressionToken.ArrowBody)
+                    {
+                        stream.ConsumeCurrent();
+
+                        if (stream.CurrentToken == ExpressionToken.ArrowHead && !stream.IsCompleted)
+                        {
+                            stream.ConsumeCurrent();
+                            isPiped = true;
+
+                            break;
+                        }
+
+                        path.Append(ExpressionToken.ArrowBody);
+
+                        continue;
+                    }
+                }
+                else if (current == ExpressionToken.SingleQuote || current == DoubleQuote)
+                {
+                    quote = current;
+                }
+                else if (current == ExpressionToken.OpenParentheses)
+                {
+                    nesting++;
+                }
+                else if (current == ExpressionToken.CloseParentheses || current == ExpressionToken.CloseSquareBracket)
+                {
+                    nesting--;
+                }
+
+                if (current == ExpressionToken.OpenSquareBracket)
+                {
+                    nesting++;
+                }
+
+                path.Append(stream.ConsumeCurrent());
+            }
+
+            return new ExpressionToken(path.ToString(), ExpressionTokenCategory.PathLiteral);
+        }
+
+        private static bool EndsPath(char current, StringBuilder path)
+        {
+            switch (current)
+            {
+                case ExpressionToken.Comma:
+                case ExpressionToken.CloseParentheses:
+                case ExpressionToken.CloseSquareBracket:
+                case ExpressionToken.CloseCurlyBrace:
+                case ExpressionToken.Plus:
+                case ExpressionToken.ForwardSlash:
+                case ExpressionToken.Equal:
+                case ExpressionToken.Not:
+                case ExpressionToken.LessThan:
+                case ExpressionToken.GreaterThan:
+                case ExpressionToken.QuestionMark:
+                case ExpressionToken.And:
+                case ExpressionToken.Or:
+                    return true;
+
+                // A star right after a dot is a wildcard (e.g. "$.*"), and anywhere else it's a multiplication.
+
+                case ExpressionToken.Star:
+                    return path[path.Length - 1] != ExpressionToken.Dot;
+
+                default:
+                    return char.IsWhiteSpace(current);
+            }
+        }
+
+        /// <summary>
         /// Reads a dereferenced property name, which may contain a hyphen (e.g. "@x.first-name") but ends at the arrow operator
         /// of a piped method call (e.g. "@x.name->#trim()"), in which case the arrow operator is consumed as well.
         /// </summary>
@@ -626,7 +739,15 @@ namespace Jolt.Parsing
             }
             else if (stream.CurrentToken == ExpressionToken.DollarSign)
             {
-                yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.PathLiteral, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace);
+                yield return TokenForPath(stream, out var isPathPiped);
+
+                if (isPathPiped)
+                {
+                    foreach (var pipedToken in ReadPipedMethodCallStart(stream))
+                    {
+                        yield return pipedToken;
+                    }
+                }
             }
             else if (stream.CurrentToken == ExpressionToken.QuestionMark)
             {

@@ -17,6 +17,13 @@ namespace Jolt.Structure
         bool IsQueryPath(string path);
 
         /// <summary>
+        /// Determines if a JSON query path can be parsed by the JSON library in use.
+        /// </summary>
+        /// <param name="path">The JSON query path.</param>
+        /// <returns>True if the path can be used in a query, false otherwise.</returns>
+        bool IsValidQueryPath(string path);
+
+        /// <summary>
         /// Selects a JSON structure from the source based on the query path and mode provided.
         /// </summary>
         /// <param name="closureSources">The potentially applicable JSON structures to query.</param>

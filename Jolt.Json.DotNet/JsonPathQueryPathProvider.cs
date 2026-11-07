@@ -20,6 +20,8 @@ namespace Jolt.Json.DotNet
             return path?.StartsWith("$") == true;
         }
 
+        public override bool IsValidQueryPath(string path) => global::Json.Path.JsonPath.TryParse(path, out _);
+
         public override IJsonToken? SelectNodeAtPath(IEnumerable<IJsonToken> source, string queryPath, JsonQueryMode queryMode)
         {
             if (queryMode == JsonQueryMode.StartFromRoot)

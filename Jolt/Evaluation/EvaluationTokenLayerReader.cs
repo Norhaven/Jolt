@@ -29,6 +29,16 @@ namespace Jolt.Evaluation
             _layers.Push(layer);
         }
 
+        public void Push(IEnumerable<EvaluationToken> tokens)
+        {
+            var layer = new Queue<EvaluationToken>(tokens);
+
+            if (layer.Count > 0)
+            {
+                _layers.Push(layer);
+            }
+        }
+
         public EvaluationToken? GetNextToken()
         {
             if (_layers.Count > 0)

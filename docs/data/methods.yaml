@@ -225,7 +225,7 @@ methods:
     signature: "#setAt(@variable.path, value)"
     parameters:
       - { name: target, type: path, description: "A dereference of the `#using` variable, such as `@x.some.path`." }
-      - { name: value, type: any, description: "Any property value expression that does not contain a statement." }
+      - { name: value, type: any, description: "Any property value expression that does not contain a statement. A null value sets null at the path." }
     validIn: [statement]
     examples:
       - title: Set a deep value
@@ -237,7 +237,7 @@ methods:
     summary: Removes a JSON node at a variable-based path.
     signature: "#removeAt(@variable.path)"
     parameters:
-      - { name: target, type: path, description: "A dereference of the `#using` variable, such as `@x.some.path`." }
+      - { name: target, type: path, description: "A dereference of the `#using` variable, such as `@x.some.path`. A property with a null value is removed, while a property that does not exist throws error `JLT530`." }
     validIn: [statement]
     examples:
       - title: Remove a property
@@ -249,7 +249,7 @@ methods:
     summary: Executes one or more statements when a boolean expression is true.
     signature: "#when(condition, statement, ...statements)"
     parameters:
-      - { name: condition, type: boolean, description: "Any property value expression that does not contain a statement." }
+      - { name: condition, type: boolean, description: "Any property value expression that does not contain a statement. A null condition throws error `JLT580`." }
       - { name: statements, type: statement, description: "One or more statements to run." }
     validIn: [statement]
     examples:

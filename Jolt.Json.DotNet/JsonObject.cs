@@ -13,19 +13,9 @@ namespace Jolt.Json.DotNet
 {
     public sealed class JsonObject : JsonToken, IJsonObject
     {
-        private readonly IDictionary<string, IJsonToken> _properties = new Dictionary<string, IJsonToken>();
-
         public IJsonToken? this[string propertyName]
         {
-            get
-            {
-                if (_properties.TryGetValue(propertyName, out var token))
-                {
-                    return token;
-                }
-
-                return default;
-            }
+            get => FromObject(((Nodes.JsonObject)_token)[propertyName]);
             set
             {
                 var unpackedNode = value switch
@@ -36,25 +26,18 @@ namespace Jolt.Json.DotNet
                 };
 
                 ((Nodes.JsonObject)_token)[propertyName] = unpackedNode?.DeepClone();
-
-                _properties[propertyName] = FromObject(((Nodes.JsonObject)_token)[propertyName]);
             }
         }
 
         public JsonObject(Nodes.JsonNode? token) 
             : base(token)
         {
-            _properties = ((Nodes.JsonObject)_token).ToDictionary(x => x.Key, x => FromObject(x.Value));
         }
 
         public IJsonToken? Remove(string propertyName)
         {
-            if (!_properties.TryGetValue(propertyName, out var propertyToken))
-            {
-                return default;
-            }
+            var propertyToken = this[propertyName];
 
-            _properties.Remove(propertyName);
             ((Nodes.JsonObject)_token).Remove(propertyName);
 
             return propertyToken;
@@ -104,7 +87,7 @@ namespace Jolt.Json.DotNet
                     var property = pathParts[i];
                     var isFinalProperty = i == pathParts.Length - 1;
 
-                    var newObject = isFinalProperty ? underlyingValue.DeepClone() : new Nodes.JsonObject();
+                    var newObject = isFinalProperty ? underlyingValue?.DeepClone() : new Nodes.JsonObject();
 
                     current[property] = newObject;
 
@@ -128,7 +111,7 @@ namespace Jolt.Json.DotNet
             return default;
         }
 
-        public bool HasProperty(string propertyName) => _properties.ContainsKey(propertyName);
+        public bool HasProperty(string propertyName) => ((Nodes.JsonObject)_token).ContainsKey(propertyName);
 
         public IEnumerator<IJsonProperty> GetEnumerator() => ((Nodes.JsonObject)_token).Select(x => new JsonProperty(x.Value, x.Value?.GetPropertyName() ?? x.Key)).GetEnumerator();
 
@@ -136,7 +119,6 @@ namespace Jolt.Json.DotNet
 
         public override void Clear()
         {
-            _properties.Clear();
             ((Nodes.JsonObject)_token).Clear();
         }
 

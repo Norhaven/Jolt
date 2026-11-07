@@ -142,14 +142,12 @@ namespace Jolt
 
             foreach (var statement in statements.AsArray())
             {
-                // A JSON null may not have a token of its own, depending on the JSON library in use.
-
-                var path = statement?.FullPath ?? statements.FullPath;
+                var path = string.IsNullOrEmpty(statement.FullPath) ? statements.FullPath : statement.FullPath;
                 var text = statement is IJsonValue value && value.ValueType == JsonValueType.String ? value.ToTypeOf<string>() : default;
 
                 if (text is null || !_context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracketOrOpenCurlyBraceOrLogicalNot(text))
                 {
-                    var description = text ?? statement?.ToString() ?? "null";
+                    var description = text ?? statement.ToString() ?? "null";
 
                     yield return StatementIssue(new StatementViolation(ExceptionCode.UnableToUseNonStatementExpressionWithinStatementBlock, default, description), path, description);
                     continue;

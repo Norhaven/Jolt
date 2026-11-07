@@ -18,6 +18,11 @@ namespace Jolt.Library.StandardLibrary
         {
             var resolved = context.ResolveValueOrNullOf<object>(result);
 
+            if (resolved is null || (resolved is IJsonToken nullable && ValueResolutionExtensions.IsNull(nullable)))
+            {
+                throw context.CreateExecutionErrorFor<StatementMethods>(ExceptionCode.UnableToEvaluateWhenConditionWithNullValue);
+            }
+
             var isTrue = resolved switch
             {
                 bool value => value,
@@ -55,6 +60,13 @@ namespace Jolt.Library.StandardLibrary
         [MethodIsValidOn(LibraryMethodTarget.StatementBlock)]
         public static IJsonToken? RemoveAt(DereferencedPath path, EvaluationContext context)
         {
+            // A property containing a JSON null exists, even though the path couldn't get a token for it.
+
+            if (path.MissingPaths.Length == 1 && path.ObtainableToken is IJsonObject container && container.HasProperty(path.MissingPaths[0]))
+            {
+                return container.Remove(path.MissingPaths[0]);
+            }
+
             if (path.MissingPaths.Length > 0)
             {
                 var missing = path.MissingPaths.Join('.');

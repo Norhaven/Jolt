@@ -13,28 +13,19 @@ namespace Jolt.Json.Newtonsoft
 {
     public sealed class JsonObject : JsonToken, IJsonObject
     {
-        private readonly IDictionary<string, IJsonToken> _properties = new Dictionary<string, IJsonToken>();
-
         public IJsonToken? this[string propertyName]
         {
             get
             {
-                if (_properties.TryGetValue(propertyName, out var token))
-                {
-                    // The System.Text.Json property retrieval returns a null value in the case of a null JSON value,
-                    // so we will do the same here for consistency.
+                var token = ((JObject)_token)[propertyName];
 
-                    if (token.Type != JsonTokenType.Null)
-                    {
-                        return token;
-                    }
-                }
+                // The System.Text.Json property retrieval returns a null value in the case of a null JSON value,
+                // so we will do the same here for consistency.
 
-                return default;
+                return token?.Type == JTokenType.Null ? default : FromObject(token);
             }
             set
             {
-                _properties[propertyName] = value;
                 ((JObject)_token)[propertyName] = value?.ToTypeOf<JToken>();
             }
         }
@@ -42,17 +33,12 @@ namespace Jolt.Json.Newtonsoft
         public JsonObject(JToken? token)
             : base(token)
         {
-            _properties = ((JObject)_token).Properties().ToDictionary(x => x.Name, x => FromObject(x.Value));
         }
 
         public IJsonToken? Remove(string propertyName)
         {
-            if (!_properties.TryGetValue(propertyName, out var propertyToken))
-            {
-                return default;
-            }
+            var propertyToken = FromObject(((JObject)_token)[propertyName]);
 
-            _properties.Remove(propertyName);
             ((JObject)_token).Remove(propertyName);
 
             return propertyToken;
@@ -87,7 +73,9 @@ namespace Jolt.Json.Newtonsoft
 
             var parent = SelectTokenAtPath(parentPath);
 
-            if (parent is null)
+            // A property containing a JSON null has nothing to add to, so it's replaced in the same way as a missing one.
+
+            if (parent is null || (parent is IJsonValue parentValue && parentValue.ValueType == JsonValueType.Null))
             {
                 var current = _token;
 
@@ -126,7 +114,7 @@ namespace Jolt.Json.Newtonsoft
             return default;
         }
 
-        public bool HasProperty(string propertyName) => _properties.ContainsKey(propertyName);
+        public bool HasProperty(string propertyName) => ((JObject)_token).ContainsKey(propertyName);
 
         public IEnumerator<IJsonProperty> GetEnumerator() => ((JObject)_token).Properties().Select(x => (IJsonProperty)FromObject(x)).GetEnumerator();
 
@@ -134,7 +122,6 @@ namespace Jolt.Json.Newtonsoft
 
         public override void Clear()
         {
-            _properties.Clear();
             ((JObject)_token).RemoveAll();
         }
 

@@ -537,19 +537,40 @@ var-name
     = "@" identifier
     ;
 
-### JSON Path — subset of RFC 9535 / Goessner path notation.  The path
-### text is passed through to the JSON Path engine and runs until
-### whitespace, "," or ")"; Jolt operators such as "?." and "->" are not
-### recognized inside it.  To pipe from a path or guard it against null,
-### wrap it: "#valueOf($.a)?->#trim()", "#valueOf($.a) ?? 'default'".
+### JSON Path — RFC 9535 / Goessner path notation.  The path text is passed
+### through to the JSON Path engine, which decides what's valid and reports
+### JLT581 if it can't parse it.  Everything within square brackets is part
+### of the path, including whitespace, "," and quoted text.  Outside of
+### them, a path runs until whitespace or one of  , ) ] } + / = ! < > ? & |
+### or "->", or a "*" that doesn't directly follow a ".".  A "-" is part of
+### a name, so subtraction needs whitespace ("$.a - 1").  Jolt operators
+### such as "?." and "->" can't apply to a path.  To pipe from a path or
+### guard it against null, wrap it: "#valueOf($.a)?->#trim()",
+### "#valueOf($.a) ?? 'default'".
 json-path
     = "$" { path-step }
     ;
 
 path-step
-    = "." identifier                          (* child          *)
-    | ".." identifier                         (* recursive desc *)
-    | "[" ( integer-literal | "*" | string-literal ) "]"
+    = "." path-name                           (* child          *)
+    | ".*"                                    (* wildcard       *)
+    | ".." ( path-name | "*" )                (* recursive desc *)
+    | "[" bracket-text "]"
+    ;
+
+path-name
+    = path-name-char { path-name-char }
+    ;
+
+path-name-char
+    = ? any character other than those that end a path, "." or "[" ?
+    ;
+
+bracket-text
+    = { ? any character, with balanced "[", "]", "(" and ")" outside of quotes ?
+      | "'" { ? any character, "\" escapes the next ? } "'"
+      | '"' { ? any character, "\" escapes the next ? } '"'
+      }
     ;
 
 
@@ -900,3 +921,12 @@ json-number
 ###        #transformWith; §13 and §15 now use that name.  #orderBy and
 ###        #orderByDesc take an optional key lambda, and #valueOf takes
 ###        only a path.
+#
+### [N-19] JSON PATHS READ AS A WHOLE (CHANGED)
+###        A path no longer ends at whitespace, "," or ")" within square
+###        brackets, so filters, unions and quoted names can be written
+###        directly.  Outside of brackets, it also ends at "]", "}" and
+###        operators, so "[$.a,$.b]" and "($.a+1)" work.  A name containing
+###        one of those characters needs bracket notation ("$['a+b']").  A
+###        path that can't be parsed is now an error (JLT581), which the
+###        validator reports as well.

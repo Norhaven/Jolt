@@ -25,6 +25,10 @@ namespace Jolt.Json.Newtonsoft
                 {
                     array.Add(value.ToTypeOf<object>());
                 }
+                else if (token is null)
+                {
+                    array.Add(JValue.CreateNull());
+                }
                 else
                 {
                     array.Add(JToken.Parse(token.ToString()));

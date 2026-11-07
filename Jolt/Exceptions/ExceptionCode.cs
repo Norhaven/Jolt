@@ -273,6 +273,10 @@ namespace Jolt.Exceptions
         [Description("JLT578")]
         UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable,
         [Description("JLT579")]
-        UnableToUseStatementMethodWithoutStatements
+        UnableToUseStatementMethodWithoutStatements,
+        [Description("JLT580")]
+        UnableToEvaluateWhenConditionWithNullValue,
+        [Description("JLT581")]
+        UnableToParseJsonPath
     }
 }

@@ -446,7 +446,7 @@ namespace Jolt.Evaluation
             }
         }
 
-        private DereferencedPath UnwrapDereferenceChain(PropertyDereferenceExpression dereference, EvaluationContext context)
+        private DereferencedPath UnwrapDereferenceChain(PropertyDereferenceExpression dereference, EvaluationContext context, bool isStatementPath = false)
         {
             var rangeVariable = EvaluateExpression(dereference.Variable, context) as RangeVariable;
 
@@ -480,9 +480,9 @@ namespace Jolt.Evaluation
                     var node = json[propertyReference.PropertyName];
 
                     // Both JSON libraries give null for a property containing a JSON null, so it's only missing if the property isn't there.
-                    // Statement methods still get the containing object for it, so that '#setAt' can replace the null.
+                    // A statement's path still gets the containing object for it, so that '#setAt' can replace the null.
 
-                    if (node is null && !context.Token.IsWithinStatementBlock && json.HasProperty(propertyReference.PropertyName))
+                    if (node is null && !isStatementPath && json.HasProperty(propertyReference.PropertyName))
                     {
                         node = context.CreateNullToken();
                     }
@@ -491,9 +491,9 @@ namespace Jolt.Evaluation
                     {
                         var missingDereferencePaths = dereference.DereferenceChain[i..].Select(x => x.PropertyName).ToArray();
 
-                        // Statement methods (e.g. '#setAt') need the deepest object that exists, so that they can add the rest of the path to it.
+                        // A statement's path (e.g. in '#setAt') needs the deepest object that exists, so that it can add the rest of the path to it.
 
-                        if (context.Token.IsWithinStatementBlock)
+                        if (isStatementPath)
                         {
                             return new DereferencedPath(rangeVariable, json, missingDereferencePaths);
                         }
@@ -638,9 +638,11 @@ namespace Jolt.Evaluation
 
                 var value = currentFormalParameter.IsLazyEvaluated
                     ? parameter
-                    : isPipedValue && parameter is MethodCallExpression pipedCall
-                        ? ExecuteMethodCall(pipedCall, argumentContext, isRootExpression: false)
-                        : EvaluateExpression(parameter, argumentContext);
+                    : currentFormalParameter.Type == typeof(DereferencedPath) && parameter is PropertyDereferenceExpression statementPath
+                        ? UnwrapDereferenceChain(statementPath, argumentContext, isStatementPath: true)
+                        : isPipedValue && parameter is MethodCallExpression pipedCall
+                            ? ExecuteMethodCall(pipedCall, argumentContext, isRootExpression: false)
+                            : EvaluateExpression(parameter, argumentContext);
 
                 value = value.UnwrapWith(context.JsonContext.JsonTokenReader);
 

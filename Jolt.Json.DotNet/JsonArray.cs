@@ -16,7 +16,13 @@ namespace Jolt.Json.DotNet
         public IJsonToken? this[int index] 
         {
             get => _arrayElements[index];
-            set => _arrayElements[index] = value;
+            set
+            {
+                var node = CloneForArray(value);
+
+                _token.AsArray()[index] = node;
+                _arrayElements[index] = FromObject(node) ?? JsonValue.CreateNull();
+            }
         }
 
         public JsonArrayElementType ElementTypes => _arrayElements.DetermineElementTypes();
@@ -26,25 +32,20 @@ namespace Jolt.Json.DotNet
         public JsonArray(Nodes.JsonNode? token) 
             : base(token)
         {
-            _arrayElements = ((Nodes.JsonArray)token).Select(FromObject).ToList();
+            _arrayElements = ((Nodes.JsonArray)token).Select(x => FromObject(x) ?? JsonValue.CreateNull()).ToList();
         }
 
         public void Add(IJsonToken? token)
         {
-            _arrayElements.Add(token);
+            if (token is null)
+            {
+                return;
+            }
 
-            if (token.Type == JsonTokenType.Object)
-            {
-                _token.AsArray().Add(((JsonObject)token).UnderlyingNode);
-            }
-            else if (token.Type == JsonTokenType.Array)
-            {
-                _token.AsArray().Add(((JsonArray)token).UnderlyingNode);
-            }
-            else
-            {
-                _token.AsArray().Add(((JsonValue)token).UnderlyingNode);
-            }
+            var node = CloneForArray(token);
+
+            _token.AsArray().Add(node);
+            _arrayElements.Add(FromObject(node) ?? JsonValue.CreateNull());
         }
 
         public IEnumerator<IJsonToken> GetEnumerator() => _arrayElements.GetEnumerator();
@@ -59,6 +60,11 @@ namespace Jolt.Json.DotNet
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        // System.Text.Json only allows a node to have one parent, and a token may still belong to
+        // another document (e.g. the source), so what goes into an array is always its own copy.
+
+        private static Nodes.JsonNode? CloneForArray(IJsonToken? token) => (token as JsonToken)?.UnderlyingNode?.DeepClone();
 
         public override void Clear()
         {

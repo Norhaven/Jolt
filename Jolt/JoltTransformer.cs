@@ -135,20 +135,27 @@ namespace Jolt
                     {
                         var result = TransformExpression(current, current.PropertyName, EvaluationMode.PropertyName, scope);
 
-                        ApplyChangesToParent(current.ParentToken, result, scope, current.IsWithinStatementBlock, current.IsWithinMatchBlock);
+                        ApplyChangesToParent(current.ParentToken, result, scope, current.IsWithinStatementBlock, current.IsWithinMatchBlock, current.ParentArrayIndex);
 
                         if (result.IsValuePendingEvaluation)
                         {
                             // Property name evaluation has already happened now, send this back around for handling the value.
+                            // The parent holds its own copy of an object or array by now, and that's the one to evaluate since
+                            // it's the one in the result. A variable isn't in the parent, so it keeps the token that it was given.
+
+                            var evaluatedName = result.NewPropertyName ?? result.OriginalPropertyName;
+                            var attachedToken = current.ParentToken is IJsonObject parentObject ? parentObject[evaluatedName] : default;
+                            var isAttachedContainer = attachedToken is IJsonObject || attachedToken is IJsonArray;
 
                             var evaluationToken = new EvaluationToken(
-                                result.NewPropertyName ?? result.OriginalPropertyName,
+                                evaluatedName,
                                 default,
                                 current.ParentToken,
-                                current.CurrentTransformerToken,
+                                isAttachedContainer ? attachedToken : current.CurrentTransformerToken,
                                 current.CurrentSource,
                                 true,
-                                result.RangeVariable
+                                result.RangeVariable,
+                                parentArrayIndex: current.ParentArrayIndex
                             );
 
                             // Evaluations further along in the document may depend on the results of evaluating
@@ -164,17 +171,15 @@ namespace Jolt
                     }
                     else if (current.CurrentTransformerToken is IJsonObject obj)
                     {
-                        foreach (var property in obj)
-                        {
-                            pendingNodes.Enqueue(new EvaluationToken(property.PropertyName, default, current.CurrentTransformerToken, property.Value, token.CurrentSource, parentRangeVariable: current.ParentRangeVariable));
-                        }
+                        var properties = obj.Select(property => new EvaluationToken(property.PropertyName, default, current.CurrentTransformerToken, property.Value, token.CurrentSource, parentRangeVariable: current.ParentRangeVariable));
+
+                        EnqueueChildren(pendingNodes, current, properties);
                     }
                     else if (current.CurrentTransformerToken is IJsonArray array)
                     {
-                        foreach (var element in array)
-                        {
-                            pendingNodes.Enqueue(new EvaluationToken(current.PropertyName, default, current.CurrentTransformerToken, element, token.CurrentSource, parentRangeVariable: current.ParentRangeVariable));
-                        }
+                        var elements = array.Select((element, index) => new EvaluationToken(current.PropertyName, default, current.CurrentTransformerToken, element, token.CurrentSource, parentRangeVariable: current.ParentRangeVariable, parentArrayIndex: index));
+
+                        EnqueueChildren(pendingNodes, current, elements);
                     }
                     else if (current.CurrentTransformerToken is IJsonValue value && value.ValueType == JsonValueType.String)
                     {
@@ -190,7 +195,14 @@ namespace Jolt
 
                         var result = TransformExpression(current, value.ToTypeOf<string>(), EvaluationMode.PropertyValue, scope);
 
-                        ApplyChangesToParent(current.ParentToken, result, scope, current.IsWithinStatementBlock, current.IsWithinMatchBlock);
+                        ApplyChangesToParent(current.ParentToken, result, scope, current.IsWithinStatementBlock, current.IsWithinMatchBlock, current.ParentArrayIndex);
+
+                        // An expression given on its own (e.g. a loop's template) has no parent holding its result, so it's what gets returned.
+
+                        if (ReferenceEquals(current, token))
+                        {
+                            return result.TransformedToken;
+                        }
                     }
                 }
                 catch (Exception ex) when (_context.ErrorHandler.IsEnabled)
@@ -211,12 +223,41 @@ namespace Jolt
                             obj.Remove(current.PropertyName);
                         }
                     }
+                    else if (current?.ParentToken is IJsonArray array && current.ParentArrayIndex is int index)
+                    {
+                        // Removing the element would move the ones that are still waiting to be evaluated, so it's left as null.
+
+                        array[index] = default;
+                    }
 
                     _context.ErrorHandler.HandleFor<JoltTransformer<TContext>>(ex);
+
+                    if (ReferenceEquals(current, token) && current.CurrentTransformerToken is IJsonValue)
+                    {
+                        return default;
+                    }
                 }
             }
 
             return token.CurrentTransformerToken;
+        }
+
+        private static void EnqueueChildren(EvaluationTokenLayerReader pendingNodes, EvaluationToken parent, IEnumerable<EvaluationToken> children)
+        {
+            // A value that was deferred until its property name was evaluated may be a variable that later
+            // evaluations depend on, so its children need to finish first (see where it's pushed above).
+
+            if (parent.IsPendingValueEvaluation)
+            {
+                pendingNodes.Push(children.ToArray());
+
+                return;
+            }
+
+            foreach (var child in children)
+            {
+                pendingNodes.Enqueue(child);
+            }
         }
 
         private bool IsExpressionText(IJsonToken token)
@@ -267,7 +308,7 @@ namespace Jolt
             return _context.ExpressionEvaluator.Evaluate(evaluationContext);
         }
 
-        private void ApplyChangesToParent(IJsonToken parent, EvaluationResult result, IEvaluationScope scope, bool isWithinStatementBlock, bool isWithinMatchBlock)
+        private void ApplyChangesToParent(IJsonToken parent, EvaluationResult result, IEvaluationScope scope, bool isWithinStatementBlock, bool isWithinMatchBlock, int? parentArrayIndex)
         {            
             void SetVariableIfPresent(IJsonObject? json, string propertyName)
             {
@@ -330,10 +371,19 @@ namespace Jolt
             }
             else if (parent is IJsonArray array)
             {
+                // An element of the transformer's own array is replaced by its result, wherever it is in the array.
+
+                if (parentArrayIndex is int index)
+                {
+                    _context.WriteInfoFor<JoltTransformer<TContext>>($"Replacing entry at index '{index}' of parent array.");
+
+                    array[index] = result.TransformedToken;
+                }
+
                 // Within a statement or match block, all transformation work will be done on a variable and
                 // won't need to be merged until it all collects at the end, so we're skipping that case.
 
-                if (result.TransformedToken != null && !isWithinStatementBlock && !isWithinMatchBlock)
+                else if (result.TransformedToken != null && !isWithinStatementBlock && !isWithinMatchBlock)
                 {
                     _context.WriteInfoFor<JoltTransformer<TContext>>($"Adding entry to non-statement parent array.");
 

@@ -1,6 +1,124 @@
 {
   "validations": [
     {
+      "name": "A valid JSON path will succeed",
+      "transformer": {
+        "r": "#valueOf($.a.b)"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "A JSON path with a filter and spaces will succeed",
+      "transformer": {
+        "r": "#valueOf($.items[?(@.price > 15)])"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "A JSON path with a bracketed name containing a comma will succeed",
+      "transformer": {
+        "r": "#valueOf($['with,comma'])"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "A JSON path in an array literal with no spaces will succeed",
+      "transformer": {
+        "r": "[$.b,$.s]"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "A JSON path ending in a dot will fail",
+      "transformer": {
+        "r": "#valueOf($.)"
+      },
+      "expectedIssues": [
+        "UnableToParseJsonPath"
+      ]
+    },
+    {
+      "name": "A JSON path with an unclosed bracket will fail",
+      "transformer": {
+        "r": "#length($.a[)"
+      },
+      "expectedIssues": [
+        "UnableToParseJsonPath"
+      ]
+    },
+    {
+      "name": "A JSON path as the source of a loop will fail if it's invalid",
+      "transformer": {
+        "#foreach(@i in $.) into 'r'": [
+          {
+            "v": 1
+          }
+        ]
+      },
+      "expectedIssues": [
+        "UnableToParseJsonPath"
+      ]
+    },
+    {
+      "name": "A JSON path as the source of a using block will fail if it's invalid",
+      "transformer": {
+        "#using($. as @x) into 'r'": [
+          "#removeAt(@x.a)"
+        ]
+      },
+      "expectedIssues": [
+        "UnableToParseJsonPath",
+        "UnableToUseMethodOutsideOfStatementBlock",
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    },
+    {
+      "name": "A JSON path in a using statement will fail if it's invalid",
+      "transformer": {
+        "#using($.o as @x) into 'r'": [
+          "#setAt(@x.a, #valueOf($.))"
+        ]
+      },
+      "expectedIssues": [
+        "UnableToParseJsonPath"
+      ]
+    },
+    {
+      "name": "Null literal inside of an array will succeed",
+      "transformer": {
+        "a": [
+          null
+        ]
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Null literals among other nested array elements will succeed",
+      "transformer": {
+        "a": [
+          1,
+          null,
+          {
+            "b": [
+              null
+            ]
+          }
+        ]
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Null literal inside of a using block array will fail",
+      "transformer": {
+        "#using($.a as @x) into 'r'": [
+          null
+        ]
+      },
+      "expectedIssues": [
+        "UnableToUseNonStatementExpressionWithinStatementBlock"
+      ]
+    },
+    {
       "name": "Variable declaration with literal will succeed",
       "transformer": {
         "@x": "1"

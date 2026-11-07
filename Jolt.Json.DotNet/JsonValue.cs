@@ -10,10 +10,21 @@ namespace Jolt.Json.DotNet
 {
     public sealed class JsonValue : JsonToken, IJsonValue
     {
+        /// <summary>
+        /// Creates a token for a JSON null. System.Text.Json represents these as a null node, so this
+        /// gives them a token of their own, the same as one that the Newtonsoft provider would give.
+        /// </summary>
+        public static JsonValue CreateNull() => new JsonValue(default, Structure.JsonTokenType.Null);
+
         public JsonValueType ValueType { get; }
 
         public JsonValue(Nodes.JsonNode? token) 
-            : base(token)
+            : this(token, Structure.JsonTokenType.Value)
+        {
+        }
+
+        private JsonValue(Nodes.JsonNode? token, Structure.JsonTokenType typeWithoutNode)
+            : base(token, typeWithoutNode)
         {
             if (_token is null)
             {
@@ -37,7 +48,7 @@ namespace Jolt.Json.DotNet
 
         public override void Clear()
         {
-            ((Nodes.JsonValue)_token).ReplaceWith<string>(default);
+            ((Nodes.JsonValue)_token)?.ReplaceWith<string>(default);
         }
 
         // JSON values are a special case where we can't just write the token itself with ToJsonString()
@@ -52,12 +63,12 @@ namespace Jolt.Json.DotNet
             return base.Equals(obj) &&
                 obj is JsonValue other &&
                 ValueType == other.ValueType &&
-                ToTypeOf<object>()?.Equals(other.ToTypeOf<object>()) == true;
+                object.Equals(ToTypeOf<object>(), other.ToTypeOf<object>());
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode() ^ ValueType.GetHashCode() ^ ToTypeOf<object>().GetHashCode();
+            return base.GetHashCode() ^ ValueType.GetHashCode() ^ (ToTypeOf<object>()?.GetHashCode() ?? 0);
         }
     }
 }
