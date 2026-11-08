@@ -1,7 +1,8 @@
 // Runs the Jolt WebAssembly engine off the page's main thread.
 //
-// Served as-is from public/ (not bundled), next to the engine that `npm run engine` copies into ./engine/.
-// The page talks to it through src/components/playground/engine.js:
+// Not bundled: `npm run engine` copies it as-is into public/playground/engine/<version>/, next to the engine
+// it loads, so a worker only ever loads the engine from its own build. The page talks to it through
+// src/components/playground/engine.js:
 //
 //   page → worker   { id, type: 'run', transformer, source, options }
 //   worker → page   { type: 'ready', description } | { type: 'failed', message }
@@ -10,13 +11,13 @@
 let engine = null;
 
 async function start() {
-	const manifestUrl = new URL('./engine/manifest.json', import.meta.url);
+	const manifestUrl = new URL('./manifest.json', import.meta.url);
 	const response = await fetch(manifestUrl);
 
 	if (!response.ok) {
 		throw new Error(
 			response.status === 404
-				? 'The playground engine has not been built. Run `npm run engine` in docs/ and reload.'
+				? 'The playground has been updated since this page was loaded. Reload the page to use the new version.'
 				: `Could not load the playground engine (HTTP ${response.status}).`,
 		);
 	}

@@ -82,7 +82,7 @@ The [playground](../../playground/) runs the real engine in the browser. It has 
 | Part | Location |
 | ---- | -------- |
 | The engine, compiled to WebAssembly | `playground/` (a .NET project that references `Jolt` and `Jolt.Json.DotNet` from source) |
-| A Web Worker that hosts the engine | `public/playground/engine-worker.js` |
+| A Web Worker that hosts the engine | `playground/engine-worker.js` |
 | The page and editors (CodeMirror) | `src/components/playground/` and `src/content/docs/playground.mdx` |
 
 Build the engine once before `npm run dev` (it needs the .NET 10 SDK):
@@ -91,7 +91,9 @@ Build the engine once before `npm run dev` (it needs the .NET 10 SDK):
 npm run engine
 ```
 
-This publishes `playground/` and copies the runtime into `public/playground/engine/`, which isn't committed. Without it, the playground page loads but reports that the engine hasn't been built.
+This publishes `playground/` and copies the runtime and the worker into `public/playground/engine/<version>/`, which isn't committed. Without it, the playground page loads but reports that the engine hasn't been built.
+
+`<version>` is a hash of the engine files, so each deploy serves its engine at new URLs. GitHub Pages lets browsers reuse files for up to 10 minutes, and the runtime's file names don't change between builds, so a fixed path could leave a browser mixing files from two deploys. The page is pointed at the version folder when the site builds, and only the current version is deployed: a tab left open across a deploy is told to reload rather than loading an engine that doesn't match it. If you change `engine-worker.js`, run `npm run engine` again to copy it.
 
 Validation in the playground compiles in the language server's `Mapping/` and `Validation/` files, so its squiggles match the VS Code extension. The external methods it registers are in `playground/PlaygroundMethods.cs`, matching the [external methods](../../host/external-methods/) page.
 

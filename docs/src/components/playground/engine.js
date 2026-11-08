@@ -70,6 +70,13 @@ export class PlaygroundEngine extends EventTarget {
 
 		this.#setStatus('loading');
 
+		if (!this.#workerUrl) {
+			const message = 'The playground engine has not been built. Run `npm run engine` in docs/ and reload.';
+			this.#fail(message);
+			this.#ready = Promise.reject(new Error(message));
+			return this.#ready;
+		}
+
 		this.#ready = new Promise((resolve, reject) => {
 			const worker = new Worker(this.#workerUrl, { type: 'module', name: 'jolt-engine' });
 			this.#worker = worker;
@@ -92,15 +99,31 @@ export class PlaygroundEngine extends EventTarget {
 				}
 			};
 
-			worker.onerror = (event) => {
+			worker.onerror = async (event) => {
 				event.preventDefault?.();
-				const message = event.message || 'The playground engine could not be started.';
+				const message = event.message ||
+					(await this.#workerMissing()
+						? 'The playground has been updated since this page was loaded. Reload the page to use the new version.'
+						: 'The playground engine could not be started.');
 				this.#fail(message);
 				reject(new Error(message));
 			};
 		});
 
 		return this.#ready;
+	}
+
+	/**
+	 * A worker that fails to load reports no reason. Each deploy keeps only its own engine version, so a 404 means
+	 * this page was built before the latest deploy.
+	 */
+	async #workerMissing() {
+		try {
+			const response = await fetch(this.#workerUrl, { method: 'HEAD', cache: 'no-store' });
+			return response.status === 404;
+		} catch {
+			return false;
+		}
 	}
 
 	#settle({ id, type, result, message }) {

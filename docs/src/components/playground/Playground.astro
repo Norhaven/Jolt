@@ -1,7 +1,20 @@
 ---
-// The Jolt playground. Behavior is in main.js; the engine runs in public/playground/engine-worker.js.
+// The Jolt playground. Behavior is in main.js; the engine runs in playground/engine-worker.js.
+import fs from 'node:fs';
+import path from 'node:path';
+
+// `npm run engine` copies the engine and its worker into public/playground/engine/<version>/ and keeps only the
+// current version, so the one folder there is the one this page should load. An empty worker URL means the
+// engine hasn't been built, which engine.js reports.
+const engineRoot = path.resolve('public/playground/engine');
+const version = fs.existsSync(engineRoot)
+	? fs.readdirSync(engineRoot, { withFileTypes: true })
+		.find((entry) => entry.isDirectory() && fs.existsSync(path.join(engineRoot, entry.name, 'engine-worker.js')))
+		?.name
+	: undefined;
+
 const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
-const workerUrl = `${base}playground/engine-worker.js`;
+const workerUrl = version ? `${base}playground/engine/${version}/engine-worker.js` : '';
 ---
 
 <div class="jolt-playground not-content" data-jolt-playground data-worker-url={workerUrl}>

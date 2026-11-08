@@ -2,8 +2,8 @@
   <!--
     The Jolt engine for the docs site playground, compiled to WebAssembly and called from JavaScript.
 
-    Build it from docs/ with `npm run engine`, which publishes this project and copies the runtime into
-    public/playground/engine/. CI does the same in .github/workflows/docs.yml.
+    Build it from docs/ with `npm run engine`, which publishes this project and copies the runtime, along with
+    engine-worker.js, into public/playground/engine/<version>/. CI does the same in .github/workflows/docs.yml.
 
     It references the Jolt projects directly (not the NuGet packages), so the playground always runs the same
     code as the commit the docs were built from.
@@ -28,7 +28,8 @@
 
     <!--
       Keep stable file names (dotnet.js rather than dotnet.<hash>.js), since the engine is loaded from a Web Worker
-      rather than from an HTML page with an import map. The copy script also copes with fingerprinted names.
+      rather than from an HTML page with an import map. Caching is handled instead by the copy script, which puts
+      each build in its own version folder. It also copes with fingerprinted names.
     -->
     <WasmFingerprintAssets>false</WasmFingerprintAssets>
 

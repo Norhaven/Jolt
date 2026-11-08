@@ -2,6 +2,49 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "docs: build",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "docs: generate methods",
+                "docs: build playground engine",
+                "docs: astro build"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "docs: generate methods",
+            "type": "shell",
+            "command": "npm run generate",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "docs: build playground engine",
+            "type": "shell",
+            "command": "npm run engine",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "docs: astro build",
+            "type": "shell",
+            // Invoke astro directly rather than "npm run build" so the prebuild
+            // hook doesn't regenerate the methods docs a second time.
+            "command": "npx astro build",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "docs: dev server",
             "type": "shell",
             "command": "npm run dev",
@@ -19,15 +62,6 @@
                     "endsPattern": "ready in|Local"
                 }
             }
-        },
-        {
-            "label": "docs: build playground engine",
-            "type": "shell",
-            "command": "npm run engine",
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": "$msCompile"
         }
     ]
 }

@@ -79,7 +79,7 @@ public class TransformerMethods
     public static bool IsNotNull(string value) => value != null;
 }
 ```
-You will need to create a JSON transformer and register your methods with it prior to the actual transformation. There are two packages available by default: `Jolt.Json.Newtonsoft` and `Jolt.Json.DotNet`, which use either `Newtonsoft` or `System.Text.Json` as their particular flavor of implementation. Also, note that both packages depend on [JsonPath.Net](https://github.com/json-everything/json-everything), so that JSON paths behave the same way with either one. JsonPath.Net works with `System.Text.Json`, which `Jolt.Json.Newtonsoft` only uses to evaluate paths that can match several values.
+You will need to create a JSON transformer and register your methods with it prior to the actual transformation. There are two packages available by default: `Jolt.Json.Newtonsoft` and `Jolt.Json.DotNet`, which use either `Newtonsoft` or `System.Text.Json` as their particular flavor of implementation. Also, note that both packages now depend on [JsonPath.Net](https://github.com/json-everything/json-everything), so that JSON paths behave the same way with either one. JsonPath.Net works with `System.Text.Json`, which `Jolt.Json.Newtonsoft` only uses to evaluate paths that can match several values.
 
 For our demonstration purposes here, we'll assume Newtonsoft.
 ```csharp
