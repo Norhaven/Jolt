@@ -287,7 +287,7 @@ namespace Jolt.Parsing
         /// <summary>
         /// The characters that end a dereferenced property name, which are whatever can follow a value.
         /// </summary>
-        private static readonly char[] PropertyNameTerminators =
+        private static readonly char[] _propertyNameTerminators =
         {
             ExpressionToken.Whitespace,
             ExpressionToken.Dot,
@@ -317,7 +317,7 @@ namespace Jolt.Parsing
         /// </summary>
         private ExpressionToken TokenForPropertyName(ITokenStream<char> stream, ExpressionTokenCategory category)
         {
-            return TokenUntilMatchedWith(stream, category, PropertyNameTerminators);
+            return TokenUntilMatchedWith(stream, category, _propertyNameTerminators);
         }
 
         /// <summary>

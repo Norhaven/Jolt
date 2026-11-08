@@ -18,7 +18,7 @@
         {
           "name": "New object literal can be defined using only literal values",
           "transformer": {
-            "instance": "{ 'integerValue': 5, 'stringValue': 'test', 'booleanValue': true }"            
+            "instance": "{ 'integerValue': 5, 'stringValue': 'test', 'booleanValue': true }"
           },
           "result": {
             "instance": {
@@ -78,6 +78,82 @@
                 true
               ]
             }
+          }
+        }
+      ]
+     },
+    {
+      "name": "Methods can be piped from array literals",
+      "source": {
+        "three": 3
+      },
+      "tests": [
+        {
+          "name": "A method piped from an array literal keeps its own parameters",
+          "transformer": {
+            "joined": "[1, 2]->#joinWith(',')",
+            "joinedStrings": "['a', 'b']->#joinWith(',')",
+            "appended": "[1, 2]->#append($.three, 4)",
+            "selected": "[1, 2, 3]->#select(@x: @x * 2)",
+            "taken": "[3, 1] -> #take(1)"
+          },
+          "result": {
+            "joined": "1,2",
+            "joinedStrings": "a,b",
+            "appended": [ 1, 2, 3, 4 ],
+            "selected": [ 2, 4, 6 ],
+            "taken": [ 3 ]
+          }
+        },
+        {
+          "name": "Piped methods can be chained from an array literal",
+          "transformer": {
+            "filteredAndJoined": "[1, 2, 3]->#where(@x: @x > 1)->#joinWith('-')",
+            "flattenedAndSummed": "[[1], [2, 3]]->#flatten()->#sum()",
+            "nullConditional": "[1, 2]?->#joinWith(',')"
+          },
+          "result": {
+            "filteredAndJoined": "2-3",
+            "flattenedAndSummed": 6,
+            "nullConditional": "1,2"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Methods can be piped from object literals",
+      "source": {
+        "input": {
+          "country": "DE"
+        }
+      },
+      "tests": [
+        {
+          "name": "A method piped from an object literal takes the object as its first parameter",
+          "transformer": {
+            "keys": "{ 'a': 1, 'b': 2 }->#keysFrom()",
+            "values": "{ 'a': 1, 'b': 2 }->#valuesFrom()",
+            "merged": "{ 'country': 'US', 'active': true }->#merge($.input)",
+            "withWhitespace": "{ 'a': 1 } -> #keysFrom()"
+          },
+          "result": {
+            "keys": [ "a", "b" ],
+            "values": [ 1, 2 ],
+            "merged": { "country": "DE", "active": true },
+            "withWhitespace": [ "a" ]
+          }
+        },
+        {
+          "name": "Piped methods can be chained from an object literal",
+          "transformer": {
+            "joinedKeys": "{ 'a': 1, 'b': 2 }->#keysFrom()->#joinWith(',')",
+            "nullConditional": "{ 'a': 1 }?->#keysFrom()",
+            "asArgument": "#length({ 'a': 1, 'b': 2 }->#keysFrom())"
+          },
+          "result": {
+            "joinedKeys": "a,b",
+            "nullConditional": [ "a" ],
+            "asArgument": 2
           }
         }
       ]

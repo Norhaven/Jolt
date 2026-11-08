@@ -6,9 +6,5128 @@
     "nonLambdaUsedForDelegate": "DelegateParameterRequiresLambdaArgument",
     "unableToConvertArrayToType": "UnableToConvertJsonArrayToRequiredParameterType",
     "usedNonStatementMethodInWhen": "AttemptedToUseNonStatementMethodWithinWhenLibraryCall",
-    "externalMethodException": "ExternalMethodInvocationCausedAnException"
+    "externalMethodException": "ExternalMethodInvocationCausedAnException",
+    "nullValueInLibraryCall": "UnableToPerformLibraryCallOnNullValue",
+    "dereferencedMissingProperty": "AttemptedToDereferenceMissingPath"
   },
   "testGroups": [
+    {
+      "name": "An indexed variable can be dereferenced",
+      "source": {
+        "rows": [
+          {
+            "n": "a",
+            "kids": [
+              {
+                "k": 1
+              }
+            ]
+          },
+          {
+            "n": "b",
+            "kids": []
+          }
+        ],
+        "grid": [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        "strs": [
+          "ab",
+          "cd"
+        ]
+      },
+      "tests": [
+        {
+          "name": "An indexed variable's property can be read",
+          "transformer": {
+            "@r": "#valueOf($.rows)",
+            "r": "@r[0].n"
+          },
+          "result": {
+            "r": "a"
+          }
+        },
+        {
+          "name": "A variable indexed from the end can be dereferenced",
+          "transformer": {
+            "@r": "#valueOf($.rows)",
+            "r": "@r[^1].n"
+          },
+          "result": {
+            "r": "b"
+          }
+        },
+        {
+          "name": "An indexed variable can be dereferenced through further indexes",
+          "transformer": {
+            "@r": "#valueOf($.rows)",
+            "r": "@r[0].kids[0].k"
+          },
+          "result": {
+            "r": 1
+          }
+        },
+        {
+          "name": "An indexed variable can be dereferenced null-safely and piped",
+          "transformer": {
+            "@r": "#valueOf($.rows)",
+            "r": "@r[1]?.n?->#toUpperCase()"
+          },
+          "result": {
+            "r": "B"
+          }
+        },
+        {
+          "name": "An indexed variable's property can be piped from",
+          "transformer": {
+            "@r": "#valueOf($.rows)",
+            "r": "@r[0].n->#toUpperCase()"
+          },
+          "result": {
+            "r": "A"
+          }
+        },
+        {
+          "name": "An indexed variable's missing property can be coalesced",
+          "transformer": {
+            "@r": "#valueOf($.rows)",
+            "r": "@r[0].missing??'none'"
+          },
+          "result": {
+            "r": "none"
+          }
+        },
+        {
+          "name": "A variable can be indexed more than once",
+          "transformer": {
+            "@g": "#valueOf($.grid)",
+            "r": "@g[1][0]"
+          },
+          "result": {
+            "r": 3
+          }
+        },
+        {
+          "name": "A variable indexed more than once can be used with an operator",
+          "transformer": {
+            "@g": "#valueOf($.grid)",
+            "r": "@g[1][0]+@g[0][1]"
+          },
+          "result": {
+            "r": 5
+          }
+        },
+        {
+          "name": "A sliced variable can be indexed and dereferenced",
+          "transformer": {
+            "@r": "#valueOf($.rows)",
+            "r": "@r[0..1][0].n"
+          },
+          "result": {
+            "r": "a"
+          }
+        },
+        {
+          "name": "A variable can be indexed into a string and then the string",
+          "transformer": {
+            "@s": "#valueOf($.strs)",
+            "r": "@s[1][0]"
+          },
+          "result": {
+            "r": "c"
+          }
+        },
+        {
+          "name": "A loop variable can be indexed and dereferenced",
+          "transformer": {
+            "#foreach(@r in $.rows) into 'r'": [
+              {
+                "name": "@r.n",
+                "count": "@r.kids->#length()"
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "name": "a",
+                "count": 1
+              },
+              {
+                "name": "b",
+                "count": 0
+              }
+            ]
+          }
+        },
+        {
+          "name": "Indexing a null variable before dereferencing fails",
+          "transformer": {
+            "@n": null,
+            "r": "@n[0].x"
+          },
+          "exceptionCode": "AttemptedToIndexOrSliceNullVariableValue"
+        },
+        {
+          "name": "A statement path can't index the variable",
+          "transformer": {
+            "#using($.rows[0] as @x) into 'r'": [
+              "#setAt(@x[0].n, 1)"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+        }
+      ]
+    },
+    {
+      "name": "Indexing or slicing outside of a value's bounds fails",
+      "source": {
+        "rows": [
+          {
+            "n": "a",
+            "kids": []
+          }
+        ],
+        "list": [
+          10,
+          20,
+          30
+        ],
+        "s": "hello"
+      },
+      "tests": [
+        {
+          "name": "An index past the end of an array fails",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[3]"
+          },
+          "exceptionCode": "UnableToIndexOutsideOfBounds"
+        },
+        {
+          "name": "An index from the end past the start of an array fails",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[^4]"
+          },
+          "exceptionCode": "UnableToIndexOutsideOfBounds"
+        },
+        {
+          "name": "An index of zero from the end fails",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[^0]"
+          },
+          "exceptionCode": "UnableToIndexOutsideOfBounds"
+        },
+        {
+          "name": "A negative index fails",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[-1]"
+          },
+          "exceptionCode": "UnableToIndexOutsideOfBounds"
+        },
+        {
+          "name": "An index past the end of a string fails",
+          "transformer": {
+            "@s": "#valueOf($.s)",
+            "r": "@s[5]"
+          },
+          "exceptionCode": "UnableToIndexOutsideOfBounds"
+        },
+        {
+          "name": "An index of an empty array fails",
+          "transformer": {
+            "@r": "#valueOf($.rows)",
+            "r": "@r[0].kids[0]"
+          },
+          "exceptionCode": "UnableToIndexOutsideOfBounds"
+        },
+        {
+          "name": "An index past the end of a variable before a property fails",
+          "transformer": {
+            "@r": "#valueOf($.rows)",
+            "r": "@r[5].n"
+          },
+          "exceptionCode": "UnableToIndexOutsideOfBounds"
+        },
+        {
+          "name": "An index past the end of a method result fails",
+          "transformer": {
+            "r": "#valueOf($.list)[3]"
+          },
+          "exceptionCode": "UnableToIndexOutsideOfBounds"
+        },
+        {
+          "name": "A range past the end of an array fails",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[1..5]"
+          },
+          "exceptionCode": "UnableToSliceOutsideOfBounds"
+        },
+        {
+          "name": "A range starting past the end of an array fails",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[4..]"
+          },
+          "exceptionCode": "UnableToSliceOutsideOfBounds"
+        },
+        {
+          "name": "A range that ends before it starts fails",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[2..1]"
+          },
+          "exceptionCode": "UnableToSliceOutsideOfBounds"
+        },
+        {
+          "name": "A range past the end of a string fails",
+          "transformer": {
+            "@s": "#valueOf($.s)",
+            "r": "@s[2..9]"
+          },
+          "exceptionCode": "UnableToSliceOutsideOfBounds"
+        },
+        {
+          "name": "Slicing past the end with #slice fails",
+          "transformer": {
+            "r": "#slice($.list, 1..5)"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToSliceOutsideOfBounds"
+        },
+        {
+          "name": "Getting a substring past the end fails",
+          "transformer": {
+            "r": "#substring($.s, 2..9)"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToSliceOutsideOfBounds"
+        },
+        {
+          "name": "A range starting at the end gives an empty array",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[3..]"
+          },
+          "result": {
+            "r": []
+          }
+        },
+        {
+          "name": "A range ending at the end gives every element",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[..3]"
+          },
+          "result": {
+            "r": [
+              10,
+              20,
+              30
+            ]
+          }
+        },
+        {
+          "name": "A range from the start counted from the end gives every element",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[^3..]"
+          },
+          "result": {
+            "r": [
+              10,
+              20,
+              30
+            ]
+          }
+        },
+        {
+          "name": "The last index works",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[2]"
+          },
+          "result": {
+            "r": 30
+          }
+        },
+        {
+          "name": "The first index from the end works",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[^1]"
+          },
+          "result": {
+            "r": 30
+          }
+        }
+      ]
+    },
+    {
+      "name": "A property reached through a variable can be indexed or sliced",
+      "source": {
+        "items": [
+          {
+            "id": 1,
+            "tag": "abc",
+            "kids": [
+              {
+                "n": "a"
+              },
+              {
+                "n": "b"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "tag": "de",
+            "kids": [
+              {
+                "n": "c"
+              },
+              {
+                "n": null
+              }
+            ]
+          }
+        ],
+        "maybe": [
+          {
+            "kids": null
+          }
+        ],
+        "groups": [
+          {
+            "kids": [
+              1,
+              2,
+              3
+            ],
+            "m": [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            "pos": {
+              "i": 2
+            }
+          },
+          {
+            "kids": [
+              4,
+              5,
+              6
+            ],
+            "m": [
+              [
+                5,
+                6
+              ],
+              [
+                7,
+                8
+              ]
+            ],
+            "pos": {
+              "i": 0
+            }
+          }
+        ],
+        "list": [
+          10,
+          20,
+          30
+        ]
+      },
+      "tests": [
+        {
+          "name": "A property can be indexed",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[0])"
+          },
+          "result": {
+            "r": [
+              1,
+              4
+            ]
+          }
+        },
+        {
+          "name": "A property can be indexed from the end",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[^1])"
+          },
+          "result": {
+            "r": [
+              3,
+              6
+            ]
+          }
+        },
+        {
+          "name": "A property can be sliced",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[0..2])"
+          },
+          "result": {
+            "r": [
+              [
+                1,
+                2
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          }
+        },
+        {
+          "name": "A property can be sliced to the end",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[1..])"
+          },
+          "result": {
+            "r": [
+              [
+                2,
+                3
+              ],
+              [
+                5,
+                6
+              ]
+            ]
+          }
+        },
+        {
+          "name": "A property can be indexed more than once",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.m[1][0])"
+          },
+          "result": {
+            "r": [
+              3,
+              7
+            ]
+          }
+        },
+        {
+          "name": "A property can be indexed more than once from the end",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.m[^1][^1])"
+          },
+          "result": {
+            "r": [
+              4,
+              8
+            ]
+          }
+        },
+        {
+          "name": "A string property can be indexed",
+          "transformer": {
+            "r": "#select($.items,@v:@v.tag[0])"
+          },
+          "result": {
+            "r": [
+              "a",
+              "d"
+            ]
+          }
+        },
+        {
+          "name": "A string property can be sliced",
+          "transformer": {
+            "r": "#select($.items,@v:@v.tag[1..])"
+          },
+          "result": {
+            "r": [
+              "bc",
+              "e"
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be dereferenced further",
+          "transformer": {
+            "r": "#select($.items,@v:@v.kids[1].n)"
+          },
+          "result": {
+            "r": [
+              "b",
+              null
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be dereferenced further and coalesced",
+          "transformer": {
+            "r": "#select($.items,@v:@v.kids[1].n??'none')"
+          },
+          "result": {
+            "r": [
+              "b",
+              "none"
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be piped from",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[0]->#toString())"
+          },
+          "result": {
+            "r": [
+              "1",
+              "4"
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be piped from after further dereferences",
+          "transformer": {
+            "r": "#select($.items,@v:@v.kids[0].n->#toUpperCase())"
+          },
+          "result": {
+            "r": [
+              "A",
+              "C"
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be null-conditionally piped from",
+          "transformer": {
+            "r": "#select($.items,@v:@v.kids[1]?.n?->#toUpperCase())"
+          },
+          "result": {
+            "r": [
+              "B",
+              null
+            ]
+          }
+        },
+        {
+          "name": "A sliced property can be piped from",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[0..2]->#length())"
+          },
+          "result": {
+            "r": [
+              2,
+              2
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be used with an operator",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[0]+1)"
+          },
+          "result": {
+            "r": [
+              2,
+              5
+            ]
+          }
+        },
+        {
+          "name": "Two indexed properties can be used with an operator",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[0]*@v.kids[1])"
+          },
+          "result": {
+            "r": [
+              2,
+              20
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be compared",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[0]==1)"
+          },
+          "result": {
+            "r": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be in an array literal",
+          "transformer": {
+            "r": "#select($.groups,@v:[@v.kids[0],@v.kids[1]])"
+          },
+          "result": {
+            "r": [
+              [
+                1,
+                2
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be in an object literal",
+          "transformer": {
+            "r": "#select($.groups,@v:{'a':@v.kids[0]})"
+          },
+          "result": {
+            "r": [
+              {
+                "a": 1
+              },
+              {
+                "a": 4
+              }
+            ]
+          }
+        },
+        {
+          "name": "A property can be the index",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[@v.pos.i])"
+          },
+          "result": {
+            "r": [
+              3,
+              4
+            ]
+          }
+        },
+        {
+          "name": "A property can be the index of a variable",
+          "transformer": {
+            "@g": "#valueOf($.groups[0])",
+            "@l": "#valueOf($.list)",
+            "r": "@l[@g.pos.i]"
+          },
+          "result": {
+            "r": 30
+          }
+        },
+        {
+          "name": "An indexed property can be the index of a method result",
+          "transformer": {
+            "@g": "#valueOf($.groups[0])",
+            "r": "#valueOf($.list)[@g.kids[0]]"
+          },
+          "result": {
+            "r": 20
+          }
+        },
+        {
+          "name": "A loop variable's property can be indexed",
+          "transformer": {
+            "#foreach(@g in $.groups) into 'r'": [
+              {
+                "first": "@g.kids[0]"
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "first": 1
+              },
+              {
+                "first": 4
+              }
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be the value of a statement",
+          "transformer": {
+            "#using($.groups[0] as @x) into 'r'": [
+              "#setAt(@x.last, @x.kids[^1])"
+            ]
+          },
+          "result": {
+            "r": {
+              "kids": [
+                1,
+                2,
+                3
+              ],
+              "m": [
+                [
+                  1,
+                  2
+                ],
+                [
+                  3,
+                  4
+                ]
+              ],
+              "pos": {
+                "i": 2
+              },
+              "last": 3
+            }
+          }
+        },
+        {
+          "name": "Indexing a null property fails",
+          "transformer": {
+            "r": "#select($.maybe,@v:@v.kids[0])"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToIndexOrSliceNullPropertyValue"
+        },
+        {
+          "name": "Indexing a missing property fails",
+          "transformer": {
+            "r": "#select($.maybe,@v:@v.nothing[0])"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToIndexOrSliceNullPropertyValue"
+        },
+        {
+          "name": "Indexing a number fails",
+          "transformer": {
+            "r": "#select($.items,@v:@v.id[0])"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToIndexOrSliceNonStringAndNonArrayValue"
+        },
+        {
+          "name": "Indexing with a missing property fails",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[@v.pos.nothing])"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToEvaluateRangeWithNullIndex"
+        },
+        {
+          "name": "Indexing with a null variable fails",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "@n": null,
+            "r": "@l[@n]"
+          },
+          "exceptionCode": "UnableToEvaluateRangeWithNullIndex"
+        },
+        {
+          "name": "A statement path can't be indexed",
+          "transformer": {
+            "#using($.groups[0] as @x) into 'r'": [
+              "#setAt(@x.kids[0], 9)"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+        }
+      ]
+    },
+    {
+      "name": "Dereferenced property names end at operators",
+      "source": {
+        "items": [
+          {
+            "id": 1,
+            "tag": "x",
+            "price": 10
+          },
+          {
+            "id": 2,
+            "price": 20
+          }
+        ],
+        "rows": [
+          {
+            "unit-price": 3
+          }
+        ]
+      },
+      "tests": [
+        {
+          "name": "A property ends at a subtraction of another property",
+          "transformer": {
+            "r": "#select($.items,@v:@v.price-@v.id)"
+          },
+          "result": {
+            "r": [
+              9,
+              18
+            ]
+          }
+        },
+        {
+          "name": "A null-safe property ends at a subtraction",
+          "transformer": {
+            "r": "#select($.items,@v:@v?.price-1)"
+          },
+          "result": {
+            "r": [
+              9,
+              19
+            ]
+          }
+        },
+        {
+          "name": "An indexed property ends at a subtraction",
+          "transformer": {
+            "@r": "#valueOf($.items)",
+            "r": "@r[1].price-1"
+          },
+          "result": {
+            "r": 19
+          }
+        },
+        {
+          "name": "A property ends at a subtraction within an array literal",
+          "transformer": {
+            "r": "#select($.items,@v:[@v.price-1,@v.id-1])"
+          },
+          "result": {
+            "r": [
+              [
+                9,
+                0
+              ],
+              [
+                19,
+                1
+              ]
+            ]
+          }
+        },
+        {
+          "name": "A hyphenated name is read as a subtraction",
+          "transformer": {
+            "@r": "#valueOf($.rows[0])",
+            "r": "@r.unit-price"
+          },
+          "exceptionCode": "UnableToEvaluateExpressionWithNullArgument"
+        },
+        {
+          "name": "A property ends at an addition",
+          "transformer": {
+            "r": "#select($.items,@v:@v.price+1)"
+          },
+          "result": {
+            "r": [
+              11,
+              21
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a multiplication",
+          "transformer": {
+            "r": "#select($.items,@v:@v.price*2)"
+          },
+          "result": {
+            "r": [
+              20,
+              40
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a division",
+          "transformer": {
+            "r": "#select($.items,@v:@v.price/2)"
+          },
+          "result": {
+            "r": [
+              5,
+              10
+            ]
+          }
+        },
+        {
+          "name": "A property ends at an equality",
+          "transformer": {
+            "r": "#select($.items,@v:@v.id==1)"
+          },
+          "result": {
+            "r": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "name": "A property ends at an inequality",
+          "transformer": {
+            "r": "#select($.items,@v:@v.id!=1)"
+          },
+          "result": {
+            "r": [
+              false,
+              true
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a greater than",
+          "transformer": {
+            "r": "#select($.items,@v:@v.id>1)"
+          },
+          "result": {
+            "r": [
+              false,
+              true
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a greater than or equal",
+          "transformer": {
+            "r": "#select($.items,@v:@v.id>=2)"
+          },
+          "result": {
+            "r": [
+              false,
+              true
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a less than",
+          "transformer": {
+            "r": "#select($.items,@v:@v.id<2)"
+          },
+          "result": {
+            "r": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a logical and",
+          "transformer": {
+            "r": "#select($.items,@v:(@v.id==1)&&true)"
+          },
+          "result": {
+            "r": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a logical or",
+          "transformer": {
+            "r": "#select($.items,@v:(@v.id==1)||false)"
+          },
+          "result": {
+            "r": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a null coalesce",
+          "transformer": {
+            "r": "#select($.items,@v:@v.tag??'none')"
+          },
+          "result": {
+            "r": [
+              "x",
+              "none"
+            ]
+          }
+        },
+        {
+          "name": "A null-safe property ends at a null coalesce",
+          "transformer": {
+            "r": "#select($.items,@v:@v?.tag??'none')"
+          },
+          "result": {
+            "r": [
+              "x",
+              "none"
+            ]
+          }
+        },
+        {
+          "name": "A property ends at the end of an object literal",
+          "transformer": {
+            "r": "#select($.items,@v:{'k':@v.id})"
+          },
+          "result": {
+            "r": [
+              {
+                "k": 1
+              },
+              {
+                "k": 2
+              }
+            ]
+          }
+        },
+        {
+          "name": "A property ends at an object literal separator",
+          "transformer": {
+            "r": "#select($.items,@v:{'k':@v.id,'l':@v.price})"
+          },
+          "result": {
+            "r": [
+              {
+                "k": 1,
+                "l": 10
+              },
+              {
+                "k": 2,
+                "l": 20
+              }
+            ]
+          }
+        },
+        {
+          "name": "A property ends at the end of an array literal",
+          "transformer": {
+            "r": "#select($.items,@v:[@v.id,@v.price])"
+          },
+          "result": {
+            "r": [
+              [
+                1,
+                10
+              ],
+              [
+                2,
+                20
+              ]
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a subtraction",
+          "transformer": {
+            "r": "#select($.items,@v:@v.price-1)"
+          },
+          "result": {
+            "r": [
+              9,
+              19
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a subtraction with spaces",
+          "transformer": {
+            "r": "#select($.items,@v:@v.price - 1)"
+          },
+          "result": {
+            "r": [
+              9,
+              19
+            ]
+          }
+        },
+        {
+          "name": "A property can still be piped",
+          "transformer": {
+            "r": "#select($.items,@v:@v.price->#toString())"
+          },
+          "result": {
+            "r": [
+              "10",
+              "20"
+            ]
+          }
+        },
+        {
+          "name": "A null-safe property can still be piped",
+          "transformer": {
+            "r": "#select($.items,@v:@v.tag?->#toUpperCase())"
+          },
+          "result": {
+            "r": [
+              "X",
+              null
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "JSON paths that can match several values always give an array",
+      "source": {
+        "a": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "b": 5,
+        "nul": null,
+        "empty": [],
+        "o": {
+          "p": 1,
+          "q": {
+            "p": 2
+          }
+        },
+        "n": [
+          1,
+          null
+        ],
+        "items": [
+          {
+            "id": 1,
+            "tag": "x",
+            "price": 10
+          },
+          {
+            "id": 2,
+            "tag": "y",
+            "price": 20
+          },
+          {
+            "id": 3,
+            "price": 30
+          }
+        ],
+        "groups": [
+          {
+            "name": "g1",
+            "kids": [
+              1,
+              2
+            ],
+            "shared": "near"
+          },
+          {
+            "name": "g2",
+            "kids": []
+          }
+        ],
+        "shared": "far",
+        "tags": [
+          "p",
+          "q"
+        ],
+        "with-hyphen": 11,
+        "$dollar": 14,
+        "1st": 15,
+        "a:b": 16,
+        "deep-er": {
+          "x-y": [
+            {
+              "z-z": 17
+            }
+          ]
+        }
+      },
+      "tests": [
+        {
+          "name": "A wildcard gives all of the matches",
+          "transformer": {
+            "r": "#valueOf($.a[*])"
+          },
+          "result": {
+            "r": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        },
+        {
+          "name": "A wildcard on an object gives all of its values",
+          "transformer": {
+            "r": "#valueOf($.o.*)"
+          },
+          "result": {
+            "r": [
+              1,
+              {
+                "p": 2
+              }
+            ]
+          }
+        },
+        {
+          "name": "A union gives all of the matches",
+          "transformer": {
+            "r": "#valueOf($.a[0,2])"
+          },
+          "result": {
+            "r": [
+              1,
+              3
+            ]
+          }
+        },
+        {
+          "name": "A slice gives all of the matches",
+          "transformer": {
+            "r": "#valueOf($.a[0:2])"
+          },
+          "result": {
+            "r": [
+              1,
+              2
+            ]
+          }
+        },
+        {
+          "name": "A reversed slice gives its matches in reverse",
+          "transformer": {
+            "r": "#valueOf($.a[::-1])"
+          },
+          "result": {
+            "r": [
+              4,
+              3,
+              2,
+              1
+            ]
+          }
+        },
+        {
+          "name": "A recursive descent gives all of the matches",
+          "transformer": {
+            "r": "#valueOf($..p)"
+          },
+          "result": {
+            "r": [
+              1,
+              2
+            ]
+          }
+        },
+        {
+          "name": "A recursive descent with a single match still gives an array",
+          "transformer": {
+            "r": "#valueOf($..['z-z'])"
+          },
+          "result": {
+            "r": [
+              17
+            ]
+          }
+        },
+        {
+          "name": "A filter with several matches gives all of them",
+          "transformer": {
+            "r": "#valueOf($.items[?(@.price > 15)].id)"
+          },
+          "result": {
+            "r": [
+              2,
+              3
+            ]
+          }
+        },
+        {
+          "name": "A filter with one match still gives an array",
+          "transformer": {
+            "r": "#valueOf($.items[?(@.tag == 'x')].id)"
+          },
+          "result": {
+            "r": [
+              1
+            ]
+          }
+        },
+        {
+          "name": "A filter with no matches gives an empty array",
+          "transformer": {
+            "r": "#valueOf($.items[?(@.price > 99)].id)"
+          },
+          "result": {
+            "r": []
+          }
+        },
+        {
+          "name": "A wildcard keeps a null match",
+          "transformer": {
+            "r": "#valueOf($.n[*])"
+          },
+          "result": {
+            "r": [
+              1,
+              null
+            ]
+          }
+        },
+        {
+          "name": "A path given as text also gives an array",
+          "transformer": {
+            "r": "#valueOf('$.a[*]')"
+          },
+          "result": {
+            "r": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        },
+        {
+          "name": "A path outside of a method call also gives an array",
+          "transformer": {
+            "r": "($.a[*])"
+          },
+          "result": {
+            "r": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        },
+        {
+          "name": "A path within an array literal stays a nested array",
+          "transformer": {
+            "r": "[$.a[*]]"
+          },
+          "result": {
+            "r": [
+              [
+                1,
+                2,
+                3,
+                4
+              ]
+            ]
+          }
+        },
+        {
+          "name": "The result can be indexed",
+          "transformer": {
+            "r": "#valueOf($.a[*])[0]"
+          },
+          "result": {
+            "r": 1
+          }
+        },
+        {
+          "name": "The result can be piped",
+          "transformer": {
+            "r": "#valueOf($.a[*])->#length()"
+          },
+          "result": {
+            "r": 4
+          }
+        },
+        {
+          "name": "The result can be given to a method",
+          "transformer": {
+            "r": "#length($.items[?(@.price > 15)])"
+          },
+          "result": {
+            "r": 2
+          }
+        },
+        {
+          "name": "The result can be summed",
+          "transformer": {
+            "r": "#sum($.items[*].price)"
+          },
+          "result": {
+            "r": 60
+          }
+        },
+        {
+          "name": "An empty result has a length of zero",
+          "transformer": {
+            "r": "#length($.items[?(@.price > 99)])"
+          },
+          "result": {
+            "r": 0
+          }
+        },
+        {
+          "name": "A path with matches exists",
+          "transformer": {
+            "r": "#exists($.items[?(@.price > 15)])"
+          },
+          "result": {
+            "r": true
+          }
+        },
+        {
+          "name": "A path with no matches doesn't exist",
+          "transformer": {
+            "r": "#exists($.items[?(@.price > 99)])"
+          },
+          "result": {
+            "r": false
+          }
+        },
+        {
+          "name": "A path with no matches is missing",
+          "transformer": {
+            "r": "#isMissing($.items[?(@.price > 99)])"
+          },
+          "result": {
+            "r": true
+          }
+        },
+        {
+          "name": "A path with no matches isn't null",
+          "transformer": {
+            "r": "#isNull($.items[?(@.price > 99)])"
+          },
+          "result": {
+            "r": false
+          }
+        },
+        {
+          "name": "A path to an empty array exists",
+          "transformer": {
+            "r": "#exists($.empty)"
+          },
+          "result": {
+            "r": true
+          }
+        },
+        {
+          "name": "A path to an empty array isn't missing",
+          "transformer": {
+            "r": "#isMissing($.empty)"
+          },
+          "result": {
+            "r": false
+          }
+        },
+        {
+          "name": "A path to an array gives that array",
+          "transformer": {
+            "r": "#valueOf($.a)"
+          },
+          "result": {
+            "r": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        },
+        {
+          "name": "An index gives the value",
+          "transformer": {
+            "r": "#valueOf($.a[1])"
+          },
+          "result": {
+            "r": 2
+          }
+        },
+        {
+          "name": "A path with a missing name gives null",
+          "transformer": {
+            "r": "#valueOf($.nothing)"
+          },
+          "result": {
+            "r": null
+          }
+        },
+        {
+          "name": "A path to a null gives null",
+          "transformer": {
+            "r": "#valueOf($.nul)"
+          },
+          "result": {
+            "r": null
+          }
+        },
+        {
+          "name": "A filter can be the source of a loop",
+          "transformer": {
+            "#foreach(@i in $.items[?(@.price > 15)]) into 'r'": [
+              {
+                "v": "@i.id"
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "v": 2
+              },
+              {
+                "v": 3
+              }
+            ]
+          }
+        },
+        {
+          "name": "A filter with no matches loops over nothing",
+          "transformer": {
+            "#foreach(@i in $.items[?(@.price > 99)]) into 'r'": [
+              {
+                "v": "@i.id"
+              }
+            ]
+          },
+          "result": {
+            "r": []
+          }
+        },
+        {
+          "name": "A filter can't be the source of a using block, which needs an object",
+          "transformer": {
+            "#using($.items[?(@.tag == 'y')] as @x) into 'r'": [
+              "#removeAt(@x.tag)"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToPerformUsingLibraryCallOnNonObjectToken"
+        },
+        {
+          "name": "An index can be the source of a using block",
+          "transformer": {
+            "#using($.items[1] as @x) into 'r'": [
+              "#removeAt(@x.tag)"
+            ]
+          },
+          "result": {
+            "r": {
+              "id": 2,
+              "price": 20
+            }
+          }
+        },
+        {
+          "name": "A filter doesn't see changes made by a using block",
+          "transformer": {
+            "before": "#valueOf($..p)",
+            "#using($.o as @x) into 'c'": [
+              "#setAt(@x.p, 99)"
+            ],
+            "after": "#valueOf($..p)"
+          },
+          "result": {
+            "before": [
+              1,
+              2
+            ],
+            "after": [
+              1,
+              2
+            ],
+            "c": {
+              "p": 99,
+              "q": {
+                "p": 2
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "JSON paths in a loop source search outward from the closest match",
+      "source": {
+        "a": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "b": 5,
+        "nul": null,
+        "empty": [],
+        "o": {
+          "p": 1,
+          "q": {
+            "p": 2
+          }
+        },
+        "n": [
+          1,
+          null
+        ],
+        "items": [
+          {
+            "id": 1,
+            "tag": "x",
+            "price": 10
+          },
+          {
+            "id": 2,
+            "tag": "y",
+            "price": 20
+          },
+          {
+            "id": 3,
+            "price": 30
+          }
+        ],
+        "groups": [
+          {
+            "name": "g1",
+            "kids": [
+              1,
+              2
+            ],
+            "shared": "near"
+          },
+          {
+            "name": "g2",
+            "kids": []
+          }
+        ],
+        "shared": "far",
+        "tags": [
+          "p",
+          "q"
+        ],
+        "with-hyphen": 11,
+        "$dollar": 14,
+        "1st": 15,
+        "a:b": 16,
+        "deep-er": {
+          "x-y": [
+            {
+              "z-z": 17
+            }
+          ]
+        }
+      },
+      "tests": [
+        {
+          "name": "A path found on the current element is used",
+          "transformer": {
+            "#foreach(@g in $.groups) into 'r'": [
+              {
+                "#foreach(@k in $.kids) into 'k'": [
+                  "@k"
+                ]
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "k": [
+                  1,
+                  2
+                ]
+              },
+              {
+                "k": []
+              }
+            ]
+          }
+        },
+        {
+          "name": "A path not found on the current element is found further out",
+          "transformer": {
+            "#foreach(@g in $.groups) into 'r'": [
+              {
+                "#foreach(@t in $.tags) into 'k'": [
+                  "@t"
+                ]
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "k": [
+                  "p",
+                  "q"
+                ]
+              },
+              {
+                "k": [
+                  "p",
+                  "q"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "A wildcard found on the current element is used",
+          "transformer": {
+            "#foreach(@g in $.groups) into 'r'": [
+              {
+                "#foreach(@k in $.kids[*]) into 'k'": [
+                  "@k"
+                ]
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "k": [
+                  1,
+                  2
+                ]
+              },
+              {
+                "k": []
+              }
+            ]
+          }
+        },
+        {
+          "name": "A filter with no matches on the current element is found further out",
+          "transformer": {
+            "#foreach(@g in $.groups) into 'r'": [
+              {
+                "#foreach(@k in $.tags[?(@ == 'p')]) into 'k'": [
+                  "@k"
+                ]
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "k": [
+                  "p"
+                ]
+              },
+              {
+                "k": [
+                  "p"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "A wildcard with no matches anywhere loops over nothing",
+          "transformer": {
+            "#foreach(@g in $.groups) into 'r'": [
+              {
+                "#foreach(@k in $.missing[*]) into 'k'": [
+                  "@k"
+                ]
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "k": []
+              },
+              {
+                "k": []
+              }
+            ]
+          }
+        },
+        {
+          "name": "A value method still starts from the root",
+          "transformer": {
+            "#foreach(@g in $.groups) into 'r'": [
+              {
+                "s": "#valueOf($.shared)"
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "s": "far"
+              },
+              {
+                "s": "far"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "JSON paths follow the same syntax with either JSON library",
+      "source": {
+        "a": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "b": 5,
+        "nul": null,
+        "empty": [],
+        "o": {
+          "p": 1,
+          "q": {
+            "p": 2
+          }
+        },
+        "n": [
+          1,
+          null
+        ],
+        "items": [
+          {
+            "id": 1,
+            "tag": "x",
+            "price": 10
+          },
+          {
+            "id": 2,
+            "tag": "y",
+            "price": 20
+          },
+          {
+            "id": 3,
+            "price": 30
+          }
+        ],
+        "groups": [
+          {
+            "name": "g1",
+            "kids": [
+              1,
+              2
+            ],
+            "shared": "near"
+          },
+          {
+            "name": "g2",
+            "kids": []
+          }
+        ],
+        "shared": "far",
+        "tags": [
+          "p",
+          "q"
+        ],
+        "with-hyphen": 11,
+        "$dollar": 14,
+        "1st": 15,
+        "a:b": 16,
+        "deep-er": {
+          "x-y": [
+            {
+              "z-z": 17
+            }
+          ]
+        }
+      },
+      "tests": [
+        {
+          "name": "Each name in a path can use brackets",
+          "transformer": {
+            "r": "#valueOf($['deep-er']['x-y'][0]['z-z'])"
+          },
+          "result": {
+            "r": 17
+          }
+        },
+        {
+          "name": "A dollar sign can be used in brackets",
+          "transformer": {
+            "r": "#valueOf($['$dollar'])"
+          },
+          "result": {
+            "r": 14
+          }
+        },
+        {
+          "name": "A name starting with a digit can be used in brackets",
+          "transformer": {
+            "r": "#valueOf($['1st'])"
+          },
+          "result": {
+            "r": 15
+          }
+        },
+        {
+          "name": "A hyphenated name in a recursive descent needs brackets",
+          "transformer": {
+            "r": "#valueOf($..z-z)"
+          },
+          "exceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A hyphenated name as the source of a loop needs brackets",
+          "transformer": {
+            "#foreach(@x in $.deep-er) into 'r'": [
+              "@x"
+            ]
+          },
+          "exceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A hyphenated name given as text to #valueOf needs brackets",
+          "transformer": {
+            "r": "#valueOf('$.with-hyphen')"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A hyphenated name in a branch that isn't taken still needs brackets",
+          "transformer": {
+            "r": "#if(true, 1, #valueOf($.with-hyphen))"
+          },
+          "exceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A name with a hyphen needs brackets",
+          "transformer": {
+            "r": "#valueOf($.with-hyphen)"
+          },
+          "exceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A name with a dollar sign needs brackets",
+          "transformer": {
+            "r": "#valueOf($.$dollar)"
+          },
+          "exceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A name starting with a digit needs brackets",
+          "transformer": {
+            "r": "#valueOf($.1st)"
+          },
+          "exceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A name with a colon needs brackets",
+          "transformer": {
+            "r": "#valueOf($.a:b)"
+          },
+          "exceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A hyphenated name after other names needs brackets",
+          "transformer": {
+            "r": "#valueOf($.deep-er.x-y[0].z-z)"
+          },
+          "exceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A hyphenated name can be used in brackets",
+          "transformer": {
+            "r": "#valueOf($['with-hyphen'])"
+          },
+          "result": {
+            "r": 11
+          }
+        },
+        {
+          "name": "A double quoted name can be used in brackets",
+          "transformer": {
+            "r": "#valueOf($[\"b\"])"
+          },
+          "result": {
+            "r": 5
+          }
+        },
+        {
+          "name": "A filter doesn't need parentheses",
+          "transformer": {
+            "r": "#valueOf($.items[?@.price > 15].id)"
+          },
+          "result": {
+            "r": [
+              2,
+              3
+            ]
+          }
+        },
+        {
+          "name": "A filter can call a function",
+          "transformer": {
+            "r": "#valueOf($.items[?length(@.tag) == 1].id)"
+          },
+          "result": {
+            "r": [
+              1,
+              2
+            ]
+          }
+        },
+        {
+          "name": "A hyphenated name in a filter works in brackets",
+          "transformer": {
+            "r": "#valueOf($.items[?(@['no-such'])])"
+          },
+          "result": {
+            "r": []
+          }
+        },
+        {
+          "name": "A negative index counts from the end",
+          "transformer": {
+            "r": "#valueOf($.a[-1])"
+          },
+          "result": {
+            "r": 4
+          }
+        },
+        {
+          "name": "An index past the end gives null",
+          "transformer": {
+            "r": "#valueOf($.a[9])"
+          },
+          "result": {
+            "r": null
+          }
+        },
+        {
+          "name": "A negative index past the start gives null",
+          "transformer": {
+            "r": "#valueOf($.a[-9])"
+          },
+          "result": {
+            "r": null
+          }
+        },
+        {
+          "name": "A subtraction without spaces is read as a hyphenated name, which needs brackets",
+          "transformer": {
+            "r": "($.b-1)"
+          },
+          "exceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A hyphenated name in a filter needs brackets",
+          "transformer": {
+            "r": "#valueOf($.items[?(@.no-such)])"
+          },
+          "exceptionCode": "UnableToParseJsonPath"
+        },
+        {
+          "name": "A name can't contain a space",
+          "transformer": {
+            "r": "#valueOf('$.a b')"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToParseJsonPath"
+        },
+        {
+          "name": "A second dollar sign fails",
+          "transformer": {
+            "r": "#valueOf($$)"
+          },
+          "exceptionCode": "UnableToParseJsonPath"
+        }
+      ]
+    },
+    {
+      "name": "Variable names follow the same rules as a C# identifier",
+      "source": {
+        "a": [
+          1,
+          2
+        ],
+        "n": [
+          1,
+          null
+        ],
+        "b": 5
+      },
+      "tests": [
+        {
+          "name": "A variable ends at an addition",
+          "transformer": {
+            "r": "#select($.a,@v:@v+$.b)"
+          },
+          "result": {
+            "r": [
+              6,
+              7
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at a subtraction",
+          "transformer": {
+            "r": "#select($.a,@v:@v-1)"
+          },
+          "result": {
+            "r": [
+              0,
+              1
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at a multiplication",
+          "transformer": {
+            "r": "#select($.a,@v:@v*2)"
+          },
+          "result": {
+            "r": [
+              2,
+              4
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at a division",
+          "transformer": {
+            "r": "#select($.a,@v:@v/2)"
+          },
+          "result": {
+            "r": [
+              0.5,
+              1
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at an equality",
+          "transformer": {
+            "r": "#select($.a,@v:@v==1)"
+          },
+          "result": {
+            "r": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at an inequality",
+          "transformer": {
+            "r": "#select($.a,@v:@v!=1)"
+          },
+          "result": {
+            "r": [
+              false,
+              true
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at a greater than",
+          "transformer": {
+            "r": "#select($.a,@v:@v>1)"
+          },
+          "result": {
+            "r": [
+              false,
+              true
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at a less than",
+          "transformer": {
+            "r": "#select($.a,@v:@v<2)"
+          },
+          "result": {
+            "r": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at a logical and",
+          "transformer": {
+            "r": "#select($.a,@v:(@v==1)&&true)"
+          },
+          "result": {
+            "r": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at a null coalesce",
+          "transformer": {
+            "r": "#select($.n,@v:@v??0)"
+          },
+          "result": {
+            "r": [
+              1,
+              0
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at the end of an object literal",
+          "transformer": {
+            "r": "#select($.a,@v:{'k':@v})"
+          },
+          "result": {
+            "r": [
+              {
+                "k": 1
+              },
+              {
+                "k": 2
+              }
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at the end of an array literal",
+          "transformer": {
+            "r": "#select($.a,@v:[@v,@v])"
+          },
+          "result": {
+            "r": [
+              [
+                1,
+                1
+              ],
+              [
+                2,
+                2
+              ]
+            ]
+          }
+        },
+        {
+          "name": "A name can start with an underscore",
+          "transformer": {
+            "r": "#select($.a,@_v:@_v+1)"
+          },
+          "result": {
+            "r": [
+              2,
+              3
+            ]
+          }
+        },
+        {
+          "name": "A name can contain digits and underscores",
+          "transformer": {
+            "r": "#select($.a,@v_1:@v_1+1)"
+          },
+          "result": {
+            "r": [
+              2,
+              3
+            ]
+          }
+        },
+        {
+          "name": "A name can contain accented letters",
+          "transformer": {
+            "r": "#select($.a,@naïve:@naïve+1)"
+          },
+          "result": {
+            "r": [
+              2,
+              3
+            ]
+          }
+        },
+        {
+          "name": "A name can be in any script",
+          "transformer": {
+            "r": "#select($.a,@名前:@名前+1)"
+          },
+          "result": {
+            "r": [
+              2,
+              3
+            ]
+          }
+        },
+        {
+          "name": "A declared name can contain an underscore",
+          "transformer": {
+            "@a_1": 5,
+            "r": "@a_1"
+          },
+          "result": {
+            "r": 5
+          }
+        },
+        {
+          "name": "An index variable can use any valid name",
+          "transformer": {
+            "#foreach(@i;@_ix in $.a) into 'r'": [
+              "@_ix"
+            ]
+          },
+          "result": {
+            "r": [
+              0,
+              1
+            ]
+          }
+        },
+        {
+          "name": "A name can't start with a digit",
+          "transformer": {
+            "r": "#select($.a,@1v:1)"
+          },
+          "exceptionCode": "UnableToParseVariableName"
+        },
+        {
+          "name": "A name can't have two at signs",
+          "transformer": {
+            "r": "#select($.a,@@v:1)"
+          },
+          "exceptionCode": "UnableToParseVariableName"
+        },
+        {
+          "name": "A name can't start with a hyphen",
+          "transformer": {
+            "r": "#select($.a,@-v:1)"
+          },
+          "exceptionCode": "UnableToParseVariableName"
+        },
+        {
+          "name": "A name can't be empty",
+          "transformer": {
+            "r": "#select($.a,@:1)"
+          },
+          "exceptionCode": "UnableToParseVariableName"
+        },
+        {
+          "name": "A name can't be empty at the end of an expression",
+          "transformer": {
+            "r": "@"
+          },
+          "exceptionCode": "UnableToParseVariableName"
+        },
+        {
+          "name": "A name can't be separated from its at sign",
+          "transformer": {
+            "r": "@ v"
+          },
+          "exceptionCode": "UnableToParseVariableName"
+        },
+        {
+          "name": "A declared name can't start with a digit",
+          "transformer": {
+            "@1v": 5
+          },
+          "exceptionCode": "UnableToParseVariableName"
+        },
+        {
+          "name": "An index variable name can't start with a digit",
+          "transformer": {
+            "#foreach(@i;@1x in $.a) into 'r'": [
+              "@i"
+            ]
+          },
+          "exceptionCode": "UnableToParseVariableName"
+        },
+        {
+          "name": "A name given to into can't start with a digit",
+          "transformer": {
+            "#valueOf($.b) into @1y": 1
+          },
+          "exceptionCode": "UnableToParseVariableName"
+        }
+      ]
+    },
+    {
+      "name": "JSON paths are read as a whole, whatever they contain",
+      "source": {
+        "a": [
+          1,
+          2,
+          3
+        ],
+        "b": 5,
+        "s": "text",
+        "o": {
+          "p": 1
+        },
+        "items": [
+          {
+            "id": 1,
+            "tag": "x",
+            "price": 10
+          },
+          {
+            "id": 2,
+            "tag": "y",
+            "price": 20
+          }
+        ],
+        "with space": 7,
+        "with,comma": 8,
+        "with)paren": 9,
+        "with]bracket": 10,
+        "with'quote": 11,
+        "with-hyphen": 12,
+        "a+b": 13
+      },
+      "tests": [
+        {
+          "name": "A bracketed name can contain a space",
+          "transformer": {
+            "r": "#valueOf($['with space'])"
+          },
+          "result": {
+            "r": 7
+          }
+        },
+        {
+          "name": "A bracketed name can contain a comma",
+          "transformer": {
+            "r": "#valueOf($['with,comma'])"
+          },
+          "result": {
+            "r": 8
+          }
+        },
+        {
+          "name": "A bracketed name can contain a closing parenthesis",
+          "transformer": {
+            "r": "#valueOf($['with)paren'])"
+          },
+          "result": {
+            "r": 9
+          }
+        },
+        {
+          "name": "A bracketed name can contain a closing bracket",
+          "transformer": {
+            "r": "#valueOf($['with]bracket'])"
+          },
+          "result": {
+            "r": 10
+          }
+        },
+        {
+          "name": "A bracketed name can contain an escaped quote",
+          "transformer": {
+            "r": "#valueOf($['with\\'quote'])"
+          },
+          "result": {
+            "r": 11
+          }
+        },
+        {
+          "name": "A bracketed name can contain a hyphen",
+          "transformer": {
+            "r": "#valueOf($['with-hyphen'])"
+          },
+          "result": {
+            "r": 12
+          }
+        },
+        {
+          "name": "A bracketed name can contain an operator",
+          "transformer": {
+            "r": "#valueOf($['a+b'])"
+          },
+          "result": {
+            "r": 13
+          }
+        },
+        {
+          "name": "An index stays part of the path",
+          "transformer": {
+            "r": "#valueOf($.items[1].id)"
+          },
+          "result": {
+            "r": 2
+          }
+        },
+        {
+          "name": "A filter with no spaces stays part of the path",
+          "transformer": {
+            "r": "#valueOf($.items[?(@.price>15)])"
+          },
+          "result": {"r": [{"id": 2, "tag": "y", "price": 20}]}
+        },
+        {
+          "name": "A filter with spaces stays part of the path",
+          "transformer": {
+            "r": "#valueOf($.items[?(@.price > 15)])"
+          },
+          "result": {"r": [{"id": 2, "tag": "y", "price": 20}]}
+        },
+        {
+          "name": "A filter with a quoted value stays part of the path",
+          "transformer": {
+            "r": "#valueOf($.items[?(@.tag == 'x')])"
+          },
+          "result": {"r": [{"id": 1, "tag": "x", "price": 10}]}
+        },
+        {
+          "name": "A filter containing a root path stays part of the path",
+          "transformer": {
+            "r": "#valueOf($.items[?(@.id == $.o.p)])"
+          },
+          "result": {"r": [{"id": 1, "tag": "x", "price": 10}]}
+        },
+        {
+          "name": "A path with a filter can be followed by another parameter",
+          "transformer": {
+            "r": "#contains($.items[?(@.tag == 'x')].tag, 'x')"
+          },
+          "result": {
+            "r": true
+          }
+        },
+        {
+          "name": "A path is followed by a parameter separator without a space",
+          "transformer": {
+            "r": "#contains($.a,2)"
+          },
+          "result": {
+            "r": true
+          }
+        },
+        {
+          "name": "A method can be piped from a method call with a filter in its path",
+          "transformer": {
+            "r": "#valueOf($.items[?(@.price > 15)].id)->#toString()"
+          },
+          "result": {"r": "[2]"}
+        },
+        {
+          "name": "A path ends at the end of an array literal",
+          "transformer": {
+            "r": "[$.b,$.s]"
+          },
+          "result": {
+            "r": [
+              5,
+              "text"
+            ]
+          }
+        },
+        {
+          "name": "A path ends at the end of an array literal with spaces",
+          "transformer": {
+            "r": "[ $.b, $.s ]"
+          },
+          "result": {
+            "r": [
+              5,
+              "text"
+            ]
+          }
+        },
+        {
+          "name": "A path ends at the end of an object literal",
+          "transformer": {
+            "r": "{'k':$.b,'l':$.s}"
+          },
+          "result": {
+            "r": {
+              "k": 5,
+              "l": "text"
+            }
+          }
+        },
+        {
+          "name": "A path with an index ends at the end of an array literal",
+          "transformer": {
+            "r": "[$.a[0],$.a[1]]"
+          },
+          "result": {
+            "r": [
+              1,
+              2
+            ]
+          }
+        },
+        {
+          "name": "A path ends at an addition",
+          "transformer": {
+            "r": "($.b+1)"
+          },
+          "result": {
+            "r": 6
+          }
+        },
+        {
+          "name": "A path ends at a multiplication",
+          "transformer": {
+            "r": "($.b*2)"
+          },
+          "result": {
+            "r": 10
+          }
+        },
+        {
+          "name": "A path ends at a division",
+          "transformer": {
+            "r": "($.b/5)"
+          },
+          "result": {
+            "r": 1
+          }
+        },
+        {
+          "name": "A path ends at an equality",
+          "transformer": {
+            "r": "($.b==5)"
+          },
+          "result": {
+            "r": true
+          }
+        },
+        {
+          "name": "A path ends at an inequality",
+          "transformer": {
+            "r": "($.b!=5)"
+          },
+          "result": {
+            "r": false
+          }
+        },
+        {
+          "name": "A path ends at a greater than",
+          "transformer": {
+            "r": "($.b>4)"
+          },
+          "result": {
+            "r": true
+          }
+        },
+        {
+          "name": "A path ends at a less than",
+          "transformer": {
+            "r": "($.b<4)"
+          },
+          "result": {
+            "r": false
+          }
+        },
+        {
+          "name": "A path ends at a logical and",
+          "transformer": {
+            "r": "(($.b==5)&&true)"
+          },
+          "result": {
+            "r": true
+          }
+        },
+        {
+          "name": "A path ends at a null coalesce",
+          "transformer": {
+            "r": "($.nothing??1)"
+          },
+          "result": {
+            "r": 1
+          }
+        },
+        {
+          "name": "A path with spaces around its operator still works",
+          "transformer": {
+            "r": "($.b + 1)"
+          },
+          "result": {
+            "r": 6
+          }
+        },
+        {
+          "name": "A path keeps a hyphen, so subtraction needs spaces",
+          "transformer": {
+            "r": "($.b - 1)"
+          },
+          "result": {
+            "r": 4
+          }
+        },
+        {
+          "name": "Text starting with a path stays literal outside of an expression",
+          "transformer": {
+            "r": "$.b + 1"
+          },
+          "result": {
+            "r": "$.b + 1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "JSON paths that can't be parsed are errors",
+      "source": {
+        "a": [
+          1,
+          2,
+          3
+        ],
+        "b": 5,
+        "s": "text",
+        "o": {
+          "p": 1
+        },
+        "items": [
+          {
+            "id": 1,
+            "tag": "x",
+            "price": 10
+          },
+          {
+            "id": 2,
+            "tag": "y",
+            "price": 20
+          }
+        ],
+        "with space": 7,
+        "with,comma": 8,
+        "with)paren": 9,
+        "with]bracket": 10,
+        "with'quote": 11,
+        "with-hyphen": 12,
+        "a+b": 13
+      },
+      "tests": [
+        {
+          "name": "A path ending in a dot fails",
+          "transformer": {
+            "r": "#valueOf($.)"
+          },
+          "exceptionCode": "UnableToParseJsonPath"
+        },
+        {
+          "name": "An unclosed bracket fails",
+          "transformer": {
+            "r": "#valueOf($.a[)"
+          },
+          "exceptionCode": "UnableToParseJsonPath"
+        },
+        {
+          "name": "An unclosed index fails",
+          "transformer": {
+            "r": "#valueOf($.a[0)"
+          },
+          "exceptionCode": "UnableToParseJsonPath"
+        },
+        {
+          "name": "An unclosed quote in a bracket fails",
+          "transformer": {
+            "r": "#valueOf($['b)"
+          },
+          "exceptionCode": "UnableToParseJsonPath"
+        },
+        {
+          "name": "An empty filter fails",
+          "transformer": {
+            "r": "#valueOf($[?])"
+          },
+          "exceptionCode": "UnableToParseJsonPath"
+        },
+        {
+          "name": "A bare word in a bracket fails",
+          "transformer": {
+            "r": "#valueOf($.a[x])"
+          },
+          "exceptionCode": "UnableToParseJsonPath"
+        },
+        {
+          "name": "A trailing recursive descent fails",
+          "transformer": {
+            "r": "#valueOf($.a..)"
+          },
+          "exceptionCode": "UnableToParseJsonPath"
+        },
+        {
+          "name": "An invalid path fails in an operand",
+          "transformer": {
+            "r": "($. + 1)"
+          },
+          "exceptionCode": "UnableToParseJsonPath"
+        },
+        {
+          "name": "An invalid path fails in an array literal",
+          "transformer": {
+            "r": "[ $. ]"
+          },
+          "exceptionCode": "UnableToParseJsonPath"
+        },
+        {
+          "name": "An invalid path fails in a branch that isn't taken",
+          "transformer": {
+            "r": "#if(true, 1, #valueOf($.))"
+          },
+          "exceptionCode": "UnableToParseJsonPath"
+        },
+        {
+          "name": "An invalid path given as text to #valueOf fails",
+          "transformer": {
+            "r": "#valueOf('$.')"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToParseJsonPath"
+        },
+        {
+          "name": "An unclosed bracket given as text to #valueOf fails",
+          "transformer": {
+            "r": "#valueOf('$.a[')"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToParseJsonPath"
+        },
+        {
+          "name": "Text that isn't a path given to #valueOf still gives null",
+          "transformer": {
+            "r": "#valueOf('literal')"
+          },
+          "result": {
+            "r": null
+          }
+        },
+        {
+          "name": "A valid path that matches nothing still gives null",
+          "transformer": {
+            "r": "#valueOf($.nothing)"
+          },
+          "result": {
+            "r": null
+          }
+        },
+        {
+          "name": "A valid path with a filter that matches nothing gives an empty array",
+          "transformer": {
+            "r": "#valueOf($.items[?(@.price > 99)])"
+          },
+          "result": {"r": []}
+        },
+        {
+          "name": "An invalid path fails as the source of a loop",
+          "transformer": {
+            "#foreach(@i in $.a[) into 'r'": [
+              {
+                "v": "@i"
+              }
+            ]
+          },
+          "exceptionCode": "UnableToParseJsonPath"
+        },
+        {
+          "name": "An indexed path works as the source of a using block",
+          "transformer": {
+            "#using($.items[1] as @x) into 'r'": [
+              "#removeAt(@x.tag)"
+            ]
+          },
+          "result": {"r": {"id": 2, "price": 20}}
+        },
+        {
+          "name": "A bracketed path works as the source of a loop",
+          "transformer": {
+            "#foreach(@i in $['a']) into 'r'": [
+              "@i"
+            ]
+          },
+          "result": {
+            "r": [
+              1,
+              2,
+              3
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Expressions inside of transformer arrays replace their own text",
+      "source": {
+        "a": [
+          1,
+          2
+        ],
+        "b": 5,
+        "s": "text",
+        "o": {
+          "p": 1
+        },
+        "nullValue": null,
+        "name": "resolved",
+        "items": [
+          {
+            "id": 1
+          },
+          {
+            "id": 2
+          }
+        ]
+      },
+      "tests": [
+        {
+          "name": "An object under a resolved property name evaluates its properties",
+          "transformer": {
+            "#valueOf($.name)": {
+              "k": "#valueOf($.b)"
+            }
+          },
+          "result": {
+            "resolved": {
+              "k": 5
+            }
+          }
+        },
+        {
+          "name": "An object inside of an array under a resolved property name evaluates its properties",
+          "transformer": {
+            "#valueOf($.name)": [
+              {
+                "k": "#valueOf($.b)"
+              }
+            ]
+          },
+          "result": {
+            "resolved": [
+              {
+                "k": 5
+              }
+            ]
+          }
+        },
+        {
+          "name": "An array inside of an object under a resolved property name replaces its own text",
+          "transformer": {
+            "#valueOf($.name)": {
+              "k": [
+                "#valueOf($.b)"
+              ]
+            }
+          },
+          "result": {
+            "resolved": {
+              "k": [
+                5
+              ]
+            }
+          }
+        },
+        {
+          "name": "An object assigned to a variable is evaluated before a later sibling uses it",
+          "transformer": {
+            "@v": {
+              "k": "#valueOf($.b)"
+            },
+            "r": "@v"
+          },
+          "result": {
+            "r": {
+              "k": 5
+            }
+          }
+        },
+        {
+          "name": "A variable assigned from an earlier variable's array sees its results",
+          "transformer": {
+            "@v": [
+              "#valueOf($.b)"
+            ],
+            "@w": [
+              "@v"
+            ],
+            "r": "@w"
+          },
+          "result": {
+            "r": [
+              [
+                5
+              ]
+            ]
+          }
+        },
+        {
+          "name": "An empty array assigned to a variable still works",
+          "transformer": {
+            "@v": [],
+            "r": "@v"
+          },
+          "result": {
+            "r": []
+          }
+        },
+        {
+          "name": "An empty object under a resolved property name still works",
+          "transformer": {
+            "#valueOf($.name)": {}
+          },
+          "result": {
+            "resolved": {}
+          }
+        },
+        {
+          "name": "Foreach with a string template replaces it for every element",
+          "transformer": {
+            "#foreach(@i in $.a) into 'r'": [
+              "#valueOf($.b)"
+            ]
+          },
+          "result": {
+            "r": [
+              5,
+              5
+            ]
+          }
+        },
+        {
+          "name": "Foreach with a loop variable template gives each element",
+          "transformer": {
+            "#foreach(@i in $.a) into 'r'": [
+              "@i"
+            ]
+          },
+          "result": {
+            "r": [
+              1,
+              2
+            ]
+          }
+        },
+        {
+          "name": "Foreach with a loop variable template gives each object",
+          "transformer": {
+            "#foreach(@i in $.items) into 'r'": [
+              "@i"
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "id": 1
+              },
+              {
+                "id": 2
+              }
+            ]
+          }
+        },
+        {
+          "name": "Foreach with a computed template gives each result",
+          "transformer": {
+            "#foreach(@i in $.a) into 'r'": [
+              "@i * 2"
+            ]
+          },
+          "result": {
+            "r": [
+              2,
+              4
+            ]
+          }
+        },
+        {
+          "name": "Foreach with a nested array template replaces its own text",
+          "transformer": {
+            "#foreach(@i in $.a) into 'r'": [
+              [
+                "@i"
+              ]
+            ]
+          },
+          "result": {
+            "r": [
+              [
+                1
+              ],
+              [
+                2
+              ]
+            ]
+          }
+        },
+        {
+          "name": "A match case can give an array literal expression",
+          "transformer": {
+            "#match($.b as @x) into 'r'": [
+              {
+                "#is(integer)": "[ @x, #valueOf($.s) ]"
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              5,
+              "text"
+            ]
+          }
+        },
+        {
+          "name": "An included array replaces its own text",
+          "transformer": {
+            "#includeIf(true) into 'r'": [
+              "#valueOf($.b)"
+            ]
+          },
+          "result": {
+            "r": [
+              5
+            ]
+          }
+        },
+        {
+          "name": "An indexed path is replaced by its value",
+          "transformer": {
+            "r": [
+              "#valueOf($.a[0])"
+            ]
+          },
+          "result": {
+            "r": [
+              1
+            ]
+          }
+        },
+        {
+          "name": "A path to a value is replaced by its value",
+          "transformer": {
+            "r": [
+              "#valueOf($.b)"
+            ]
+          },
+          "result": {
+            "r": [
+              5
+            ]
+          }
+        },
+        {
+          "name": "A path to a string is replaced by its value",
+          "transformer": {
+            "r": [
+              "#valueOf($.s)"
+            ]
+          },
+          "result": {
+            "r": [
+              "text"
+            ]
+          }
+        },
+        {
+          "name": "A path to an object is replaced by a copy of it",
+          "transformer": {
+            "r": [
+              "#valueOf($.o)"
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "p": 1
+              }
+            ]
+          }
+        },
+        {
+          "name": "A path to an array is replaced by a copy of it",
+          "transformer": {
+            "r": [
+              "#valueOf($.a)"
+            ]
+          },
+          "result": {
+            "r": [
+              [
+                1,
+                2
+              ]
+            ]
+          }
+        },
+        {
+          "name": "A path to a null is replaced by null",
+          "transformer": {
+            "r": [
+              "#valueOf($.nullValue)"
+            ]
+          },
+          "result": {
+            "r": [
+              null
+            ]
+          }
+        },
+        {
+          "name": "A computed value replaces its expression",
+          "transformer": {
+            "r": [
+              "#length($.a)"
+            ]
+          },
+          "result": {
+            "r": [
+              2
+            ]
+          }
+        },
+        {
+          "name": "A variable is replaced by its value",
+          "transformer": {
+            "@v": "#valueOf($.b)",
+            "r": [
+              "@v"
+            ]
+          },
+          "result": {
+            "r": [
+              5
+            ]
+          }
+        },
+        {
+          "name": "A variable holding an object is replaced by a copy of it",
+          "transformer": {
+            "@v": "#valueOf($.o)",
+            "r": [
+              "@v",
+              "@v"
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "p": 1
+              },
+              {
+                "p": 1
+              }
+            ]
+          }
+        },
+        {
+          "name": "A parenthesized expression is replaced by its value",
+          "transformer": {
+            "r": [
+              "(#length($.a) + 1)"
+            ]
+          },
+          "result": {
+            "r": [
+              3
+            ]
+          }
+        },
+        {
+          "name": "An array literal expression is replaced by its value",
+          "transformer": {
+            "r": [
+              "[ 1, 2 ]"
+            ]
+          },
+          "result": {
+            "r": [
+              [
+                1,
+                2
+              ]
+            ]
+          }
+        },
+        {
+          "name": "Elements keep their positions among literals",
+          "transformer": {
+            "r": [
+              "first",
+              "#valueOf($.b)",
+              7,
+              null,
+              "#valueOf($.s)",
+              {
+                "k": 1
+              },
+              "last"
+            ]
+          },
+          "result": {
+            "r": [
+              "first",
+              5,
+              7,
+              null,
+              "text",
+              {
+                "k": 1
+              },
+              "last"
+            ]
+          }
+        },
+        {
+          "name": "Several expressions keep their order",
+          "transformer": {
+            "r": [
+              "#valueOf($.a[1])",
+              "#valueOf($.a[0])",
+              "#valueOf($.b)"
+            ]
+          },
+          "result": {
+            "r": [
+              2,
+              1,
+              5
+            ]
+          }
+        },
+        {
+          "name": "Text that isn't an expression stays as it is",
+          "transformer": {
+            "r": [
+              "$.b",
+              "plain",
+              "a #valueOf($.b)"
+            ]
+          },
+          "result": {
+            "r": [
+              "$.b",
+              "plain",
+              "a #valueOf($.b)"
+            ]
+          }
+        },
+        {
+          "name": "Expressions in a nested array replace their own text",
+          "transformer": {
+            "r": [
+              [
+                "#valueOf($.b)",
+                1
+              ],
+              [
+                "#valueOf($.s)"
+              ]
+            ]
+          },
+          "result": {
+            "r": [
+              [
+                5,
+                1
+              ],
+              [
+                "text"
+              ]
+            ]
+          }
+        },
+        {
+          "name": "Expressions in an object inside of an array still work",
+          "transformer": {
+            "r": [
+              {
+                "k": "#valueOf($.b)"
+              },
+              "#valueOf($.s)"
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "k": 5
+              },
+              "text"
+            ]
+          }
+        },
+        {
+          "name": "Expressions in an array inside of an object inside of an array replace their own text",
+          "transformer": {
+            "r": [
+              {
+                "k": [
+                  "#valueOf($.b)"
+                ]
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "k": [
+                  5
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "An array under a resolved property name replaces its own text",
+          "transformer": {
+            "#valueOf($.name)": [
+              "#valueOf($.b)"
+            ]
+          },
+          "result": {
+            "resolved": [
+              5
+            ]
+          }
+        },
+        {
+          "name": "An array assigned to a variable replaces its own text",
+          "transformer": {
+            "@v": [
+              "#valueOf($.b)"
+            ],
+            "r": "@v"
+          },
+          "result": {
+            "r": [
+              5
+            ]
+          }
+        },
+        {
+          "name": "A later element can use a value that replaced an earlier one",
+          "transformer": {
+            "@v": [
+              "#valueOf($.b)"
+            ],
+            "r": [
+              "@v[0]",
+              "@v"
+            ]
+          },
+          "result": {
+            "r": [
+              5,
+              [
+                5
+              ]
+            ]
+          }
+        },
+        {
+          "name": "Foreach with an array template inside of an array replaces its own text",
+          "transformer": {
+            "r": [
+              {
+                "#foreach(@i in $.items) into 'x'": [
+                  {
+                    "values": [
+                      "@i.id",
+                      "#valueOf($.b)"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "x": [
+                  {
+                    "values": [
+                      1,
+                      5
+                    ]
+                  },
+                  {
+                    "values": [
+                      2,
+                      5
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "Foreach with a loop variable in a template array replaces its own text",
+          "transformer": {
+            "#foreach(@i in $.items) into 'r'": [
+              {
+                "values": [
+                  "@i"
+                ]
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "values": [
+                  {
+                    "id": 1
+                  }
+                ]
+              },
+              {
+                "values": [
+                  {
+                    "id": 2
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "#removeAt removes explicit null properties and reports missing ones",
+      "source": {
+        "testObject": {
+          "first": 1,
+          "nullValue": null,
+          "nested": {
+            "deep": 1,
+            "nestedNull": null
+          }
+        }
+      },
+      "tests": [
+        {
+          "name": "#removeAt removes an explicit null property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#removeAt(@x.nullValue)"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 1,
+              "nested": {
+                "deep": 1,
+                "nestedNull": null
+              }
+            }
+          }
+        },
+        {
+          "name": "#removeAt removes a nested explicit null property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#removeAt(@x.nested.nestedNull)"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 1,
+              "nullValue": null,
+              "nested": {
+                "deep": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "#removeAt removes a property that an earlier statement set to null",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.first, null)",
+              "#removeAt(@x.first)"
+            ]
+          },
+          "result": {
+            "r": {
+              "nullValue": null,
+              "nested": {
+                "deep": 1,
+                "nestedNull": null
+              }
+            }
+          }
+        },
+        {
+          "name": "#removeAt removes a property that an earlier statement created as null",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.z, null)",
+              "#removeAt(@x.z)"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 1,
+              "nullValue": null,
+              "nested": {
+                "deep": 1,
+                "nestedNull": null
+              }
+            }
+          }
+        },
+        {
+          "name": "#removeAt still removes a property with a value",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#removeAt(@x.first)"
+            ]
+          },
+          "result": {
+            "r": {
+              "nullValue": null,
+              "nested": {
+                "deep": 1,
+                "nestedNull": null
+              }
+            }
+          }
+        },
+        {
+          "name": "#removeAt fails with a missing last property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#removeAt(@x.missing)"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToDereferenceMissingPath"
+        },
+        {
+          "name": "#removeAt fails with a missing nested last property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#removeAt(@x.nested.missing)"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToDereferenceMissingPath"
+        },
+        {
+          "name": "#removeAt fails with a missing intermediate property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#removeAt(@x.missing.deep)"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToDereferenceMissingPath"
+        },
+        {
+          "name": "#removeAt fails with a property of an explicit null property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#removeAt(@x.nullValue.child)"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToDereferenceMissingPath"
+        },
+        {
+          "name": "#removeAt fails when an explicit null property was already removed",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#removeAt(@x.nullValue)",
+              "#removeAt(@x.nullValue)"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToDereferenceMissingPath"
+        }
+      ]
+    },
+    {
+      "name": "Null-safe dereferences within lambdas give null for null array elements",
+      "source": {
+        "chain": [ {"k": null}, null ],
+        "objs": [
+          {
+            "k": 1
+          },
+          null,
+          {
+            "other": 2
+          }
+        ]
+      },
+      "tests": [
+        {
+          "name": "#select gives null for a null-safe dereference of a null element",
+          "transformer": {
+            "r": "#select($.objs, @o: @o?.k)"
+          },
+          "result": {
+            "r": [
+              1,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "name": "#select can default a null-safe dereference of a null element",
+          "transformer": {
+            "r": "#select($.objs, @o: @o?.k ?? 0)"
+          },
+          "result": {
+            "r": [
+              1,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "name": "#select gives null for a null-safe chain of a null element",
+          "transformer": {
+            "r": "#select($.chain, @o: @o?.k?.deep)"
+          },
+          "result": {
+            "r": [
+              null,
+              null
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Object comparisons compare every property, including the ones after a null property",
+      "source": {
+        "objs": [
+          {
+            "a": null,
+            "b": 2
+          },
+          {
+            "a": null,
+            "b": 1
+          }
+        ],
+        "first": {
+          "a": null,
+          "b": 2
+        },
+        "second": {
+          "a": null,
+          "b": 1
+        },
+        "firstAgain": {
+          "a": null,
+          "b": 2
+        }
+      },
+      "tests": [
+        {
+          "name": "#indexOf looks past a matching null property",
+          "transformer": {
+            "r": "#indexOf($.objs, { 'a': null, 'b': 1 })"
+          },
+          "result": {
+            "r": 1
+          }
+        },
+        {
+          "name": "#contains is true when every property matches",
+          "transformer": {
+            "r": "#contains($.objs, { 'a': null, 'b': 1 })"
+          },
+          "result": {
+            "r": true
+          }
+        },
+        {
+          "name": "#contains is false when a property after a null property differs",
+          "transformer": {
+            "r": "#contains($.objs, { 'a': null, 'b': 3 })"
+          },
+          "result": {
+            "r": false
+          }
+        },
+        {
+          "name": "#contains is false when a property is null on only one side",
+          "transformer": {
+            "r": "#contains($.objs, { 'a': 1, 'b': 2 })"
+          },
+          "result": {
+            "r": false
+          }
+        },
+        {
+          "name": "Objects differing after a null property aren't equal",
+          "transformer": {
+            "r": "#valueOf($.first) == #valueOf($.second)"
+          },
+          "result": {
+            "r": false
+          }
+        },
+        {
+          "name": "Objects with the same properties are equal",
+          "transformer": {
+            "r": "#valueOf($.first) == #valueOf($.firstAgain)"
+          },
+          "result": {
+            "r": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Statements see the changes made by earlier statements in the same using block",
+      "source": {
+        "testObject": {
+          "first": 1,
+          "nested": {
+            "deep": 1,
+            "other": 2
+          },
+          "nullValue": null
+        }
+      },
+      "tests": [
+        {
+          "name": "A new property can be read",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.z, 5)",
+              "#setAt(@x.copy, @x.z)"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 1,
+              "nested": {
+                "deep": 1,
+                "other": 2
+              },
+              "nullValue": null,
+              "z": 5,
+              "copy": 5
+            }
+          }
+        },
+        {
+          "name": "A new nested property can be read",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.a.b, 5)",
+              "#setAt(@x.copy, @x.a.b)"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 1,
+              "nested": {
+                "deep": 1,
+                "other": 2
+              },
+              "nullValue": null,
+              "a": {
+                "b": 5
+              },
+              "copy": 5
+            }
+          }
+        },
+        {
+          "name": "A new sibling of a new nested property can be read",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.a.b, 5)",
+              "#setAt(@x.a.c, 6)",
+              "#setAt(@x.copy, @x.a.c)"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 1,
+              "nested": {
+                "deep": 1,
+                "other": 2
+              },
+              "nullValue": null,
+              "a": {
+                "b": 5,
+                "c": 6
+              },
+              "copy": 6
+            }
+          }
+        },
+        {
+          "name": "A new property under an existing object can be read",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.nested.n.m, 5)",
+              "#setAt(@x.copy, @x.nested.n.m)"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 1,
+              "nested": {
+                "deep": 1,
+                "other": 2,
+                "n": {
+                  "m": 5
+                }
+              },
+              "nullValue": null,
+              "copy": 5
+            }
+          }
+        },
+        {
+          "name": "A property of a new object can be read",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.a, { 'b': 1 })",
+              "#setAt(@x.copy, @x.a.b)"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 1,
+              "nested": {
+                "deep": 1,
+                "other": 2
+              },
+              "nullValue": null,
+              "a": {
+                "b": 1
+              },
+              "copy": 1
+            }
+          }
+        },
+        {
+          "name": "A replaced property gives its new value",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.first, 99)",
+              "#setAt(@x.copy, @x.first)"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 99,
+              "nested": {
+                "deep": 1,
+                "other": 2
+              },
+              "nullValue": null,
+              "copy": 99
+            }
+          }
+        },
+        {
+          "name": "A replaced nested property gives its new value",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.nested.deep, 99)",
+              "#setAt(@x.copy, @x.nested.deep)"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 1,
+              "nested": {
+                "deep": 99,
+                "other": 2
+              },
+              "nullValue": null,
+              "copy": 99
+            }
+          }
+        },
+        {
+          "name": "A replaced object gives its new value",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.nested, 7)",
+              "#setAt(@x.copy, @x.nested)"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 1,
+              "nested": 7,
+              "nullValue": null,
+              "copy": 7
+            }
+          }
+        },
+        {
+          "name": "A property set to null gives null",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.first, null)",
+              "#setAt(@x.copy, @x.first)"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": null,
+              "nested": {
+                "deep": 1,
+                "other": 2
+              },
+              "nullValue": null,
+              "copy": null
+            }
+          }
+        },
+        {
+          "name": "A removed property gives null",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#removeAt(@x.first)",
+              "#setAt(@x.copy, @x.first)"
+            ]
+          },
+          "result": {
+            "r": {
+              "nested": {
+                "deep": 1,
+                "other": 2
+              },
+              "nullValue": null,
+              "copy": null
+            }
+          }
+        },
+        {
+          "name": "A removed nested property gives null",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#removeAt(@x.nested.deep)",
+              "#setAt(@x.copy, @x.nested.deep)"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 1,
+              "nested": {
+                "other": 2
+              },
+              "nullValue": null,
+              "copy": null
+            }
+          }
+        },
+        {
+          "name": "Dereferencing through a removed property fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#removeAt(@x.nested)",
+              "#setAt(@x.copy, @x.nested.deep)"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToDereferenceMissingPath"
+        },
+        {
+          "name": "A null-safe dereference through a removed property gives null",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#removeAt(@x.nested)",
+              "#setAt(@x.copy, @x.nested?.deep)"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 1,
+              "nullValue": null,
+              "copy": null
+            }
+          }
+        },
+        {
+          "name": "Removing a property that was already removed fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#removeAt(@x.first)",
+              "#removeAt(@x.first)"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToDereferenceMissingPath"
+        },
+        {
+          "name": "A removed property can be set again",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#removeAt(@x.first)",
+              "#setAt(@x.first, 3)"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 3,
+              "nested": {
+                "deep": 1,
+                "other": 2
+              },
+              "nullValue": null
+            }
+          }
+        },
+        {
+          "name": "A #when condition sees a new property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.a.b, true)",
+              "#when(@x.a.b, #setAt(@x.ran, 1))"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 1,
+              "nested": {
+                "deep": 1,
+                "other": 2
+              },
+              "nullValue": null,
+              "a": {
+                "b": true
+              },
+              "ran": 1
+            }
+          }
+        },
+        {
+          "name": "A #when condition sees a replaced property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.first, 2)",
+              "#when(@x.first == 2, #setAt(@x.ran, 1))"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 2,
+              "nested": {
+                "deep": 1,
+                "other": 2
+              },
+              "nullValue": null,
+              "ran": 1
+            }
+          }
+        },
+        {
+          "name": "A statement sees the changes made within an earlier #when",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#when(true, #setAt(@x.a.b, 1))",
+              "#setAt(@x.copy, @x.a.b)"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 1,
+              "nested": {
+                "deep": 1,
+                "other": 2
+              },
+              "nullValue": null,
+              "a": {
+                "b": 1
+              },
+              "copy": 1
+            }
+          }
+        },
+        {
+          "name": "Changing a copied object doesn't change the original",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.copy, @x.nested)",
+              "#setAt(@x.copy.deep, 99)"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 1,
+              "nested": {
+                "deep": 1,
+                "other": 2
+              },
+              "nullValue": null,
+              "copy": {
+                "deep": 99,
+                "other": 2
+              }
+            }
+          }
+        },
+        {
+          "name": "Changing the original of a copied object doesn't change the copy",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.copy, @x.nested)",
+              "#setAt(@x.nested.deep, 99)"
+            ]
+          },
+          "result": {
+            "r": {
+              "first": 1,
+              "nested": {
+                "deep": 99,
+                "other": 2
+              },
+              "nullValue": null,
+              "copy": {
+                "deep": 1,
+                "other": 2
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Statement values and conditions follow the same dereference and null rules as any property value",
+      "source": {
+        "testObject": {
+          "yes": true,
+          "nullValue": null,
+          "nested": {
+            "deep": 1
+          }
+        },
+        "nullValue": null
+      },
+      "tests": [
+        {
+          "name": "#setAt value fails when dereferencing through a missing property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.z, @x.missing.deep)"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToDereferenceMissingPath"
+        },
+        {
+          "name": "#setAt value fails when dereferencing through a null property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.z, @x.nullValue.deep)"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToDereferenceMissingPath"
+        },
+        {
+          "name": "#setAt value fails when dereferencing through a missing property on the left of a null coalesce",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.z, @x.missing.deep ?? 'fallback')"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToDereferenceMissingPath"
+        },
+        {
+          "name": "#setAt value fails when a method argument dereferences through a missing property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.z, #exists(@x.missing.deep))"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToDereferenceMissingPath"
+        },
+        {
+          "name": "#setAt value gives null with a null-safe dereference through a missing property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.z, @x.missing?.deep)"
+            ]
+          },
+          "result": {
+            "r": {
+              "yes": true,
+              "nullValue": null,
+              "nested": {
+                "deep": 1
+              },
+              "z": null
+            }
+          }
+        },
+        {
+          "name": "#setAt value gives null with a null-safe dereference through a null property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.z, @x.nullValue?.deep)"
+            ]
+          },
+          "result": {
+            "r": {
+              "yes": true,
+              "nullValue": null,
+              "nested": {
+                "deep": 1
+              },
+              "z": null
+            }
+          }
+        },
+        {
+          "name": "#setAt value can provide a default for a null-safe dereference",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.z, @x.missing?.deep ?? 'fallback')"
+            ]
+          },
+          "result": {
+            "r": {
+              "yes": true,
+              "nullValue": null,
+              "nested": {
+                "deep": 1
+              },
+              "z": "fallback"
+            }
+          }
+        },
+        {
+          "name": "#setAt value gives null for a missing last property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.z, @x.missing)"
+            ]
+          },
+          "result": {
+            "r": {
+              "yes": true,
+              "nullValue": null,
+              "nested": {
+                "deep": 1
+              },
+              "z": null
+            }
+          }
+        },
+        {
+          "name": "#setAt value gives null for a null property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.z, @x.nullValue)"
+            ]
+          },
+          "result": {
+            "r": {
+              "yes": true,
+              "nullValue": null,
+              "nested": {
+                "deep": 1
+              },
+              "z": null
+            }
+          }
+        },
+        {
+          "name": "#setAt sets a null literal at a new property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.z, null)"
+            ]
+          },
+          "result": {
+            "r": {
+              "yes": true,
+              "nullValue": null,
+              "nested": {
+                "deep": 1
+              },
+              "z": null
+            }
+          }
+        },
+        {
+          "name": "#setAt sets a null literal at a new nested path",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.a.b.c, null)"
+            ]
+          },
+          "result": {
+            "r": {
+              "yes": true,
+              "nullValue": null,
+              "nested": {
+                "deep": 1
+              },
+              "a": {
+                "b": {
+                  "c": null
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "#setAt replaces an existing value with a null literal",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.yes, null)"
+            ]
+          },
+          "result": {
+            "r": {
+              "yes": null,
+              "nullValue": null,
+              "nested": {
+                "deep": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "#setAt replaces an existing object with a null literal",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.nested, null)"
+            ]
+          },
+          "result": {
+            "r": {
+              "yes": true,
+              "nullValue": null,
+              "nested": null
+            }
+          }
+        },
+        {
+          "name": "#setAt sets null from a variable holding null",
+          "transformer": {
+            "@nothing": "#valueOf($.nullValue)",
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.z, @nothing)"
+            ]
+          },
+          "result": {
+            "r": {
+              "yes": true,
+              "nullValue": null,
+              "nested": {
+                "deep": 1
+              },
+              "z": null
+            }
+          }
+        },
+        {
+          "name": "#setAt can still replace a null property in its path",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.nullValue, 1)"
+            ]
+          },
+          "result": {
+            "r": {
+              "yes": true,
+              "nullValue": 1,
+              "nested": {
+                "deep": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "#setAt can still create a path through a null property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.nullValue.child, 1)"
+            ]
+          },
+          "result": {
+            "r": {
+              "yes": true,
+              "nullValue": {
+                "child": 1
+              },
+              "nested": {
+                "deep": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "#setAt can still create a path through missing properties",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#setAt(@x.a.b, 1)"
+            ]
+          },
+          "result": {
+            "r": {
+              "yes": true,
+              "nullValue": null,
+              "nested": {
+                "deep": 1
+              },
+              "a": {
+                "b": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "#when condition fails when dereferencing through a missing property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#when(@x.missing.deep, #removeAt(@x.yes))"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToDereferenceMissingPath"
+        },
+        {
+          "name": "#when condition fails when dereferencing through a null property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#when(@x.nullValue.deep, #removeAt(@x.yes))"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToDereferenceMissingPath"
+        },
+        {
+          "name": "#when condition fails when dereferencing through a missing property on the left of a null coalesce",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#when(@x.missing.deep ?? true, #removeAt(@x.yes))"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToDereferenceMissingPath"
+        },
+        {
+          "name": "#when condition fails when a method argument dereferences through a missing property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#when(#exists(@x.missing.deep), #removeAt(@x.yes))"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToDereferenceMissingPath"
+        },
+        {
+          "name": "#when condition fails with a null-safe dereference that gives null",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#when(@x.missing?.deep, #removeAt(@x.yes))"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToEvaluateWhenConditionWithNullValue"
+        },
+        {
+          "name": "#when condition fails with a missing last property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#when(@x.missing, #removeAt(@x.yes))"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToEvaluateWhenConditionWithNullValue"
+        },
+        {
+          "name": "#when condition fails with a null property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#when(@x.nullValue, #removeAt(@x.yes))"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToEvaluateWhenConditionWithNullValue"
+        },
+        {
+          "name": "#when condition fails with a null literal",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#when(null, #removeAt(@x.yes))"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToEvaluateWhenConditionWithNullValue"
+        },
+        {
+          "name": "#when condition fails with a variable holding null",
+          "transformer": {
+            "@nothing": "#valueOf($.nullValue)",
+            "#using($.testObject as @x) into 'r'": [
+              "#when(@nothing, #removeAt(@x.yes))"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToEvaluateWhenConditionWithNullValue"
+        },
+        {
+          "name": "#when condition fails with a JSON path to a null value",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#when($.nullValue, #removeAt(@x.yes))"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToEvaluateWhenConditionWithNullValue"
+        },
+        {
+          "name": "#when condition fails with a JSON path that doesn't exist",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#when($.missing, #removeAt(@x.yes))"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToEvaluateWhenConditionWithNullValue"
+        },
+        {
+          "name": "#when condition fails with a method call that gives null",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#when(#valueOf($.nullValue), #removeAt(@x.yes))"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToEvaluateWhenConditionWithNullValue"
+        },
+        {
+          "name": "A nested #when condition fails with null",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#when(true, #when(null, #removeAt(@x.yes)))"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToEvaluateWhenConditionWithNullValue"
+        },
+        {
+          "name": "#when condition can default a null-safe dereference to false",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#when(@x.missing?.deep ?? false, #removeAt(@x.yes))"
+            ]
+          },
+          "result": {
+            "r": {
+              "yes": true,
+              "nullValue": null,
+              "nested": {
+                "deep": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "#when condition can default a null-safe dereference to true",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#when(@x.missing?.deep ?? true, #removeAt(@x.yes))"
+            ]
+          },
+          "result": {
+            "r": {
+              "nullValue": null,
+              "nested": {
+                "deep": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "#when condition can compare with null",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#when(@x.nullValue == null, #removeAt(@x.yes))"
+            ]
+          },
+          "result": {
+            "r": {
+              "nullValue": null,
+              "nested": {
+                "deep": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "#when condition can test for a missing property",
+          "transformer": {
+            "#using($.testObject as @x) into 'r'": [
+              "#when(#exists(@x.missing), #removeAt(@x.yes))"
+            ]
+          },
+          "result": {
+            "r": {
+              "yes": true,
+              "nullValue": null,
+              "nested": {
+                "deep": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Null literals inside of arrays behave the same with every JSON library",
+      "source": {
+        "a": [
+          1,
+          null,
+          3
+        ],
+        "s": [
+          "x",
+          null,
+          "y"
+        ],
+        "m": [
+          null,
+          null
+        ],
+        "nested": [
+          [
+            null
+          ],
+          {
+            "p": null
+          }
+        ],
+        "objs": [
+          {
+            "k": 1
+          },
+          null
+        ]
+      },
+      "tests": [
+        {
+          "name": "An array with nulls is copied",
+          "transformer": {
+            "r": "#valueOf($.a)"
+          },
+          "result": {
+            "r": [
+              1,
+              null,
+              3
+            ]
+          }
+        },
+        {
+          "name": "An array with only nulls is copied",
+          "transformer": {
+            "r": "#valueOf($.m)"
+          },
+          "result": {
+            "r": [
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "name": "A nested array with nulls is copied",
+          "transformer": {
+            "r": "#valueOf($.nested)"
+          },
+          "result": {
+            "r": [
+              [
+                null
+              ],
+              {
+                "p": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "#length counts nulls",
+          "transformer": {
+            "r": "#length($.a)"
+          },
+          "result": {
+            "r": 3
+          }
+        },
+        {
+          "name": "#contains finds a null",
+          "transformer": {
+            "r": "#contains($.a, null)"
+          },
+          "result": {
+            "r": true
+          }
+        },
+        {
+          "name": "#indexOf finds a null",
+          "transformer": {
+            "r": "#indexOf($.a, null)"
+          },
+          "result": {
+            "r": 1
+          }
+        },
+        {
+          "name": "#joinWith gives an empty string for a null",
+          "transformer": {
+            "r": "#joinWith($.s, ',')"
+          },
+          "result": {
+            "r": "x,,y"
+          }
+        },
+        {
+          "name": "#reverse keeps nulls",
+          "transformer": {
+            "r": "#reverse($.a)"
+          },
+          "result": {
+            "r": [
+              3,
+              null,
+              1
+            ]
+          }
+        },
+        {
+          "name": "#append keeps nulls",
+          "transformer": {
+            "r": "#append($.a, 9)"
+          },
+          "result": {
+            "r": [
+              1,
+              null,
+              3,
+              9
+            ]
+          }
+        },
+        {
+          "name": "#slice keeps nulls",
+          "transformer": {
+            "r": "#slice($.a, 1..2)"
+          },
+          "result": {
+            "r": [
+              null
+            ]
+          }
+        },
+        {
+          "name": "#flatten keeps nulls",
+          "transformer": {
+            "r": "#flatten($.nested)"
+          },
+          "result": {
+            "r": [
+              null,
+              {
+                "p": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "#orderBy puts nulls first",
+          "transformer": {
+            "r": "#orderBy($.a)"
+          },
+          "result": {
+            "r": [
+              null,
+              1,
+              3
+            ]
+          }
+        },
+        {
+          "name": "#orderByDesc puts nulls last",
+          "transformer": {
+            "r": "#orderByDesc($.a)"
+          },
+          "result": {
+            "r": [
+              3,
+              1,
+              null
+            ]
+          }
+        },
+        {
+          "name": "#distinct treats nulls as equal",
+          "transformer": {
+            "r": "#distinct($.m, @v: @v)"
+          },
+          "result": {
+            "r": [
+              null
+            ]
+          }
+        },
+        {
+          "name": "#where passes null to its lambda",
+          "transformer": {
+            "r": "#where($.a, @v: #isNull(@v))"
+          },
+          "result": {
+            "r": [
+              null
+            ]
+          }
+        },
+        {
+          "name": "#select passes null to its lambda",
+          "transformer": {
+            "r": "#select($.a, @v: @v ?? 0)"
+          },
+          "result": {
+            "r": [
+              1,
+              0,
+              3
+            ]
+          }
+        },
+        {
+          "name": "#select can give null from its lambda",
+          "transformer": {
+            "r": "#select($.a, @v: @v)"
+          },
+          "result": {
+            "r": [
+              1,
+              null,
+              3
+            ]
+          }
+        },
+        {
+          "name": "#any passes null to its lambda",
+          "transformer": {
+            "r": "#any($.a, @v: @v == null)"
+          },
+          "result": {
+            "r": true
+          }
+        },
+        {
+          "name": "Indexing a null element gives null",
+          "transformer": {
+            "@arr": "#valueOf($.a)",
+            "r": "@arr[1]"
+          },
+          "result": {
+            "r": null
+          }
+        },
+        {
+          "name": "Indexing a null element is null",
+          "transformer": {
+            "@arr": "#valueOf($.a)",
+            "r": "#isNull(@arr[1])"
+          },
+          "result": {
+            "r": true
+          }
+        },
+        {
+          "name": "Indexing a null element can be defaulted",
+          "transformer": {
+            "@arr": "#valueOf($.a)",
+            "r": "@arr[1] ?? 7"
+          },
+          "result": {
+            "r": 7
+          }
+        },
+        {
+          "name": "Indexing a null element compares equal to null",
+          "transformer": {
+            "@arr": "#valueOf($.a)",
+            "r": "@arr[1] == null"
+          },
+          "result": {
+            "r": true
+          }
+        },
+        {
+          "name": "Indexing a null element skips a null-conditional pipe",
+          "transformer": {
+            "@arr": "#valueOf($.a)",
+            "r": "@arr[1]?->#toString()"
+          },
+          "result": {
+            "r": null
+          }
+        },
+        {
+          "name": "A range keeps null elements",
+          "transformer": {
+            "@arr": "#valueOf($.a)",
+            "r": "@arr[0..2]"
+          },
+          "result": {
+            "r": [
+              1,
+              null
+            ]
+          }
+        },
+        {
+          "name": "Foreach gives null elements to its variable",
+          "transformer": {
+            "#foreach(@i in $.a) into 'r'": [
+              {
+                "v": "@i"
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "v": 1
+              },
+              {
+                "v": null
+              },
+              {
+                "v": 3
+              }
+            ]
+          }
+        },
+        {
+          "name": "A transformer can contain null literals inside of arrays",
+          "transformer": {
+            "r": [
+              1,
+              null,
+              {
+                "p": [
+                  null
+                ]
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              1,
+              null,
+              {
+                "p": [
+                  null
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
     {
       "name": "Standard library null/empty/missing checks work with JSON paths and range variables",
       "source": {
@@ -334,7 +5453,7 @@
           "name": "GroupBy works with a range variable containing a string value",
           "transformer": {
             "@x": "#valueOf($.stringArray)",
-            "resultArray": "#groupBy(@x, @y: #contains(@y, 'is')))"
+            "resultArray": "#groupBy(@x, @y: #contains(@y, 'is'))"
           },
           "result": {
             "resultArray": [
@@ -672,6 +5791,417 @@
           "rootExceptionCode": "usedNonStatementMethodInWhen"
         },
         {
+          "name": "#when method fails with non-statement method call error when condition is false",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#when(!#valueOf($.booleanValue), #valueOf($.integerValue))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "usedNonStatementMethodInWhen"
+        },
+        {
+          "name": "#when method fails with non-method expression as a statement when condition is false",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#when(!#valueOf($.booleanValue), @x.first)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToUseNonMethodExpressionWithinWhenLibraryCall"
+        },
+        {
+          "name": "#when method fails without any statements",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#when(#valueOf($.booleanValue))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseStatementMethodWithoutStatements"
+        },
+        {
+          "name": "#when method works with a nested #when statement",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#when(#valueOf($.booleanValue), #when(@x.second == 2, #removeAt(@x.first)))" ]
+          },
+          "result": {
+            "resultObject": {
+              "second": 2,
+              "third": [ 1, 2, 3 ]
+            }
+          }
+        },
+        {
+          "name": "Parentheses around a statement are allowed",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [
+              "(#removeAt(@x.first))",
+              "((#setAt(@x.second, 5)))",
+              "#when(#valueOf($.booleanValue), (#setAt(@x.added, 'new value')))"
+            ]
+          },
+          "result": {
+            "resultObject": {
+              "second": 5,
+              "third": [ 1, 2, 3 ],
+              "added": "new value"
+            }
+          }
+        },
+        {
+          "name": "#setAt allows any property value expression as its value",
+          "transformer": {
+            "@outer": "#valueOf($.integerValue)",
+            "#using($.testObject as @x) into 'resultObject'": [
+              "#setAt(@x.fromVariable, @outer)",
+              "#setAt(@x.fromDereference, @x.second)",
+              "#setAt(@x.fromArithmetic, @x.second * 2 + @outer)",
+              "#setAt(@x.fromPipe, @x.third->#length())",
+              "#setAt(@x.fromConditional, #if(@x.second == 2, 'two', 'other'))",
+              "#setAt(@x.fromLambda, @x.third->#where(@n: @n > 1))",
+              "#setAt(@x.fromArrayLiteral, [ @x.second, @outer ])",
+              "#setAt(@x.fromObjectLiteral, { 'second': @x.second })",
+              "#setAt(@x.fromCoalesce, @x.missing ?? @x.first)",
+              "#removeAt(@x.third)"
+            ]
+          },
+          "result": {
+            "resultObject": {
+              "first": "value",
+              "second": 2,
+              "fromVariable": 1,
+              "fromDereference": 2,
+              "fromArithmetic": 5,
+              "fromPipe": 3,
+              "fromConditional": "two",
+              "fromLambda": [ 2, 3 ],
+              "fromArrayLiteral": [ 2, 1 ],
+              "fromObjectLiteral": { "second": 2 },
+              "fromCoalesce": "value"
+            }
+          }
+        },
+        {
+          "name": "#setAt allows the using variable itself as its value",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [
+              "#removeAt(@x.third)",
+              "#setAt(@x.copy, @x)"
+            ]
+          },
+          "result": {
+            "resultObject": {
+              "first": "value",
+              "second": 2,
+              "copy": {
+                "first": "value",
+                "second": 2
+              }
+            }
+          }
+        },
+        {
+          "name": "A method that isn't a statement fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#valueOf($.integerValue)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinStatementBlock"
+        },
+        {
+          "name": "A variable fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "@x.first" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "A parenthesized expression that isn't a statement fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "(1 + 2)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "A parenthesized statement within a larger expression fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "(#setAt(@x.first, 1)) == 1" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "A negated statement fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "!#removeAt(@x.first)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "An array literal fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "[ #removeAt(@x.first) ]" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "A plain string fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "text" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "A number fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ 5 ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "A null fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ null ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "A JSON object fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ { "property": "#setAt(@x.first, 1)" } ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "A JSON array fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ [ "#setAt(@x.first, 1)" ] ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "A nested using block fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ { "#using($.testObject as @y) into 'other'": [ "#setAt(@y.first, 1)" ] } ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "Indexing a statement fails as a using entry",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x.first, 1)[0]" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseNonStatementExpressionWithinStatementBlock"
+        },
+        {
+          "name": "Piping into #removeAt fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "@x.first->#removeAt()" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToPipeIntoStatementMethod"
+        },
+        {
+          "name": "Piping into #setAt fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "@x.first?->#setAt(1)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToPipeIntoStatementMethod"
+        },
+        {
+          "name": "Piping into a statement within #when fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#when(!#valueOf($.booleanValue), @x.first->#removeAt())" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToPipeIntoStatementMethod"
+        },
+        {
+          "name": "Piping a statement's result fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x.first, 1)->#toString()" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinStatementBlock"
+        },
+        {
+          "name": "#removeAt fails with the using variable itself as a path",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#removeAt(@x)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+        },
+        {
+          "name": "#removeAt fails with a method call as a path",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#removeAt(#valueOf($.stringValue))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+        },
+        {
+          "name": "#setAt fails with a variable holding a string as a path",
+          "transformer": {
+            "@path": "#valueOf($.stringValue)",
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@path, 1)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+        },
+        {
+          "name": "#setAt fails with a JSON path as a path",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt($.testObject.first, 1)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+        },
+        {
+          "name": "#setAt fails with a literal as a path",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt('first', 1)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+        },
+        {
+          "name": "#setAt fails with a null-safe dereference as a path",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x?.first, 1)" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+        },
+        {
+          "name": "#setAt fails with a dereference of a variable outside of the using block as a path, even if it's not reached",
+          "transformer": {
+            "@outer": "#valueOf($.testObject)",
+            "#using($.testObject as @x) into 'resultObject'": [ "#when(!#valueOf($.booleanValue), #setAt(@outer.first, 1))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToIndirectlyModifyVariableWithinUsingBlock"
+        },
+        {
+          "name": "A statement as the value of #setAt fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x.first, #removeAt(@x.second))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinNonRootStatementBlock"
+        },
+        {
+          "name": "A statement as the condition of #when fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#when(#removeAt(@x.second), #removeAt(@x.first))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinNonRootStatementBlock"
+        },
+        {
+          "name": "A statement within a branch of #if fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x.first, #if(true, #removeAt(@x.second), 0))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinNonRootStatementBlock"
+        },
+        {
+          "name": "A statement within the unreached branch of #if fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x.first, #if(true, 0, #removeAt(@x.second)))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinNonRootStatementBlock"
+        },
+        {
+          "name": "A statement within the body of #try fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x.first, #try(#removeAt(@x.second), @e: 0))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinNonRootStatementBlock"
+        },
+        {
+          "name": "A statement within a lambda fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x.first, @x.third->#select(@n: #setAt(@n.value, 1)))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinNonRootStatementBlock"
+        },
+        {
+          "name": "A statement within an object literal fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x.first, { 'property': #removeAt(@x.second) })" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinNonRootStatementBlock"
+        },
+        {
+          "name": "A statement within the right side of a null coalesce fails",
+          "transformer": {
+            "#using($.testObject as @x) into 'resultObject'": [ "#setAt(@x.first, @x.second ?? #removeAt(@x.third))" ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodWithinNonRootStatementBlock"
+        },
+        {
+          "name": "#setAt as a property value fails",
+          "transformer": {
+            "@outer": "#valueOf($.testObject)",
+            "result": "#setAt(@outer.first, 1)"
+          },
+          "exceptionCode": "UnableToUseMethodOutsideOfStatementBlock"
+        },
+        {
+          "name": "#removeAt as a property value fails",
+          "transformer": {
+            "@outer": "#valueOf($.testObject)",
+            "result": "#removeAt(@outer.first)"
+          },
+          "exceptionCode": "UnableToUseMethodOutsideOfStatementBlock"
+        },
+        {
+          "name": "#when as a property value fails",
+          "transformer": {
+            "result": "#when(false, #valueOf($.integerValue))"
+          },
+          "exceptionCode": "UnableToUseMethodOutsideOfStatementBlock"
+        },
+        {
+          "name": "A statement as an entry in an ordinary array fails",
+          "transformer": {
+            "@outer": "#valueOf($.testObject)",
+            "result": [ "#removeAt(@outer.first)" ]
+          },
+          "exceptionCode": "UnableToUseMethodOutsideOfStatementBlock"
+        },
+        {
+          "name": "A statement as a property name fails",
+          "transformer": {
+            "@outer": "#valueOf($.testObject)",
+            "#setAt(@outer.first, 1)": 5
+          },
+          "exceptionCode": "invalidMethodUseInPropertyName"
+        },
+        {
+          "name": "A statement within a method call in a property value fails",
+          "transformer": {
+            "@outer": "#valueOf($.testObject)",
+            "result": "#if(true, #setAt(@outer.first, 1), 0)"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseMethodOutsideOfStatementBlock"
+        },
+        {
           "name": "#when method works with #setAt/#removeAt when condition is true",
           "transformer": {
             "#using($.testObject as @x) into 'resultObject'": [
@@ -759,6 +6289,173 @@
                 "third": [ 1, 2, 3 ]
               },
               "addedProperty": "new value"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "IncludeIf works with conditions that contain method calls and range variables",
+      "source": {
+        "someValue": 7,
+        "someArray": [ 1, "a" ]
+      },
+      "tests": [
+        {
+          "name": "IncludeIf documentation example includes the object when a comparison with a method call is true",
+          "transformer": {
+            "#includeIf(#valueOf($.someValue) > 5) into 'result'": {
+              "message": "Greater than 5"
+            }
+          },
+          "result": {
+            "result": {
+              "message": "Greater than 5"
+            }
+          }
+        },
+        {
+          "name": "IncludeIf sets the property to null when a comparison with a method call is false",
+          "transformer": {
+            "#includeIf(#valueOf($.someValue) > 10) into 'result'": {
+              "message": "Greater than 10"
+            }
+          },
+          "result": {
+            "result": null
+          }
+        },
+        {
+          "name": "IncludeIf includes the object when a property value only method condition is true",
+          "transformer": {
+            "#includeIf(#exists($.someValue)) into 'result'": {
+              "message": "Exists"
+            }
+          },
+          "result": {
+            "result": {
+              "message": "Exists"
+            }
+          }
+        },
+        {
+          "name": "IncludeIf includes the object when a condition uses a method call within a lambda",
+          "transformer": {
+            "#includeIf(#any($.someArray, @x: #isString(@x))) into 'result'": {
+              "message": "Contains a string"
+            }
+          },
+          "result": {
+            "result": {
+              "message": "Contains a string"
+            }
+          }
+        },
+        {
+          "name": "IncludeIf includes the object when a condition uses a method call within a lazily evaluated argument",
+          "transformer": {
+            "#includeIf(#if(#exists($.someValue), #exists($.someArray), false)) into 'result'": {
+              "message": "Both exist"
+            }
+          },
+          "result": {
+            "result": {
+              "message": "Both exist"
+            }
+          }
+        },
+        {
+          "name": "IncludeIf fails when a property name only method is nested in its condition",
+          "transformer": {
+            "@x": "#valueOf($.someValue)",
+            "#includeIf(#nameOf(@x)) into 'result'": {
+              "message": "Never included"
+            }
+          },
+          "exceptionCode": "UnableToUseMethodWithinPropertyValue"
+        },
+        {
+          "name": "IncludeIf includes the object when a range variable condition is true",
+          "transformer": {
+            "@isGreater": "#valueOf($.someValue) > 5",
+            "#includeIf(@isGreater) into 'result'": {
+              "message": "Greater than 5"
+            }
+          },
+          "result": {
+            "result": {
+              "message": "Greater than 5"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Statement methods within a using block can replace existing values",
+      "source": {
+        "some": {
+          "integerArray": [ 1, 2, 6, 10 ],
+          "complexObject": {
+            "some": {
+              "path": 5
+            }
+          }
+        }
+      },
+      "tests": [
+        {
+          "name": "Using block documentation example removes, adds, and replaces properties",
+          "transformer": {
+            "#using($.some as @x) into 'result'": [
+              "#removeAt(@x.integerArray)",
+              "#setAt(@x.complexObject.new.value, 3)",
+              "#setAt(@x.complexObject.some.path, 20)"
+            ]
+          },
+          "result": {
+            "result": {
+              "complexObject": {
+                "new": {
+                  "value": 3
+                },
+                "some": {
+                  "path": 20
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "#setAt replaces an existing value property",
+          "transformer": {
+            "#using($.some as @x) into 'result'": [
+              "#setAt(@x.complexObject.some.path, 20)"
+            ]
+          },
+          "result": {
+            "result": {
+              "integerArray": [ 1, 2, 6, 10 ],
+              "complexObject": {
+                "some": {
+                  "path": 20
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "#setAt replaces an existing object property",
+          "transformer": {
+            "#using($.some as @x) into 'result'": [
+              "#setAt(@x.complexObject.some, 'replaced')"
+            ]
+          },
+          "result": {
+            "result": {
+              "integerArray": [ 1, 2, 6, 10 ],
+              "complexObject": {
+                "some": "replaced"
+              }
             }
           }
         }
@@ -1289,7 +6986,8 @@
         {
           "name": "Try executes handler when method chain fails",
           "transformer": {
-            "result": "#try(#toInteger('abc123'), @e: -1)"
+            "@x": null,
+            "result": "#try(@x->#length(), @e: -1)"
           },
           "result": {
             "result": -1
@@ -1416,7 +7114,7 @@
         {
           "name": "Try with conditional in error handler",
           "transformer": {
-            "result": "#try(#toInteger($.invalidInteger), @e: #if(#contains(@e.message, 'conversion'), 'type error', 'unknown'))"
+            "result": "#try(#toInteger($.invalidInteger), @e: #if(#contains(@e.message, 'format'), 'type error', 'unknown'))"
           },
           "result": {
             "result": "type error"
@@ -1713,6 +7411,992 @@
                 "nested": "value"
               }
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Type check methods work with JSON paths",
+      "source": {
+        "integerValue": 7,
+        "decimalValue": 1.5,
+        "stringValue": "text",
+        "booleanValue": true,
+        "arrayValue": [ 1, 2 ],
+        "objectValue": {
+          "first": "value"
+        },
+        "nullValue": null
+      },
+      "tests": [
+        {
+          "name": "IsInteger returns true for a JSON path to a matching value",
+          "transformer": {
+            "result": "#isInteger($.integerValue)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsInteger returns false for a JSON path to a decimal value",
+          "transformer": {
+            "result": "#isInteger($.decimalValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsInteger returns false for a JSON path to a string value",
+          "transformer": {
+            "result": "#isInteger($.stringValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsDecimal returns true for a JSON path to a matching value",
+          "transformer": {
+            "result": "#isDecimal($.decimalValue)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsDecimal returns false for a JSON path to a integer value",
+          "transformer": {
+            "result": "#isDecimal($.integerValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsDecimal returns false for a JSON path to a string value",
+          "transformer": {
+            "result": "#isDecimal($.stringValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsString returns true for a JSON path to a matching value",
+          "transformer": {
+            "result": "#isString($.stringValue)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsString returns false for a JSON path to a integer value",
+          "transformer": {
+            "result": "#isString($.integerValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsString returns false for a JSON path to a object value",
+          "transformer": {
+            "result": "#isString($.objectValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsBoolean returns true for a JSON path to a matching value",
+          "transformer": {
+            "result": "#isBoolean($.booleanValue)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsBoolean returns false for a JSON path to a string value",
+          "transformer": {
+            "result": "#isBoolean($.stringValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsBoolean returns false for a JSON path to a integer value",
+          "transformer": {
+            "result": "#isBoolean($.integerValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsArray returns true for a JSON path to a matching value",
+          "transformer": {
+            "result": "#isArray($.arrayValue)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsArray returns false for a JSON path to a object value",
+          "transformer": {
+            "result": "#isArray($.objectValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsArray returns false for a JSON path to a string value",
+          "transformer": {
+            "result": "#isArray($.stringValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsObject returns true for a JSON path to a matching value",
+          "transformer": {
+            "result": "#isObject($.objectValue)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsObject returns false for a JSON path to a string value",
+          "transformer": {
+            "result": "#isObject($.stringValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsObject returns false for a JSON path to a array value",
+          "transformer": {
+            "result": "#isObject($.arrayValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsObject returns false for a JSON path to a integer value",
+          "transformer": {
+            "result": "#isObject($.integerValue)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsObject returns false for a JSON path to a null value",
+          "transformer": {
+            "result": "#isObject($.nullValue)"
+          },
+          "result": {
+            "result": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Type check methods work with range variables",
+      "source": {
+        "integerValue": 7,
+        "decimalValue": 1.5,
+        "stringValue": "text",
+        "booleanValue": true,
+        "arrayValue": [ 1, 2 ],
+        "objectValue": {
+          "first": "value"
+        },
+        "nullValue": null
+      },
+      "tests": [
+        {
+          "name": "IsInteger returns true for a range variable containing a matching value",
+          "transformer": {
+            "@x": "#valueOf($.integerValue)",
+            "result": "#isInteger(@x)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsInteger returns false for a range variable containing a decimal value",
+          "transformer": {
+            "@x": "#valueOf($.decimalValue)",
+            "result": "#isInteger(@x)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsDecimal returns true for a range variable containing a matching value",
+          "transformer": {
+            "@x": "#valueOf($.decimalValue)",
+            "result": "#isDecimal(@x)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsDecimal returns false for a range variable containing a integer value",
+          "transformer": {
+            "@x": "#valueOf($.integerValue)",
+            "result": "#isDecimal(@x)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsString returns true for a range variable containing a matching value",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "result": "#isString(@x)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsString returns false for a range variable containing a integer value",
+          "transformer": {
+            "@x": "#valueOf($.integerValue)",
+            "result": "#isString(@x)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsBoolean returns true for a range variable containing a matching value",
+          "transformer": {
+            "@x": "#valueOf($.booleanValue)",
+            "result": "#isBoolean(@x)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsBoolean returns false for a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "result": "#isBoolean(@x)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsArray returns true for a range variable containing a matching value",
+          "transformer": {
+            "@x": "#valueOf($.arrayValue)",
+            "result": "#isArray(@x)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsArray returns false for a range variable containing a object value",
+          "transformer": {
+            "@x": "#valueOf($.objectValue)",
+            "result": "#isArray(@x)"
+          },
+          "result": {
+            "result": false
+          }
+        },
+        {
+          "name": "IsObject returns true for a range variable containing a matching value",
+          "transformer": {
+            "@x": "#valueOf($.objectValue)",
+            "result": "#isObject(@x)"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "IsObject returns false for a range variable containing a string value",
+          "transformer": {
+            "@x": "#valueOf($.stringValue)",
+            "result": "#isObject(@x)"
+          },
+          "result": {
+            "result": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Piped methods work with dereferenced range variable properties",
+      "source": {
+        "person": {
+          "name": " Jane Doe ",
+          "age": 42,
+          "first-name": "Jane",
+          "address": {
+            "city": "springfield"
+          }
+        },
+        "people": [
+          { "name": "alice" },
+          { "name": "bob" }
+        ]
+      },
+      "tests": [
+        {
+          "name": "A method can be piped from a dereferenced property",
+          "transformer": {
+            "@x": "#valueOf($.person)",
+            "result": "@x.age->#isInteger()"
+          },
+          "result": {
+            "result": true
+          }
+        },
+        {
+          "name": "A method can be piped from a dereferenced property with whitespace around the arrow operator",
+          "transformer": {
+            "@x": "#valueOf($.person)",
+            "result": "@x.name -> #trim()"
+          },
+          "result": {
+            "result": "Jane Doe"
+          }
+        },
+        {
+          "name": "A method can be piped from a null-safe dereferenced property",
+          "transformer": {
+            "@x": "#valueOf($.person)",
+            "result": "@x?.name->#trim()"
+          },
+          "result": {
+            "result": "Jane Doe"
+          }
+        },
+        {
+          "name": "A method can be piped from a nested dereferenced property",
+          "transformer": {
+            "@x": "#valueOf($.person)",
+            "result": "@x.address.city->#toUpperCase()"
+          },
+          "result": {
+            "result": "SPRINGFIELD"
+          }
+        },
+        {
+          "name": "Piped methods can be chained from a dereferenced property",
+          "transformer": {
+            "@x": "#valueOf($.person)",
+            "result": "@x.name->#trim()->#toUpperCase()"
+          },
+          "result": {
+            "result": "JANE DOE"
+          }
+        },
+        {
+          "name": "A method can be piped with whitespace after the arrow operator",
+          "transformer": {
+            "result": "#valueOf($.person.name) ->   #trim()"
+          },
+          "result": {
+            "result": "Jane Doe"
+          }
+        },
+        {
+          "name": "A property followed by a hyphen is subtracted from",
+          "transformer": {
+            "@x": "#valueOf($.person)",
+            "result": "@x.age-1"
+          },
+          "result": {
+            "result": 41
+          }
+        },
+        {
+          "name": "A method can be piped from a property without spaces around the arrow operator",
+          "transformer": {
+            "@x": "#valueOf($.person)",
+            "result": "@x.address.city->#toUpperCase()"
+          },
+          "result": {
+            "result": "SPRINGFIELD"
+          }
+        },
+        {
+          "name": "A method can be piped from a dereferenced foreach loop variable",
+          "transformer": {
+            "#foreach(@p in $.people) into 'names'": [
+              {
+                "name": "@p.name->#toUpperCase()"
+              }
+            ]
+          },
+          "result": {
+            "names": [
+              { "name": "ALICE" },
+              { "name": "BOB" }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Standard library methods accept variables and dereferenced variable properties for every parameter",
+      "source": {
+        "v": {
+          "text": " Jane Doe ",
+          "prefix": " Jane",
+          "suffix": "Doe ",
+          "word": "Doe",
+          "replacement": "Smith",
+          "numbers": [ 3, 1, 2 ],
+          "count": 2,
+          "decimal": 3.14159,
+          "flag": true,
+          "date": "2024-01-15T10:30:00",
+          "format": "yyyy-MM-dd",
+          "parseFormat": "yyyy-MM-ddTHH:mm:ss",
+          "delimiter": ",",
+          "csv": "a,b,c",
+          "letters": [ "a", "b" ]
+        }
+      },
+      "tests": [
+        {
+          "name": "String methods accept dereferenced properties for their search and replacement parameters",
+          "transformer": {
+            "@v": "#valueOf($.v)",
+            "replace": "#replace(@v.text, @v.word, @v.replacement)",
+            "startsWith": "#startsWith(@v.text, @v.prefix)",
+            "endsWith": "#endsWith(@v.text, @v.suffix)",
+            "indexOf": "#indexOf(@v.text, @v.word)",
+            "contains": "#contains(@v.text, @v.word)",
+            "joinWith": "#joinWith(@v.letters, @v.delimiter)",
+            "splitOn": "#splitOn(@v.csv, @v.delimiter)",
+            "isRegexMatch": "#isRegexMatch(@v.text, @v.prefix)",
+            "regexReplace": "#regexReplace(@v.text, @v.word, @v.replacement)"
+          },
+          "result": {
+            "replace": " Jane Smith ",
+            "startsWith": true,
+            "endsWith": true,
+            "indexOf": 6,
+            "contains": true,
+            "joinWith": "a,b",
+            "splitOn": [ "a", "b", "c" ],
+            "isRegexMatch": true,
+            "regexReplace": " Jane Smith "
+          }
+        },
+        {
+          "name": "String methods accept variables for their search and replacement parameters",
+          "transformer": {
+            "@text": "#valueOf($.v.text)",
+            "@word": "#valueOf($.v.word)",
+            "@replacement": "#valueOf($.v.replacement)",
+            "@letters": "#valueOf($.v.letters)",
+            "@csv": "#valueOf($.v.csv)",
+            "@delimiter": "#valueOf($.v.delimiter)",
+            "contains": "#contains(@text, @word)",
+            "joinWith": "#joinWith(@letters, @delimiter)",
+            "splitOn": "#splitOn(@csv, @delimiter)",
+            "isRegexMatch": "#isRegexMatch(@text, @word)",
+            "regexReplace": "#regexReplace(@text, @word, @replacement)"
+          },
+          "result": {
+            "contains": true,
+            "joinWith": "a,b",
+            "splitOn": [ "a", "b", "c" ],
+            "isRegexMatch": true,
+            "regexReplace": " Jane Smith "
+          }
+        },
+        {
+          "name": "Date methods accept dereferenced properties for their format and amount parameters",
+          "transformer": {
+            "@v": "#valueOf($.v)",
+            "parseDateTime": "#parseDateTime(@v.date, @v.parseFormat)",
+            "formatDateTime": "#formatDateTime(@v.date, @v.format)",
+            "addDays": "#addDays(@v.date, @v.count)",
+            "addHours": "#addHours(@v.date, @v.count)",
+            "addMinutes": "#addMinutes(@v.date, @v.count)"
+          },
+          "result": {
+            "parseDateTime": "2024-01-15T10:30:00.0000000",
+            "formatDateTime": "2024-01-15",
+            "addDays": "2024-01-17T10:30:00.0000000",
+            "addHours": "2024-01-15T12:30:00.0000000",
+            "addMinutes": "2024-01-15T10:32:00.0000000"
+          }
+        },
+        {
+          "name": "Count and rounding parameters accept dereferenced properties",
+          "transformer": {
+            "@v": "#valueOf($.v)",
+            "take": "#take(@v.numbers, @v.count)",
+            "skip": "#skip(@v.numbers, @v.count)",
+            "roundTo": "#roundTo(@v.decimal, @v.count)"
+          },
+          "result": {
+            "take": [ 3, 1 ],
+            "skip": [ 2 ],
+            "roundTo": 3.14
+          }
+        },
+        {
+          "name": "Rounding parameters accept variables",
+          "transformer": {
+            "@decimal": "#valueOf($.v.decimal)",
+            "@count": "#valueOf($.v.count)",
+            "roundTo": "#roundTo(@decimal, @count)"
+          },
+          "result": {
+            "roundTo": 3.14
+          }
+        },
+        {
+          "name": "Conditional methods accept dereferenced properties as their condition",
+          "transformer": {
+            "@v": "#valueOf($.v)",
+            "if": "#if(@v.flag, 'yes', 'no')",
+            "#includeIf(@v.flag) into 'included'": {
+              "message": "included"
+            }
+          },
+          "result": {
+            "if": "yes",
+            "included": {
+              "message": "included"
+            }
+          }
+        },
+        {
+          "name": "When accepts variables and dereferenced properties as its condition",
+          "transformer": {
+            "@flag": "#valueOf($.v.flag)",
+            "#using($.v as @x) into 'result'": [
+              "#when(@x.flag, #setAt(@x.fromDereference, true))",
+              "#when(@flag, #setAt(@x.fromVariable, true))"
+            ]
+          },
+          "result": {
+            "result": {
+              "text": " Jane Doe ",
+              "prefix": " Jane",
+              "suffix": "Doe ",
+              "word": "Doe",
+              "replacement": "Smith",
+              "numbers": [ 3, 1, 2 ],
+              "count": 2,
+              "decimal": 3.14159,
+              "flag": true,
+              "date": "2024-01-15T10:30:00",
+              "format": "yyyy-MM-dd",
+              "parseFormat": "yyyy-MM-ddTHH:mm:ss",
+              "delimiter": ",",
+              "csv": "a,b,c",
+              "letters": [ "a", "b" ],
+              "fromDereference": true,
+              "fromVariable": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "JSON paths are resolved wherever they appear, while string literals are always text",
+      "source": {
+        "text": " Jane Doe ",
+        "prefix": " Jane",
+        "word": "Doe",
+        "replacement": "Smith",
+        "numbers": [ 3, 1, 2 ],
+        "letters": [ "a", "b" ],
+        "count": 2,
+        "decimal": 3.14159,
+        "flag": true,
+        "date": "2024-01-15T10:30:00",
+        "format": "yyyy-MM-dd",
+        "delimiter": ","
+      },
+      "tests": [
+        {
+          "name": "Library methods resolve JSON paths given after their first parameter",
+          "transformer": {
+            "replace": "#replace($.text, $.word, $.replacement)",
+            "startsWith": "#startsWith($.text, $.prefix)",
+            "contains": "#contains($.numbers, $.count)",
+            "joinWith": "#joinWith($.letters, $.delimiter)",
+            "isRegexMatch": "#isRegexMatch($.text, $.prefix)",
+            "formatDateTime": "#formatDateTime($.date, $.format)",
+            "addDays": "#addDays($.date, $.count)",
+            "roundTo": "#roundTo($.decimal, $.count)",
+            "take": "#take($.numbers, $.count)"
+          },
+          "result": {
+            "replace": " Jane Smith ",
+            "startsWith": true,
+            "contains": true,
+            "joinWith": "a,b",
+            "isRegexMatch": true,
+            "formatDateTime": "2024-01-15",
+            "addDays": "2024-01-17T10:30:00.0000000",
+            "roundTo": 3.14,
+            "take": [ 3, 1 ]
+          }
+        },
+        {
+          "name": "String literals that look like JSON paths are treated as text",
+          "transformer": {
+            "toUpperCase": "#toUpperCase('$.word')",
+            "length": "#length('$.word')",
+            "startsWith": "#startsWith($.text, '$.prefix')",
+            "isMissing": "#isMissing('$.nonExistentValue')"
+          },
+          "result": {
+            "toUpperCase": "$.WORD",
+            "length": 6,
+            "startsWith": false,
+            "isMissing": false
+          }
+        },
+        {
+          "name": "JSON paths are resolved in operators, literals and conditional branches",
+          "transformer": {
+            "comparison": "#valueOf($.count) == $.count",
+            "not": "!$.flag",
+            "array": "[$.count, 1]",
+            "object": "{ 'word': $.word }",
+            "if": "#if($.flag, $.word, $.replacement)"
+          },
+          "result": {
+            "comparison": true,
+            "not": false,
+            "array": [ 2, 1 ],
+            "object": { "word": "Doe" },
+            "if": "Doe"
+          }
+        },
+        {
+          "name": "IndexOf finds the index of an element in an array",
+          "transformer": {
+            "@numbers": "#valueOf($.numbers)",
+            "number": "#indexOf($.numbers, 1)",
+            "letter": "#indexOf($.letters, 'b')",
+            "fromPath": "#indexOf($.numbers, $.count)",
+            "fromVariable": "#indexOf(@numbers, 2)",
+            "missing": "#indexOf($.numbers, 9)"
+          },
+          "result": {
+            "number": 1,
+            "letter": 1,
+            "fromPath": 2,
+            "fromVariable": 2,
+            "missing": -1
+          }
+        },
+        {
+          "name": "Append adds any value to an array as an element, and an array's elements one by one",
+          "transformer": {
+            "number": "#append($.numbers, 4)",
+            "mixed": "#append($.numbers, $.letters, true, { 'a': 1 }, $.count)"
+          },
+          "result": {
+            "number": [ 3, 1, 2, 4 ],
+            "mixed": [ 3, 1, 2, "a", "b", true, { "a": 1 }, 2 ]
+          }
+        },
+        {
+          "name": "Append leaves the source array unchanged",
+          "transformer": {
+            "appended": "#append($.letters, 'c')",
+            "original": "#valueOf($.letters)"
+          },
+          "result": {
+            "appended": [ "a", "b", "c" ],
+            "original": [ "a", "b" ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Null-conditional operators skip the rest of a piped chain when they find null or nothing",
+      "source": {
+        "person": {
+          "name": " ada ",
+          "nickname": null,
+          "details": {
+            "tags": null
+          }
+        },
+        "tags": [ "a", "b" ],
+        "nicknames": [ null, " bo " ]
+      },
+      "tests": [
+        {
+          "name": "A null-conditional pipe skips the method for a null or missing property",
+          "transformer": {
+            "@p": "#valueOf($.person)",
+            "nullProperty": "@p.nickname?->#toUpperCase()",
+            "missingProperty": "@p.alias?->#toUpperCase()",
+            "presentProperty": "@p.name?->#toUpperCase()"
+          },
+          "result": {
+            "nullProperty": null,
+            "missingProperty": null,
+            "presentProperty": " ADA "
+          }
+        },
+        {
+          "name": "A null-conditional pipe skips every method after it in the chain",
+          "transformer": {
+            "@p": "#valueOf($.person)",
+            "skipped": "@p.nickname?->#trim()->#toUpperCase()",
+            "notSkipped": "@p.name?->#trim()->#toUpperCase()",
+            "defaulted": "@p.nickname?->#trim()->#toUpperCase() ?? 'none'"
+          },
+          "result": {
+            "skipped": null,
+            "notSkipped": "ADA",
+            "defaulted": "none"
+          }
+        },
+        {
+          "name": "A null-conditional pipe works after a variable, a method call and with whitespace",
+          "transformer": {
+            "@nickname": "#valueOf($.person.nickname)",
+            "variable": "@nickname?->#toUpperCase()",
+            "methodCall": "#valueOf($.person.nickname)?->#toUpperCase()",
+            "withWhitespace": "#valueOf($.tags) ?-> #take(1)"
+          },
+          "result": {
+            "variable": null,
+            "methodCall": null,
+            "withWhitespace": [ "a" ]
+          }
+        },
+        {
+          "name": "A null-safe dereference skips a chain piped from it when the value before it is null or missing",
+          "transformer": {
+            "@p": "#valueOf($.person)",
+            "@nobody": null,
+            "nullVariable": "@nobody?.name->#toUpperCase()->#trim()",
+            "missingProperty": "@p.alias?.first->#toUpperCase()",
+            "nullProperty": "@p.nickname?.first->#toUpperCase()",
+            "nullNestedProperty": "@p.details.tags?.first->#length()",
+            "presentProperty": "@p?.name->#trim()"
+          },
+          "result": {
+            "nullVariable": null,
+            "missingProperty": null,
+            "nullProperty": null,
+            "nullNestedProperty": null,
+            "presentProperty": "ada"
+          }
+        },
+        {
+          "name": "Null-safe dereferences, null-conditional pipes and null-coalescing combine to handle optional values",
+          "transformer": {
+            "@p": "#valueOf($.person)",
+            "@nobody": null,
+            "nickname": "@p?.nickname?->#toUpperCase() ?? 'none'",
+            "nobodysNickname": "@nobody?.nickname?->#toUpperCase() ?? 'none'",
+            "tagCount": "#length(@p.details?.tags ?? [])",
+            "missingDetailsTagCount": "#length(@p.missingDetails?.tags ?? [])"
+          },
+          "result": {
+            "nickname": "none",
+            "nobodysNickname": "none",
+            "tagCount": 0,
+            "missingDetailsTagCount": 0
+          }
+        },
+        {
+          "name": "Dereferencing a property of a null property throws a dereference exception",
+          "transformer": {
+            "@p": "#valueOf($.person)",
+            "result": "@p.nickname.length"
+          },
+          "exceptionCode": "dereferencedMissingProperty"
+        },
+        {
+          "name": "A null-safe dereference passes a null property after it to a chain piped from it",
+          "transformer": {
+            "@p": "#valueOf($.person)",
+            "result": "@p?.nickname->#toUpperCase()"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "nullValueInLibraryCall"
+        },
+        {
+          "name": "Pipes work after indexing or slicing a variable or method result",
+          "transformer": {
+            "@word": "#valueOf($.person.name)",
+            "@names": "#valueOf($.nicknames)",
+            "indexedString": "@word[1]->#toUpperCase()",
+            "slicedString": "@word[^4..]->#trim()->#toUpperCase()",
+            "slicedArray": "@names[1..] -> #length()",
+            "indexedArray": "@names[1]->#trim()",
+            "indexedArrayFromEnd": "@names[^1]->#trim()->#toUpperCase()",
+            "indexedMethodResult": "#valueOf($.nicknames)[1]->#trim()",
+            "nullConditionalString": "@word[1..4]?->#toUpperCase()",
+            "nullConditionalPresent": "@names[1]?->#trim()",
+            "nullConditionalNull": "@names[0]?->#trim()->#toUpperCase()",
+            "nullConditionalDefaulted": "@names[0]?->#trim() ?? 'none'",
+            "nullConditionalMethodResult": "#valueOf($.nicknames)[0]?->#trim()",
+            "nullConditionalSlice": "@names[..1]?->#length()"
+          },
+          "result": {
+            "indexedString": "A",
+            "slicedString": "ADA",
+            "slicedArray": 1,
+            "indexedArray": "bo",
+            "indexedArrayFromEnd": "BO",
+            "indexedMethodResult": "bo",
+            "nullConditionalString": "ADA",
+            "nullConditionalPresent": "bo",
+            "nullConditionalNull": null,
+            "nullConditionalDefaulted": "none",
+            "nullConditionalMethodResult": null,
+            "nullConditionalSlice": 1
+          }
+        },
+        {
+          "name": "A pipe after indexing a null element passes it to the method",
+          "transformer": {
+            "@names": "#valueOf($.nicknames)",
+            "result": "@names[0]->#toUpperCase()"
+          },
+          "exceptionCode": "externalMethodException",
+          "innerExceptionCode": "nullValueInLibraryCall"
+        }
+      ]
+    },
+    {
+      "name": "Ordering by the elements themselves requires values that can be sorted as they are",
+      "source": {
+        "names": [ "b", "B", "a", null ],
+        "numbers": [ 3, null, 1.5, 2 ],
+        "integers": [ 3, 1, 2 ],
+        "flags": [ true, false, null ],
+        "mixed": [ 1, "test", { "name": "something" } ],
+        "objects": [ { "v": 2 }, { "v": 1 } ],
+        "numbersAndStrings": [ 1, "1" ]
+      },
+      "tests": [
+        {
+          "name": "Arrays of strings, numbers or booleans are ordered by their values, with nulls first",
+          "transformer": {
+            "names": "#orderBy($.names)",
+            "namesDescending": "#orderByDesc($.names)",
+            "numbers": "#orderBy($.numbers)",
+            "numbersDescending": "#orderByDesc($.numbers)",
+            "flags": "#orderBy($.flags)",
+            "literal": "['b', 'a']->#orderBy()",
+            "empty": "#orderBy([])"
+          },
+          "result": {
+            "names": [ null, "B", "a", "b" ],
+            "namesDescending": [ "b", "a", "B", null ],
+            "numbers": [ null, 1.5, 2, 3 ],
+            "numbersDescending": [ 3, 2, 1.5, null ],
+            "flags": [ null, false, true ],
+            "literal": [ "a", "b" ],
+            "empty": []
+          }
+        },
+        {
+          "name": "A lambda decides the order, even for an array that could be ordered by its values",
+          "transformer": {
+            "integers": "#orderBy($.integers, @x: 0 - @x)",
+            "objects": "#orderBy($.objects, @x: @x.v)"
+          },
+          "result": {
+            "integers": [ 3, 2, 1 ],
+            "objects": [ { "v": 1 }, { "v": 2 } ]
+          }
+        },
+        {
+          "name": "Ordering mixed values without a lambda is an error",
+          "transformer": {
+            "result": "#orderBy($.mixed)"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToOrderUnsortableArrayWithoutLambda"
+        },
+        {
+          "name": "Ordering numbers and strings without a lambda is an error",
+          "transformer": {
+            "result": "#orderByDesc($.numbersAndStrings)"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToOrderUnsortableArrayWithoutLambda"
+        },
+        {
+          "name": "Ordering objects without a lambda is an error",
+          "transformer": {
+            "result": "#orderBy($.objects)"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToOrderUnsortableArrayWithoutLambda"
+        }
+      ]
+    },
+    {
+      "name": "Methods can be piped from parenthesized expressions",
+      "source": {
+        "a": 1.5,
+        "b": 2.25,
+        "missing": null
+      },
+      "tests": [
+        {
+          "name": "The result of a parenthesized expression is piped into a method",
+          "transformer": {
+            "sum": "(#valueOf($.a) + #valueOf($.b))->#roundTo(1)",
+            "withWhitespace": "(#valueOf($.a) + #valueOf($.b)) -> #roundTo(1)",
+            "chained": "(#valueOf($.a))->#toString()->#length()",
+            "coalesced": "(#valueOf($.missing) ?? 'x')->#toUpperCase()",
+            "nullConditional": "(#valueOf($.missing))?->#toUpperCase()"
+          },
+          "result": {
+            "sum": 3.8,
+            "withWhitespace": 3.8,
+            "chained": 3,
+            "coalesced": "X",
+            "nullConditional": null
+          }
+        },
+        {
+          "name": "A parenthesized expression can be a method's first parameter, piped or not",
+          "transformer": {
+            "parenthesized": "#toString((#valueOf($.a) * 2))",
+            "piped": "#length((#valueOf($.a))->#toString())"
+          },
+          "result": {
+            "parenthesized": "3",
+            "piped": 3
           }
         }
       ]

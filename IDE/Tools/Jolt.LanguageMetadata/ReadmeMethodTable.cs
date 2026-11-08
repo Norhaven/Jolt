@@ -61,16 +61,25 @@ namespace Jolt.LanguageMetadata
                 }
 
                 var example = string.Join("|", cells.Skip(2).Take(cells.Length - 3)).Trim().Trim('`');
+                var name = GetLinkTextOrSelf(cells[0]);
 
-                entries[cells[0]] = new Entry
+                entries[name] = new Entry
                 {
-                    Name = cells[0],
+                    Name = name,
                     Description = cells[1],
                     Example = example
                 };
             }
 
             return entries;
+        }
+
+        // Method names may be links to their docs page (e.g. "[addDays](https://...)"), so only the link text is the name.
+        private static string GetLinkTextOrSelf(string cell)
+        {
+            var linkTextEnd = cell.IndexOf("](", StringComparison.Ordinal);
+
+            return cell.StartsWith("[", StringComparison.Ordinal) && linkTextEnd > 0 ? cell.Substring(1, linkTextEnd - 1) : cell;
         }
     }
 }

@@ -1,6 +1,68 @@
 {
   "validations": [
     {
+      "name": "A match case with an object pattern will capture its variables for the rest of the condition and the case value",
+      "transformer": {
+        "#match($.singlePropertyObject as @x) into 'resultValue'": [
+          { "#is({ 'first': @f }) && #given(#isString(@f))": "#append('this is an object ', @f)" },
+          { "#default()": "'defaultValue'" }
+        ]
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "A match case with an array pattern will capture its variables for the case value",
+      "transformer": {
+        "#match($.multipleElementArray as @x) into 'resultValue'": [
+          { "#is([@f, 'is', 'a', @y])": "#append('this is an array ', @f, ' ', @y)" },
+          { "#default()": "'defaultValue'" }
+        ]
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "A match case with a nested pattern will capture its nested variables",
+      "transformer": {
+        "#match($.value as @x) into 'resultValue'": [
+          { "#is({ 'first': [@a, { 'second': @b }] })": "#append(@a, @b, @x)" }
+        ]
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "Variables captured by one match case are not available to other match cases",
+      "transformer": {
+        "#match($.value as @x) into 'resultValue'": [
+          { "#is([@f])": "@f" },
+          { "#given(#isString(@f))": "@f" }
+        ]
+      },
+      "expectedIssues": [
+        "AttemptedToUseUndeclaredVariable",
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    },
+    {
+      "name": "A match case condition using a variable before the pattern that captures it will fail",
+      "transformer": {
+        "#match($.value as @x) into 'resultValue'": [
+          { "#given(#isString(@f)) && #is([@f])": "@f" }
+        ]
+      },
+      "expectedIssues": [
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    },
+    {
+      "name": "An undeclared variable within an object literal will fail",
+      "transformer": {
+        "r": "#toString({ 'a': @nope })"
+      },
+      "expectedIssues": [
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    },
+    {
       "name": "A JSON path with a hyphenated name in brackets will succeed",
       "transformer": {
         "r": "#valueOf($['with-hyphen'])"

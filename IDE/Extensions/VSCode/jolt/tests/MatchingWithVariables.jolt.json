@@ -486,14 +486,14 @@
             "#match($.emptyObject as @x) into 'resultValue'": [
               { "#is(object) && #given(#isArray(@x))": "'this is an object'" },
               { "#default()": "'defaultValue'" }
-            ]            
+            ]
           },
           "result": {
             "resultValue": "defaultValue"
           }
         },
         {
-          "name": "Matching with #is and embedded variable declarations will assign variable and be usable within the current expression",
+          "name": "Matching with #is and embedded variable declarations as object pattern property values will assign variable and be usable within the current expression",
           "transformer": {
             "#match($.singlePropertyObject as @x) into 'resultValue'": [
               { "#is({ 'first': @f }) && #given(#isString(@f))": "#append('this is an object ', @f)" },
@@ -505,7 +505,7 @@
           }
         },
         {
-          "name": "Matching with #is and embedded variable declarations will assign variable and be usable within the current expression",
+          "name": "Matching with #is and embedded variable declarations as array pattern elements will assign variable and be usable within the current expression",
           "transformer": {
             "#match($.multipleElementArray as @x) into 'resultValue'": [
               { "#is([@f, 'is', 'a', @y])": "#append('this is an array ', @f, ' ', @y)" },

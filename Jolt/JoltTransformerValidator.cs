@@ -18,6 +18,8 @@ namespace Jolt
     {
         private const string TransformWithMethodName = "transformWith";
         private const string UsingMethodName = "using";
+        private const string MatchMethodName = "match";
+        private const string IsMethodName = "is";
 
         private readonly TContext _context;
 
@@ -92,7 +94,9 @@ namespace Jolt
                         {
                             var issues = IsUsingBlock(nameMethodCall, out var usingVariableName)
                                 ? ValidateStatements(property.Value, usingVariableName!, childScope)
-                                : ValidateValue(property.Value, childScope);
+                                : IsSystemMethod(nameMethodCall, MatchMethodName)
+                                    ? ValidateMatchCases(property.Value, childScope)
+                                    : ValidateValue(property.Value, childScope);
 
                             foreach (var issue in issues)
                                 yield return issue;
@@ -130,6 +134,142 @@ namespace Jolt
             usingVariableName = methodCall.ParameterValues.OfType<VariableAliasExpression>().FirstOrDefault()?.AliasVariable.Name;
 
             return usingVariableName != null;
+        }
+
+        private static bool IsSystemMethod(MethodCallExpression methodCall, string alias) =>
+            methodCall.Signature.IsSystemMethod && methodCall.Signature.Alias == alias;
+
+        private IEnumerable<ValidationIssue> ValidateMatchCases(IJsonToken cases, ValidationScope scope)
+        {
+            // Malformed case blocks are reported when the transformer runs, so anything that isn't
+            // an array of case objects is only validated as a regular value here.
+
+            if (cases.Type != JsonTokenType.Array)
+            {
+                foreach (var issue in ValidateValue(cases, scope))
+                    yield return issue;
+
+                yield break;
+            }
+
+            foreach (var caseBlock in cases.AsArray())
+            {
+                if (caseBlock.Type != JsonTokenType.Object)
+                {
+                    foreach (var issue in ValidateValue(caseBlock, scope))
+                        yield return issue;
+
+                    continue;
+                }
+
+                // Each case gets its own scope, mirroring the variables layer the #match method adds per case,
+                // so variables captured by one case's patterns don't carry over into the next case.
+
+                foreach (var caseProperty in caseBlock.AsObject())
+                    foreach (var issue in ValidateMatchCase(caseProperty, scope))
+                        yield return issue;
+            }
+        }
+
+        private IEnumerable<ValidationIssue> ValidateMatchCase(IJsonProperty property, ValidationScope scope)
+        {
+            var caseScope = new MatchCaseScope(scope);
+
+            if (_context.TokenReader.StartsWithMethodCallOrOpenParenthesesOrRangeVariableOrOpenSquareBracketOrOpenCurlyBraceOrLogicalNot(property.PropertyName))
+            {
+                if (!TryReadAndParseExpression(property.FullPath, property.PropertyName, EvaluationMode.PropertyName, out var nameExpression, out var nameIssue))
+                {
+                    yield return nameIssue!;
+                }
+                else if (nameExpression != null)
+                {
+                    foreach (var issue in ValidateMatchCaseCondition(nameExpression, caseScope, property.FullPath))
+                        yield return issue;
+
+                    foreach (var statement in StatementRules.FindStatementsWithin(nameExpression).Where(x => !ReferenceEquals(x, nameExpression)))
+                        yield return StatementOutsideOfUsingBlockIssue(statement, property.FullPath, EvaluationMode.PropertyName);
+                }
+            }
+
+            // Any variables captured by the case's patterns are available to its value.
+
+            if (property.Value != null)
+            {
+                foreach (var issue in ValidateValue(property.Value, caseScope.Scope))
+                    yield return issue;
+            }
+        }
+
+        // Validates a match case condition from left to right, so that the variables captured by an #is pattern
+        // are in scope for the rest of the condition (e.g. a following #given) as they are when it's evaluated.
+
+        private IEnumerable<ValidationIssue> ValidateMatchCaseCondition(Expression expression, MatchCaseScope caseScope, string path)
+        {
+            switch (expression)
+            {
+                case BinaryExpression binary:
+                    foreach (var issue in ValidateMatchCaseCondition(binary.Left, caseScope, path))
+                        yield return issue;
+                    foreach (var issue in ValidateMatchCaseCondition(binary.Right, caseScope, path))
+                        yield return issue;
+                    break;
+
+                case LogicalNotExpression not:
+                    foreach (var issue in ValidateMatchCaseCondition(not.Operand, caseScope, path))
+                        yield return issue;
+                    break;
+
+                case MethodCallExpression methodCall when !(methodCall is IndexOrSliceMethodResultExpression) && IsSystemMethod(methodCall, IsMethodName):
+                    var captured = new List<string>();
+
+                    foreach (var parameter in methodCall.ParameterValues)
+                        CollectPatternVariables(parameter, caseScope.Scope, captured, isWithinLiteral: false);
+
+                    caseScope.Scope = caseScope.Scope.With(captured);
+
+                    foreach (var issue in ValidateExpression(methodCall, EvaluationMode.PropertyName, caseScope.Scope, path))
+                        yield return issue;
+                    break;
+
+                default:
+                    foreach (var issue in ValidateExpression(expression, EvaluationMode.PropertyName, caseScope.Scope, path))
+                        yield return issue;
+                    break;
+            }
+        }
+
+        // Mirrors ExpressionEvaluator: within an array or object literal pattern, a bare variable that isn't already
+        // declared captures the matched value at that position rather than being a reference to an existing variable.
+
+        private static void CollectPatternVariables(Expression expression, ValidationScope scope, List<string> captured, bool isWithinLiteral)
+        {
+            switch (expression)
+            {
+                case ArrayLiteralExpression array:
+                    foreach (var element in array.Elements)
+                        CollectPatternVariables(element, scope, captured, isWithinLiteral: true);
+                    break;
+
+                case ObjectLiteralExpression obj:
+                    foreach (var property in obj.Properties)
+                        CollectPatternVariables(property.PropertyValue, scope, captured, isWithinLiteral: true);
+                    break;
+
+                case RangeVariableExpression variable when isWithinLiteral && variable.GetType() == typeof(RangeVariableExpression):
+                    if (!scope.IsVariableDeclared(variable.Name) && !captured.Contains(variable.Name))
+                        captured.Add(variable.Name);
+                    break;
+            }
+        }
+
+        private sealed class MatchCaseScope
+        {
+            public ValidationScope Scope { get; set; }
+
+            public MatchCaseScope(ValidationScope scope)
+            {
+                Scope = scope;
+            }
         }
 
         private IEnumerable<ValidationIssue> ValidateStatements(IJsonToken statements, string usingVariableName, ValidationScope scope)
@@ -388,6 +528,12 @@ namespace Jolt
                 case ArrayLiteralExpression arrayLiteral:
                     foreach (var element in arrayLiteral.Elements)
                         foreach (var issue in ValidateExpression(element, mode, scope, path, isWithinArguments))
+                            yield return issue;
+                    break;
+
+                case ObjectLiteralExpression objectLiteral:
+                    foreach (var property in objectLiteral.Properties)
+                        foreach (var issue in ValidateExpression(property.PropertyValue, mode, scope, path, isWithinArguments))
                             yield return issue;
                     break;
 

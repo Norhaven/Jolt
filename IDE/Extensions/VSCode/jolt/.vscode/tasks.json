@@ -20,13 +20,15 @@
 		},
 		{
 			// Rebuilds everything the extension is built from, in order: Jolt and its library method list (which the
-			// metadata tool reads from the built library), the language server published into ./server, and the extension.
+			// metadata tool reads from the built library), the language server published into ./server, the extension,
+			// and the latest Jolt.Testing JSON test files copied into ./tests.
 			"label": "Build Extension With Latest Jolt",
 			"dependsOrder": "sequence",
 			"dependsOn": [
 				"Build Library Method Metadata",
 				"Build Language Server",
-				"Build Extension"
+				"Build Extension",
+				"Copy Test Files"
 			],
 			"problemMatcher": [],
 			"group": {
@@ -51,6 +53,19 @@
 			"type": "npm",
 			"script": "compile",
 			"problemMatcher": "$tsc"
+		},
+		{
+			"label": "Copy Test Files",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"${workspaceFolder}/CopyTestFiles.ps1"
+			],
+			"problemMatcher": []
 		}
 	]
 }

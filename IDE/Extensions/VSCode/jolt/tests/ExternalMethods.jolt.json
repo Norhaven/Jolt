@@ -255,6 +255,117 @@
           }
         }
       ]
+    },
+    {
+      "name": "External methods will accept dereferenced range variable properties as parameters",
+      "source": {
+        "values": {
+          "stringValue": "test",
+          "integerValue": 5,
+          "doubleValue": 7.12,
+          "booleanValue": true,
+          "jsonObject": {
+            "text": "test"
+          },
+          "jsonArray": [ 1, 2, 3 ]
+        }
+      },
+      "externalMethodSource": "externalMixedMethods",
+      "tests": [
+        {
+          "name": "External passthrough methods take the values of dereferenced properties",
+          "transformer": {
+            "@values": "#valueOf($.values)",
+            "stringResult": "#stringPassthrough(@values.stringValue)",
+            "integerResult": "#integerPassthrough(@values.integerValue)",
+            "doubleResult": "#doublePassthrough(@values.doubleValue)",
+            "booleanResult": "#booleanPassthrough(@values.booleanValue)",
+            "jsonObjectResult": "#jsonObjectPassthrough(@values.jsonObject)",
+            "jsonArrayResult": "#jsonArrayPassthrough(@values.jsonArray)",
+            "pipedResult": "@values.stringValue->#stringConcat('ing')"
+          },
+          "result": {
+            "stringResult": "test",
+            "integerResult": 5,
+            "doubleResult": 7.12,
+            "booleanResult": true,
+            "jsonObjectResult": {
+              "text": "test"
+            },
+            "jsonArrayResult": [ 1, 2, 3 ],
+            "pipedResult": "testing"
+          }
+        },
+        {
+          "name": "External methods take the values at JSON paths",
+          "transformer": {
+            "stringResult": "#stringPassthrough($.values.stringValue)",
+            "integerResult": "#integerPassthrough($.values.integerValue)",
+            "filtered": "#customLongFilterWithLambda($.values.jsonArray, @x: @x > 1)",
+            "literal": "#stringPassthrough('$.values.stringValue')"
+          },
+          "result": {
+            "stringResult": "test",
+            "integerResult": 5,
+            "filtered": [ 2, 3 ],
+            "literal": "$.values.stringValue"
+          }
+        },
+        {
+          "name": "External methods with sequence parameters take the values of dereferenced array properties",
+          "transformer": {
+            "@values": "#valueOf($.values)",
+            "filtered": "#customLongFilterWithLambda(@values.jsonArray, @x: @x > 1)"
+          },
+          "result": {
+            "filtered": [ 2, 3 ]
+          }
+        },
+        {
+          "name": "External methods take null for a missing property and for a chain skipped by a null-safe dereference",
+          "transformer": {
+            "@values": "#valueOf($.values)",
+            "@nothing": null,
+            "missingProperty": "#stringPassthrough(@values.missing)",
+            "missingPropertyAfterNullSafe": "#stringPassthrough(@values?.missing)",
+            "skippedChain": "#stringPassthrough(@nothing?.missing.deeper)"
+          },
+          "result": {
+            "missingProperty": null,
+            "missingPropertyAfterNullSafe": null,
+            "skippedChain": null
+          }
+        },
+        {
+          "name": "Null-conditional operators skip external methods when they find null or nothing",
+          "transformer": {
+            "@values": "#valueOf($.values)",
+            "@nothing": null,
+            "nullConditionalPipe": "@values.missing?->#stringConcat('ing')",
+            "nullSafeDereference": "@nothing?.missing->#stringConcat('ing')",
+            "notSkippedByNullSafeDereference": "@values?.missing->#stringConcat('ing')",
+            "restOfChain": "@values.missing?->#stringConcat('ing')->#stringConcat('!')",
+            "chainAsArgument": "#stringConcat(@values.missing?->#stringConcat('ing'), '!')",
+            "notSkipped": "@values.stringValue?->#stringConcat('ing')"
+          },
+          "result": {
+            "nullConditionalPipe": null,
+            "nullSafeDereference": null,
+            "restOfChain": null,
+            "chainAsArgument": "!",
+            "notSkipped": "testing",
+            "notSkippedByNullSafeDereference": "ing"
+          }
+        },
+        {
+          "name": "External methods report a dereference of a missing property",
+          "transformer": {
+            "@values": "#valueOf($.values)",
+            "result": "#stringPassthrough(@values.missing.deeper)"
+          },
+          "exceptionCode": "AttemptedToDereferenceMissingPath"
+        }
+      ]
     }
   ]
 }

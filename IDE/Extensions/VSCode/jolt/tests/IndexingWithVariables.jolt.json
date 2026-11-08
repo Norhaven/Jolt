@@ -116,7 +116,7 @@
             "arrayStart": [ 1, 9, 3 ],
             "arrayMiddle": [ 3, 2 ],
             "arrayEnd": [ 3, 2, 6 ],
-            "arrayElement": [ 9 ]
+            "arrayElement": 9
           }
         }
       ]
