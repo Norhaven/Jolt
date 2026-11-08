@@ -1,6 +1,7 @@
 ﻿using Jolt.Exceptions;
 using Jolt.Expressions;
 using Jolt.Extensions;
+using Jolt.Structure;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,7 +37,7 @@ namespace Jolt.Parsing.Parsers
 
                 if (!context.QueryPathProvider.IsValidQueryPath(path))
                 {
-                    throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToParseJsonPath, path);
+                    throw JsonPathText.CreateParsingErrorFor<ExpressionParser>(context, path);
                 }
 
                 _reader.ConsumeCurrent();

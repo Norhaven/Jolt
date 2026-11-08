@@ -88,9 +88,24 @@ A path starts at `$` and selects a value from the source document. Everything in
 }
 ```
 
-Outside of square brackets, a path ends at whitespace or at anything that can follow a value, such as `,`, `)`, `]`, `}` or an operator. That means `($.price*2)` and `[$.first,$.second]` work without spaces. A name containing one of those characters needs bracket notation, as in `$['a+b']`. A `-` stays part of the name, so subtraction needs spaces: `($.price - 1)`.
+Outside of square brackets, a path ends at whitespace or at anything that can follow a value, such as `,`, `)`, `]`, `}` or an operator. That means `($.price*2)` and `[$.first,$.second]` work without spaces. Paths follow [RFC 9535](https://www.rfc-editor.org/rfc/rfc9535) with either JSON library, so a negative index counts from the end of an array, and a filter uses `match()` or `search()` for regular expressions. A name after a dot can only contain letters, digits and underscores, and can't start with a digit. Any other name needs bracket notation, such as `$['first-name']`, `$['1st']` or `$['a+b']`, and so does one within a filter: `$.items[?(@['unit-price'] > 1)]`.
 
-A path that can't be parsed throws error `JLT581`, which validating the transformer also reports. Use a path that selects one value, because a path that matches several isn't handled the same way by the two JSON libraries yet, and neither are all of the less common forms of path syntax.
+A path with a name after a dot that needs brackets throws error `JLT586`, which says how to write it. That includes a subtraction without spaces, since `($.price-1)` is read as the name `price-1`, so write `($.price - 1)` instead. Any other path that can't be parsed throws error `JLT581`. Validating the transformer reports both.
+
+### Paths that can match several values
+
+A path with a wildcard, filter, slice, union or recursive descent can match several values, so it always gives an array, even if there's only one match or none:
+
+| Path | Result |
+| ---- | ------ |
+| `$.items[0].sku` | The value, or null if it's missing |
+| `$.items[*].sku` | An array of every match |
+| `$.items[?(@.sku == 'abc')].price` | An array, with one element if one item matches |
+| `$.items[?(@.price > 9000)]` | An empty array if nothing matches |
+
+With no matches, [`#exists`](../../reference/library/exists/) gives false and [`#isMissing`](../../reference/library/ismissing/) gives true. [`#using`](../using-blocks/) needs an object, so it needs a path to one value, such as `$.items[0]`.
+
+The path that [`#foreach`](../../reference/library/foreach/) loops over is searched for in the current loop element first, and then outward through any enclosing loops to the source document. For a path that can match several values, a source without any matches is passed over in the same way as a missing path. Any other path always starts from the source document.
 
 ## Paths and values
 

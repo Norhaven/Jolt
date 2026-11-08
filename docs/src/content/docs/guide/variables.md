@@ -7,7 +7,11 @@ sidebar:
 
 Sometimes you want to run a transform and then do something more with the result, such as some math or a loop over it. Usually you don't want that intermediate result in the final output; it's only there for preprocessing. Range variables cover this.
 
-All variables start with `@`. Writing one as a **property name** declares and sets it, and removes that node from the output.
+All variables start with a single `@`, followed by a name with the same rules as a C# identifier: it starts with a letter or underscore and contains only letters, digits and underscores. The name ends at the first character that can't be part of it, so `@a+1` is the variable `@a` plus one. A name that breaks these rules throws error `JLT582`.
+
+A property of a variable is read with a dot, as in `@x.price`. Its name ends at an operator or anything else that can follow a value, so `@x.price-1`, `@x.price*2`, `@x.name??'none'` and `{'k':@x.id}` all work without spaces. A property whose name contains one of those characters, such as a hyphen, can't be read with a dot.
+
+Writing a variable as a **property name** declares and sets it, and removes that node from the output.
 
 ## Declaring a variable from an expression
 

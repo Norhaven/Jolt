@@ -49,7 +49,7 @@ export interface MethodsFileSystem {
 
 const methodName = /^[A-Za-z_]\w*$/;
 const parameterKinds = ['value', 'lambda'];
-const lambdaVariableName = /^@?([A-Za-z_]\w*)$/;
+const lambdaVariableName = /^@?([\p{L}\p{Nl}_][\p{L}\p{Nl}\p{Nd}\p{Pc}\p{Mn}\p{Mc}\p{Cf}]*)$/u;
 /** Jolt lambdas bind at most two variables (e.g. @acc;@current: ...). */
 const maxLambdaVariables = 2;
 

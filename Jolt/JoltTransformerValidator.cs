@@ -404,6 +404,9 @@ namespace Jolt
                 case PropertyDereferenceExpression dereference:
                     if (!scope.IsVariableDeclared(dereference.Variable.Name))
                         yield return UndeclaredVariableIssue(dereference.Variable, path, mode);
+                    foreach (var indexer in dereference.VariableIndexers.Concat(dereference.DereferenceChain.SelectMany(x => x.Indexers)))
+                        foreach (var issue in ValidateExpression(indexer, mode, scope, path, isWithinArguments))
+                            yield return issue;
                     break;
 
                 // RangeVariablePairExpression also extends RangeVariableExpression; its .Name is the first variable.
@@ -444,8 +447,12 @@ namespace Jolt
                 case RangeExpression range:
                     foreach (var issue in ValidateExpression(range.StartIndex.Index, mode, scope, path, isWithinArguments))
                         yield return issue;
-                    foreach (var issue in ValidateExpression(range.EndIndex.Index, mode, scope, path, isWithinArguments))
-                        yield return issue;
+
+                    // A single index (e.g. "[@i]") is both ends of its range, so it's only checked once.
+
+                    if (!range.IsSingleIndex)
+                        foreach (var issue in ValidateExpression(range.EndIndex.Index, mode, scope, path, isWithinArguments))
+                            yield return issue;
                     break;
 
                 case RangeIndexExpression rangeIndex:

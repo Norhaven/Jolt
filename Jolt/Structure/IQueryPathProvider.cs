@@ -24,6 +24,13 @@ namespace Jolt.Structure
         bool IsValidQueryPath(string path);
 
         /// <summary>
+        /// Determines if a JSON query path can match several values (e.g. "$.a[*]"), in which case selecting it always gives an array of its matches.
+        /// </summary>
+        /// <param name="path">The JSON query path.</param>
+        /// <returns>True if the path can match several values, false if it can match one at most or can't be parsed.</returns>
+        bool CanMatchMultipleValues(string path);
+
+        /// <summary>
         /// Selects a JSON structure from the source based on the query path and mode provided.
         /// </summary>
         /// <param name="closureSources">The potentially applicable JSON structures to query.</param>

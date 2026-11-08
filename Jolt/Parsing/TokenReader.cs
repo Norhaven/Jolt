@@ -4,6 +4,7 @@ using Jolt.Extensions;
 using Jolt.Parsing.Readers;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -224,38 +225,99 @@ namespace Jolt.Parsing
         }
 
         /// <summary>
-        /// Reads a dereferenced property name, which may contain a hyphen (e.g. "@x.first-name") but ends at the arrow operator
-        /// of a piped method call (e.g. "@x.name->#trim()"), in which case the arrow operator is consumed as well.
+        /// Reads a variable, which is a single "@" followed by a name that follows the same rules as a C# identifier. The variable
+        /// ends at the first character that can't be part of its name, which is then read as a token of its own (e.g. the "+" in "@a+1").
         /// </summary>
-        private ExpressionToken TokenForPropertyName(ITokenStream<char> stream, ExpressionTokenCategory category, out bool isPiped, params char[] terminators)
+        private ExpressionToken TokenForVariable(ITokenStream<char> stream)
         {
-            var terminatorsOrArrowBody = terminators.Concat(new[] { ExpressionToken.ArrowBody }).ToArray();
-            var name = new StringBuilder();
+            stream.ConsumeCurrent();
 
-            isPiped = false;
-
-            while (true)
+            if (stream.IsCompleted || !IsVariableNameStart(stream.CurrentToken))
             {
-                name.Append(TokenUntilMatchedWith(stream, category, terminatorsOrArrowBody).Value);
-
-                if (stream.CurrentToken != ExpressionToken.ArrowBody)
-                {
-                    break;
-                }
-
-                stream.ConsumeCurrent();
-
-                if (stream.CurrentToken == ExpressionToken.ArrowHead)
-                {
-                    stream.ConsumeCurrent();
-                    isPiped = true;
-                    break;
-                }
-
-                name.Append(ExpressionToken.ArrowBody);
+                throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.UnableToParseVariableName, stream.IsCompleted ? string.Empty : stream.CurrentToken.ToString());
             }
 
-            return new ExpressionToken(name.ToString(), category);
+            var name = TokenUntilNotMatchedWith(stream, ExpressionTokenCategory.RangeVariable, IsVariableNamePart);
+
+            return new ExpressionToken(ExpressionToken.At + name.Value, ExpressionTokenCategory.RangeVariable);
+        }
+
+        private static bool IsVariableNameStart(char character)
+        {
+            return character == '_' || char.GetUnicodeCategory(character) switch
+            {
+                UnicodeCategory.UppercaseLetter => true,
+                UnicodeCategory.LowercaseLetter => true,
+                UnicodeCategory.TitlecaseLetter => true,
+                UnicodeCategory.ModifierLetter => true,
+                UnicodeCategory.OtherLetter => true,
+                UnicodeCategory.LetterNumber => true,
+                _ => false
+            };
+        }
+
+        private static bool IsVariableNamePart(char character)
+        {
+            return IsVariableNameStart(character) || char.GetUnicodeCategory(character) switch
+            {
+                UnicodeCategory.DecimalDigitNumber => true,
+                UnicodeCategory.ConnectorPunctuation => true,
+                UnicodeCategory.NonSpacingMark => true,
+                UnicodeCategory.SpacingCombiningMark => true,
+                UnicodeCategory.Format => true,
+                _ => false
+            };
+        }
+
+        /// <summary>
+        /// Reads any indexes or slices of a variable or dereferenced property (e.g. the "[0]" in "@x.items[0].name", or "[1][0]" in
+        /// "@x.rows[1][0]"), after which the chain of properties can carry on.
+        /// </summary>
+        private IEnumerable<ExpressionToken> ReadPropertyIndexerIfPresent(ITokenStream<char> stream, EvaluationMode mode)
+        {
+            while (stream.CurrentToken == ExpressionToken.OpenSquareBracket)
+            {
+                foreach (var token in ReadTokenFrom(stream, mode))
+                {
+                    yield return token;
+                }
+            }
+        }
+
+        /// <summary>
+        /// The characters that end a dereferenced property name, which are whatever can follow a value.
+        /// </summary>
+        private static readonly char[] PropertyNameTerminators =
+        {
+            ExpressionToken.Whitespace,
+            ExpressionToken.Dot,
+            ExpressionToken.QuestionMark,
+            ExpressionToken.Comma,
+            ExpressionToken.Colon,
+            ExpressionToken.CloseParentheses,
+            ExpressionToken.OpenSquareBracket,
+            ExpressionToken.CloseSquareBracket,
+            ExpressionToken.CloseCurlyBrace,
+            ExpressionToken.Plus,
+            ExpressionToken.Star,
+            ExpressionToken.ForwardSlash,
+            ExpressionToken.Equal,
+            ExpressionToken.Not,
+            ExpressionToken.LessThan,
+            ExpressionToken.GreaterThan,
+            ExpressionToken.And,
+            ExpressionToken.Or,
+            ExpressionToken.Minus
+        };
+
+        /// <summary>
+        /// Reads a dereferenced property name, which ends at an operator or anything else that can follow a value (e.g. the "+" in
+        /// "@x.price+1" or the "-" in "@x.price-1"). A "-" that starts the arrow operator of a piped method call (e.g. "@x.name->#trim()")
+        /// is left to be read along with the rest of the pipe.
+        /// </summary>
+        private ExpressionToken TokenForPropertyName(ITokenStream<char> stream, ExpressionTokenCategory category)
+        {
+            return TokenUntilMatchedWith(stream, category, PropertyNameTerminators);
         }
 
         /// <summary>
@@ -505,7 +567,7 @@ namespace Jolt.Parsing
             }
             else if (stream.CurrentToken == ExpressionToken.At)
             {
-                var variable = TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Semicolon, ExpressionToken.Dot, ExpressionToken.ArrowBody, ExpressionToken.OpenSquareBracket, ExpressionToken.CloseSquareBracket, ExpressionToken.QuestionMark);
+                var variable = TokenForVariable(stream);
 
                 var isNullSafeVariableDereference = stream.CurrentToken == ExpressionToken.QuestionMark;
 
@@ -523,6 +585,18 @@ namespace Jolt.Parsing
                         {
                             yield return token;
                         }
+
+                        yield break;
+                    }
+
+                    // A null coalesce straight from the variable (e.g. "@x??1") also ends what's read with it.
+
+                    if (stream.CurrentToken == ExpressionToken.QuestionMark)
+                    {
+                        stream.ConsumeCurrent();
+
+                        yield return variable;
+                        yield return TokenFrom("??", ExpressionTokenCategory.NullCoalescing);
 
                         yield break;
                     }
@@ -557,7 +631,7 @@ namespace Jolt.Parsing
                         throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedRangeVariableAfterSemicolonButFoundTokenInstead, stream.CurrentToken);
                     }
 
-                    yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot, ExpressionToken.ArrowBody);
+                    yield return TokenForVariable(stream);
                 }
 
                 if (stream.CurrentToken == ExpressionToken.Whitespace)
@@ -581,43 +655,64 @@ namespace Jolt.Parsing
                 }
                 else
                 {
-                    while (stream.CurrentToken == ExpressionToken.Dot || stream.CurrentToken == ExpressionToken.QuestionMark)
+                    // The variable itself can be indexed or sliced before its properties are dereferenced (e.g. "@x[0].name").
+
+                    foreach (var indexerToken in ReadPropertyIndexerIfPresent(stream, mode))
                     {
-                        var isNullSafeReference = stream.CurrentToken == ExpressionToken.QuestionMark;
+                        yield return indexerToken;
+                    }
+
+                    // Set when the "?" of a null-safe dereference (e.g. "@x.a?.b") has been consumed along with the property before it.
+                    var isAfterNullSafeQuestionMark = false;
+
+                    while (isAfterNullSafeQuestionMark || stream.CurrentToken == ExpressionToken.Dot || stream.CurrentToken == ExpressionToken.QuestionMark)
+                    {
+                        var isNullSafeReference = isAfterNullSafeQuestionMark || stream.CurrentToken == ExpressionToken.QuestionMark;
 
                         if (isNullSafeReference)
                         {
-                            stream.ConsumeCurrent();
-
-                            // A null-conditional pipe from the dereferenced property (e.g. "@x.name?->#trim()") ends the chain of properties.
-
-                            if (stream.CurrentToken == ExpressionToken.ArrowBody)
+                            if (!isAfterNullSafeQuestionMark)
                             {
-                                foreach (var pipedToken in ReadNullConditionalPipedMethodCallStart(stream))
+                                stream.ConsumeCurrent();
+
+                                // A null coalesce from the dereferenced property (e.g. "@x?.name??'none'") ends the chain of properties.
+
+                                if (stream.CurrentToken == ExpressionToken.QuestionMark)
                                 {
-                                    yield return pipedToken;
+                                    stream.ConsumeCurrent();
+
+                                    yield return TokenFrom("??", ExpressionTokenCategory.NullCoalescing);
+
+                                    break;
                                 }
 
-                                break;
+                                // A null-conditional pipe from the dereferenced property (e.g. "@x.name?->#trim()") ends the chain of properties.
+
+                                if (stream.CurrentToken == ExpressionToken.ArrowBody)
+                                {
+                                    foreach (var pipedToken in ReadNullConditionalPipedMethodCallStart(stream))
+                                    {
+                                        yield return pipedToken;
+                                    }
+
+                                    break;
+                                }
+
+                                if (stream.CurrentToken != ExpressionToken.Dot)
+                                {
+                                    throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedDotAfterQuestionMarkForNullSafePropertyAccessButFoundDifferentToken, stream.CurrentToken);
+                                }
                             }
 
-                            if (stream.CurrentToken != ExpressionToken.Dot)
-                            {
-                                throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedDotAfterQuestionMarkForNullSafePropertyAccessButFoundDifferentToken, stream.CurrentToken);
-                            }
+                            isAfterNullSafeQuestionMark = false;
 
                             stream.ConsumeCurrent();
 
-                            yield return TokenForPropertyName(stream, ExpressionTokenCategory.NullSafePropertyDereference, out var isPiped, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot, ExpressionToken.QuestionMark);
+                            yield return TokenForPropertyName(stream, ExpressionTokenCategory.NullSafePropertyDereference);
 
-                            if (isPiped)
+                            foreach (var indexerToken in ReadPropertyIndexerIfPresent(stream, mode))
                             {
-                                foreach (var pipedToken in ReadPipedMethodCallStart(stream))
-                                {
-                                    yield return pipedToken;
-                                }
-
-                                break;
+                                yield return indexerToken;
                             }
                         }
                         else
@@ -632,26 +727,51 @@ namespace Jolt.Parsing
                             }
                             else
                             {
-                                var token = TokenForPropertyName(stream, ExpressionTokenCategory.PropertyDereference, out var isPiped, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.CloseSquareBracket, ExpressionToken.Whitespace, ExpressionToken.Colon, ExpressionToken.Dot, ExpressionToken.QuestionMark);
+                                var token = TokenForPropertyName(stream, ExpressionTokenCategory.PropertyDereference);
 
-                                if (isPiped)
+                                if (stream.CurrentToken == ExpressionToken.QuestionMark)
                                 {
-                                    yield return token;
+                                    stream.ConsumeCurrent();
 
-                                    foreach (var pipedToken in ReadPipedMethodCallStart(stream))
+                                    // A null coalesce (e.g. "@x.name??'none'") isn't a null-safe dereference, so the property stays as it is.
+
+                                    if (stream.CurrentToken == ExpressionToken.QuestionMark)
                                     {
-                                        yield return pipedToken;
+                                        stream.ConsumeCurrent();
+
+                                        yield return token;
+                                        yield return TokenFrom("??", ExpressionTokenCategory.NullCoalescing);
+
+                                        break;
                                     }
 
-                                    break;
-                                }
-                                else if (stream.CurrentToken == ExpressionToken.QuestionMark)
-                                {
                                     yield return new ExpressionToken(token.Value, ExpressionTokenCategory.NullSafePropertyDereference);
+
+                                    if (stream.CurrentToken == ExpressionToken.ArrowBody)
+                                    {
+                                        foreach (var pipedToken in ReadNullConditionalPipedMethodCallStart(stream))
+                                        {
+                                            yield return pipedToken;
+                                        }
+
+                                        break;
+                                    }
+
+                                    if (stream.CurrentToken != ExpressionToken.Dot)
+                                    {
+                                        throw _messageProvider.CreateErrorFor<TokenReader>(MessageCategory.Parsing, ExceptionCode.ExpectedDotAfterQuestionMarkForNullSafePropertyAccessButFoundDifferentToken, stream.CurrentToken);
+                                    }
+
+                                    isAfterNullSafeQuestionMark = true;
                                 }
                                 else
                                 {
                                     yield return token;
+
+                                    foreach (var indexerToken in ReadPropertyIndexerIfPresent(stream, mode))
+                                    {
+                                        yield return indexerToken;
+                                    }
                                 }
                             }
                         }
@@ -713,7 +833,7 @@ namespace Jolt.Parsing
                     }
                     else if (stream.CurrentToken == ExpressionToken.At)
                     {
-                        yield return TokenUntilMatchedWith(stream, ExpressionTokenCategory.RangeVariable, ExpressionToken.Comma, ExpressionToken.CloseParentheses, ExpressionToken.Whitespace, ExpressionToken.ArrowBody);
+                        yield return TokenForVariable(stream);
                     }
                     else
                     {

@@ -62,6 +62,28 @@ Library methods that take a range, such as `#substring` and `#slice`, accept the
 }
 ```
 
+## Indexing a property
+
+A variable, or a property reached through one, can be indexed or sliced as many times as needed, and the chain can carry on after it, as in `@rows[0].name`:
+
+```jolt
+{
+    "#foreach(@order in $.orders) into 'summary'": [
+        {
+            "firstSku": "@order.items[0].sku",
+            "lastTwo": "@order.items[^2..]",
+            "topLeft": "@order.grid[0][0]"
+        }
+    ]
+}
+```
+
+Indexing a property that is null or missing throws error `JLT583`. A `#setAt` or `#removeAt` path can't be indexed.
+
+## Indexes outside of the bounds
+
+An index outside of the string or array throws error `JLT584`, and a range outside of it, or one that ends before it starts, throws error `JLT585`. A range can start or end at the very end, so `@list[3..]` on a list of three gives an empty array.
+
 ## Indexing a method result
 
 You don't need a variable. You can index a method's string or array result directly:

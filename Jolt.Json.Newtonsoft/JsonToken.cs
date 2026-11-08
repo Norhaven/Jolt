@@ -105,20 +105,7 @@ namespace Jolt.Json.Newtonsoft
                 return FromObject(null);
             }
 
-            var tokenResult = _token?.SelectToken(path);
-
-            if (tokenResult?.Type == JTokenType.Null)
-            {
-                // Newtonsoft differs from the System.Text.Json behavior by handing back an object with a Type
-                // of Null instead of just returning null, so we need to check for that and use the default value
-                // for the JsonValue instance which will correctly set the Type property to Value and the ValueType
-                // property to Null. Otherwise, both Type and ValueType will be Null, which is incorrect and confusing
-                // to the users.
-
-                return new JsonValue(default);
-            }
-
-            return FromObject(tokenResult);
+            return JsonPathEvaluator.Select(_token, path);
         }
 
         public IJsonToken? Copy()

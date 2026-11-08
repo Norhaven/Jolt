@@ -130,7 +130,7 @@
 			"patterns": [
 				{
 					"comment": "§7.8 var-declaration-key: \"@name\" declares a variable suppressed from output.",
-					"match": "\\G\\s*((@)[A-Za-z_]\\w*)\\s*(?=\")",
+					"match": "\\G\\s*((@)[\\p{L}\\p{Nl}_][\\p{L}\\p{Nl}\\p{Nd}\\p{Pc}\\p{Mn}\\p{Mc}\\p{Cf}]*)\\s*(?=\")",
 					"captures": {
 						"0": {
 							"name": "meta.definition.variable.jolt"
@@ -439,7 +439,7 @@
 		},
 		"foreach-binding": {
 			"comment": "§7.1 foreach-binding: @x [; @i] in …",
-			"match": "((@)[A-Za-z_]\\w*)(?:\\s*(;)\\s*((@)[A-Za-z_]\\w*))?\\s+(in)\\b",
+			"match": "((@)[\\p{L}\\p{Nl}_][\\p{L}\\p{Nl}\\p{Nd}\\p{Pc}\\p{Mn}\\p{Mc}\\p{Cf}]*)(?:\\s*(;)\\s*((@)[\\p{L}\\p{Nl}_][\\p{L}\\p{Nl}\\p{Nd}\\p{Pc}\\p{Mn}\\p{Mc}\\p{Cf}]*))?\\s+(in)\\b",
 			"captures": {
 				"1": {
 					"name": "variable.parameter.jolt"
@@ -463,7 +463,7 @@
 		},
 		"as-binding": {
 			"comment": "§7.2 / §7.3 … as @x",
-			"match": "\\b(as)\\s+((@)[A-Za-z_]\\w*)",
+			"match": "\\b(as)\\s+((@)[\\p{L}\\p{Nl}_][\\p{L}\\p{Nl}\\p{Nd}\\p{Pc}\\p{Mn}\\p{Mc}\\p{Cf}]*)",
 			"captures": {
 				"1": {
 					"name": "keyword.other.jolt"
@@ -478,7 +478,7 @@
 		},
 		"lambda-params": {
 			"comment": "§5 lambda-params: @x : body  or  @x ; @y : body",
-			"match": "((@)[A-Za-z_]\\w*)\\s*(?:(;)\\s*((@)[A-Za-z_]\\w*)\\s*)?(:)",
+			"match": "((@)[\\p{L}\\p{Nl}_][\\p{L}\\p{Nl}\\p{Nd}\\p{Pc}\\p{Mn}\\p{Mc}\\p{Cf}]*)\\s*(?:(;)\\s*((@)[\\p{L}\\p{Nl}_][\\p{L}\\p{Nl}\\p{Nd}\\p{Pc}\\p{Mn}\\p{Mc}\\p{Cf}]*)\\s*)?(:)",
 			"captures": {
 				"1": {
 					"name": "variable.parameter.jolt"
@@ -515,7 +515,7 @@
 					}
 				},
 				{
-					"match": "((@)[A-Za-z_]\\w*)",
+					"match": "((@)[\\p{L}\\p{Nl}_][\\p{L}\\p{Nl}\\p{Nd}\\p{Pc}\\p{Mn}\\p{Mc}\\p{Cf}]*)",
 					"captures": {
 						"1": {
 							"name": "variable.other.jolt"

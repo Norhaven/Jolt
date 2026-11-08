@@ -43,7 +43,7 @@ const variableBeingWritten = /@(\w*)$/;
 const variableReference = /@(\w+)/g;
 const variableToken = /@(\w+)/y;
 const lambdaParameters = /(@\w+(?:\s*;\s*@\w+)*)\s*:/y;
-const variableName = /^[A-Za-z_]\w*$/;
+const variableName = /^[\p{L}\p{Nl}_][\p{L}\p{Nl}\p{Nd}\p{Pc}\p{Mn}\p{Mc}\p{Cf}]*$/u;
 const maxDeclaredInLength = 120;
 
 const declarationKey = /^\s*@(\w+)\s*$/d;

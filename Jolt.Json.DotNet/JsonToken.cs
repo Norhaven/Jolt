@@ -92,14 +92,35 @@ namespace Jolt.Json.DotNet
 
         public IJsonToken SelectTokenAtPath(string path)
         {
-            var tokenResult = SelectToken(path);
-
-            return tokenResult switch
+            if (!JsonPath.TryParse(JsonPathText.NormalizeRelative(path), out var query))
             {
-                (var node, true) when node is null => new JsonValue(default),
-                (var node, true) => FromObject(node),
-                (_, false) => default
-            };
+                return default;
+            }
+
+            var matches = query.Evaluate(_token).Matches;
+
+            // A path that can match several values always gives an array of them, no matter how many there were.
+
+            if (!query.IsSingular)
+            {
+                var array = new Nodes.JsonArray();
+
+                foreach (var match in matches)
+                {
+                    array.Add(match.Value?.DeepClone());
+                }
+
+                return FromObject(array);
+            }
+
+            if (matches.Count == 0)
+            {
+                return default;
+            }
+
+            var value = matches[0].Value;
+
+            return value is null ? new JsonValue(default) : FromObject(value);
         }
 
         public IJsonToken? Copy()
@@ -200,25 +221,6 @@ namespace Jolt.Json.DotNet
         }
 
         public override string ToString() => _token?.ToJsonString(new JsonSerializerOptions { TypeInfoResolver = new DefaultJsonTypeInfoResolver(), WriteIndented = false });
-
-        private (Nodes.JsonNode? Node, bool Exists) SelectToken(string path)
-        {
-            if (!JsonPath.TryParse(path, out var query))
-            {
-                return default;
-            }
-
-            var result = query.Evaluate(_token);
-
-            if (result.Matches.Count == 0)
-            {
-                return (default, false);
-            }
-
-            var value = result.Matches[0].Value;
-
-            return (value, true);
-        }
 
         public override bool Equals(object obj)
         {

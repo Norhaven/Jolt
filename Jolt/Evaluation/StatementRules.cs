@@ -121,7 +121,7 @@ namespace Jolt.Evaluation
 
         private static IEnumerable<StatementViolation> GetPathViolationsFor(MethodCallExpression call, Expression path, string usingVariableName, Func<string, bool> isVariableDeclared)
         {
-            if (!(path is PropertyDereferenceExpression dereference) || dereference.Variable.ProvidesNullSafeAccess || dereference.DereferenceChain.Any(x => x.IsNullSafe))
+            if (!(path is PropertyDereferenceExpression dereference) || dereference.Variable.ProvidesNullSafeAccess || dereference.VariableIndexers.Length > 0 || dereference.DereferenceChain.Any(x => x.IsNullSafe || x.Indexers.Length > 0))
             {
                 yield return new StatementViolation(ExceptionCode.UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable, path.Span ?? call.Span, call.Signature.Alias, usingVariableName);
                 yield break;
@@ -160,8 +160,14 @@ namespace Jolt.Evaluation
                 case SlicedVariableExpression sliced:
                     return new Expression[] { sliced.Range };
 
+                case PropertyDereferenceExpression dereference:
+                    return dereference.VariableIndexers.Concat(dereference.DereferenceChain.SelectMany(x => x.Indexers));
+
                 case LambdaMethodExpression lambda:
                     return new[] { lambda.Body };
+
+                case RangeExpression range when range.IsSingleIndex:
+                    return new Expression[] { range.StartIndex };
 
                 case RangeExpression range:
                     return new Expression[] { range.StartIndex, range.EndIndex };

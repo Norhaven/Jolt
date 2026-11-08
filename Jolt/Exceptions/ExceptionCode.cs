@@ -277,6 +277,16 @@ namespace Jolt.Exceptions
         [Description("JLT580")]
         UnableToEvaluateWhenConditionWithNullValue,
         [Description("JLT581")]
-        UnableToParseJsonPath
+        UnableToParseJsonPath,
+        [Description("JLT582")]
+        UnableToParseVariableName,
+        [Description("JLT583")]
+        AttemptedToIndexOrSliceNullPropertyValue,
+        [Description("JLT584")]
+        UnableToIndexOutsideOfBounds,
+        [Description("JLT585")]
+        UnableToSliceOutsideOfBounds,
+        [Description("JLT586")]
+        UnableToUseJsonPathNameWithoutBracketNotation
     }
 }

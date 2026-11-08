@@ -19,7 +19,7 @@ namespace Jolt.Library.StandardLibrary
 
             if (context.JsonContext.QueryPathProvider.IsQueryPath(path) && !context.JsonContext.QueryPathProvider.IsValidQueryPath(path))
             {
-                throw context.JsonContext.CreateParsingErrorFor<BasicMethods>(ExceptionCode.UnableToParseJsonPath, path);
+                throw JsonPathText.CreateParsingErrorFor<BasicMethods>(context.JsonContext, path);
             }
 
             // ValueOf will always start a search from the root, other similar methods may search differently.

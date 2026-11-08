@@ -90,14 +90,40 @@ namespace Jolt.Parsing.Parsers
 
                 return true;
             }
-            else if (_reader.CurrentToken?.Category == ExpressionTokenCategory.PropertyDereference || _reader.CurrentToken?.Category == ExpressionTokenCategory.NullSafePropertyDereference)
+            else if (IsPropertyDereference(_reader.CurrentToken) || _reader.CurrentToken?.Category == ExpressionTokenCategory.StartOfIndexerOrArrayLiteral)
             {
-                if (!_reader.TryConsumeUntilMatchOrEnd(x => x.Category != ExpressionTokenCategory.PropertyDereference && x.Category != ExpressionTokenCategory.NullSafePropertyDereference, out var dereferenceChain))
+                if (expression is RangeVariablePairExpression pair)
                 {
-                    throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToParsePropertyDereferenceChain, _reader.CurrentToken.Value);
+                    throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToIndexOrSliceVariablePair, ((RangeVariableExpression)expression).Name, pair.SecondVariable.Name);
                 }
 
-                expression = new PropertyDereferenceExpression((RangeVariableExpression)expression, dereferenceChain.Select(x => new DereferenceExpression(x.Value, x.Category == ExpressionTokenCategory.NullSafePropertyDereference)).ToArray());
+                // The variable itself can be indexed or sliced before its properties are dereferenced (e.g. "@x[0].name").
+
+                var variableIndexers = ParseIndexers(context, rangeExpressionParser);
+
+                if (variableIndexers.Length == 1 && !IsPropertyDereference(_reader.CurrentToken))
+                {
+                    // A method can be piped from the indexed or sliced variable (e.g. "@x[0]?->#trim()"), just as from the variable itself.
+
+                    expression = ParsePipedMethodCallsFrom(context, new SlicedVariableExpression((RangeVariableExpression)expression, variableIndexers[0]));
+
+                    return true;
+                }
+
+                var dereferenceChain = new List<DereferenceExpression>();
+
+                while (IsPropertyDereference(_reader.CurrentToken))
+                {
+                    var property = _reader.CurrentToken;
+
+                    _reader.ConsumeCurrent();
+
+                    // Any property in the chain can be indexed or sliced (e.g. "@x.items[0].name"), as many times as needed (e.g. "@x.rows[1][0]").
+
+                    dereferenceChain.Add(new DereferenceExpression(property.Value, property.Category == ExpressionTokenCategory.NullSafePropertyDereference, ParseIndexers(context, rangeExpressionParser)));
+                }
+
+                expression = new PropertyDereferenceExpression((RangeVariableExpression)expression, dereferenceChain.ToArray(), variableIndexers);
 
                 // A method can be piped from the dereferenced property (e.g. "@x.name->#trim()"), just as from the variable itself.
 
@@ -132,13 +158,24 @@ namespace Jolt.Parsing.Parsers
 
                 return true;
             }
-            else if (_reader.CurrentToken?.Category == ExpressionTokenCategory.StartOfIndexerOrArrayLiteral)
-            {
-                if (expression is RangeVariablePairExpression pair)
-                {
-                    throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToIndexOrSliceVariablePair, ((RangeVariableExpression)expression).Name, pair.SecondVariable.Name);
-                }
 
+            return true;
+        }
+
+        private static bool IsPropertyDereference(ExpressionToken? token)
+        {
+            return token?.Category == ExpressionTokenCategory.PropertyDereference || token?.Category == ExpressionTokenCategory.NullSafePropertyDereference;
+        }
+
+        /// <summary>
+        /// Parses any indexes or slices in a row (e.g. the "[1][0]" in "@x.rows[1][0]").
+        /// </summary>
+        private RangeExpression[] ParseIndexers(IJsonContext context, RangeExpressionParser rangeExpressionParser)
+        {
+            var indexers = new List<RangeExpression>();
+
+            while (_reader.CurrentToken?.Category == ExpressionTokenCategory.StartOfIndexerOrArrayLiteral)
+            {
                 _reader.ConsumeCurrent();
 
                 if (!rangeExpressionParser.TryParse(context, out var indexerExpression))
@@ -151,19 +188,10 @@ namespace Jolt.Parsing.Parsers
                     throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.UnableToCloseIndexerExpressionAtPosition, _reader.Position);
                 }
 
-                if (indexerExpression is RangeExpression parsedRange)
-                {
-                    // A method can be piped from the indexed or sliced variable (e.g. "@x[0]?->#trim()"), just as from the variable itself.
-
-                    expression = ParsePipedMethodCallsFrom(context, new SlicedVariableExpression((RangeVariableExpression)expression, parsedRange));
-
-                    return true;
-                }
-
-                throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.ExpectedIndexOrSliceRangeButFoundOtherExpression, indexerExpression.GetType().Name);
+                indexers.Add(indexerExpression as RangeExpression ?? throw context.CreateParsingErrorFor<ExpressionParser>(ExceptionCode.ExpectedIndexOrSliceRangeButFoundOtherExpression, indexerExpression.GetType().Name));
             }
 
-            return true;
+            return indexers.ToArray();
         }
 
 

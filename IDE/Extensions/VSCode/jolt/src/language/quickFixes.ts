@@ -28,7 +28,7 @@ export interface Insertion {
 	text: string;
 }
 
-const lambdaArgument = /^@([A-Za-z_]\w*)(?:\s*;\s*@([A-Za-z_]\w*))?\s*:/;
+const lambdaArgument = /^@([\p{L}\p{Nl}_][\p{L}\p{Nl}\p{Nd}\p{Pc}\p{Mn}\p{Mc}\p{Cf}]*)(?:\s*;\s*@([\p{L}\p{Nl}_][\p{L}\p{Nl}\p{Nd}\p{Pc}\p{Mn}\p{Mc}\p{Cf}]*))?\s*:/u;
 const defaultIndentation = 4;
 
 /**

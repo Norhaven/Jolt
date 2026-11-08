@@ -1,9 +1,11 @@
 ﻿using Jolt.Evaluation;
+using Jolt.Exceptions;
 using Jolt.Extensions;
 using Jolt.Structure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -287,6 +289,19 @@ namespace Jolt.Library.StandardLibrary
             return -1;
         }
 
+        private static void EnsureWithinBounds(Range range, string valueKind, int length, EvaluationContext context)
+        {
+            static string Describe(Index index) => index.IsFromEnd ? $"^{index.Value}" : index.Value.ToString(CultureInfo.InvariantCulture);
+
+            var start = range.Start.GetOffset(length);
+            var end = range.End.GetOffset(length);
+
+            if (start < 0 || end > length || start > end)
+            {
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToSliceOutsideOfBounds, $"{Describe(range.Start)}..{(range.End.IsFromEnd && range.End.Value == 0 ? string.Empty : Describe(range.End))}", valueKind, length);
+            }
+        }
+
         [JoltLibraryMethod("substring")]
         [MethodIsValidOn(LibraryMethodTarget.PropertyName | LibraryMethodTarget.PropertyValue)]
         public static IJsonToken? Substring(object? value, Range range, EvaluationContext context)
@@ -300,12 +315,16 @@ namespace Jolt.Library.StandardLibrary
                 return context.CreateNullToken();
             }
 
-            var content = resolved switch
+            var text = resolved switch
             {
-                string text => text.Substring(range),
-                IJsonValue token when token.AsValue().ValueType == JsonValueType.String => AsString(token).Substring(range),
+                string literal => literal,
+                IJsonValue token when token.AsValue().ValueType == JsonValueType.String => AsString(token),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to get substring for unsupported object type '{value?.GetType()}'")
             };
+
+            EnsureWithinBounds(range, "a string", text.Length, context);
+
+            var content = text.Substring(range);
 
             return context.CreateTokenFrom(content);
         }
@@ -365,12 +384,16 @@ namespace Jolt.Library.StandardLibrary
                 return context.CreateEmptyArray();
             }
 
-            var content = resolved switch
+            var elements = resolved switch
             {
-                object[] array => RuntimeHelpers.GetSubArray(array, range),
-                IJsonArray array => RuntimeHelpers.GetSubArray(array.ToArray(), range),
+                object[] array => array,
+                IJsonArray array => array.ToArray(),
                 _ => throw new ArgumentOutOfRangeException(nameof(value), $"Unable to slice unsupported object type '{value?.GetType()}'")
             };
+
+            EnsureWithinBounds(range, "an array", elements.Length, context);
+
+            var content = RuntimeHelpers.GetSubArray(elements, range);
 
             return context.CreateTokenFrom(content);
         }

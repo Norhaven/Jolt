@@ -22,30 +22,6 @@ namespace Jolt.Json.DotNet
 
         public override bool IsValidQueryPath(string path) => global::Json.Path.JsonPath.TryParse(path, out _);
 
-        public override IJsonToken? SelectNodeAtPath(IEnumerable<IJsonToken> source, string queryPath, JsonQueryMode queryMode)
-        {
-            if (queryMode == JsonQueryMode.StartFromRoot)
-            {
-                var root = GetRootNodeFrom(source, queryMode);
-                return root.SelectTokenAtPath(queryPath);
-            }
-
-            var validQuerySources = new Stack<IJsonToken>(source);
-
-            while (validQuerySources.Count > 0)
-            {
-                var currentSource = validQuerySources.Pop();
-                var result = currentSource.SelectTokenAtPath(queryPath);
-
-                if (result is null)
-                {
-                    continue;
-                }
-
-                return result;
-            }
-
-            return default;
-        }
+        public override bool CanMatchMultipleValues(string path) => global::Json.Path.JsonPath.TryParse(path, out var query) && !query.IsSingular;
     }
 }

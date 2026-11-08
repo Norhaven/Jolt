@@ -27,9 +27,9 @@ dotnet add package Jolt.Json.DotNet
 
 All packages are multi-targeted and support .NET Standard 2.0, .NET Standard 2.1, .NET 8.0, and .NET 10.0.
 
-## Note on System.Text.Json
+## Note on JSON Path
 
-`Jolt.Json.DotNet` has one extra dependency, [JsonPath.Net](https://github.com/json-everything/json-everything), because System.Text.Json doesn't include JSON Path support out of the box.
+Both packages depend on [JsonPath.Net](https://github.com/json-everything/json-everything), so that JSON paths behave the same way with either JSON library. JsonPath.Net works with System.Text.Json, which is part of .NET 8 and later, and comes in as a package on .NET Standard. `Jolt.Json.Newtonsoft` only uses it to evaluate paths that can match several values, and uses Newtonsoft for everything else.
 
 ## Build status
 

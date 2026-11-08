@@ -72,7 +72,9 @@ namespace Jolt.Json.DotNet
 
             var parent = SelectTokenAtPath(parentPath);
 
-            if (parent is null)
+            // A property containing a JSON null has nothing to add to, so it's replaced in the same way as a missing one.
+
+            if (parent is null || (parent is IJsonValue parentValue && parentValue.ValueType == JsonValueType.Null))
             {
                 var current = UnderlyingNode;
 

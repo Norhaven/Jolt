@@ -1,6 +1,153 @@
 {
   "validations": [
     {
+      "name": "A JSON path with a hyphenated name in brackets will succeed",
+      "transformer": {
+        "r": "#valueOf($['with-hyphen'])"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "An indexed variable with an undeclared variable as its index will fail once",
+      "transformer": {
+        "@l": [
+          1
+        ],
+        "r": "@l[@nope]"
+      },
+      "expectedIssues": [
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    },
+    {
+      "name": "A range with an undeclared variable at each end will fail for each",
+      "transformer": {
+        "@l": [
+          1
+        ],
+        "r": "@l[@nope..@nope2]"
+      },
+      "expectedIssues": [
+        "AttemptedToUseUndeclaredVariable",
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    },
+    {
+      "name": "An indexed and dereferenced variable will succeed",
+      "transformer": {
+        "@l": [
+          {
+            "x": 1
+          }
+        ],
+        "r": "@l[0].x"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "An indexed and dereferenced variable with an undeclared variable as its index will fail",
+      "transformer": {
+        "@l": [
+          {
+            "x": 1
+          }
+        ],
+        "r": "@l[@nope].x"
+      },
+      "expectedIssues": [
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    },
+    {
+      "name": "A statement path that indexes the variable will fail",
+      "transformer": {
+        "#using($.o as @x) into 'r'": [
+          "#setAt(@x[0].n, 1)"
+        ]
+      },
+      "expectedIssues": [
+        "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+      ]
+    },
+    {
+      "name": "An indexed property will succeed",
+      "transformer": {
+        "@g": {
+          "kids": [
+            1
+          ]
+        },
+        "r": "@g.kids[0]"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "An indexed property with an undeclared variable as its index will fail",
+      "transformer": {
+        "@g": {
+          "kids": [
+            1
+          ]
+        },
+        "r": "@g.kids[@nope]"
+      },
+      "expectedIssues": [
+        "AttemptedToUseUndeclaredVariable"
+      ]
+    },
+    {
+      "name": "An indexed statement path will fail",
+      "transformer": {
+        "#using($.o as @x) into 'r'": [
+          "#setAt(@x.list[0], 1)"
+        ]
+      },
+      "expectedIssues": [
+        "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+      ]
+    },
+    {
+      "name": "A JSON path with a hyphenated name will fail",
+      "transformer": {
+        "r": "#valueOf($.with-hyphen)"
+      },
+      "expectedIssues": [
+        "UnableToUseJsonPathNameWithoutBracketNotation"
+      ]
+    },
+    {
+      "name": "A JSON path with an RFC 9535 filter will succeed",
+      "transformer": {
+        "r": "#valueOf($.items[?@.price > 15])"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "A JSON path with a hyphenated name in a filter will fail",
+      "transformer": {
+        "r": "#valueOf($.items[?(@.with-hyphen)])"
+      },
+      "expectedIssues": [
+        "UnableToParseJsonPath"
+      ]
+    },
+    {
+      "name": "A variable with no spaces around an operator will succeed",
+      "transformer": {
+        "r": "#select($.a,@v:@v+$.b)"
+      },
+      "expectedIssues": []
+    },
+    {
+      "name": "A variable name starting with a digit will fail",
+      "transformer": {
+        "r": "#select($.a,@1v:1)"
+      },
+      "expectedIssues": [
+        "UnableToParseVariableName"
+      ]
+    },
+    {
       "name": "A valid JSON path will succeed",
       "transformer": {
         "r": "#valueOf($.a.b)"

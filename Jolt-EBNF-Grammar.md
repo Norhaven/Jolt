@@ -145,8 +145,9 @@ pipe-operator
                   and the chain gives null                             *)
     ;
 
-### Index / slice: postfix bracket notation on a variable (§10) or on a
-### method-call result, including a piped one.
+### Index / slice: postfix bracket notation on a variable (§10), on a
+### dereferenced property of one (§10), or on a method-call result,
+### including a piped one.
 index-suffix
     = "[" index-or-range "]"
     ;
@@ -503,12 +504,15 @@ var-path
 
 ### A var-reference may be used as a standalone expression (the variable
 ### itself), dereferenced further with dot-steps and null-safe steps, or
-### indexed / sliced.  Indexing applies to the variable itself and
-### cannot be combined with dereference steps.  A single index gives one
+### indexed / sliced.  The variable itself and any dereferenced property
+### can be indexed, as many times as needed, and the chain can carry on
+### after it ("@x[0].name", "@x.rows[1][0].name").  A single index gives one
 ### element or character ("@x[1]" on [8, null] gives null, so
 ### "@x[1]?->#m()" skips #m); a range always gives an array or string,
 ### even when it holds only one element ("@x[1..2]" gives [null]).
-### Indexing a null variable is an error.
+### Indexing a null variable, or a null or missing property (JLT583), is
+### an error, as is an index (JLT584) or range (JLT585) outside of the
+### string or array.  A statement's path (e.g. in #setAt) can't be indexed.
 
 var-reference
     = var-chain
@@ -516,7 +520,7 @@ var-reference
     ;
 
 var-chain
-    = var-name { var-path-step }
+    = var-name { index-suffix } { var-path-step }
     ;
 
 sliced-variable
@@ -529,12 +533,27 @@ sliced-variable
 ### and when that value is null or missing it short-circuits the rest of
 ### the chain — further steps and any methods piped from it — giving null.
 var-path-step
-    = "." property-name       (* ordinary property dereference  *)
-    | "?." property-name      (* null-safe property dereference *)
+    = "." property-name { index-suffix }    (* ordinary property dereference  *)
+    | "?." property-name { index-suffix }   (* null-safe property dereference *)
     ;
 
+### A variable is a single "@" and a name that follows the rules of a C#
+### identifier.  The name ends at the first character that can't be part of
+### it, so "@a+1" is "@a" plus one.  An invalid name is reported as JLT582.
 var-name
-    = "@" identifier
+    = "@" var-identifier
+    ;
+
+var-identifier
+    = var-identifier-start { var-identifier-start | var-identifier-part }
+    ;
+
+var-identifier-start
+    = "_" | ? any Unicode letter (Lu, Ll, Lt, Lm, Lo) or letter number (Nl) ?
+    ;
+
+var-identifier-part
+    = ? any Unicode decimal digit (Nd), connector (Pc), combining mark (Mn, Mc) or format character (Cf) ?
     ;
 
 ### JSON Path — RFC 9535 / Goessner path notation.  The path text is passed
@@ -543,7 +562,11 @@ var-name
 ### of the path, including whitespace, "," and quoted text.  Outside of
 ### them, a path runs until whitespace or one of  , ) ] } + / = ! < > ? & |
 ### or "->", or a "*" that doesn't directly follow a ".".  A "-" is part of
-### a name, so subtraction needs whitespace ("$.a - 1").  Jolt operators
+### a name, so subtraction needs whitespace ("$.a - 1").  A name after a "."
+### follows RFC 9535, so one that needs brackets ("$.first-name") is an error
+### (JLT586) that suggests them ("$['first-name']").  A path
+### that can match several values (one with a wildcard, filter, slice, union
+### or recursive descent) always gives an array of its matches.  Jolt operators
 ### such as "?." and "->" can't apply to a path.  To pipe from a path or
 ### guard it against null, wrap it: "#valueOf($.a)?->#trim()",
 ### "#valueOf($.a) ?? 'default'".
@@ -562,8 +585,9 @@ path-name
     = path-name-char { path-name-char }
     ;
 
+### RFC 9535 member-name-shorthand: no leading digit.
 path-name-char
-    = ? any character other than those that end a path, "." or "[" ?
+    = letter | digit | "_" | ? any non-ASCII character ?
     ;
 
 bracket-text
@@ -608,15 +632,17 @@ identifier
     = letter { letter | digit | "_" }
     ;
 
-### A dereferenced property name may also contain hyphens
-### (e.g. "@x.first-name").  A "-" immediately followed by ">" is not
-### part of the name; it starts a pipe ("@x.name->#trim()").
+### A dereferenced property name ends at whitespace or one of
+### . ? , : [ ) ] } + - * / = ! < > & |  so that operators don't need
+### whitespace ("@x.price-1", "@x.name??'none'").  A "-" followed by ">"
+### starts a pipe ("@x.name->#trim()").  A property whose name contains
+### one of those characters, such as a hyphen, can't be dereferenced.
 property-name
     = property-name-char { property-name-char }
     ;
 
 property-name-char
-    = letter | digit | "_" | "-"
+    = letter | digit | "_"
     ;
 
 ### Jolt string literals use single quotes inside expression strings.
@@ -930,3 +956,25 @@ json-number
 ###        one of those characters needs bracket notation ("$['a+b']").  A
 ###        path that can't be parsed is now an error (JLT581), which the
 ###        validator reports as well.
+#
+### [N-20] ONE JSON PATH ENGINE (CHANGED)
+###        Both JSON libraries now evaluate paths using RFC 9535, instead of
+###        the Newtonsoft provider using its own path syntax.  A path that can
+###        match several values always gives an array, and the path of a
+###        #foreach searches outward from the current loop element with both.
+###        A name after a "." that RFC 9535 doesn't allow, such as one with a
+###        hyphen, is an error (JLT586) that points to bracket notation.
+#
+### [N-21] VARIABLE NAMES RESTRICTED (CHANGED)
+###        A variable name follows the rules of a C# identifier and ends at the
+###        first character that can't be part of it, so operators no longer
+###        need whitespace after a variable ("@a+1", "@a??1").  A dereferenced
+###        property name also ends at an operator ("@a.b*2", "@a.b??1"),
+###        including "-", so it can no longer contain a hyphen ("@a.b-1" is a
+###        subtraction).
+#
+### [N-22] DEREFERENCED PROPERTIES CAN BE INDEXED (NEW)
+###        Any property in a dereference chain can be indexed or sliced, more
+###        than once, and the chain can continue after it ("@x.rows[1][0].n").
+###        So can the variable itself ("@x[0].n").  An index or range outside
+###        of the string or array is an error (JLT584, JLT585).

@@ -75,6 +75,14 @@ namespace Jolt.Extensions
         }
 
         /// <summary>
+        /// Determines if a selected token shows that nothing was found, which is either no token or the empty array from a path that can match several values.
+        /// </summary>
+        public static bool IsMissingFrom(this EvaluationContext context, QueryPathReference path, IJsonToken? token)
+        {
+            return token is null || (token is IJsonArray array && array.Length == 0 && context.JsonContext.QueryPathProvider.CanMatchMultipleValues(path.Path));
+        }
+
+        /// <summary>
         /// Resolves a JSON path to the token at that path (or null when it doesn't exist), leaving any other value as it is.
         /// A string literal is never treated as a path, even when it looks like one.
         /// </summary>

@@ -11,7 +11,7 @@ const unknownMethodCode = 'JLT108';
 const undeclaredVariableCode = 'JLT562';
 
 const methodName = /^(#?)([A-Za-z_]\w*)$/;
-const variableName = /^(@?)([A-Za-z_]\w*)$/;
+const variableName = /^(@?)([\p{L}\p{Nl}_][\p{L}\p{Nl}\p{Nd}\p{Pc}\p{Mn}\p{Mc}\p{Cf}]*)$/u;
 
 /**
  * Adds a method to a methods file. Reading and changing the file waits until the action is chosen.

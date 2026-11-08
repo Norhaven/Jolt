@@ -4,12 +4,18 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json.Nodes;
 
 namespace Jolt.Json.Newtonsoft
 {
     public sealed class JsonPathQueryPathProvider : QueryPathProvider
     {
+        // Converting a source document takes long enough to matter when it's queried repeatedly (e.g. a filter within a loop).
+
+        private readonly ConditionalWeakTable<JToken, JsonNode> _convertedDocuments = new ConditionalWeakTable<JToken, JsonNode>();
+
         public override bool IsQueryPath(string path)
         {
             // We're not doing an exhaustive validation here, it's enough for now to say that it
@@ -18,32 +24,15 @@ namespace Jolt.Json.Newtonsoft
             return path?.StartsWith("$") == true;
         }
 
-        public override bool IsValidQueryPath(string path)
+        public override bool IsValidQueryPath(string path) => global::Json.Path.JsonPath.TryParse(path, out _);
+
+        public override bool CanMatchMultipleValues(string path) => global::Json.Path.JsonPath.TryParse(path, out var query) && !query.IsSingular;
+
+        protected override IJsonToken? SelectFrom(IJsonToken source, string path, bool isSourceDocument)
         {
-            // Newtonsoft doesn't expose its path parser, but it runs as soon as a query is created and before anything is evaluated.
-
-            try
-            {
-                new JObject().SelectTokens(path);
-
-                return true;
-            }
-            catch (global::Newtonsoft.Json.JsonException)
-            {
-                return false;
-            }
-        }
-
-        public override IJsonToken? SelectNodeAtPath(IEnumerable<IJsonToken> source, string queryPath, JsonQueryMode queryMode)
-        {
-            var queryToken = queryMode switch
-            {
-                JsonQueryMode.StartFromRoot => GetRootNodeFrom(source, queryMode),
-                JsonQueryMode.StartFromClosestMatch => source.LastOrDefault(),
-                _ => throw new ArgumentOutOfRangeException(nameof(queryPath), $"Unable to select JSON node, found unsupported query mode '{queryMode}'")
-            };
-
-            return queryToken.SelectTokenAtPath(queryPath);
+            return isSourceDocument && source is JsonToken token && token.UnderlyingNode != null
+                ? JsonPathEvaluator.Select(token.UnderlyingNode, path, _convertedDocuments)
+                : source.SelectTokenAtPath(path);
         }
     }
 }

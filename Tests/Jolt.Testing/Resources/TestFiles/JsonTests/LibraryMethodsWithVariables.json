@@ -12,6 +12,2436 @@
   },
   "testGroups": [
     {
+      "name": "An indexed variable can be dereferenced",
+      "source": {
+        "rows": [
+          {
+            "n": "a",
+            "kids": [
+              {
+                "k": 1
+              }
+            ]
+          },
+          {
+            "n": "b",
+            "kids": []
+          }
+        ],
+        "grid": [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        "strs": [
+          "ab",
+          "cd"
+        ]
+      },
+      "tests": [
+        {
+          "name": "An indexed variable's property can be read",
+          "transformer": {
+            "@r": "#valueOf($.rows)",
+            "r": "@r[0].n"
+          },
+          "result": {
+            "r": "a"
+          }
+        },
+        {
+          "name": "A variable indexed from the end can be dereferenced",
+          "transformer": {
+            "@r": "#valueOf($.rows)",
+            "r": "@r[^1].n"
+          },
+          "result": {
+            "r": "b"
+          }
+        },
+        {
+          "name": "An indexed variable can be dereferenced through further indexes",
+          "transformer": {
+            "@r": "#valueOf($.rows)",
+            "r": "@r[0].kids[0].k"
+          },
+          "result": {
+            "r": 1
+          }
+        },
+        {
+          "name": "An indexed variable can be dereferenced null-safely and piped",
+          "transformer": {
+            "@r": "#valueOf($.rows)",
+            "r": "@r[1]?.n?->#toUpperCase()"
+          },
+          "result": {
+            "r": "B"
+          }
+        },
+        {
+          "name": "An indexed variable's property can be piped from",
+          "transformer": {
+            "@r": "#valueOf($.rows)",
+            "r": "@r[0].n->#toUpperCase()"
+          },
+          "result": {
+            "r": "A"
+          }
+        },
+        {
+          "name": "An indexed variable's missing property can be coalesced",
+          "transformer": {
+            "@r": "#valueOf($.rows)",
+            "r": "@r[0].missing??'none'"
+          },
+          "result": {
+            "r": "none"
+          }
+        },
+        {
+          "name": "A variable can be indexed more than once",
+          "transformer": {
+            "@g": "#valueOf($.grid)",
+            "r": "@g[1][0]"
+          },
+          "result": {
+            "r": 3
+          }
+        },
+        {
+          "name": "A variable indexed more than once can be used with an operator",
+          "transformer": {
+            "@g": "#valueOf($.grid)",
+            "r": "@g[1][0]+@g[0][1]"
+          },
+          "result": {
+            "r": 5
+          }
+        },
+        {
+          "name": "A sliced variable can be indexed and dereferenced",
+          "transformer": {
+            "@r": "#valueOf($.rows)",
+            "r": "@r[0..1][0].n"
+          },
+          "result": {
+            "r": "a"
+          }
+        },
+        {
+          "name": "A variable can be indexed into a string and then the string",
+          "transformer": {
+            "@s": "#valueOf($.strs)",
+            "r": "@s[1][0]"
+          },
+          "result": {
+            "r": "c"
+          }
+        },
+        {
+          "name": "A loop variable can be indexed and dereferenced",
+          "transformer": {
+            "#foreach(@r in $.rows) into 'r'": [
+              {
+                "name": "@r.n",
+                "count": "@r.kids->#length()"
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "name": "a",
+                "count": 1
+              },
+              {
+                "name": "b",
+                "count": 0
+              }
+            ]
+          }
+        },
+        {
+          "name": "Indexing a null variable before dereferencing fails",
+          "transformer": {
+            "@n": null,
+            "r": "@n[0].x"
+          },
+          "exceptionCode": "AttemptedToIndexOrSliceNullVariableValue"
+        },
+        {
+          "name": "A statement path can't index the variable",
+          "transformer": {
+            "#using($.rows[0] as @x) into 'r'": [
+              "#setAt(@x[0].n, 1)"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+        }
+      ]
+    },
+    {
+      "name": "Indexing or slicing outside of a value's bounds fails",
+      "source": {
+        "rows": [
+          {
+            "n": "a",
+            "kids": []
+          }
+        ],
+        "list": [
+          10,
+          20,
+          30
+        ],
+        "s": "hello"
+      },
+      "tests": [
+        {
+          "name": "An index past the end of an array fails",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[3]"
+          },
+          "exceptionCode": "UnableToIndexOutsideOfBounds"
+        },
+        {
+          "name": "An index from the end past the start of an array fails",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[^4]"
+          },
+          "exceptionCode": "UnableToIndexOutsideOfBounds"
+        },
+        {
+          "name": "An index of zero from the end fails",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[^0]"
+          },
+          "exceptionCode": "UnableToIndexOutsideOfBounds"
+        },
+        {
+          "name": "A negative index fails",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[-1]"
+          },
+          "exceptionCode": "UnableToIndexOutsideOfBounds"
+        },
+        {
+          "name": "An index past the end of a string fails",
+          "transformer": {
+            "@s": "#valueOf($.s)",
+            "r": "@s[5]"
+          },
+          "exceptionCode": "UnableToIndexOutsideOfBounds"
+        },
+        {
+          "name": "An index of an empty array fails",
+          "transformer": {
+            "@r": "#valueOf($.rows)",
+            "r": "@r[0].kids[0]"
+          },
+          "exceptionCode": "UnableToIndexOutsideOfBounds"
+        },
+        {
+          "name": "An index past the end of a variable before a property fails",
+          "transformer": {
+            "@r": "#valueOf($.rows)",
+            "r": "@r[5].n"
+          },
+          "exceptionCode": "UnableToIndexOutsideOfBounds"
+        },
+        {
+          "name": "An index past the end of a method result fails",
+          "transformer": {
+            "r": "#valueOf($.list)[3]"
+          },
+          "exceptionCode": "UnableToIndexOutsideOfBounds"
+        },
+        {
+          "name": "A range past the end of an array fails",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[1..5]"
+          },
+          "exceptionCode": "UnableToSliceOutsideOfBounds"
+        },
+        {
+          "name": "A range starting past the end of an array fails",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[4..]"
+          },
+          "exceptionCode": "UnableToSliceOutsideOfBounds"
+        },
+        {
+          "name": "A range that ends before it starts fails",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[2..1]"
+          },
+          "exceptionCode": "UnableToSliceOutsideOfBounds"
+        },
+        {
+          "name": "A range past the end of a string fails",
+          "transformer": {
+            "@s": "#valueOf($.s)",
+            "r": "@s[2..9]"
+          },
+          "exceptionCode": "UnableToSliceOutsideOfBounds"
+        },
+        {
+          "name": "Slicing past the end with #slice fails",
+          "transformer": {
+            "r": "#slice($.list, 1..5)"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToSliceOutsideOfBounds"
+        },
+        {
+          "name": "Getting a substring past the end fails",
+          "transformer": {
+            "r": "#substring($.s, 2..9)"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToSliceOutsideOfBounds"
+        },
+        {
+          "name": "A range starting at the end gives an empty array",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[3..]"
+          },
+          "result": {
+            "r": []
+          }
+        },
+        {
+          "name": "A range ending at the end gives every element",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[..3]"
+          },
+          "result": {
+            "r": [
+              10,
+              20,
+              30
+            ]
+          }
+        },
+        {
+          "name": "A range from the start counted from the end gives every element",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[^3..]"
+          },
+          "result": {
+            "r": [
+              10,
+              20,
+              30
+            ]
+          }
+        },
+        {
+          "name": "The last index works",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[2]"
+          },
+          "result": {
+            "r": 30
+          }
+        },
+        {
+          "name": "The first index from the end works",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "r": "@l[^1]"
+          },
+          "result": {
+            "r": 30
+          }
+        }
+      ]
+    },
+    {
+      "name": "A property reached through a variable can be indexed or sliced",
+      "source": {
+        "items": [
+          {
+            "id": 1,
+            "tag": "abc",
+            "kids": [
+              {
+                "n": "a"
+              },
+              {
+                "n": "b"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "tag": "de",
+            "kids": [
+              {
+                "n": "c"
+              },
+              {
+                "n": null
+              }
+            ]
+          }
+        ],
+        "maybe": [
+          {
+            "kids": null
+          }
+        ],
+        "groups": [
+          {
+            "kids": [
+              1,
+              2,
+              3
+            ],
+            "m": [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ]
+            ],
+            "pos": {
+              "i": 2
+            }
+          },
+          {
+            "kids": [
+              4,
+              5,
+              6
+            ],
+            "m": [
+              [
+                5,
+                6
+              ],
+              [
+                7,
+                8
+              ]
+            ],
+            "pos": {
+              "i": 0
+            }
+          }
+        ],
+        "list": [
+          10,
+          20,
+          30
+        ]
+      },
+      "tests": [
+        {
+          "name": "A property can be indexed",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[0])"
+          },
+          "result": {
+            "r": [
+              1,
+              4
+            ]
+          }
+        },
+        {
+          "name": "A property can be indexed from the end",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[^1])"
+          },
+          "result": {
+            "r": [
+              3,
+              6
+            ]
+          }
+        },
+        {
+          "name": "A property can be sliced",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[0..2])"
+          },
+          "result": {
+            "r": [
+              [
+                1,
+                2
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          }
+        },
+        {
+          "name": "A property can be sliced to the end",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[1..])"
+          },
+          "result": {
+            "r": [
+              [
+                2,
+                3
+              ],
+              [
+                5,
+                6
+              ]
+            ]
+          }
+        },
+        {
+          "name": "A property can be indexed more than once",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.m[1][0])"
+          },
+          "result": {
+            "r": [
+              3,
+              7
+            ]
+          }
+        },
+        {
+          "name": "A property can be indexed more than once from the end",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.m[^1][^1])"
+          },
+          "result": {
+            "r": [
+              4,
+              8
+            ]
+          }
+        },
+        {
+          "name": "A string property can be indexed",
+          "transformer": {
+            "r": "#select($.items,@v:@v.tag[0])"
+          },
+          "result": {
+            "r": [
+              "a",
+              "d"
+            ]
+          }
+        },
+        {
+          "name": "A string property can be sliced",
+          "transformer": {
+            "r": "#select($.items,@v:@v.tag[1..])"
+          },
+          "result": {
+            "r": [
+              "bc",
+              "e"
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be dereferenced further",
+          "transformer": {
+            "r": "#select($.items,@v:@v.kids[1].n)"
+          },
+          "result": {
+            "r": [
+              "b",
+              null
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be dereferenced further and coalesced",
+          "transformer": {
+            "r": "#select($.items,@v:@v.kids[1].n??'none')"
+          },
+          "result": {
+            "r": [
+              "b",
+              "none"
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be piped from",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[0]->#toString())"
+          },
+          "result": {
+            "r": [
+              "1",
+              "4"
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be piped from after further dereferences",
+          "transformer": {
+            "r": "#select($.items,@v:@v.kids[0].n->#toUpperCase())"
+          },
+          "result": {
+            "r": [
+              "A",
+              "C"
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be null-conditionally piped from",
+          "transformer": {
+            "r": "#select($.items,@v:@v.kids[1]?.n?->#toUpperCase())"
+          },
+          "result": {
+            "r": [
+              "B",
+              null
+            ]
+          }
+        },
+        {
+          "name": "A sliced property can be piped from",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[0..2]->#length())"
+          },
+          "result": {
+            "r": [
+              2,
+              2
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be used with an operator",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[0]+1)"
+          },
+          "result": {
+            "r": [
+              2,
+              5
+            ]
+          }
+        },
+        {
+          "name": "Two indexed properties can be used with an operator",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[0]*@v.kids[1])"
+          },
+          "result": {
+            "r": [
+              2,
+              20
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be compared",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[0]==1)"
+          },
+          "result": {
+            "r": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be in an array literal",
+          "transformer": {
+            "r": "#select($.groups,@v:[@v.kids[0],@v.kids[1]])"
+          },
+          "result": {
+            "r": [
+              [
+                1,
+                2
+              ],
+              [
+                4,
+                5
+              ]
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be in an object literal",
+          "transformer": {
+            "r": "#select($.groups,@v:{'a':@v.kids[0]})"
+          },
+          "result": {
+            "r": [
+              {
+                "a": 1
+              },
+              {
+                "a": 4
+              }
+            ]
+          }
+        },
+        {
+          "name": "A property can be the index",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[@v.pos.i])"
+          },
+          "result": {
+            "r": [
+              3,
+              4
+            ]
+          }
+        },
+        {
+          "name": "A property can be the index of a variable",
+          "transformer": {
+            "@g": "#valueOf($.groups[0])",
+            "@l": "#valueOf($.list)",
+            "r": "@l[@g.pos.i]"
+          },
+          "result": {
+            "r": 30
+          }
+        },
+        {
+          "name": "An indexed property can be the index of a method result",
+          "transformer": {
+            "@g": "#valueOf($.groups[0])",
+            "r": "#valueOf($.list)[@g.kids[0]]"
+          },
+          "result": {
+            "r": 20
+          }
+        },
+        {
+          "name": "A loop variable's property can be indexed",
+          "transformer": {
+            "#foreach(@g in $.groups) into 'r'": [
+              {
+                "first": "@g.kids[0]"
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "first": 1
+              },
+              {
+                "first": 4
+              }
+            ]
+          }
+        },
+        {
+          "name": "An indexed property can be the value of a statement",
+          "transformer": {
+            "#using($.groups[0] as @x) into 'r'": [
+              "#setAt(@x.last, @x.kids[^1])"
+            ]
+          },
+          "result": {
+            "r": {
+              "kids": [
+                1,
+                2,
+                3
+              ],
+              "m": [
+                [
+                  1,
+                  2
+                ],
+                [
+                  3,
+                  4
+                ]
+              ],
+              "pos": {
+                "i": 2
+              },
+              "last": 3
+            }
+          }
+        },
+        {
+          "name": "Indexing a null property fails",
+          "transformer": {
+            "r": "#select($.maybe,@v:@v.kids[0])"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToIndexOrSliceNullPropertyValue"
+        },
+        {
+          "name": "Indexing a missing property fails",
+          "transformer": {
+            "r": "#select($.maybe,@v:@v.nothing[0])"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToIndexOrSliceNullPropertyValue"
+        },
+        {
+          "name": "Indexing a number fails",
+          "transformer": {
+            "r": "#select($.items,@v:@v.id[0])"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "AttemptedToIndexOrSliceNonStringAndNonArrayValue"
+        },
+        {
+          "name": "Indexing with a missing property fails",
+          "transformer": {
+            "r": "#select($.groups,@v:@v.kids[@v.pos.nothing])"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToEvaluateRangeWithNullIndex"
+        },
+        {
+          "name": "Indexing with a null variable fails",
+          "transformer": {
+            "@l": "#valueOf($.list)",
+            "@n": null,
+            "r": "@l[@n]"
+          },
+          "exceptionCode": "UnableToEvaluateRangeWithNullIndex"
+        },
+        {
+          "name": "A statement path can't be indexed",
+          "transformer": {
+            "#using($.groups[0] as @x) into 'r'": [
+              "#setAt(@x.kids[0], 9)"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseStatementPathThatIsNotDereferenceOfUsingVariable"
+        }
+      ]
+    },
+    {
+      "name": "Dereferenced property names end at operators",
+      "source": {
+        "items": [
+          {
+            "id": 1,
+            "tag": "x",
+            "price": 10
+          },
+          {
+            "id": 2,
+            "price": 20
+          }
+        ],
+        "rows": [
+          {
+            "unit-price": 3
+          }
+        ]
+      },
+      "tests": [
+        {
+          "name": "A property ends at a subtraction of another property",
+          "transformer": {
+            "r": "#select($.items,@v:@v.price-@v.id)"
+          },
+          "result": {
+            "r": [
+              9,
+              18
+            ]
+          }
+        },
+        {
+          "name": "A null-safe property ends at a subtraction",
+          "transformer": {
+            "r": "#select($.items,@v:@v?.price-1)"
+          },
+          "result": {
+            "r": [
+              9,
+              19
+            ]
+          }
+        },
+        {
+          "name": "An indexed property ends at a subtraction",
+          "transformer": {
+            "@r": "#valueOf($.items)",
+            "r": "@r[1].price-1"
+          },
+          "result": {
+            "r": 19
+          }
+        },
+        {
+          "name": "A property ends at a subtraction within an array literal",
+          "transformer": {
+            "r": "#select($.items,@v:[@v.price-1,@v.id-1])"
+          },
+          "result": {
+            "r": [
+              [
+                9,
+                0
+              ],
+              [
+                19,
+                1
+              ]
+            ]
+          }
+        },
+        {
+          "name": "A hyphenated name is read as a subtraction",
+          "transformer": {
+            "@r": "#valueOf($.rows[0])",
+            "r": "@r.unit-price"
+          },
+          "exceptionCode": "UnableToEvaluateExpressionWithNullArgument"
+        },
+        {
+          "name": "A property ends at an addition",
+          "transformer": {
+            "r": "#select($.items,@v:@v.price+1)"
+          },
+          "result": {
+            "r": [
+              11,
+              21
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a multiplication",
+          "transformer": {
+            "r": "#select($.items,@v:@v.price*2)"
+          },
+          "result": {
+            "r": [
+              20,
+              40
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a division",
+          "transformer": {
+            "r": "#select($.items,@v:@v.price/2)"
+          },
+          "result": {
+            "r": [
+              5,
+              10
+            ]
+          }
+        },
+        {
+          "name": "A property ends at an equality",
+          "transformer": {
+            "r": "#select($.items,@v:@v.id==1)"
+          },
+          "result": {
+            "r": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "name": "A property ends at an inequality",
+          "transformer": {
+            "r": "#select($.items,@v:@v.id!=1)"
+          },
+          "result": {
+            "r": [
+              false,
+              true
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a greater than",
+          "transformer": {
+            "r": "#select($.items,@v:@v.id>1)"
+          },
+          "result": {
+            "r": [
+              false,
+              true
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a greater than or equal",
+          "transformer": {
+            "r": "#select($.items,@v:@v.id>=2)"
+          },
+          "result": {
+            "r": [
+              false,
+              true
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a less than",
+          "transformer": {
+            "r": "#select($.items,@v:@v.id<2)"
+          },
+          "result": {
+            "r": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a logical and",
+          "transformer": {
+            "r": "#select($.items,@v:(@v.id==1)&&true)"
+          },
+          "result": {
+            "r": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a logical or",
+          "transformer": {
+            "r": "#select($.items,@v:(@v.id==1)||false)"
+          },
+          "result": {
+            "r": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a null coalesce",
+          "transformer": {
+            "r": "#select($.items,@v:@v.tag??'none')"
+          },
+          "result": {
+            "r": [
+              "x",
+              "none"
+            ]
+          }
+        },
+        {
+          "name": "A null-safe property ends at a null coalesce",
+          "transformer": {
+            "r": "#select($.items,@v:@v?.tag??'none')"
+          },
+          "result": {
+            "r": [
+              "x",
+              "none"
+            ]
+          }
+        },
+        {
+          "name": "A property ends at the end of an object literal",
+          "transformer": {
+            "r": "#select($.items,@v:{'k':@v.id})"
+          },
+          "result": {
+            "r": [
+              {
+                "k": 1
+              },
+              {
+                "k": 2
+              }
+            ]
+          }
+        },
+        {
+          "name": "A property ends at an object literal separator",
+          "transformer": {
+            "r": "#select($.items,@v:{'k':@v.id,'l':@v.price})"
+          },
+          "result": {
+            "r": [
+              {
+                "k": 1,
+                "l": 10
+              },
+              {
+                "k": 2,
+                "l": 20
+              }
+            ]
+          }
+        },
+        {
+          "name": "A property ends at the end of an array literal",
+          "transformer": {
+            "r": "#select($.items,@v:[@v.id,@v.price])"
+          },
+          "result": {
+            "r": [
+              [
+                1,
+                10
+              ],
+              [
+                2,
+                20
+              ]
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a subtraction",
+          "transformer": {
+            "r": "#select($.items,@v:@v.price-1)"
+          },
+          "result": {
+            "r": [
+              9,
+              19
+            ]
+          }
+        },
+        {
+          "name": "A property ends at a subtraction with spaces",
+          "transformer": {
+            "r": "#select($.items,@v:@v.price - 1)"
+          },
+          "result": {
+            "r": [
+              9,
+              19
+            ]
+          }
+        },
+        {
+          "name": "A property can still be piped",
+          "transformer": {
+            "r": "#select($.items,@v:@v.price->#toString())"
+          },
+          "result": {
+            "r": [
+              "10",
+              "20"
+            ]
+          }
+        },
+        {
+          "name": "A null-safe property can still be piped",
+          "transformer": {
+            "r": "#select($.items,@v:@v.tag?->#toUpperCase())"
+          },
+          "result": {
+            "r": [
+              "X",
+              null
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "JSON paths that can match several values always give an array",
+      "source": {
+        "a": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "b": 5,
+        "nul": null,
+        "empty": [],
+        "o": {
+          "p": 1,
+          "q": {
+            "p": 2
+          }
+        },
+        "n": [
+          1,
+          null
+        ],
+        "items": [
+          {
+            "id": 1,
+            "tag": "x",
+            "price": 10
+          },
+          {
+            "id": 2,
+            "tag": "y",
+            "price": 20
+          },
+          {
+            "id": 3,
+            "price": 30
+          }
+        ],
+        "groups": [
+          {
+            "name": "g1",
+            "kids": [
+              1,
+              2
+            ],
+            "shared": "near"
+          },
+          {
+            "name": "g2",
+            "kids": []
+          }
+        ],
+        "shared": "far",
+        "tags": [
+          "p",
+          "q"
+        ],
+        "with-hyphen": 11,
+        "$dollar": 14,
+        "1st": 15,
+        "a:b": 16,
+        "deep-er": {
+          "x-y": [
+            {
+              "z-z": 17
+            }
+          ]
+        }
+      },
+      "tests": [
+        {
+          "name": "A wildcard gives all of the matches",
+          "transformer": {
+            "r": "#valueOf($.a[*])"
+          },
+          "result": {
+            "r": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        },
+        {
+          "name": "A wildcard on an object gives all of its values",
+          "transformer": {
+            "r": "#valueOf($.o.*)"
+          },
+          "result": {
+            "r": [
+              1,
+              {
+                "p": 2
+              }
+            ]
+          }
+        },
+        {
+          "name": "A union gives all of the matches",
+          "transformer": {
+            "r": "#valueOf($.a[0,2])"
+          },
+          "result": {
+            "r": [
+              1,
+              3
+            ]
+          }
+        },
+        {
+          "name": "A slice gives all of the matches",
+          "transformer": {
+            "r": "#valueOf($.a[0:2])"
+          },
+          "result": {
+            "r": [
+              1,
+              2
+            ]
+          }
+        },
+        {
+          "name": "A reversed slice gives its matches in reverse",
+          "transformer": {
+            "r": "#valueOf($.a[::-1])"
+          },
+          "result": {
+            "r": [
+              4,
+              3,
+              2,
+              1
+            ]
+          }
+        },
+        {
+          "name": "A recursive descent gives all of the matches",
+          "transformer": {
+            "r": "#valueOf($..p)"
+          },
+          "result": {
+            "r": [
+              1,
+              2
+            ]
+          }
+        },
+        {
+          "name": "A recursive descent with a single match still gives an array",
+          "transformer": {
+            "r": "#valueOf($..['z-z'])"
+          },
+          "result": {
+            "r": [
+              17
+            ]
+          }
+        },
+        {
+          "name": "A filter with several matches gives all of them",
+          "transformer": {
+            "r": "#valueOf($.items[?(@.price > 15)].id)"
+          },
+          "result": {
+            "r": [
+              2,
+              3
+            ]
+          }
+        },
+        {
+          "name": "A filter with one match still gives an array",
+          "transformer": {
+            "r": "#valueOf($.items[?(@.tag == 'x')].id)"
+          },
+          "result": {
+            "r": [
+              1
+            ]
+          }
+        },
+        {
+          "name": "A filter with no matches gives an empty array",
+          "transformer": {
+            "r": "#valueOf($.items[?(@.price > 99)].id)"
+          },
+          "result": {
+            "r": []
+          }
+        },
+        {
+          "name": "A wildcard keeps a null match",
+          "transformer": {
+            "r": "#valueOf($.n[*])"
+          },
+          "result": {
+            "r": [
+              1,
+              null
+            ]
+          }
+        },
+        {
+          "name": "A path given as text also gives an array",
+          "transformer": {
+            "r": "#valueOf('$.a[*]')"
+          },
+          "result": {
+            "r": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        },
+        {
+          "name": "A path outside of a method call also gives an array",
+          "transformer": {
+            "r": "($.a[*])"
+          },
+          "result": {
+            "r": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        },
+        {
+          "name": "A path within an array literal stays a nested array",
+          "transformer": {
+            "r": "[$.a[*]]"
+          },
+          "result": {
+            "r": [
+              [
+                1,
+                2,
+                3,
+                4
+              ]
+            ]
+          }
+        },
+        {
+          "name": "The result can be indexed",
+          "transformer": {
+            "r": "#valueOf($.a[*])[0]"
+          },
+          "result": {
+            "r": 1
+          }
+        },
+        {
+          "name": "The result can be piped",
+          "transformer": {
+            "r": "#valueOf($.a[*])->#length()"
+          },
+          "result": {
+            "r": 4
+          }
+        },
+        {
+          "name": "The result can be given to a method",
+          "transformer": {
+            "r": "#length($.items[?(@.price > 15)])"
+          },
+          "result": {
+            "r": 2
+          }
+        },
+        {
+          "name": "The result can be summed",
+          "transformer": {
+            "r": "#sum($.items[*].price)"
+          },
+          "result": {
+            "r": 60
+          }
+        },
+        {
+          "name": "An empty result has a length of zero",
+          "transformer": {
+            "r": "#length($.items[?(@.price > 99)])"
+          },
+          "result": {
+            "r": 0
+          }
+        },
+        {
+          "name": "A path with matches exists",
+          "transformer": {
+            "r": "#exists($.items[?(@.price > 15)])"
+          },
+          "result": {
+            "r": true
+          }
+        },
+        {
+          "name": "A path with no matches doesn't exist",
+          "transformer": {
+            "r": "#exists($.items[?(@.price > 99)])"
+          },
+          "result": {
+            "r": false
+          }
+        },
+        {
+          "name": "A path with no matches is missing",
+          "transformer": {
+            "r": "#isMissing($.items[?(@.price > 99)])"
+          },
+          "result": {
+            "r": true
+          }
+        },
+        {
+          "name": "A path with no matches isn't null",
+          "transformer": {
+            "r": "#isNull($.items[?(@.price > 99)])"
+          },
+          "result": {
+            "r": false
+          }
+        },
+        {
+          "name": "A path to an empty array exists",
+          "transformer": {
+            "r": "#exists($.empty)"
+          },
+          "result": {
+            "r": true
+          }
+        },
+        {
+          "name": "A path to an empty array isn't missing",
+          "transformer": {
+            "r": "#isMissing($.empty)"
+          },
+          "result": {
+            "r": false
+          }
+        },
+        {
+          "name": "A path to an array gives that array",
+          "transformer": {
+            "r": "#valueOf($.a)"
+          },
+          "result": {
+            "r": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        },
+        {
+          "name": "An index gives the value",
+          "transformer": {
+            "r": "#valueOf($.a[1])"
+          },
+          "result": {
+            "r": 2
+          }
+        },
+        {
+          "name": "A path with a missing name gives null",
+          "transformer": {
+            "r": "#valueOf($.nothing)"
+          },
+          "result": {
+            "r": null
+          }
+        },
+        {
+          "name": "A path to a null gives null",
+          "transformer": {
+            "r": "#valueOf($.nul)"
+          },
+          "result": {
+            "r": null
+          }
+        },
+        {
+          "name": "A filter can be the source of a loop",
+          "transformer": {
+            "#foreach(@i in $.items[?(@.price > 15)]) into 'r'": [
+              {
+                "v": "@i.id"
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "v": 2
+              },
+              {
+                "v": 3
+              }
+            ]
+          }
+        },
+        {
+          "name": "A filter with no matches loops over nothing",
+          "transformer": {
+            "#foreach(@i in $.items[?(@.price > 99)]) into 'r'": [
+              {
+                "v": "@i.id"
+              }
+            ]
+          },
+          "result": {
+            "r": []
+          }
+        },
+        {
+          "name": "A filter can't be the source of a using block, which needs an object",
+          "transformer": {
+            "#using($.items[?(@.tag == 'y')] as @x) into 'r'": [
+              "#removeAt(@x.tag)"
+            ]
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToPerformUsingLibraryCallOnNonObjectToken"
+        },
+        {
+          "name": "An index can be the source of a using block",
+          "transformer": {
+            "#using($.items[1] as @x) into 'r'": [
+              "#removeAt(@x.tag)"
+            ]
+          },
+          "result": {
+            "r": {
+              "id": 2,
+              "price": 20
+            }
+          }
+        },
+        {
+          "name": "A filter doesn't see changes made by a using block",
+          "transformer": {
+            "before": "#valueOf($..p)",
+            "#using($.o as @x) into 'c'": [
+              "#setAt(@x.p, 99)"
+            ],
+            "after": "#valueOf($..p)"
+          },
+          "result": {
+            "before": [
+              1,
+              2
+            ],
+            "after": [
+              1,
+              2
+            ],
+            "c": {
+              "p": 99,
+              "q": {
+                "p": 2
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "JSON paths in a loop source search outward from the closest match",
+      "source": {
+        "a": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "b": 5,
+        "nul": null,
+        "empty": [],
+        "o": {
+          "p": 1,
+          "q": {
+            "p": 2
+          }
+        },
+        "n": [
+          1,
+          null
+        ],
+        "items": [
+          {
+            "id": 1,
+            "tag": "x",
+            "price": 10
+          },
+          {
+            "id": 2,
+            "tag": "y",
+            "price": 20
+          },
+          {
+            "id": 3,
+            "price": 30
+          }
+        ],
+        "groups": [
+          {
+            "name": "g1",
+            "kids": [
+              1,
+              2
+            ],
+            "shared": "near"
+          },
+          {
+            "name": "g2",
+            "kids": []
+          }
+        ],
+        "shared": "far",
+        "tags": [
+          "p",
+          "q"
+        ],
+        "with-hyphen": 11,
+        "$dollar": 14,
+        "1st": 15,
+        "a:b": 16,
+        "deep-er": {
+          "x-y": [
+            {
+              "z-z": 17
+            }
+          ]
+        }
+      },
+      "tests": [
+        {
+          "name": "A path found on the current element is used",
+          "transformer": {
+            "#foreach(@g in $.groups) into 'r'": [
+              {
+                "#foreach(@k in $.kids) into 'k'": [
+                  "@k"
+                ]
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "k": [
+                  1,
+                  2
+                ]
+              },
+              {
+                "k": []
+              }
+            ]
+          }
+        },
+        {
+          "name": "A path not found on the current element is found further out",
+          "transformer": {
+            "#foreach(@g in $.groups) into 'r'": [
+              {
+                "#foreach(@t in $.tags) into 'k'": [
+                  "@t"
+                ]
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "k": [
+                  "p",
+                  "q"
+                ]
+              },
+              {
+                "k": [
+                  "p",
+                  "q"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "A wildcard found on the current element is used",
+          "transformer": {
+            "#foreach(@g in $.groups) into 'r'": [
+              {
+                "#foreach(@k in $.kids[*]) into 'k'": [
+                  "@k"
+                ]
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "k": [
+                  1,
+                  2
+                ]
+              },
+              {
+                "k": []
+              }
+            ]
+          }
+        },
+        {
+          "name": "A filter with no matches on the current element is found further out",
+          "transformer": {
+            "#foreach(@g in $.groups) into 'r'": [
+              {
+                "#foreach(@k in $.tags[?(@ == 'p')]) into 'k'": [
+                  "@k"
+                ]
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "k": [
+                  "p"
+                ]
+              },
+              {
+                "k": [
+                  "p"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "A wildcard with no matches anywhere loops over nothing",
+          "transformer": {
+            "#foreach(@g in $.groups) into 'r'": [
+              {
+                "#foreach(@k in $.missing[*]) into 'k'": [
+                  "@k"
+                ]
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "k": []
+              },
+              {
+                "k": []
+              }
+            ]
+          }
+        },
+        {
+          "name": "A value method still starts from the root",
+          "transformer": {
+            "#foreach(@g in $.groups) into 'r'": [
+              {
+                "s": "#valueOf($.shared)"
+              }
+            ]
+          },
+          "result": {
+            "r": [
+              {
+                "s": "far"
+              },
+              {
+                "s": "far"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "JSON paths follow the same syntax with either JSON library",
+      "source": {
+        "a": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "b": 5,
+        "nul": null,
+        "empty": [],
+        "o": {
+          "p": 1,
+          "q": {
+            "p": 2
+          }
+        },
+        "n": [
+          1,
+          null
+        ],
+        "items": [
+          {
+            "id": 1,
+            "tag": "x",
+            "price": 10
+          },
+          {
+            "id": 2,
+            "tag": "y",
+            "price": 20
+          },
+          {
+            "id": 3,
+            "price": 30
+          }
+        ],
+        "groups": [
+          {
+            "name": "g1",
+            "kids": [
+              1,
+              2
+            ],
+            "shared": "near"
+          },
+          {
+            "name": "g2",
+            "kids": []
+          }
+        ],
+        "shared": "far",
+        "tags": [
+          "p",
+          "q"
+        ],
+        "with-hyphen": 11,
+        "$dollar": 14,
+        "1st": 15,
+        "a:b": 16,
+        "deep-er": {
+          "x-y": [
+            {
+              "z-z": 17
+            }
+          ]
+        }
+      },
+      "tests": [
+        {
+          "name": "Each name in a path can use brackets",
+          "transformer": {
+            "r": "#valueOf($['deep-er']['x-y'][0]['z-z'])"
+          },
+          "result": {
+            "r": 17
+          }
+        },
+        {
+          "name": "A dollar sign can be used in brackets",
+          "transformer": {
+            "r": "#valueOf($['$dollar'])"
+          },
+          "result": {
+            "r": 14
+          }
+        },
+        {
+          "name": "A name starting with a digit can be used in brackets",
+          "transformer": {
+            "r": "#valueOf($['1st'])"
+          },
+          "result": {
+            "r": 15
+          }
+        },
+        {
+          "name": "A hyphenated name in a recursive descent needs brackets",
+          "transformer": {
+            "r": "#valueOf($..z-z)"
+          },
+          "exceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A hyphenated name as the source of a loop needs brackets",
+          "transformer": {
+            "#foreach(@x in $.deep-er) into 'r'": [
+              "@x"
+            ]
+          },
+          "exceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A hyphenated name given as text to #valueOf needs brackets",
+          "transformer": {
+            "r": "#valueOf('$.with-hyphen')"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A hyphenated name in a branch that isn't taken still needs brackets",
+          "transformer": {
+            "r": "#if(true, 1, #valueOf($.with-hyphen))"
+          },
+          "exceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A name with a hyphen needs brackets",
+          "transformer": {
+            "r": "#valueOf($.with-hyphen)"
+          },
+          "exceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A name with a dollar sign needs brackets",
+          "transformer": {
+            "r": "#valueOf($.$dollar)"
+          },
+          "exceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A name starting with a digit needs brackets",
+          "transformer": {
+            "r": "#valueOf($.1st)"
+          },
+          "exceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A name with a colon needs brackets",
+          "transformer": {
+            "r": "#valueOf($.a:b)"
+          },
+          "exceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A hyphenated name after other names needs brackets",
+          "transformer": {
+            "r": "#valueOf($.deep-er.x-y[0].z-z)"
+          },
+          "exceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A hyphenated name can be used in brackets",
+          "transformer": {
+            "r": "#valueOf($['with-hyphen'])"
+          },
+          "result": {
+            "r": 11
+          }
+        },
+        {
+          "name": "A double quoted name can be used in brackets",
+          "transformer": {
+            "r": "#valueOf($[\"b\"])"
+          },
+          "result": {
+            "r": 5
+          }
+        },
+        {
+          "name": "A filter doesn't need parentheses",
+          "transformer": {
+            "r": "#valueOf($.items[?@.price > 15].id)"
+          },
+          "result": {
+            "r": [
+              2,
+              3
+            ]
+          }
+        },
+        {
+          "name": "A filter can call a function",
+          "transformer": {
+            "r": "#valueOf($.items[?length(@.tag) == 1].id)"
+          },
+          "result": {
+            "r": [
+              1,
+              2
+            ]
+          }
+        },
+        {
+          "name": "A hyphenated name in a filter works in brackets",
+          "transformer": {
+            "r": "#valueOf($.items[?(@['no-such'])])"
+          },
+          "result": {
+            "r": []
+          }
+        },
+        {
+          "name": "A negative index counts from the end",
+          "transformer": {
+            "r": "#valueOf($.a[-1])"
+          },
+          "result": {
+            "r": 4
+          }
+        },
+        {
+          "name": "An index past the end gives null",
+          "transformer": {
+            "r": "#valueOf($.a[9])"
+          },
+          "result": {
+            "r": null
+          }
+        },
+        {
+          "name": "A negative index past the start gives null",
+          "transformer": {
+            "r": "#valueOf($.a[-9])"
+          },
+          "result": {
+            "r": null
+          }
+        },
+        {
+          "name": "A subtraction without spaces is read as a hyphenated name, which needs brackets",
+          "transformer": {
+            "r": "($.b-1)"
+          },
+          "exceptionCode": "UnableToUseJsonPathNameWithoutBracketNotation"
+        },
+        {
+          "name": "A hyphenated name in a filter needs brackets",
+          "transformer": {
+            "r": "#valueOf($.items[?(@.no-such)])"
+          },
+          "exceptionCode": "UnableToParseJsonPath"
+        },
+        {
+          "name": "A name can't contain a space",
+          "transformer": {
+            "r": "#valueOf('$.a b')"
+          },
+          "exceptionCode": "externalMethodException",
+          "rootExceptionCode": "UnableToParseJsonPath"
+        },
+        {
+          "name": "A second dollar sign fails",
+          "transformer": {
+            "r": "#valueOf($$)"
+          },
+          "exceptionCode": "UnableToParseJsonPath"
+        }
+      ]
+    },
+    {
+      "name": "Variable names follow the same rules as a C# identifier",
+      "source": {
+        "a": [
+          1,
+          2
+        ],
+        "n": [
+          1,
+          null
+        ],
+        "b": 5
+      },
+      "tests": [
+        {
+          "name": "A variable ends at an addition",
+          "transformer": {
+            "r": "#select($.a,@v:@v+$.b)"
+          },
+          "result": {
+            "r": [
+              6,
+              7
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at a subtraction",
+          "transformer": {
+            "r": "#select($.a,@v:@v-1)"
+          },
+          "result": {
+            "r": [
+              0,
+              1
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at a multiplication",
+          "transformer": {
+            "r": "#select($.a,@v:@v*2)"
+          },
+          "result": {
+            "r": [
+              2,
+              4
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at a division",
+          "transformer": {
+            "r": "#select($.a,@v:@v/2)"
+          },
+          "result": {
+            "r": [
+              0.5,
+              1
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at an equality",
+          "transformer": {
+            "r": "#select($.a,@v:@v==1)"
+          },
+          "result": {
+            "r": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at an inequality",
+          "transformer": {
+            "r": "#select($.a,@v:@v!=1)"
+          },
+          "result": {
+            "r": [
+              false,
+              true
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at a greater than",
+          "transformer": {
+            "r": "#select($.a,@v:@v>1)"
+          },
+          "result": {
+            "r": [
+              false,
+              true
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at a less than",
+          "transformer": {
+            "r": "#select($.a,@v:@v<2)"
+          },
+          "result": {
+            "r": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at a logical and",
+          "transformer": {
+            "r": "#select($.a,@v:(@v==1)&&true)"
+          },
+          "result": {
+            "r": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at a null coalesce",
+          "transformer": {
+            "r": "#select($.n,@v:@v??0)"
+          },
+          "result": {
+            "r": [
+              1,
+              0
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at the end of an object literal",
+          "transformer": {
+            "r": "#select($.a,@v:{'k':@v})"
+          },
+          "result": {
+            "r": [
+              {
+                "k": 1
+              },
+              {
+                "k": 2
+              }
+            ]
+          }
+        },
+        {
+          "name": "A variable ends at the end of an array literal",
+          "transformer": {
+            "r": "#select($.a,@v:[@v,@v])"
+          },
+          "result": {
+            "r": [
+              [
+                1,
+                1
+              ],
+              [
+                2,
+                2
+              ]
+            ]
+          }
+        },
+        {
+          "name": "A name can start with an underscore",
+          "transformer": {
+            "r": "#select($.a,@_v:@_v+1)"
+          },
+          "result": {
+            "r": [
+              2,
+              3
+            ]
+          }
+        },
+        {
+          "name": "A name can contain digits and underscores",
+          "transformer": {
+            "r": "#select($.a,@v_1:@v_1+1)"
+          },
+          "result": {
+            "r": [
+              2,
+              3
+            ]
+          }
+        },
+        {
+          "name": "A name can contain accented letters",
+          "transformer": {
+            "r": "#select($.a,@naïve:@naïve+1)"
+          },
+          "result": {
+            "r": [
+              2,
+              3
+            ]
+          }
+        },
+        {
+          "name": "A name can be in any script",
+          "transformer": {
+            "r": "#select($.a,@名前:@名前+1)"
+          },
+          "result": {
+            "r": [
+              2,
+              3
+            ]
+          }
+        },
+        {
+          "name": "A declared name can contain an underscore",
+          "transformer": {
+            "@a_1": 5,
+            "r": "@a_1"
+          },
+          "result": {
+            "r": 5
+          }
+        },
+        {
+          "name": "An index variable can use any valid name",
+          "transformer": {
+            "#foreach(@i;@_ix in $.a) into 'r'": [
+              "@_ix"
+            ]
+          },
+          "result": {
+            "r": [
+              0,
+              1
+            ]
+          }
+        },
+        {
+          "name": "A name can't start with a digit",
+          "transformer": {
+            "r": "#select($.a,@1v:1)"
+          },
+          "exceptionCode": "UnableToParseVariableName"
+        },
+        {
+          "name": "A name can't have two at signs",
+          "transformer": {
+            "r": "#select($.a,@@v:1)"
+          },
+          "exceptionCode": "UnableToParseVariableName"
+        },
+        {
+          "name": "A name can't start with a hyphen",
+          "transformer": {
+            "r": "#select($.a,@-v:1)"
+          },
+          "exceptionCode": "UnableToParseVariableName"
+        },
+        {
+          "name": "A name can't be empty",
+          "transformer": {
+            "r": "#select($.a,@:1)"
+          },
+          "exceptionCode": "UnableToParseVariableName"
+        },
+        {
+          "name": "A name can't be empty at the end of an expression",
+          "transformer": {
+            "r": "@"
+          },
+          "exceptionCode": "UnableToParseVariableName"
+        },
+        {
+          "name": "A name can't be separated from its at sign",
+          "transformer": {
+            "r": "@ v"
+          },
+          "exceptionCode": "UnableToParseVariableName"
+        },
+        {
+          "name": "A declared name can't start with a digit",
+          "transformer": {
+            "@1v": 5
+          },
+          "exceptionCode": "UnableToParseVariableName"
+        },
+        {
+          "name": "An index variable name can't start with a digit",
+          "transformer": {
+            "#foreach(@i;@1x in $.a) into 'r'": [
+              "@i"
+            ]
+          },
+          "exceptionCode": "UnableToParseVariableName"
+        },
+        {
+          "name": "A name given to into can't start with a digit",
+          "transformer": {
+            "#valueOf($.b) into @1y": 1
+          },
+          "exceptionCode": "UnableToParseVariableName"
+        }
+      ]
+    },
+    {
       "name": "JSON paths are read as a whole, whatever they contain",
       "source": {
         "a": [
@@ -122,52 +2552,28 @@
           "transformer": {
             "r": "#valueOf($.items[?(@.price>15)])"
           },
-          "result": {
-            "r": {
-              "id": 2,
-              "tag": "y",
-              "price": 20
-            }
-          }
+          "result": {"r": [{"id": 2, "tag": "y", "price": 20}]}
         },
         {
           "name": "A filter with spaces stays part of the path",
           "transformer": {
             "r": "#valueOf($.items[?(@.price > 15)])"
           },
-          "result": {
-            "r": {
-              "id": 2,
-              "tag": "y",
-              "price": 20
-            }
-          }
+          "result": {"r": [{"id": 2, "tag": "y", "price": 20}]}
         },
         {
           "name": "A filter with a quoted value stays part of the path",
           "transformer": {
             "r": "#valueOf($.items[?(@.tag == 'x')])"
           },
-          "result": {
-            "r": {
-              "id": 1,
-              "tag": "x",
-              "price": 10
-            }
-          }
+          "result": {"r": [{"id": 1, "tag": "x", "price": 10}]}
         },
         {
           "name": "A filter containing a root path stays part of the path",
           "transformer": {
             "r": "#valueOf($.items[?(@.id == $.o.p)])"
           },
-          "result": {
-            "r": {
-              "id": 1,
-              "tag": "x",
-              "price": 10
-            }
-          }
+          "result": {"r": [{"id": 1, "tag": "x", "price": 10}]}
         },
         {
           "name": "A path with a filter can be followed by another parameter",
@@ -192,9 +2598,7 @@
           "transformer": {
             "r": "#valueOf($.items[?(@.price > 15)].id)->#toString()"
           },
-          "result": {
-            "r": "2"
-          }
+          "result": {"r": "[2]"}
         },
         {
           "name": "A path ends at the end of an array literal",
@@ -493,13 +2897,11 @@
           }
         },
         {
-          "name": "A valid path with a filter that matches nothing still gives null",
+          "name": "A valid path with a filter that matches nothing gives an empty array",
           "transformer": {
             "r": "#valueOf($.items[?(@.price > 99)])"
           },
-          "result": {
-            "r": null
-          }
+          "result": {"r": []}
         },
         {
           "name": "An invalid path fails as the source of a loop",
@@ -513,18 +2915,13 @@
           "exceptionCode": "UnableToParseJsonPath"
         },
         {
-          "name": "A filtered path works as the source of a using block",
+          "name": "An indexed path works as the source of a using block",
           "transformer": {
-            "#using($.items[?(@.tag == 'y')] as @x) into 'r'": [
+            "#using($.items[1] as @x) into 'r'": [
               "#removeAt(@x.tag)"
             ]
           },
-          "result": {
-            "r": {
-              "id": 2,
-              "price": 20
-            }
-          }
+          "result": {"r": {"id": 2, "price": 20}}
         },
         {
           "name": "A bracketed path works as the source of a loop",
@@ -5427,23 +7824,23 @@
           }
         },
         {
-          "name": "A hyphenated property can be dereferenced",
+          "name": "A property followed by a hyphen is subtracted from",
           "transformer": {
             "@x": "#valueOf($.person)",
-            "result": "@x.first-name"
+            "result": "@x.age-1"
           },
           "result": {
-            "result": "Jane"
+            "result": 41
           }
         },
         {
-          "name": "A method can be piped from a hyphenated dereferenced property",
+          "name": "A method can be piped from a property without spaces around the arrow operator",
           "transformer": {
             "@x": "#valueOf($.person)",
-            "result": "@x.first-name->#toUpperCase()"
+            "result": "@x.address.city->#toUpperCase()"
           },
           "result": {
-            "result": "JANE"
+            "result": "SPRINGFIELD"
           }
         },
         {

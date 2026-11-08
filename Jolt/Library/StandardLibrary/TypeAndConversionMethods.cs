@@ -46,7 +46,7 @@ namespace Jolt.Library.StandardLibrary
             if (pathOrValue is QueryPathReference path)
             {
                 var tokenValue = context.SelectTokenAt(path);
-                var tokenMissing = tokenValue == null;
+                var tokenMissing = context.IsMissingFrom(path, tokenValue);
 
                 return context.CreateTokenFrom(tokenMissing);
             }
@@ -108,7 +108,7 @@ namespace Jolt.Library.StandardLibrary
             {
                 var tokenValue = context.SelectTokenAt(path);
 
-                var tokenExists = tokenValue != null && tokenValue.Type != JsonTokenType.Null;
+                var tokenExists = !context.IsMissingFrom(path, tokenValue) && tokenValue.Type != JsonTokenType.Null;
 
                 return context.CreateTokenFrom(tokenExists);
             }

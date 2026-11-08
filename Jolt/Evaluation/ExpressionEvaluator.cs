@@ -10,6 +10,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Globalization;
 using System.Reflection;
 using System.Text;
 
@@ -339,6 +340,26 @@ namespace Jolt.Evaluation
 
         private Range EvaluateRange(RangeExpression range, EvaluationContext context)
         {
+            var (left, right) = EvaluateRangeIndexes(range, context);
+
+            var isIdenticalIndices = range.IsSingleIndex;
+            var leftIndex = new Index((int)left, range.StartIndex.IsOffsetFromEnd);
+
+            var rightIndex = (isIdenticalIndices, range.EndIndex.IsOffsetFromEnd) switch
+            {
+                (true, true) => new Index((int)right - 1, true),
+                (true, false) => new Index((int)right + 1, false),
+                (false, _) => new Index((int)right, range.EndIndex.IsOffsetFromEnd)
+            };
+
+            return new Range(leftIndex, rightIndex);
+        }
+
+        /// <summary>
+        /// Evaluates the numbers at each end of a range, as written (e.g. 1 and 2 for "^1..^2").
+        /// </summary>
+        private (long Left, long Right) EvaluateRangeIndexes(RangeExpression range, EvaluationContext context)
+        {
             var leftResult = EvaluateExpression(range.StartIndex.Index, context).UnwrapWith(context.JsonContext.JsonTokenReader);
             var rightResult = EvaluateExpression(range.EndIndex.Index, context).UnwrapWith(context.JsonContext.JsonTokenReader);
 
@@ -347,32 +368,39 @@ namespace Jolt.Evaluation
                 throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateRangeWithNullIndex, leftResult?.GetType(), rightResult?.GetType());
             }
 
-            if (leftResult is RangeVariable leftVariable)
-            {
-                leftResult = leftVariable.Value?.ToTypeOf<long>();
-            }
+            // A variable or dereferenced property gives the index that it holds (e.g. "@x.list[@y.position]").
 
-            if (rightResult is RangeVariable rightVariable)
+            leftResult = UnwrapRangeIndex(leftResult);
+            rightResult = UnwrapRangeIndex(rightResult);
+
+            if (leftResult is null || rightResult is null)
             {
-                rightResult = rightVariable.Value?.ToTypeOf<long>();
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateRangeWithNullIndex, leftResult?.GetType(), rightResult?.GetType());
             }
 
             if (leftResult is long left && rightResult is long right)
             {
-                var isIdenticalIndices = range.IsSingleIndex;
-                var leftIndex = new Index((int)left, range.StartIndex.IsOffsetFromEnd);
-
-                var rightIndex = (isIdenticalIndices, range.EndIndex.IsOffsetFromEnd) switch
-                {
-                    (true, true) => new Index((int)right - 1, true),
-                    (true, false) => new Index((int)right + 1, false),
-                    (false, _) => new Index((int)right, range.EndIndex.IsOffsetFromEnd)
-                };
-
-                return new Range(leftIndex, rightIndex);
+                return (left, right);
             }
 
             throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToEvaluateRangeWithNonIntegerIndex, leftResult.GetType(), rightResult.GetType());
+        }
+
+        private static object? UnwrapRangeIndex(object result)
+        {
+            var token = result switch
+            {
+                RangeVariable variable => variable.Value,
+                DereferencedPath path => path.ObtainableToken,
+                _ => (object?)result
+            };
+
+            return token switch
+            {
+                IJsonToken json when ValueResolutionExtensions.IsNull(json) => null,
+                IJsonToken json => json.ToTypeOf<long>(),
+                var other => other
+            };
         }
 
         private RangeVariable UnwrapRangeVariable(RangeVariableExpression range, EvaluationContext context)
@@ -417,6 +445,8 @@ namespace Jolt.Evaluation
             {
                 if (value is IJsonValue val && val.IsString())
                 {
+                    EnsureWithinBounds(indexOrSliceRange, "a string", val.ToTypeOf<string>().Length, context);
+
                     var method = context.JsonContext.ReferenceResolver.GetMethod(nameof(StringAndArrayMethods.Substring).ToLowerInvariant());
                     var call = new MethodCallExpression(method, new Expression[] { new RangeVariableExpression(variableName), indexOrSliceRange });
 
@@ -424,6 +454,8 @@ namespace Jolt.Evaluation
                 }
                 else if (value is IJsonArray array)
                 {
+                    EnsureWithinBounds(indexOrSliceRange, "an array", array.Length, context);
+
                     var method = context.JsonContext.ReferenceResolver.GetMethod(nameof(StringAndArrayMethods.Slice).ToLowerInvariant());
                     var call = new MethodCallExpression(method, new Expression[] { new RangeVariableExpression(variableName), indexOrSliceRange });
 
@@ -452,6 +484,18 @@ namespace Jolt.Evaluation
 
             var currentProperty = rangeVariable?.Value;
             var currentName = rangeVariable?.Name ?? dereference.Variable.Name;
+
+            // The variable itself is indexed or sliced first (e.g. "@x[0].name"), as with indexing it on its own.
+
+            foreach (var indexer in dereference.VariableIndexers)
+            {
+                if (ValueResolutionExtensions.IsNull(currentProperty))
+                {
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.AttemptedToIndexOrSliceNullVariableValue, currentName);
+                }
+
+                currentProperty = IndexOrSliceToken(indexer, currentProperty!, context);
+            }
 
             for (var i = 0; i < dereference.DereferenceChain.Length; i++)
             {
@@ -499,8 +543,9 @@ namespace Jolt.Evaluation
                         }
 
                         // A missing last property gives null, while one with more properties to dereference after it is an error (unless null-safe).
+                        // An indexed one is always an error, as with indexing any other null value, which happens below.
 
-                        if (i == dereference.DereferenceChain.Length - 1)
+                        if (i == dereference.DereferenceChain.Length - 1 && propertyReference.Indexers.Length == 0)
                         {
                             return new DereferencedPath(rangeVariable, null, missingDereferencePaths);
                         }
@@ -508,6 +553,11 @@ namespace Jolt.Evaluation
 
                     currentProperty = node;
                     currentName = propertyReference.PropertyName;
+
+                    foreach (var indexer in propertyReference.Indexers)
+                    {
+                        currentProperty = IndexOrSliceProperty(propertyReference.PropertyName, indexer, currentProperty, context);
+                    }
                 }
                 else if (currentProperty is IJsonValue)
                 {
@@ -520,6 +570,56 @@ namespace Jolt.Evaluation
             }
 
             return new DereferencedPath(rangeVariable, currentProperty);
+        }
+
+        /// <summary>
+        /// Checks that an index or slice is within a string or array before using it, so that it can be reported as it was written (e.g. "^4").
+        /// </summary>
+        private void EnsureWithinBounds(RangeExpression range, string valueKind, int length, EvaluationContext context)
+        {
+            var (left, right) = EvaluateRangeIndexes(range, context);
+
+            var start = range.StartIndex.IsOffsetFromEnd ? length - left : left;
+
+            static string Describe(long index, bool isOffsetFromEnd) => isOffsetFromEnd ? $"^{index}" : index.ToString(CultureInfo.InvariantCulture);
+
+            if (range.IsSingleIndex)
+            {
+                if (start < 0 || start >= length)
+                {
+                    throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToIndexOutsideOfBounds, Describe(left, range.StartIndex.IsOffsetFromEnd), valueKind, length);
+                }
+
+                return;
+            }
+
+            var end = range.EndIndex.IsOffsetFromEnd ? length - right : right;
+
+            if (start < 0 || end > length || start > end)
+            {
+                // A range that runs to the end (e.g. "1..") ends at "^0", which isn't written.
+
+                var endText = range.EndIndex.IsOffsetFromEnd && right == 0 ? string.Empty : Describe(right, range.EndIndex.IsOffsetFromEnd);
+
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.UnableToSliceOutsideOfBounds, $"{Describe(left, range.StartIndex.IsOffsetFromEnd)}..{endText}", valueKind, length);
+            }
+        }
+
+        private IJsonToken? IndexOrSliceProperty(string propertyName, RangeExpression indexer, IJsonToken? value, EvaluationContext context)
+        {
+            if (ValueResolutionExtensions.IsNull(value))
+            {
+                throw context.CreateExecutionErrorFor<ExpressionEvaluator>(ExceptionCode.AttemptedToIndexOrSliceNullPropertyValue, propertyName);
+            }
+
+            return IndexOrSliceToken(indexer, value!, context);
+        }
+
+        private IJsonToken? IndexOrSliceToken(RangeExpression indexer, IJsonToken value, EvaluationContext context)
+        {
+            var result = IndexOrSliceWithRange(indexer, value, context, isRootExpression: false);
+
+            return result as IJsonToken ?? context.JsonContext.JsonTokenReader.CreateTokenFrom(result);
         }
 
         private object UnwrapLiteralValue(LiteralExpression literal, EvaluationContext context)
