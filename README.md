@@ -646,7 +646,7 @@ Similarly, the null-conditional pipe operator `?->` pipes a value into a method 
 
 # Library Methods
 
-This package comes with quite a few methods built into it to get you started, all of which are documented here and represent the most common things that you may want to do when transforming a JSON file. If you find that an opportunity for a new library method exists, please raise an issue and it will be considered. For more detail on the individual library methods, please see the Jolt wiki [over here.](https://github.com/Norhaven/Jolt/wiki)
+This package comes with quite a few methods built into it to get you started, all of which are documented here and represent the most common things that you may want to do when transforming a JSON file. If you find that an opportunity for a new library method exists, please raise an issue and it will be considered. For more detail on the individual library methods, please see the Jolt document site [over here](https://joltlang.com) which comes with a [playground](https://joltlang.com/playground) to test things out and play around in.
 
 Additionally, keep in mind that you can pass range variables as parameters into nearly all standard library methods. You can also use the piped method syntax directly off of a range variable or one of its properties, so for example the following transformer represents a valid use of both of those concepts together.
 
@@ -659,85 +659,85 @@ Additionally, keep in mind that you can pass range variables as parameters into 
 
 | Method | Description | Example | Valid On
 | ------ | ----------- | ------- | --------
-| valueOf | Gets the value of a property at the specified path | `#valueOf($.some.path)` | Property Value
-| exists | Returns true if the provided value is not null, false otherwise | `#exists($.some.path)` | Property Value
-| isNull | Returns true if the provided value is null, false otherwise | `#isNull($.some.path)` | Property Value
-| isMissing | Returns true if the provided path does not exist in the source document, false otherwise | `#isMissing($.some.path)` | Property Value
-| if | Takes three parameters: a boolean condition, an expression to evaluate when that condition is true, and an expression to evaluate when false | `#if(#valueOf($.some.path), 'Yes', 'No')` | Property Value
-| includeIf | Takes a path or boolean condition and will evaluate and include the property's object if true, returning null otherwise | `"#includeIf($.some.path) into 'someName'": { "nestedValue": "#valueOf($.other.path)" }` | Property Name
-| eval | Evaluates an arbitrary expression, either from a path or literal value, and returns the result | `#eval('1 + 2 == 3')` | Property Name/Value, Unsafe*
-| foreach | Evaluates a path and loops over the array elements or object properties it finds there to create its property values, naming the property as the string literal referred to by the `into` keyword | `"#foreach(@x in $.some.path) into 'result'": [ { "templateValue": "#valueOf($.other.path)" } ]` | Property Name
-| nameOf | Returns the name of the property being evaluated by the provided loop variable | `"#nameOf(@x)": "#valueOf($.some.path)"` | Property Name
-| indexOf | Returns the zero-based index value of the first occurrence of the provided value in a string or array, or -1 if it isn't found | `#indexOf(#valueOf($.some.path), 'some string')` | Property Value
-| length | Returns the length of a string or array value | `#length($.some.path)` | Property Value
-| toUpperCase | Returns the uppercase version of a string value | `#toUpperCase($.some.path)` | Property Value
-| toLowerCase | Returns the lowercase version of a string value | `#toLowerCase($.some.path)` | Property Value
-| trim | Returns the string value with all leading and trailing whitespace removed | `#trim($.some.path)` | Property Value
-| trimStart | Returns the string value with all leading whitespace removed | `#trimStart($.some.path)` | Property Value
-| trimEnd | Returns the string value with all trailing whitespace removed | `#trimEnd($.some.path)` | Property Value
-| replace | Returns the string value with all occurrences of a specified substring replaced with another value | `#replace($.some.path, 'old', 'new')` | Property Value
-| startsWith | Returns true if a string value starts with the provided substring, false otherwise | `#startsWith($.some.path, 'start')` | Property Value
-| endsWith | Returns true if a string value ends with the provided substring, false otherwise | `#endsWith($.some.path, 'end')` | Property Value
-| substring | Returns the string value that falls within the provided range in a given string | `#substring($.some.path, 1..2)` | Property Value
-| isRegexMatch | Returns true if a string value matches the provided regular expression pattern, false otherwise | `#isRegexMatch($.some.path, '^pattern$')` | Property Value
-| regexReplace | Returns the string value with all occurrences of a specified regular expression pattern replaced with another value | `#regexReplace($.some.path, '^pattern$', 'new')` | Property Value
-| slice | Returns the array slice that falls within the provided range in a given array | `#slice($.some.path, 1..2)` | Property Value
-| reverse | Returns the string or array value with its elements in reverse order | `#reverse($.some.path)` | Property Value
-| flatten | Returns a single array that is the result of recursively flattening an array of nested arrays | `#flatten($.some.path)` | Property Value
-| groupBy | Returns a JSON object that represents the grouping of an array's contents by its individual property values | `#groupBy($.some.path, @x: @x.propertyName)` | Property Value
-| summarizeWith | Returns an object array that's the result of applying an aggregate method to a grouped array's key and/or results | `#summarizeWith($.some.group, @group: #someAggregateMethod(@group.key, @group.results))` | Property Value **
-| orderBy | Returns an array in ascending order as determined by its individual property values, or by the elements themselves without a lambda (for an array of only numbers, only strings or only booleans, along with any nulls, which come first) | `#orderBy($.some.path, @x: @x.propertyName)` | Property Value
-| orderByDesc | Returns an array in descending order as determined by its individual property values, or by the elements themselves without a lambda (for an array of only numbers, only strings or only booleans, along with any nulls, which come last) | `#orderByDesc($.some.path, @x: @x.propertyName)` | Property Value
-| take | Returns an array containing the leading elements of an array up to the specified count | `#take($.some.path, 5)` | Property Value
-| skip | Returns an array excluding the leading elements of an array up to the specified count | `#skip($.some.path, 5)` | Property Value
-| takeWhile | Returns an array containing the leading elements of an array that satisfy a specified condition | `#takeWhile($.some.path, @x: @x.propertyName > 5)` | Property Value
-| skipWhile | Returns an array excluding the leading elements of an array that satisfy a specified condition | `#skipWhile($.some.path, @x: @x.propertyName > 5)` | Property Value
-| distinct | Returns an array of items associated with distinct values of a specified property or scalar values | `#distinct($.some.path, @x: @x.propertyName)` | Property Value
-| reduce | Returns a single value that is the accumulated result of applying a two-parameter lambda (the accumulated value and the current value) to each element of an array, with an optional seed value. Returns the seed value (if any) when the array is empty. | `#reduce($.some.path, @acc;@current: @acc + @current, @optionalSeedValue)` | Property Value
-| zip | Returns a single array that is the result of combining two arrays by pairs with a two-parameter lambda (the first element and the second element) | `#zip($.some.path, $.some.other.path, @x;@y: { 'first': @x, 'second': @y })` | Property Value
-| keysFrom | Returns an array of the property names of an object | `#keysFrom($.some.path)` | Property Value
-| valuesFrom | Returns an array of the property values of an object | `#valuesFrom($.some.path)` | Property Value
-| contains | Returns true when an array or string contains the provided value | `#contains($.some.path, 'some string')` | Property Value
-| roundTo | Returns the value of a provided number rounded to the specified decimal places | `#roundTo($.some.path, 2)` | Property Value
-| try | Evaluates an expression and returns the result, or if an error is encountered it evaluates the provided lambda with the exception as a parameter and returns that result instead | `#try(#valueOf($.some.path)->#toInteger(), @e: 'default value')` | Property Value
-| max | Returns the maximum value found within an array of numbers  (optionally with a projection lambda) | `#max($.some.path, @x: @x.someValue)` | Property Value
-| min | Returns the minimum value found within an array of numbers  (optionally with a projection lambda) | `#min($.some.path, @x: @x.someValue)` | Property Value
-| sum | Returns the total value found within an array of numbers (optionally with a projection lambda) | `#sum($.some.path, @x: @x.someValue)` | Property Value
-| average | Returns the average value found within an array of numbers  (optionally with a projection lambda) | `#average($.some.path, @x: @x.someValue)` | Property Value
-| joinWith | Returns a string that joins all elements of an array with the provided delimiter | `#joinWith($.some.path, ',')` | Property Name/Value
-| splitOn | Returns an array of substrings from a string value splitting on the provided delimiter | `#splitOn($.some.path, ',')` | Property Value
-| append | Returns a string or array made from appending one or more values onto them. An array's elements are appended to an array one by one, and any other value is appended to it as a single element | `#append($.some.path, 'one', 'two')` | Property Value
-| currentDateTime | Returns the current date and time as a string in ISO 8601 format | `#currentDateTime()` | Property Value
-| currentDateTimeUtc | Returns the current date and time in UTC as a string in ISO 8601 format | `#currentDateTimeUtc()` | Property Value
-| parseDateTime | Returns a string in ISO 8601 format that represents the date and time value of the provided string, requires exact format with optional format string | `#parseDateTime($.some.path, 'yyyy-MM-dd')` | Property Value
-| formatDateTime | Returns a string that represents the date and time value of the provided string formatted according to the provided format string | `#formatDateTime($.some.path, 'yyyy-MM-dd')` | Property Value
-| addDays | Returns a string in ISO 8601 format that represents the date and time value of the provided string with the specified number of days added to it | `#addDays($.some.path, 7)` | Property Value
-| addHours | Returns a string in ISO 8601 format that represents the date and time value of the provided string with the specified number of hours added to it | `#addHours($.some.path, 5)` | Property Value
-| addMinutes | Returns a string in ISO 8601 format that represents the date and time value of the provided string with the specified number of minutes added to it | `#addMinutes($.some.path, 30)` | Property Value
-| isInteger | Returns true if the value is represented as a whole number | `#isInteger($.some.path)` | Property Value
-| isString | Returns true if the value is represented as a string | `#isString($.some.path)` | Property Value
-| isDecimal | Returns true if the value is represented as a floating point number | `#isDecimal($.some.path)` | Property Value
-| isBoolean | Returns true if the value is represented as a boolean | `#isBoolean($.some.path)` | Property Value
-| isArray | Returns true if the value is represented as an array, false otherwise | `#isArray($.some.path)` | Property Value
-| isObject | Returns true if the value is represented as an object, false otherwise | `#isObject($.some.path)` | Property Value
-| isEmpty | Returns true if the value is an array or string with no contents, false otherwise | `#isEmpty($.some.path)` | Property Value
-| toInteger | Returns a value converted to a whole number | `#toInteger($.some.path)` | Property Value
-| toString | Returns the string representation of a value | `#toString($.some.path)` | Property Value
-| toDecimal | Returns a value converted to a floating point number | `#toDecimal($.some.path)` | Property Value
-| toBoolean | Returns a value converted to a boolean | `#toBoolean($.some.path)` | Property Value
-| merge | Returns an object that is the result of merging two or more objects together with a deep copy, with later values taking precedence over earlier ones | `#merge($.some.path, $.some.other.path)` | Property Value
-| any | Returns true if the value is an array or string with contents, false otherwise (lambda parameter is optional) | `#any($.some.path, @x: @x.someValue == 5)` | Property Value
-| where | Returns an array of objects that match a predicate | `#where($.some.path, @x: @x.other.path > 2)` | Property Value
-| select | Returns an array of objects that are the result of a projection | `#select($.some.path, @x: @x.other.path)` | Property Value
-| transformWith | Returns an object that is the result of transforming a document sub-path using a standalone transformer | `#transformWith($.some.path, 'SomeNamedTransformer')` | Property Value
-| using | Assigns a specific path to a range variable and allows statements to operate on it | `"#using($.some.path as @x) into 'result'":[ "#setAt(@x.other.path, 5)" ]` | Property Name
-| removeAt | Removes a JSON node from the provided variable-based path | `#removeAt(@x.some.path)` | Statement
-| setAt | Adds or modifies a JSON node specified with the provided variable-based path | `#setAt(@x.some.path, 5)` | Statement
-| when | Conditionally executes a statement based on a boolean expression | `#when(#exists(@x.integerArray), #removeAt(@x.integerArray))` | Statement
-| match | Matches a value against a set of conditions, evaluating from top to bottom and returning the value of the first one matched | `"#match($.path as @x) into 'result'": [ ... ]` | Property Name
-| is | Takes a type literal, array pattern, object pattern, or scalar literal value and tries to match it against the value present in the #match expression | `{ "#is(object)": "'some result'" }` | Property Name, Matching
-| given | Takes an expression and evaluates the result as a boolean, succeeding on true and failing on false | `{ "#given(@x > 5)": "'some result'" }` | Property Name, Matching
-| default | Acts as a catch-all in a match expression, always evaluating to true | `{ "#default()": "'some result'" }` | Property Name, Matching
+| [valueOf](https://joltlang.com/reference/library/valueof/) | Gets the value of a property at the specified path | `#valueOf($.some.path)` | Property Value
+| [exists](https://joltlang.com/reference/library/exists/) | Returns true if the provided value is not null, false otherwise | `#exists($.some.path)` | Property Value
+| [isNull](https://joltlang.com/reference/library/isnull/) | Returns true if the provided value is null, false otherwise | `#isNull($.some.path)` | Property Value
+| [isMissing](https://joltlang.com/reference/library/ismissing/) | Returns true if the provided path does not exist in the source document, false otherwise | `#isMissing($.some.path)` | Property Value
+| [if](https://joltlang.com/reference/library/if/) | Takes three parameters: a boolean condition, an expression to evaluate when that condition is true, and an expression to evaluate when false | `#if(#valueOf($.some.path), 'Yes', 'No')` | Property Value
+| [includeIf](https://joltlang.com/reference/library/includeif/) | Takes a path or boolean condition and will evaluate and include the property's object if true, returning null otherwise | `"#includeIf($.some.path) into 'someName'": { "nestedValue": "#valueOf($.other.path)" }` | Property Name
+| [eval](https://joltlang.com/reference/library/eval/) | Evaluates an arbitrary expression, either from a path or literal value, and returns the result | `#eval('1 + 2 == 3')` | Property Name/Value, Unsafe*
+| [foreach](https://joltlang.com/reference/library/foreach/) | Evaluates a path and loops over the array elements or object properties it finds there to create its property values, naming the property as the string literal referred to by the `into` keyword | `"#foreach(@x in $.some.path) into 'result'": [ { "templateValue": "#valueOf($.other.path)" } ]` | Property Name
+| [nameOf](https://joltlang.com/reference/library/nameof/) | Returns the name of the property being evaluated by the provided loop variable | `"#nameOf(@x)": "#valueOf($.some.path)"` | Property Name
+| [indexOf](https://joltlang.com/reference/library/indexof/) | Returns the zero-based index value of the first occurrence of the provided value in a string or array, or -1 if it isn't found | `#indexOf(#valueOf($.some.path), 'some string')` | Property Value
+| [length](https://joltlang.com/reference/library/length/) | Returns the length of a string or array value | `#length($.some.path)` | Property Value
+| [toUpperCase](https://joltlang.com/reference/library/touppercase/) | Returns the uppercase version of a string value | `#toUpperCase($.some.path)` | Property Value
+| [toLowerCase](https://joltlang.com/reference/library/tolowercase/) | Returns the lowercase version of a string value | `#toLowerCase($.some.path)` | Property Value
+| [trim](https://joltlang.com/reference/library/trim/) | Returns the string value with all leading and trailing whitespace removed | `#trim($.some.path)` | Property Value
+| [trimStart](https://joltlang.com/reference/library/trimstart/) | Returns the string value with all leading whitespace removed | `#trimStart($.some.path)` | Property Value
+| [trimEnd](https://joltlang.com/reference/library/trimend/) | Returns the string value with all trailing whitespace removed | `#trimEnd($.some.path)` | Property Value
+| [replace](https://joltlang.com/reference/library/replace/) | Returns the string value with all occurrences of a specified substring replaced with another value | `#replace($.some.path, 'old', 'new')` | Property Value
+| [startsWith](https://joltlang.com/reference/library/startswith/) | Returns true if a string value starts with the provided substring, false otherwise | `#startsWith($.some.path, 'start')` | Property Value
+| [endsWith](https://joltlang.com/reference/library/endswith/) | Returns true if a string value ends with the provided substring, false otherwise | `#endsWith($.some.path, 'end')` | Property Value
+| [substring](https://joltlang.com/reference/library/substring/) | Returns the string value that falls within the provided range in a given string | `#substring($.some.path, 1..2)` | Property Value
+| [isRegexMatch](https://joltlang.com/reference/library/isregexmatch/) | Returns true if a string value matches the provided regular expression pattern, false otherwise | `#isRegexMatch($.some.path, '^pattern$')` | Property Value
+| [regexReplace](https://joltlang.com/reference/library/regexreplace/) | Returns the string value with all occurrences of a specified regular expression pattern replaced with another value | `#regexReplace($.some.path, '^pattern$', 'new')` | Property Value
+| [slice](https://joltlang.com/reference/library/slice/) | Returns the array slice that falls within the provided range in a given array | `#slice($.some.path, 1..2)` | Property Value
+| [reverse](https://joltlang.com/reference/library/reverse/) | Returns the string or array value with its elements in reverse order | `#reverse($.some.path)` | Property Value
+| [flatten](https://joltlang.com/reference/library/flatten/) | Returns a single array that is the result of recursively flattening an array of nested arrays | `#flatten($.some.path)` | Property Value
+| [groupBy](https://joltlang.com/reference/library/groupby/) | Returns a JSON object that represents the grouping of an array's contents by its individual property values | `#groupBy($.some.path, @x: @x.propertyName)` | Property Value
+| [summarizeWith](https://joltlang.com/reference/library/summarizewith/) | Returns an object array that's the result of applying an aggregate method to a grouped array's key and/or results | `#summarizeWith($.some.group, @group: #someAggregateMethod(@group.key, @group.results))` | Property Value **
+| [orderBy](https://joltlang.com/reference/library/orderby/) | Returns an array in ascending order as determined by its individual property values, or by the elements themselves without a lambda (for an array of only numbers, only strings or only booleans, along with any nulls, which come first) | `#orderBy($.some.path, @x: @x.propertyName)` | Property Value
+| [orderByDesc](https://joltlang.com/reference/library/orderbydesc/) | Returns an array in descending order as determined by its individual property values, or by the elements themselves without a lambda (for an array of only numbers, only strings or only booleans, along with any nulls, which come last) | `#orderByDesc($.some.path, @x: @x.propertyName)` | Property Value
+| [take](https://joltlang.com/reference/library/take/) | Returns an array containing the leading elements of an array up to the specified count | `#take($.some.path, 5)` | Property Value
+| [skip](https://joltlang.com/reference/library/skip/) | Returns an array excluding the leading elements of an array up to the specified count | `#skip($.some.path, 5)` | Property Value
+| [takeWhile](https://joltlang.com/reference/library/takewhile/) | Returns an array containing the leading elements of an array that satisfy a specified condition | `#takeWhile($.some.path, @x: @x.propertyName > 5)` | Property Value
+| [skipWhile](https://joltlang.com/reference/library/skipwhile/) | Returns an array excluding the leading elements of an array that satisfy a specified condition | `#skipWhile($.some.path, @x: @x.propertyName > 5)` | Property Value
+| [distinct](https://joltlang.com/reference/library/distinct/) | Returns an array of items associated with distinct values of a specified property or scalar values | `#distinct($.some.path, @x: @x.propertyName)` | Property Value
+| [reduce](https://joltlang.com/reference/library/reduce/) | Returns a single value that is the accumulated result of applying a two-parameter lambda (the accumulated value and the current value) to each element of an array, with an optional seed value. Returns the seed value (if any) when the array is empty. | `#reduce($.some.path, @acc;@current: @acc + @current, @optionalSeedValue)` | Property Value
+| [zip](https://joltlang.com/reference/library/zip/) | Returns a single array that is the result of combining two arrays by pairs with a two-parameter lambda (the first element and the second element) | `#zip($.some.path, $.some.other.path, @x;@y: { 'first': @x, 'second': @y })` | Property Value
+| [keysFrom](https://joltlang.com/reference/library/keysfrom/) | Returns an array of the property names of an object | `#keysFrom($.some.path)` | Property Value
+| [valuesFrom](https://joltlang.com/reference/library/valuesfrom/) | Returns an array of the property values of an object | `#valuesFrom($.some.path)` | Property Value
+| [contains](https://joltlang.com/reference/library/contains/) | Returns true when an array or string contains the provided value | `#contains($.some.path, 'some string')` | Property Value
+| [roundTo](https://joltlang.com/reference/library/roundto/) | Returns the value of a provided number rounded to the specified decimal places | `#roundTo($.some.path, 2)` | Property Value
+| [try](https://joltlang.com/reference/library/try/) | Evaluates an expression and returns the result, or if an error is encountered it evaluates the provided lambda with the exception as a parameter and returns that result instead | `#try(#valueOf($.some.path)->#toInteger(), @e: 'default value')` | Property Value
+| [max](https://joltlang.com/reference/library/max/) | Returns the maximum value found within an array of numbers  (optionally with a projection lambda) | `#max($.some.path, @x: @x.someValue)` | Property Value
+| [min](https://joltlang.com/reference/library/min/) | Returns the minimum value found within an array of numbers  (optionally with a projection lambda) | `#min($.some.path, @x: @x.someValue)` | Property Value
+| [sum](https://joltlang.com/reference/library/sum/) | Returns the total value found within an array of numbers (optionally with a projection lambda) | `#sum($.some.path, @x: @x.someValue)` | Property Value
+| [average](https://joltlang.com/reference/library/average/) | Returns the average value found within an array of numbers  (optionally with a projection lambda) | `#average($.some.path, @x: @x.someValue)` | Property Value
+| [joinWith](https://joltlang.com/reference/library/joinwith/) | Returns a string that joins all elements of an array with the provided delimiter | `#joinWith($.some.path, ',')` | Property Name/Value
+| [splitOn](https://joltlang.com/reference/library/spliton/) | Returns an array of substrings from a string value splitting on the provided delimiter | `#splitOn($.some.path, ',')` | Property Value
+| [append](https://joltlang.com/reference/library/append/) | Returns a string or array made from appending one or more values onto them. An array's elements are appended to an array one by one, and any other value is appended to it as a single element | `#append($.some.path, 'one', 'two')` | Property Value
+| [currentDateTime](https://joltlang.com/reference/library/currentdatetime/) | Returns the current date and time as a string in ISO 8601 format | `#currentDateTime()` | Property Value
+| [currentDateTimeUtc](https://joltlang.com/reference/library/currentdatetimeutc/) | Returns the current date and time in UTC as a string in ISO 8601 format | `#currentDateTimeUtc()` | Property Value
+| [parseDateTime](https://joltlang.com/reference/library/parsedatetime/) | Returns a string in ISO 8601 format that represents the date and time value of the provided string, requires exact format with optional format string | `#parseDateTime($.some.path, 'yyyy-MM-dd')` | Property Value
+| [formatDateTime](https://joltlang.com/reference/library/formatdatetime/) | Returns a string that represents the date and time value of the provided string formatted according to the provided format string | `#formatDateTime($.some.path, 'yyyy-MM-dd')` | Property Value
+| [addDays](https://joltlang.com/reference/library/adddays/) | Returns a string in ISO 8601 format that represents the date and time value of the provided string with the specified number of days added to it | `#addDays($.some.path, 7)` | Property Value
+| [addHours](https://joltlang.com/reference/library/addhours/) | Returns a string in ISO 8601 format that represents the date and time value of the provided string with the specified number of hours added to it | `#addHours($.some.path, 5)` | Property Value
+| [addMinutes](https://joltlang.com/reference/library/addminutes/) | Returns a string in ISO 8601 format that represents the date and time value of the provided string with the specified number of minutes added to it | `#addMinutes($.some.path, 30)` | Property Value
+| [isInteger](https://joltlang.com/reference/library/isinteger/) | Returns true if the value is represented as a whole number | `#isInteger($.some.path)` | Property Value
+| [isString](https://joltlang.com/reference/library/isstring/) | Returns true if the value is represented as a string | `#isString($.some.path)` | Property Value
+| [isDecimal](https://joltlang.com/reference/library/isdecimal/) | Returns true if the value is represented as a floating point number | `#isDecimal($.some.path)` | Property Value
+| [isBoolean](https://joltlang.com/reference/library/isboolean/) | Returns true if the value is represented as a boolean | `#isBoolean($.some.path)` | Property Value
+| [isArray](https://joltlang.com/reference/library/isarray/) | Returns true if the value is represented as an array, false otherwise | `#isArray($.some.path)` | Property Value
+| [isObject](https://joltlang.com/reference/library/isobject/) | Returns true if the value is represented as an object, false otherwise | `#isObject($.some.path)` | Property Value
+| [isEmpty](https://joltlang.com/reference/library/isempty/) | Returns true if the value is an array or string with no contents, false otherwise | `#isEmpty($.some.path)` | Property Value
+| [toInteger](https://joltlang.com/reference/library/tointeger/) | Returns a value converted to a whole number | `#toInteger($.some.path)` | Property Value
+| [toString](https://joltlang.com/reference/library/tostring/) | Returns the string representation of a value | `#toString($.some.path)` | Property Value
+| [toDecimal](https://joltlang.com/reference/library/todecimal/) | Returns a value converted to a floating point number | `#toDecimal($.some.path)` | Property Value
+| [toBoolean](https://joltlang.com/reference/library/toboolean/) | Returns a value converted to a boolean | `#toBoolean($.some.path)` | Property Value
+| [merge](https://joltlang.com/reference/library/merge/) | Returns an object that is the result of merging two or more objects together with a deep copy, with later values taking precedence over earlier ones | `#merge($.some.path, $.some.other.path)` | Property Value
+| [any](https://joltlang.com/reference/library/any/) | Returns true if the value is an array or string with contents, false otherwise (lambda parameter is optional) | `#any($.some.path, @x: @x.someValue == 5)` | Property Value
+| [where](https://joltlang.com/reference/library/where/) | Returns an array of objects that match a predicate | `#where($.some.path, @x: @x.other.path > 2)` | Property Value
+| [select](https://joltlang.com/reference/library/select/) | Returns an array of objects that are the result of a projection | `#select($.some.path, @x: @x.other.path)` | Property Value
+| [transformWith](https://joltlang.com/reference/library/transformwith/) | Returns an object that is the result of transforming a document sub-path using a standalone transformer | `#transformWith($.some.path, 'SomeNamedTransformer')` | Property Value
+| [using](https://joltlang.com/reference/library/using/) | Assigns a specific path to a range variable and allows statements to operate on it | `"#using($.some.path as @x) into 'result'":[ "#setAt(@x.other.path, 5)" ]` | Property Name
+| [removeAt](https://joltlang.com/reference/library/removeat/) | Removes a JSON node from the provided variable-based path | `#removeAt(@x.some.path)` | Statement
+| [setAt](https://joltlang.com/reference/library/setat/) | Adds or modifies a JSON node specified with the provided variable-based path | `#setAt(@x.some.path, 5)` | Statement
+| [when](https://joltlang.com/reference/library/when/) | Conditionally executes a statement based on a boolean expression | `#when(#exists(@x.integerArray), #removeAt(@x.integerArray))` | Statement
+| [match](https://joltlang.com/reference/library/match/) | Matches a value against a set of conditions, evaluating from top to bottom and returning the value of the first one matched | `"#match($.path as @x) into 'result'": [ ... ]` | Property Name
+| [is](https://joltlang.com/reference/library/is/) | Takes a type literal, array pattern, object pattern, or scalar literal value and tries to match it against the value present in the #match expression | `{ "#is(object)": "'some result'" }` | Property Name, Matching
+| [given](https://joltlang.com/reference/library/given/) | Takes an expression and evaluates the result as a boolean, succeeding on true and failing on false | `{ "#given(@x > 5)": "'some result'" }` | Property Name, Matching
+| [default](https://joltlang.com/reference/library/default/) | Acts as a catch-all in a match expression, always evaluating to true | `{ "#default()": "'some result'" }` | Property Name, Matching
 
 <h6>* The #eval method is considered unsafe because it can execute any expression, including ones that may have unwanted side effects or security implications. It should be used with caution and only with trusted input. In order to enable unsafe method usage, the JoltOptions instance that can be passed into your JoltJsonTransformer has a method called WithUnsafeAllowed that will enable this. Use with caution!</h6>
 
