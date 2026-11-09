@@ -1,0 +1,10 @@
+{
+    "input": {
+        "path": [ "first", "second", "third" ]
+    },
+    "mocks": {
+        "exampleCustomMethod": { "returns": { "someProperty": "mocked value", "count": 3 } },
+        "exampleCustomMethodWithTwoLambdaParameters": { "returns": [ 1, 2, 3 ] },
+        "exampleCustomWithoutMethods": { "returns": "mocked without a methods.json entry" }
+    }
+}

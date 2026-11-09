@@ -122,6 +122,29 @@ export function createInputTemplate(mockedMethodNames: readonly string[], eol = 
 	};
 }
 
+/** A code lens shown at the top of a preview document, which runs one of the preview's input commands. */
+export interface PreviewLens {
+	readonly title: string;
+	readonly tooltip: string;
+	readonly action: 'choose' | 'open' | 'create';
+}
+
+/**
+ * Gets the code lenses for a preview that's running against the given input file, out of the given number of input
+ * files that the transformer has: switching to another of them (or opening the only one), and creating a new one.
+ */
+export function getPreviewLenses(inputName: string | undefined, inputCount: number): PreviewLens[] {
+	if (inputName === undefined) {
+		return [];
+	}
+
+	const input: PreviewLens = inputCount > 1
+		? { title: `$(list-selection) Input: ${inputName} $(chevron-down)`, tooltip: `Choose another of this transformer's ${inputCount} input files`, action: 'choose' }
+		: { title: `$(go-to-file) Input: ${inputName}`, tooltip: 'Open the input file', action: 'open' };
+
+	return [input, { title: '$(add) New Input File', tooltip: 'Create another input file for this transformer and preview it', action: 'create' }];
+}
+
 /** What the preview document shows, besides a transform result. */
 export type PreviewState =
 	| { kind: 'noInput' }
@@ -137,7 +160,14 @@ export interface PreviewContent {
 	state: PreviewState;
 	/** The output of the last successful run, shown when the latest run has no output of its own. */
 	lastOutput?: string;
+	/** Whether the preview shows code lenses, which get a blank line below them to stand out. */
+	hasLenses?: boolean;
 }
+
+/**
+ * The line that a preview's code lenses are shown above. It's left blank, so that the lenses have space below them.
+ */
+export const previewLensLine = 0;
 
 /**
  * Renders the preview document: comments describing the run (or why it didn't happen), followed by the output.
@@ -181,9 +211,10 @@ export function renderPreview(content: PreviewContent, eol = '\n'): string {
 		output = content.lastOutput;
 	}
 
+	const lensSpace = content.hasLenses ? new Array<string>(previewLensLine + 1).fill('') : [];
 	const header = comments.flatMap(x => x.split(/\r?\n/)).map(x => `// ${x}`.trimEnd());
 
-	return [...header, ...(output === undefined ? [] : [output])].join(eol) + eol;
+	return [...lensSpace, ...header, ...(output === undefined ? [] : [output])].join(eol) + eol;
 }
 
 function describeResult(result: TransformResult, comments: string[]): string | undefined {

@@ -2,7 +2,7 @@
   "name": "jolt",
   "displayName": "Jolt Language",
   "description": "A friendly way of transforming JSON into different JSON.",
-  "version": "1.6.0",
+  "version": "2.0.0",
   "icon": "./JoltLogo.png",
   "publisher": "Norhaven",
   "license": "BSD-3-Clause",
@@ -105,6 +105,12 @@
         "title": "Open Preview Input File",
         "category": "Jolt",
         "icon": "$(go-to-file)"
+      },
+      {
+        "command": "jolt.newPreviewInput",
+        "title": "New Preview Input File",
+        "category": "Jolt",
+        "icon": "$(add)"
       }
     ],
     "menus": {
@@ -136,6 +142,10 @@
         },
         {
           "command": "jolt.openPreviewInput",
+          "when": "editorLangId == jolt || resourceScheme == jolt-preview"
+        },
+        {
+          "command": "jolt.newPreviewInput",
           "when": "editorLangId == jolt || resourceScheme == jolt-preview"
         }
       ]

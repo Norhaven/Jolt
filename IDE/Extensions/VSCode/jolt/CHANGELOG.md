@@ -2,9 +2,10 @@
 
 All notable changes to the Jolt Language extension will be documented in this file.
 
-### 1.6.0
+### 2.0.0
 
-- Preview of a transformer's output for an input file, which runs again as either of them changes. Input files are kept in `.jolt/<transformer>/<name>.input.json` next to the transformer, and can mock the values that custom methods return
+- Uses Jolt 3.0.0
+- Preview of a transformer's output for an input file, which runs again as either of them changes. Input files are kept in `.jolt/<transformer>/<name>.input.json` next to the transformer, and can mock the values that custom methods return. Code lenses at the top of the preview switch to another input file or create a new one
 - Colorization now applies to the Dark Modern, Dark+, Light Modern, and Light+ themes in newer versions of VS Code
 - The pipe operator `->` and the new null-conditional pipe operator `?->` are colored as a single operator
 

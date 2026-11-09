@@ -1,0 +1,7 @@
+{
+    "input": { "path": [] },
+    "mocks": {
+        "exampleCustomMethod": { "returns": [] },
+        "exampleCustomMethodWithTwoLambdaParameters": { "returns": [] }
+    }
+}

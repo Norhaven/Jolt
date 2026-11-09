@@ -27,5 +27,6 @@ suite('Activation', () => {
 		assert.ok(commands.includes('jolt.openPreview'));
 		assert.ok(commands.includes('jolt.choosePreviewInput'));
 		assert.ok(commands.includes('jolt.openPreviewInput'));
+		assert.ok(commands.includes('jolt.newPreviewInput'));
 	});
 });

@@ -5,11 +5,13 @@ import {
 	createInputTemplate,
 	getCalledMethodNames,
 	getInputName,
+	getPreviewLenses,
 	getTransformerPrefix,
 	inputSuffix,
 	inputsRootFolder,
 	normalizeInputName,
 	PreviewState,
+	previewLensLine,
 	renderPreview,
 	TransformResult,
 	validateInputName
@@ -20,6 +22,7 @@ export const previewScheme = 'jolt-preview';
 export const openPreviewCommand = 'jolt.openPreview';
 export const choosePreviewInputCommand = 'jolt.choosePreviewInput';
 export const openPreviewInputCommand = 'jolt.openPreviewInput';
+export const newPreviewInputCommand = 'jolt.newPreviewInput';
 
 /** The workspace state holding the input file last chosen for each transformer, by the transformer's URI. */
 const chosenInputsKey = 'jolt.preview.chosenInputs';
@@ -41,19 +44,22 @@ interface PreviewSession {
 /**
  * Shows the output of a transformer run against a preview input file in a read-only document beside it, and runs it
  * again whenever either of them changes. A transformer's input files are kept in a .jolt folder next to it, in a
- * folder named after it, e.g. .jolt/orders/multi-item-order.input.json for orders.jolt.json.
+ * folder named after it, e.g. .jolt/orders/multi-item-order.input.json for orders.jolt.json. Code lenses at the top of
+ * the preview switch to another input file or create a new one.
  */
-export class PreviewController implements vscode.TextDocumentContentProvider, vscode.Disposable {
+export class PreviewController implements vscode.TextDocumentContentProvider, vscode.CodeLensProvider, vscode.Disposable {
 	private readonly sessions = new Map<string, PreviewSession>();
 	private readonly changed = new vscode.EventEmitter<vscode.Uri>();
+	private readonly lensesChanged = new vscode.EventEmitter<void>();
 	/** The revision of each input file that the language server was last sent, by the input file's URI. */
 	private readonly sentRevisions = new Map<string, string>();
 	/** Tells documents apart when one is closed and opened again, which starts its version over. */
 	private readonly documentIds = new WeakMap<vscode.TextDocument, number>();
 	private nextDocumentId = 1;
-	private readonly disposables: vscode.Disposable[] = [this.changed];
+	private readonly disposables: vscode.Disposable[] = [this.changed, this.lensesChanged];
 
 	readonly onDidChange = this.changed.event;
+	readonly onDidChangeCodeLenses = this.lensesChanged.event;
 
 	constructor(
 		private readonly context: vscode.ExtensionContext,
@@ -64,23 +70,46 @@ export class PreviewController implements vscode.TextDocumentContentProvider, vs
 
 		this.disposables.push(
 			vscode.workspace.registerTextDocumentContentProvider(previewScheme, this),
+			vscode.languages.registerCodeLensProvider({ scheme: previewScheme }, this),
 			vscode.commands.registerCommand(openPreviewCommand, (uri?: vscode.Uri) => this.openPreview(uri)),
 			vscode.commands.registerCommand(choosePreviewInputCommand, (uri?: vscode.Uri) => this.chooseInput(uri)),
 			vscode.commands.registerCommand(openPreviewInputCommand, (uri?: vscode.Uri) => this.openInput(uri)),
+			vscode.commands.registerCommand(newPreviewInputCommand, (uri?: vscode.Uri) => this.newInput(uri)),
 			vscode.workspace.onDidChangeTextDocument(e => this.scheduleFor(e.document.uri)),
 			vscode.workspace.onDidCloseTextDocument(document => this.closeSession(document.uri)),
 			vscode.workspace.onDidRenameFiles(e => void this.moveInputs(e.files)),
 			watcher,
 			// Edits in an editor are seen as they're made, and changes to an input file that isn't open when it's saved.
 			watcher.onDidChange(uri => this.scheduleFor(uri)),
-			watcher.onDidCreate(uri => this.scheduleFor(uri)),
-			watcher.onDidDelete(uri => this.inputDeleted(uri)),
+			watcher.onDidCreate(uri => {
+				this.scheduleFor(uri);
+				this.lensesChanged.fire();
+			}),
+			watcher.onDidDelete(uri => {
+				this.inputDeleted(uri);
+				this.lensesChanged.fire();
+			}),
 			this.server.onDidChangeStatus(() => this.scheduleAll(0)),
 			this.methods.onDidChange(() => this.scheduleAll(0)));
 	}
 
 	provideTextDocumentContent(uri: vscode.Uri): string {
 		return this.getSession(uri)?.content ?? '';
+	}
+
+	async provideCodeLenses(document: vscode.TextDocument): Promise<vscode.CodeLens[]> {
+		const session = this.sessions.get(document.uri.toString());
+
+		if (!session?.inputUri) {
+			return [];
+		}
+
+		const inputs = await listInputs(session.transformerUri);
+		const commands = { choose: choosePreviewInputCommand, open: openPreviewInputCommand, create: newPreviewInputCommand };
+		const top = new vscode.Range(previewLensLine, 0, previewLensLine, 0);
+
+		return getPreviewLenses(getInputName(basename(session.inputUri)), inputs.length).map(x =>
+			new vscode.CodeLens(top, { title: x.title, tooltip: x.tooltip, command: commands[x.action], arguments: [session.previewUri] }));
 	}
 
 	dispose(): void {
@@ -159,9 +188,16 @@ export class PreviewController implements vscode.TextDocumentContentProvider, vs
 
 		const inputUri = picked === create ? await this.createInput(transformerUri) : picked?.uri;
 
-		if (!inputUri) {
-			return;
+		if (inputUri) {
+			await this.previewWith(transformerUri, inputUri);
 		}
+	}
+
+	/**
+	 * Runs a transformer's open preview against an input file, or opens its preview with that input file.
+	 */
+	private async previewWith(transformerUri: vscode.Uri, inputUri: vscode.Uri): Promise<void> {
+		const session = this.sessions.get(getPreviewUri(transformerUri).toString());
 
 		if (session) {
 			this.useInput(session, inputUri);
@@ -179,6 +215,21 @@ export class PreviewController implements vscode.TextDocumentContentProvider, vs
 			await vscode.window.showTextDocument(inputUri, { preview: false });
 		} else {
 			await this.chooseInput(uri);
+		}
+	}
+
+	private async newInput(uri?: vscode.Uri): Promise<void> {
+		const transformerUri = this.getTransformerUri(uri);
+
+		if (!transformerUri) {
+			void vscode.window.showErrorMessage('Open a Jolt transformer (a .jolt.json file) or its preview to create an input for it.');
+			return;
+		}
+
+		const inputUri = await this.createInput(transformerUri);
+
+		if (inputUri) {
+			await this.previewWith(transformerUri, inputUri);
 		}
 	}
 
@@ -217,22 +268,14 @@ export class PreviewController implements vscode.TextDocumentContentProvider, vs
 	}
 
 	/**
-	 * Picks the input file to start a transformer's preview with: its only input file, one chosen from several, or a
-	 * new one when it has none.
+	 * Picks the input file to start a transformer's preview with: the first of its input files (the preview's lenses
+	 * switch to another), or a new one when it has none.
 	 */
 	private async pickFirstInput(session: PreviewSession): Promise<vscode.Uri | undefined> {
 		const inputs = await listInputs(session.transformerUri);
 
-		if (inputs.length === 1) {
+		if (inputs.length > 0) {
 			return inputs[0];
-		}
-
-		if (inputs.length > 1) {
-			const picked = await vscode.window.showQuickPick(
-				inputs.map(x => ({ label: getInputName(basename(x))!, detail: vscode.workspace.asRelativePath(x), uri: x })),
-				{ title: `Preview Input for ${basename(session.transformerUri)}`, placeHolder: 'Choose the input file to run the transformer against' });
-
-			return picked?.uri;
 		}
 
 		const create = 'Create Input File';
@@ -250,6 +293,7 @@ export class PreviewController implements vscode.TextDocumentContentProvider, vs
 		this.rememberInput(session);
 		this.render(session, inputUri ? { kind: 'running' } : { kind: 'noInput' });
 		this.schedule(session, 0);
+		this.lensesChanged.fire();
 	}
 
 	private async offerToEnableValidation(): Promise<void> {
@@ -304,6 +348,7 @@ export class PreviewController implements vscode.TextDocumentContentProvider, vs
 		void this.getChosenInput(transformerUri).then(inputUri => {
 			session.inputUri ??= inputUri;
 			this.schedule(session, 0);
+			this.lensesChanged.fire();
 		});
 
 		return session;
@@ -425,7 +470,9 @@ export class PreviewController implements vscode.TextDocumentContentProvider, vs
 		const content = renderPreview({
 			inputPath: session.inputUri && vscode.workspace.asRelativePath(session.inputUri),
 			state,
-			lastOutput: session.lastOutput
+			lastOutput: session.lastOutput,
+			// The lenses are shown exactly when there's an input file (see provideCodeLenses).
+			hasLenses: session.inputUri !== undefined
 		});
 
 		if (content !== session.content) {

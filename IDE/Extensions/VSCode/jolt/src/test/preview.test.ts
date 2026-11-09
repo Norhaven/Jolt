@@ -4,8 +4,10 @@ import {
 	createInputTemplate,
 	getCalledMethodNames,
 	getInputName,
+	getPreviewLenses,
 	getTransformerPrefix,
 	normalizeInputName,
+	previewLensLine,
 	renderPreview,
 	validateInputName
 } from '../language/preview';
@@ -37,6 +39,26 @@ test('input names must be usable as file names and not already exist', () => {
 	assert.match(validateInputName('trailing.', [])!, /can't be used/);
 	assert.match(validateInputName('con', [])!, /can't be used/);
 	assert.match(validateInputName('Single-Item.input.json', ['single-item'])!, /already exists/);
+});
+
+test('the preview\'s lenses switch inputs when there are several and always offer a new one', () => {
+	assert.deepEqual(getPreviewLenses(undefined, 0), []);
+	assert.deepEqual(getPreviewLenses('only', 1).map(x => x.action), ['open', 'create']);
+	assert.match(getPreviewLenses('only', 1)[0].title, /Input: only/);
+
+	const several = getPreviewLenses('second', 3);
+
+	assert.deepEqual(several.map(x => x.action), ['choose', 'create']);
+	assert.match(several[0].title, /Input: second/);
+	assert.match(several[0].tooltip, /3 input files/);
+});
+
+test('a preview with lenses leaves a blank line below them', () => {
+	const lines = renderPreview({ inputPath: 'a.input.json', state: { kind: 'running' }, hasLenses: true }).split('\n');
+
+	assert.equal(previewLensLine, 0);
+	assert.deepEqual(lines.slice(0, 2), ['', '// Input: a.input.json']);
+	assert.equal(renderPreview({ state: { kind: 'noInput' } }).split('\n')[0].startsWith('//'), true);
 });
 
 test('called methods are found once each, piped or not', () => {

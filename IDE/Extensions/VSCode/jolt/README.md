@@ -91,7 +91,9 @@ Some validation problems come with quick fixes (`Ctrl+.`, or the light bulb):
 
 You can see what a transformer produces without leaving the editor. Use the **Open Preview to the Side** button in a transformer's title bar (or **Jolt: Open Preview to the Side**) to run it against an input file and show its output beside it. The preview runs again as you edit the transformer or the input file, saved or not, and its first lines describe the run: the input file used, how long it took, and any error (along with the output of the last successful run).
 
-A transformer's input files are kept in a folder named after it, inside a `.jolt` folder next to it. For `orders.jolt.json`, they'd be in `.jolt/orders/`, such as `.jolt/orders/multi-item-order.input.json`. When a transformer has no input files yet, the preview offers to create one, asking for its name. Use the **Choose Preview Input** button in the preview's title bar to switch to another input file or create a new one, and **Open Preview Input File** to edit the current one.
+![Transformer Preview With Mocks](images/transformer-preview-input-with-mocks.gif)
+
+A transformer's input files are kept in a folder named after it, inside a `.jolt` folder next to it. For `orders.jolt.json`, they'd be in `.jolt/orders/`, such as `.jolt/orders/multi-item-order.input.json`. When a transformer has no input files yet, the preview offers to create one, asking for its name. Otherwise it runs against the input file you last chose for it, or the first one by name. The code lenses at the top of the preview show the current input file: click it to switch to another one (or to open it, when it's the only one), or click **New Input File** to create another. The **Choose Preview Input** and **Open Preview Input File** buttons in the preview's title bar do the same.
 
 An input file holds the source document in its `input` property. Since your custom methods are part of your application, the preview can't call them, so `mocks` gives the value that each one returns instead, whatever its arguments:
 

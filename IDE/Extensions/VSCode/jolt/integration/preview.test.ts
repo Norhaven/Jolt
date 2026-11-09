@@ -6,7 +6,7 @@ import { activateExtension, closeAllEditors, waitFor, workspaceFile } from './he
 let transformerCount = 0;
 
 /**
- * Writes a transformer with a single input file (so that the preview uses it without asking) and opens it.
+ * Writes a transformer with a single input file (so that the preview uses it) and opens it.
  */
 async function openWithInput(transformer: string, inputFile: unknown): Promise<{ transformer: vscode.TextDocument; inputUri: vscode.Uri }> {
 	const prefix = `Preview${++transformerCount}`;
@@ -58,7 +58,7 @@ suite('Preview', () => {
 
 		const first = await waitForPreview(transformer, x => x.includes('Ran in'), 'the first run');
 
-		assert.match(first, /^\/\/ Input: .*example\.input\.json/);
+		assert.match(first, /^\r?\n\/\/ Input: .*example\.input\.json/);
 		assert.deepEqual(outputOf(first), { name: 'Ada' });
 
 		await replaceAll(transformer, '{ "customer": "#valueOf($.customer.name)" }');
@@ -100,5 +100,28 @@ suite('Preview', () => {
 		await vscode.commands.executeCommand('jolt.openPreview', transformer.uri);
 
 		await waitForPreview(transformer, x => x.includes('Not run, since the transformer has 1 error'), 'the run to be skipped');
+	});
+
+	test('lenses open the only input file or switch between several, and offer to create a new one', async () => {
+		const { transformer, inputUri } = await openWithInput('{ "a": "#valueOf($.a)" }', { input: { a: 1 } });
+
+		await vscode.commands.executeCommand('jolt.openPreview', transformer.uri);
+		await waitForPreview(transformer, x => x.includes('Ran in'), 'the first run');
+
+		const codeLenses = () => vscode.commands.executeCommand<vscode.CodeLens[]>('vscode.executeCodeLensProvider', findPreview(transformer)!.uri);
+		const lensesOf = async () => (await codeLenses()).map(x => ({ title: x.command?.title, command: x.command?.command }));
+
+		// The lenses go above a blank first line, so that they have space below them.
+		assert.deepEqual((await codeLenses()).map(x => x.range.start.line), [0, 0]);
+		assert.deepEqual(await lensesOf(), [
+			{ title: '$(go-to-file) Input: example', command: 'jolt.openPreviewInput' },
+			{ title: '$(add) New Input File', command: 'jolt.newPreviewInput' }
+		]);
+
+		await vscode.workspace.fs.writeFile(vscode.Uri.joinPath(inputUri, '..', 'another.input.json'), new TextEncoder().encode('{ "input": {} }'));
+
+		await waitFor(async () => (await lensesOf())[0]?.command === 'jolt.choosePreviewInput', 'the lens to switch between the input files');
+
+		assert.deepEqual((await lensesOf())[0], { title: '$(list-selection) Input: example $(chevron-down)', command: 'jolt.choosePreviewInput' });
 	});
 });

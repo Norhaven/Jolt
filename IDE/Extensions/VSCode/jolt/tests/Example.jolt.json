@@ -5,7 +5,7 @@
         }
     ],
     "#match(@results as @item) into 'result'": [
-        { "#is(array)": "@item->#where(@x: @x.name == 'Bob')" },
+        { "#is(array)": "@item->#where(@x: @x.name->#contains('Bob'))" },
         { "#default()": "nothing" }
     ]
 }
